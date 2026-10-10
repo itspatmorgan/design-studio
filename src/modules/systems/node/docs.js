@@ -38,6 +38,7 @@ export function systemDocs(componentsDir) {
     return {
       name: component.name, slug: component.slug,
       title: str(fm?.title) || titleOf(component.name), description: str(fm?.description), category: str(fm?.category) || null, docsUrl: str(fm?.docs) || null,
+      ...(str(fm?.source) ? { sourceNote: str(fm.source) } : {}),
       files: component.files,
     };
   });

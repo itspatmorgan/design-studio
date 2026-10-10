@@ -129,7 +129,7 @@ export function ComponentDocPage({ sys, component, origin, loaded }: { sys: Desi
           description={component.description || docsLink ? (
             <>
               {component.description}
-              {docsLink && (
+              {docsLink && !component.sourceNote && (
                 <a href={docsLink.href} target="_blank" rel="noreferrer" className={`block font-medium text-foreground underline underline-offset-4 ${component.description ? 'mt-2' : ''}`}>
                   {docsLink.hostname === 'ui.shadcn.com' ? 'shadcn/ui docs' : `Docs on ${docsLink.hostname}`} ↗
                 </a>
@@ -140,6 +140,13 @@ export function ComponentDocPage({ sys, component, origin, loaded }: { sys: Desi
       </div>
       {errors.length > 0 && <div role="alert" className="space-y-2 rounded-md border border-border p-3 text-sm"><p>Some component files couldn't load.</p>{errors.map((error) => <p key={error} className="text-muted-foreground">{error}</p>)}<Button variant="outline" size="sm" onClick={() => { setRetry((value) => value + 1); void router.invalidate(); }}>Try again</Button></div>}
       {Doc ? <ErrorBoundary resetKeys={[Doc, retry]} FallbackComponent={ViewError}><Prose className={PAGE_PROSE}><Doc /></Prose></ErrorBoundary> : !doc && <Note>No page yet. Add <code>{stem}.md</code> next to the component to describe it and say when to use it.</Note>}
+
+      {component.sourceNote && <Section title="Source">
+        <p className="text-sm leading-6">{component.sourceNote}</p>
+        {docsLink && <a href={docsLink.href} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-medium underline underline-offset-4">
+          {docsLink.hostname === 'ui.shadcn.com' ? 'shadcn/ui docs' : `Docs on ${docsLink.hostname}`} ↗
+        </a>}
+      </Section>}
 
       <Section title="Examples">
         {!examples ? (
