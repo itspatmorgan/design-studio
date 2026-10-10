@@ -41,7 +41,7 @@ When the person selects an existing target system, save the assessment summary t
 4. Follow [document-component](../document-component/SKILL.md) for component pages and examples.
 5. Create or reuse one representative prototype in the person's folder. Verify the kit there and on its Systems pages.
 
-Add shadcn components only for demonstrated gaps. Verify the configured destination before running its CLI.
+Add shadcn components only for demonstrated gaps. Use the target system's configuration through isolated preparation; consult [shadcn configuration and DESIGN.md guidance](references/shadcn.md). Save reviewed resolved configuration separately from runtime integration. Never treat a CLI destination override as isolation of all writes.
 
 ## Change the default and retire placeholders
 
@@ -51,7 +51,7 @@ The command preserves existing system choices. Migrate retained prototypes by up
 
 If cleanup is authorized, inspect all dependencies of each system being retired, including Product or Marketing. Include sample content and disabled modules.
 
-Preserve recoverable copies when replacing content. Use the [system lifecycle](../../README.md#system-lifecycle) to archive or permanently delete a retired system. Update shadcn destinations before deleting Product. Preview changes and resolve dependencies instead of using `--force`.
+Preserve recoverable copies when replacing content. Use the [system lifecycle](../../README.md#system-lifecycle) to archive or permanently delete a retired system. Shadcn configuration belongs to each system; preserve the retained system's choices when retiring another. Preview changes and resolve dependencies instead of using `--force`.
 
 Do not remove another person's work merely because a contributor joined. Explain proposed starter cleanup and obtain unresolved choices.
 

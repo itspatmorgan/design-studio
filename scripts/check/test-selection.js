@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-const patterns = ['src/platform/**/*.test.ts', 'src/modules/**/*.test.ts', 'scripts/**/*.test.js', 'scripts/plugins/design-studio/tests/*.test.mjs'];
+const patterns = ['src/platform/**/*.test.ts', 'src/modules/**/*.test.ts', 'src/modules/**/*.test.js', 'scripts/**/*.test.js', 'scripts/plugins/design-studio/tests/*.test.mjs'];
 export const discoverTests = (root = process.cwd()) => [...fs.globSync(patterns, { cwd: root })].sort();
 export function matches(file, glob) {
   const escaped = glob.split('**').map(part => part.split('*').map(text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[^/]*')).join('.*');

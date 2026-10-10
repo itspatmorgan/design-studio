@@ -11,9 +11,7 @@ Identify the target system and component. Preserve existing source, examples, an
 
 ## Import when needed
 
-For starter shadcn components, inspect `components.json` before running `npx shadcn add <name>`.
-
-For another destination, use `--path src/systems/<system>/components`. Adapt a generated `cn` import to `@/lib/utils` when required.
+For shadcn components, read the target system's `components.json` and follow [Curate from libraries](../setup-design-system/references/curated-libraries.md#import-selected-components). Use `pnpm prepare-shadcn <system> --components <name>` to generate in isolation. A `--path` override alone does not isolate theme, helper, or dependency writes. Do not run upstream initialization or preset application in the Studio checkout.
 
 Apply the system's theme and portal requirements. Skip import when documenting an existing component.
 

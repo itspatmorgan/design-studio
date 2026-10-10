@@ -20,11 +20,12 @@ type Props = {
 export default function SystemSetup({ system, label, curation, review, prototype }: Props) {
   const [path, setPath] = useState<'shadcn' | 'import'>('shadcn');
   const [preset, setPreset] = useState('');
+  const [designMd, setDesignMd] = useState('');
   const [materials, setMaterials] = useState({ shadcn: '', import: '' });
   const [components, setComponents] = useState({ shadcn: '', import: '' });
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const prompt = curationPrompt({ system, label, path, preset, materials: materials[path], components: components[path], curation });
+  const prompt = curationPrompt({ system, label, path, preset, designMd, materials: materials[path], components: components[path], curation });
   useEffect(() => { setCopied(false); setError(''); }, [prompt]);
   async function copy() {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); setError(''); }
@@ -56,7 +57,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
           <h2 id="system-choices" className={heading}>2. Your choices</h2>
         {(['shadcn', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
           {id === 'shadcn' ? <>
-            <p className="text-sm leading-6 text-muted-foreground">Customize in shadcn’s builder, then bring your preset back here.</p>
+            <p className="text-sm leading-6 text-muted-foreground">Bring a preset from shadcn’s builder, a DESIGN.md, or both.</p>
             <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></a>
             <div><div className="mb-2 flex items-center gap-2"><label htmlFor="curation-preset" className="text-sm font-medium">Paste your preset here</label>
               <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Where to find your shadcn preset" />}><CircleHelp className="size-4" aria-hidden /></TooltipTrigger>
@@ -66,6 +67,9 @@ export default function SystemSetup({ system, label, curation, review, prototype
                 </TooltipContent>
               </Tooltip>
             </div><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
+            <div><label htmlFor="curation-design-md" className="mb-2 block text-sm font-medium">DESIGN.md <span className="font-normal text-muted-foreground">(optional)</span></label>
+              <Input id="curation-design-md" value={designMd} placeholder="Paste a link or the full path to your DESIGN.md" onChange={event => setDesignMd(event.target.value)} />
+            </div>
           </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
           <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
             <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />

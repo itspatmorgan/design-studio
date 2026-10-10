@@ -5,7 +5,7 @@
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "src/systems/studio/styles/theme.css",
+    "css": "styles/theme.css",
     "baseColor": "neutral",
     "cssVariables": true,
     "prefix": ""
@@ -13,13 +13,11 @@
   "iconLibrary": "lucide",
   "rtl": false,
   "aliases": {
-    "components": "@/systems/product/components",
+    "components": "@/systems/studio/components",
     "utils": "@/lib/utils",
-    "ui": "@/systems/product/components",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
+    "ui": "@/systems/studio/components",
+    "lib": "@/systems/studio/lib",
+    "hooks": "@/systems/studio/hooks"
   },
-  "menuColor": "default",
-  "menuAccent": "subtle",
   "registries": {}
 }

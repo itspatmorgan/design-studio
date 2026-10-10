@@ -16,6 +16,7 @@ A prototype system lives in `src/systems/<id>/` and contains:
 | `assets/` | Optional system-owned fonts, logos, and images. |
 | `styles/theme.css` | Scoped tokens and styles, loaded by the platform. |
 | `intro.tsx` | Optional Systems overview page. |
+| `components.json` | Optional system-owned shadcn source configuration; consumed through isolated preparation. |
 
 `system.ts`, introductions, examples, and Markdown are documentation adapters. Runtime components and prototypes cannot import these adapters.
 
@@ -27,7 +28,7 @@ The Studio system lives in `src/systems/studio/` with the same structure as othe
 
 Follow the [static asset convention](../../platform/context/assets.md) for system assets and font loading.
 
-The starter Product system uses shadcn/ui on Base UI. `components.json` controls the CLI destination. A replacement system may use another library.
+The starter Product and Marketing systems use shadcn/ui on Base UI. Shadcn-based systems own `components.json`; other systems do not need it. Its style and icon choices describe the upstream starting configuration, not every adaptation in the current theme or components. There is no root shadcn configuration. System folders are not package workspaces: use the [isolated preparation command](context/curation.md#isolated-shadcn-preparation), which translates configuration for a standalone upstream project. Do not run shadcn initialization or preset application directly against Studio source folders.
 
 `colorModes` declares supported modes: `['light']`, `['dark']`, or `['light', 'dark']`. This field is required; omission fails validation. Declare a single mode explicitly to protect a system that supports only that mode. Empty, duplicate, and unknown modes fail validation.
 

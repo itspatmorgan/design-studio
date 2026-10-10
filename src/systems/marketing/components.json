@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "base-nova",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "styles/theme.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "rtl": false,
+  "aliases": {
+    "components": "@/systems/marketing/components",
+    "utils": "@/lib/utils",
+    "ui": "@/systems/marketing/components",
+    "lib": "@/systems/marketing/lib",
+    "hooks": "@/systems/marketing/hooks"
+  },
+  "registries": {}
+}

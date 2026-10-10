@@ -27,6 +27,15 @@ test('shared dependencies and mixed changes include setup and publishing only wh
   assert.deepEqual(result.groups, ['runtime', 'distribution']);
   assert.equal(new Set(result.tests).size, result.tests.length);
 });
+test('module test discovery includes JavaScript and TypeScript procedures', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'module-tests-'));
+  try {
+    const directory = path.join(root, 'src/modules/example');
+    fs.mkdirSync(directory, { recursive: true });
+    for (const file of ['prepare.test.js', 'runtime.test.ts']) fs.writeFileSync(path.join(directory, file), '');
+    assert.deepEqual(discoverTests(root), ['src/modules/example/prepare.test.js', 'src/modules/example/runtime.test.ts']);
+  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+});
 test('unknown paths, dependencies, missing comparison, and new tests fail closed to the full suite', () => {
   for (const file of ['new-feature/file.js', 'pnpm-lock.yaml', '.github/workflows/checks.yml', 'scripts/check/test-groups.json', '../outside']) assert.equal(select([file]).full, true, file);
   assert.equal(selectTests([], catalog, [...available, 'src/modules/new/unknown.test.ts']).full, true);
