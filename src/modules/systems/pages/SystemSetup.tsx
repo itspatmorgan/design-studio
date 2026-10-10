@@ -70,10 +70,10 @@ export default function SystemSetup({ system, label, curation, review, prototype
             <div><label htmlFor="curation-design-md" className="mb-2 block text-sm font-medium">DESIGN.md <span className="font-normal text-muted-foreground">(optional)</span></label>
               <Input id="curation-design-md" value={designMd} placeholder="Paste a link or the full path to your DESIGN.md" onChange={event => setDesignMd(event.target.value)} />
             </div>
-          </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
-          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
-            {id !== 'import' && <p className="mt-2 text-xs text-muted-foreground">Your agent uses this to choose the first components.</p>}
+          </> : <p className="text-sm leading-6 text-muted-foreground">Your agent will inspect the code and recommend what to import first, what needs adaptation, and what’s missing.</p>}
+          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'React project or component library' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to its folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
+            <p className="mt-2 text-xs text-muted-foreground">{id === 'import' ? 'Leave this blank and your agent will ask for the source in chat.' : 'Your agent uses this to choose the first components.'}</p>
           </div>
           {id !== 'import' && <div>
             <label htmlFor={'curation-components-' + id} className="mb-2 block text-sm font-medium">Any components you already know you want? <span className="font-normal text-muted-foreground">(optional)</span></label>
