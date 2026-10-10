@@ -66,7 +66,9 @@ test('system configuration survives staging and capture without redirecting writ
     const replacement = prepareShadcn(root, 'example', { preset: 'https://ui.shadcn.com/create?preset=b0' });
     plans.push(replacement);
     assert.equal(replacement.source.base, 'radix');
-    assert.ok(replacement.commands.some(command => command.includes('init') && command.includes(replacement.source.preset)));
+    assert.equal(replacement.source.preset, 'https://ui.shadcn.com/create?preset=b0');
+    assert.ok(replacement.commands.some(command => command.includes('init') && command.includes('b0')));
+    assert.throws(() => prepareShadcn(root, 'example', { preset: 'https://ui.shadcn.com/create?template=vite' }), /valid preset code/);
     const switched = prepareShadcn(root, 'example', { base: 'base' });
     plans.push(switched);
     assert.equal(switched.source.preset, 'maia');

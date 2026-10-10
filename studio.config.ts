@@ -18,8 +18,8 @@ export default {
     onboarding: true,
     contributors: true,
   },
-  systems: ["studio", "product", "marketing"],
-  systemMaintainers: { "4f3m7z08hk5a0k53": [], "v4576ka1mbpbqdp1": [] },
+  systems: ["studio", "product", "marketing", "curation-test"],
+  systemMaintainers: { "4f3m7z08hk5a0k53": [], "v4576ka1mbpbqdp1": [], "f8qjkh2qmxpsffqb": [] },
   defaultSystem: "4f3m7z08hk5a0k53",   // the system selected at creation; each prototype persists an explicit systemId
   admins: ["01ketxwns61brr7r"],
 } satisfies StudioConfig;

@@ -48,6 +48,8 @@ export function prepareShadcn(root, system, { preset, base, components = [], des
   if (!Array.isArray(components) || components.some(name => !/^[a-z][a-z0-9-]*$/.test(name))) throw new Error('Select built-in shadcn components by name.');
   const reuseConfig = Boolean(config && !preset && base === savedBase);
   if (!reuseConfig) preset ??= config?.style.slice(savedBase.length + 1) ?? 'nova';
+  const presetCode = preset?.startsWith('https://') ? new URL(preset).searchParams.get('preset') : preset;
+  if (preset && !/^[a-zA-Z0-9_-]{1,80}$/.test(presetCode ?? '')) throw new Error('The builder link must include a valid preset code.');
   const designSource = designMd ? path.resolve(root, designMd) : null;
   const designContent = designSource ? fs.readFileSync(designSource) : null;
   const studio = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
@@ -76,7 +78,7 @@ export function prepareShadcn(root, system, { preset, base, components = [], des
   write('tsconfig.json', JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'ESNext', moduleResolution: 'Bundler', jsx: 'react-jsx', paths: { '@/*': ['./src/*'] }, noEmit: true }, include: ['src'] }, null, 2) + '\n');
   const commands = [
     ['pnpm', '--dir', workspace, 'install'],
-    ...(!reuseConfig ? [['pnpm', 'exec', 'shadcn', 'init', '--cwd', workspace, '--preset', preset, '--base', base, '--yes', '--no-monorepo']] : []),
+    ...(!reuseConfig ? [['pnpm', 'exec', 'shadcn', 'init', '--cwd', workspace, '--preset', presetCode, '--base', base, '--yes', '--no-monorepo']] : []),
     ['pnpm', 'exec', 'shadcn', 'info', '--cwd', workspace, '--json'],
     ['pnpm', 'exec', 'shadcn', 'preset', 'resolve', '--cwd', workspace, '--json'],
     ...(components.length ? [ ['pnpm', 'exec', 'shadcn', 'docs', '--cwd', workspace, ...components, '--json'], ['pnpm', 'exec', 'shadcn', 'add', '--cwd', workspace, ...components, '--dry-run'], ['pnpm', 'exec', 'shadcn', 'add', '--cwd', workspace, ...components, '--yes'] ] : []),
