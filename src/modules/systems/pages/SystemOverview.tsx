@@ -80,7 +80,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
       <div className="min-w-0">
         {platform ? <p className="text-sm leading-6 text-foreground/80">Studio’s navigation, menus, editors, and documentation use this system. It is maintained with platform releases and is unavailable as a prototype system.</p> : usage.count ? <>
           <ul className="space-y-1">{usage.recent.map(proto => <li key={proto.contributorKey + '/' + proto.id}><Link {...prototypeLink(proto)} className="flex items-center gap-3 rounded-lg border border-border bg-transparent px-4 py-3 text-sm hover:bg-muted"><span className="min-w-0 flex-1 truncate">{proto.title}</span><span className="max-w-36 truncate text-[12px] text-muted-foreground">{proto.contributor}</span><ArrowUpRight aria-hidden className="size-3.5 shrink-0" /></Link></li>)}</ul>
-          <Link to={'/prototypes' as never} search={{ system } as never} className="mt-3 inline-flex items-center gap-1 text-sm hover:underline">View all prototypes<ArrowUpRight aria-hidden className="size-3.5" /></Link>
+          <Link to={'/prototypes' as never} search={{ system } as never} className="mt-3 inline-flex items-center gap-1 text-sm hover:underline">View prototypes using this system<ArrowUpRight aria-hidden className="size-3.5" /></Link>
         </> : <p className="text-sm leading-6 text-foreground/80">No active prototypes use this system yet. Choose {sys.label} when creating a prototype.</p>}
       </div>
     </section>
