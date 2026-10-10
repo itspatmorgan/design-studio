@@ -45,7 +45,9 @@ export async function themeUsageProblems(systems, filesBySystem) {
     const refs = new Set();
     rule.walkDecls(d => { for (const m of d.value.matchAll(/var\(\s*(--[\w-]+)/g)) if (known.has(m[1]) && !m[1].startsWith('--tw-')) refs.add(m[1]); });
     selectorParser(tree => tree.walkClasses(c => {
-      if (!candidates.includes(c.value)) return;
+      // Group/peer markers occur in another utility's selector. They do not
+      // request that utility's tokens where the marker itself is used.
+      if (!candidates.includes(c.value) || /^(?:group|peer)(?:\/|$)/.test(c.value)) return;
       const existing = dependencies.get(c.value) ?? new Set();
       for (const ref of refs) existing.add(ref);
       dependencies.set(c.value, existing);

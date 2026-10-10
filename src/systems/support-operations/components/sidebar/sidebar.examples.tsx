@@ -1,0 +1,4 @@
+import {SidebarProvider,Sidebar,SidebarHeader,SidebarContent,SidebarGroup,SidebarMenu,SidebarMenuItem,SidebarMenuButton} from '@/systems/support-operations/components/sidebar';
+import {Inbox,BarChart3} from 'lucide-react';
+import {useState} from 'react';
+export function Navigation(){const [page,setPage]=useState('Overview');return <SidebarProvider className="min-h-0"><Sidebar collapsible="none" className="rounded-lg border"><SidebarHeader>Relay support</SidebarHeader><SidebarContent><SidebarGroup><SidebarMenu>{[{name:'Overview',icon:BarChart3},{name:'Inbox',icon:Inbox}].map(item=><SidebarMenuItem key={item.name}><SidebarMenuButton isActive={page===item.name} onClick={()=>setPage(item.name)}><item.icon/><span>{item.name}</span></SidebarMenuButton></SidebarMenuItem>)}</SidebarMenu></SidebarGroup></SidebarContent></Sidebar></SidebarProvider>;}

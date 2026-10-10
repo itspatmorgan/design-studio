@@ -155,6 +155,39 @@ test('utility diagnostics distinguish omitted tokens from unrelated text', async
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('upstream semantic aliases preserve utilities in other systems regardless of order', async () => {
+  const { themeInventory, themeAdapter, scopeThemeUtilities } = await import('./tailwind-theme.js');
+  const { themeUsageProblems } = await import('./theme-usage.js');
+  const { compile } = await import('tailwindcss');
+  const dir = temporary();
+  try {
+    const file = write(dir, 'view.tsx', '<div className="bg-primary text-primary-foreground" />');
+    const plain = { role: 'prototype', styling: 'tailwind', themeClass: 'plain-theme', inventory: themeInventory('.plain-theme { --primary: #123; --primary-foreground: #fff; }', 'plain-theme') };
+    const imported = { role: 'prototype', styling: 'tailwind', themeClass: 'imported-theme', inventory: themeInventory('.imported-theme { --primary: #456; --primary-foreground: #fff; --color-primary: var(--primary); --color-primary-foreground: var(--primary-foreground); }', 'imported-theme') };
+    for (const systems of [[plain, imported], [imported, plain]]) {
+      assert.deepEqual(await themeUsageProblems(systems, () => [file]), []);
+      const compiler = await compile(themeAdapter(systems) + '\n@layer utilities { @tailwind utilities; }');
+      const scoped = scopeThemeUtilities(compiler.build(['bg-primary', 'text-primary-foreground']), systems);
+      const plainScope = (await import('postcss')).default.parse(scoped).nodes.find(node => node.type === 'atrule' && node.name === 'layer' && node.params === 'utilities').nodes.find(node => node.params.startsWith('(.plain-theme)'));
+      assert.match(plainScope.toString(), /\.bg-primary/);
+      assert.match(plainScope.toString(), /\.text-primary-foreground/);
+    }
+  } finally { fs.rmSync(dir, {recursive:true,force:true}); }
+});
+
+test('group and peer markers do not inherit another utility request', async () => {
+  const {themeInventory} = await import('./tailwind-theme.js');
+  const {themeUsageProblems} = await import('./theme-usage.js');
+  const dir = temporary();
+  try {
+    const marker = write(dir, 'marker.tsx', '<input className="peer group/demo" />');
+    const styled = write(dir, 'styled.tsx', '<div className="peer-data-[variant=inset]:rounded-xl group-hover/demo:shadow-lg" />');
+    const plain = {themeClass:'plain-theme',styling:'tailwind',inventory:themeInventory('.plain-theme {}','plain-theme')};
+    const imported = {themeClass:'imported-theme',styling:'tailwind',inventory:themeInventory('.imported-theme { --radius-xl: 1rem; --shadow-lg: 0 4px black; }','imported-theme')};
+    assert.deepEqual(await themeUsageProblems([plain,imported], system=>system===plain?[marker]:[styled]), []);
+  } finally {fs.rmSync(dir,{recursive:true,force:true});}
+});
+
 test('module implementations use supported platform entries and cannot reach private shell code', async () => {
   const { modulePlatformProblem } = await import('../../src/platform/core/modules/boundaries.ts');
   const module = 'src/modules/research/app.tsx';

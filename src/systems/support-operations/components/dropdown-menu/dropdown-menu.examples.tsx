@@ -1,0 +1,4 @@
+import {DropdownMenu,DropdownMenuTrigger,DropdownMenuContent,DropdownMenuGroup,DropdownMenuRadioGroup,DropdownMenuRadioItem,DropdownMenuLabel} from '@/systems/support-operations/components/dropdown-menu';
+import {Button} from '@/systems/support-operations/components/button';
+import {useState} from 'react';
+export function Queue(){const [queue,setQueue]=useState('All queues');return <DropdownMenu><DropdownMenuTrigger render={<Button variant="outline"/>}>{queue}</DropdownMenuTrigger><DropdownMenuContent><DropdownMenuGroup><DropdownMenuLabel>Queue</DropdownMenuLabel><DropdownMenuRadioGroup value={queue} onValueChange={setQueue}>{['All queues','Product','Billing'].map(value=><DropdownMenuRadioItem value={value} key={value}>{value}</DropdownMenuRadioItem>)}</DropdownMenuRadioGroup></DropdownMenuGroup></DropdownMenuContent></DropdownMenu>;}

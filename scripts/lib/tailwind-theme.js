@@ -32,7 +32,15 @@ export function utilityTokens(base) {
   const tokens = new Map();
   for (const [name, value] of base) {
     if (semantic.test(name.slice(2))) tokens.set(`--color-${name.slice(2)}`, { ref: name, value });
-    else if (themeName.test(name)) tokens.set(name, { ref: name, value });
+    else if (themeName.test(name)) {
+      // Upstream @theme aliases must keep the canonical semantic dependency.
+      // Otherwise an imported system can make utilities in every other system
+      // depend on an alias they intentionally do not declare.
+      const alias = value.match(/^var\((--[\w-]+)\)$/)?.[1];
+      if (alias && semantic.test(alias.slice(2)) && name === `--color-${alias.slice(2)}` && base.has(alias)) {
+        tokens.set(name, { ref: alias, value: base.get(alias) });
+      } else tokens.set(name, { ref: name, value });
+    }
   }
   return tokens;
 }
