@@ -61,6 +61,8 @@ Managed creation and installation register the system and maintainer entry. Set 
 
 Review representative components and pop-ups in every supported color mode. Verify that a single-mode system keeps its mode when Studio toggles. Follow [working context](../../../../platform/context/working-in-studio.md) for build and save requirements after migration.
 
+After completing the person's requested customization of an example system, set `overview.starter: false` in its `intro.tsx` and revise the summary to describe the customized system. This clears the example banner for everyone. Do not clear it just because the person opened or copied a setup prompt, or while assessment or customization is incomplete. Preserve any curation summary and saved decisions.
+
 Report source provenance, adaptations, the default system, verified prototype URL, and missing input. Return that prototype to initialization for reuse.
 
 For imported product code, distinguish verified API, theme, and behavior fidelity from unresolved differences. A passing build alone does not establish equivalence with production.

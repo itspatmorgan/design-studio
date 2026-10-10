@@ -9,7 +9,7 @@ export default function SystemStarterNotice({ system, label, canCustomize }: {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const prompt = `Help me customize “${label}” using its existing foundation. Ask what I want to change or add, then show me the result in Studio.\n\nUse the setup-design-system skill for system “${system}”. Preserve existing prototypes as you adapt the system.`;
+  const prompt = `Help me customize “${label}” using its existing foundation. Ask what I want to change or add, then show me the result in Studio. Clear the example banner when the customization is complete.\n\nUse the setup-design-system skill for system “${system}”. Preserve existing prototypes as you adapt the system.`;
   async function copy() {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); setError(''); }
     catch { setError('Could not copy. Select the prompt and paste it into your agent’s chat.'); }
