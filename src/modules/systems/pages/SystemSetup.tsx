@@ -38,7 +38,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
       <p className="text-sm leading-6">{curation.summary}</p>
       {sources.length > 0 && <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">{sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">{source.label}<ArrowUpRight className="size-3" aria-hidden /></a>)}</div>}
       {review.length > 0 || prototype ? <div className="mt-5 space-y-2"><p className="text-xs font-medium text-muted-foreground">Review in Studio</p><div className="flex flex-wrap gap-2">{review.map(item => <Button key={item.path} variant="outline" size="sm" render={<Link to={(systemPath(system) + '/' + item.path) as never} />}>{item.label}<ArrowUpRight className="size-3" aria-hidden /></Button>)}{prototype && <Button variant="outline" size="sm" render={<Link {...prototypeLink(prototype)} />}>Try {prototype.title}<ArrowUpRight className="size-3" aria-hidden /></Button>}</div></div> : null}
-      <div className="mt-5 border-t border-border pt-4"><p className="mb-1 text-xs font-medium text-muted-foreground">Next with your agent</p><p className="text-sm leading-6">{curation.nextStep}</p></div>
+      <div className="mt-5 pt-4"><p className="mb-1 text-xs font-medium text-muted-foreground">Next with your agent</p><p className="text-sm leading-6">{curation.nextStep}</p></div>
     </> : <>
       <Tabs value={path} onValueChange={value => setPath(value as typeof path)} className="gap-5">
         <div><h3 className="mb-3 text-sm font-semibold">1. Choose your starting point</h3>
@@ -48,7 +48,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
             <TabsTrigger value="import">Your React system</TabsTrigger>
           </TabsList>
         </div>
-        {(['shadcn', 'untitled', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4 border-t border-border pt-5">
+        {(['shadcn', 'untitled', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4 pt-5">
           <h3 className="text-sm font-semibold">2. {id === 'shadcn' ? 'Choose a shadcn preset' : id === 'import' ? 'Point to your existing system' : 'Describe your toolkit'}</h3>
           {id === 'shadcn' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Open shadcn’s builder, customize your system, and copy its preset. Then return here and paste it below.</p>
@@ -65,7 +65,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
         </TabsContent>)}
       </Tabs>
     </>}
-    <div className="mt-6 border-t border-border pt-5">
+    <div className="mt-6 pt-5">
       <h3 className="text-sm font-semibold">{curation ? 'Continue in your agent chat' : '3. Copy and send your prompt'}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat and send. Your agent will ask for any files it needs.'}</p>
       <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
