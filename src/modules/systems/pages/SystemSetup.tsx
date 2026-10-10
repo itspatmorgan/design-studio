@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ArrowUpRight, Copy } from 'lucide-react';
+import { ArrowUpRight, CircleHelp, Copy } from 'lucide-react';
 import { Button } from '@/systems/studio/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/studio/components/tabs';
 import { Textarea } from '@/systems/studio/components/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import presetHelpImage from '../assets/shadcn-preset-help.png';
 import { Input } from '@/systems/studio/components/input';
 import type { SystemCuration, PrototypeInfo } from '@/platform/app/data/types';
 import { prototypeLink } from '@/platform/app/data/manifest';
@@ -44,7 +46,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
       <div className="mt-5 pt-4"><p className="mb-1 text-xs font-medium text-muted-foreground">Next with your agent</p><p className="text-sm leading-6">{curation.nextStep}</p></div>
     </section> : <>
       <Tabs value={path} onValueChange={value => setPath(value as typeof path)} className="gap-4">
-        <section className={block} aria-labelledby="system-starting-point"><h2 id="system-starting-point" className={heading}>1. Starting point</h2>
+        <section className={block} aria-labelledby="system-starting-point"><h2 id="system-starting-point" className={heading}>1. Choose your system foundation</h2>
           <TabsList aria-label="System starting point" className="max-w-full overflow-x-auto">
             <TabsTrigger value="shadcn">shadcn/ui</TabsTrigger>
             <TabsTrigger value="untitled">Untitled UI</TabsTrigger>
@@ -55,9 +57,16 @@ export default function SystemSetup({ system, label, curation, review, prototype
           <h2 id="system-choices" className={heading}>2. Your choices</h2>
         {(['shadcn', 'untitled', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
           {id === 'shadcn' ? <>
-            <p className="text-sm leading-6 text-muted-foreground">Open shadcn’s builder, customize your system, and copy its preset. Then return here and paste it below.</p>
+            <p className="text-sm leading-6 text-muted-foreground">Customize in shadcn’s builder, then bring your preset back here.</p>
             <Button variant="outline" size="sm" render={<a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" />}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></Button>
-            <div><label htmlFor="curation-preset" className="mb-2 block text-sm font-medium">Paste your preset here</label><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
+            <div><div className="mb-2 flex items-center gap-2"><label htmlFor="curation-preset" className="text-sm font-medium">Paste your preset here</label>
+              <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Where to find your shadcn preset" />}><CircleHelp className="size-4" aria-hidden /></TooltipTrigger>
+                <TooltipContent side="top" className="block max-w-64 p-3">
+                  <p className="mb-3 leading-5">Find <strong>--preset</strong> at the bottom of shadcn’s sidebar. Paste that code here.</p>
+                  <img src={presetHelpImage} width={192} height={194} alt="Bottom of shadcn’s builder sidebar showing the --preset b0 control above Open Preset and Shuffle." className="mx-auto rounded-md" />
+                </TooltipContent>
+              </Tooltip>
+            </div><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
           </> : id === 'untitled' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Choose components from Untitled UI, then describe what you need below.</p>
             <Button variant="outline" size="sm" render={<a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" />}>Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></Button>
@@ -68,19 +77,17 @@ export default function SystemSetup({ system, label, curation, review, prototype
           </div>
           {id !== 'import' && <div>
             <label htmlFor={'curation-components-' + id} className="mb-2 block text-sm font-medium">Any components you already know you want? <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <Input id={'curation-components-' + id} value={components[id]} placeholder="For example: Buttons, a data table, and a date picker" onChange={event => setComponents(previous => ({ ...previous, [id]: event.target.value }))} />
+            <Textarea rows={3} id={'curation-components-' + id} value={components[id]} placeholder="For example: Buttons, a data table, and a date picker" onChange={event => setComponents(previous => ({ ...previous, [id]: event.target.value }))} />
           </div>}
         </TabsContent>)}
         </section>
       </Tabs>
     </>}
     <section className={block} aria-labelledby="system-prompt">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 id="system-prompt" className="text-lg font-semibold tracking-tight">{curation ? 'Your continuation prompt' : '3. Your prompt'}</h2>
-        <Button variant="outline" size="sm" onClick={() => void copy()}><Copy className="size-3" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
-      </div>
+      <h2 id="system-prompt" className={heading}>{curation ? 'Your continuation prompt' : '3. Your prompt'}</h2>
       <p className="mb-4 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat and send. Your agent will ask for any files it needs.'}</p>
       <p className="select-text whitespace-pre-wrap rounded-lg border border-border bg-background p-4 text-sm leading-6">{prompt}</p>
+      <Button className="mt-4" onClick={() => void copy()}><Copy className="size-4" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
       <p role="status" className="mt-2 text-xs text-muted-foreground">{error || (copied ? 'Paste into your agent’s chat and send to continue.' : '')}</p>
     </section>
   </div>;
