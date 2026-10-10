@@ -70,9 +70,9 @@ Try representative screens before relying on an imported system. Components tied
 
 To start in the interface, select **New system**. Overview offers **Curate from shadcn** and **Bring your own**. Creating systems requires local Admin access.
 
-Choose a starting point, describe your inputs, then select **Copy prompt**. Paste the prompt into your agent’s chat and send it to begin. For a curated system, answer **What do you want to build?** to help the agent choose the first components. You can also name any components you already want. The agent asks for files in chat as needed. For shadcn, bring a preset from its builder, a DESIGN.md link or file path, or both. DESIGN.md provides your design direction; the agent translates it into the theme and component styling. The agent saves your direction on Overview, integrates the selected material, and opens foundations and component examples for review. Overview keeps the next action and a link to your representative prototype as the system grows.
+Choose a starting point, describe your inputs, then select **Copy prompt**. Paste the prompt into your agent’s chat and send it to begin. For a curated system, answer **What do you want to build?** to help the agent choose the first components. You can also name any components you already want. The agent asks for files in chat as needed. For shadcn, bring a preset from its builder, a DESIGN.md link or file path, or both. DESIGN.md provides your design direction; the agent translates it into the theme and component styling. The agent saves your decisions in system Context, integrates the selected material, and opens foundations and component examples for review. Follow setup in your agent’s chat. Overview shows the growing toolkit and its prototypes.
 
-For existing code, give your agent an accessible React repository, folder, or package. It assesses compatibility and proposes stages before importing. You can resume from the saved assessment on Overview. Populated systems also offer **Curate or bring in a system**.
+For existing code, give your agent an accessible React repository, folder, or package. It assesses compatibility and proposes stages before importing. You can resume from the saved assessment in system Context. Populated systems that have not started setup also offer **Curate or bring in a system**.
 
 ## How do I organize artifacts?
 

@@ -43,7 +43,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
   if (blank && spec.status === 'active' && import.meta.env.DEV) return <>
     <PageHeader title={sys.label} description="This system is empty. Choose how you want to build it." />
     <SystemReferenceNotice system={system} />
-    <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview?.curation} />
+    <SystemSetup key={system} system={system} label={sys.label} />
   </>;
 
   return <>
@@ -56,8 +56,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
     </Alert>}
     {platform && <p className="mb-6 text-[13px] text-muted-foreground">Required application system</p>}
     {sys.overview?.starter && <SystemStarterNotice key={system} system={system} label={sys.label} canCustomize={!platform && spec.status === 'active' && import.meta.env.DEV} />}
-    {!platform && spec.status === 'active' && import.meta.env.DEV && (sys.overview?.curation ?
-      <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview.curation} /> : !sys.overview?.starter && <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Curate or bring in a system</summary><div className="mt-4"><SystemSetup system={system} label={sys.label} /></div></details>)}
+    {!platform && spec.status === 'active' && import.meta.env.DEV && !sys.overview?.curation && !sys.overview?.starter && <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Curate or bring in a system</summary><div className="mt-4"><SystemSetup system={system} label={sys.label} /></div></details>}
 
     <div className="mb-4 grid gap-4">
       <section className="min-w-0 rounded-xl border border-border/50 bg-muted/40 p-6" aria-labelledby="system-guidance">

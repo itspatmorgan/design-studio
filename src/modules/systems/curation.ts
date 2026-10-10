@@ -1,11 +1,3 @@
-export const curationStages = [
-  { id: 'direction', label: 'Direction' },
-  { id: 'foundations', label: 'Foundations' },
-  { id: 'components', label: 'Components' },
-  { id: 'prototype', label: 'Try a prototype' },
-  { id: 'ready', label: 'Refine' },
-] as const;
-
 export function sourceUrl(value: string): string | null {
   try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? url.href : null; }
   catch { return null; }

@@ -1,35 +1,16 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, Check, CircleHelp, Copy } from 'lucide-react';
+import { ArrowUpRight, CircleHelp, Copy } from 'lucide-react';
 import { Button, buttonVariants } from '@/systems/studio/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/studio/components/tabs';
 import { Textarea } from '@/systems/studio/components/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
 import presetHelpImage from '../assets/shadcn-preset-help.png';
 import { Input } from '@/systems/studio/components/input';
-import type { SystemCuration } from '@/platform/app/data/types';
-import { curationPrompt, curationStages } from '../curation';
+import { curationPrompt } from '../curation';
 
-type Props = {
-  system: string; label: string; curation?: SystemCuration;
-};
+type Props = { system: string; label: string };
 
-export default function SystemSetup({ system, label, curation }: Props) {
-  if (curation) return <section className="mb-6 rounded-xl border border-border/50 bg-muted/40 p-4" aria-labelledby="system-curation">
-    <h2 id="system-curation" className="mb-3 text-xs font-medium text-muted-foreground">System setup</h2>
-    {curation.stage === 'assessment' ? <p className="text-sm font-medium">Assessing existing React code</p> : <ol className="flex flex-wrap gap-x-6 gap-y-3" aria-label="Setup progress">{curationStages.map((stage, index) => {
-      const currentIndex = curationStages.findIndex(item => item.id === curation.stage);
-      const complete = index < currentIndex;
-      const current = stage.id === curation.stage;
-      return <li key={stage.id} aria-current={current ? 'step' : undefined} className={`flex items-center gap-2 text-xs ${current ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-        <span aria-hidden className={`flex size-5 items-center justify-center rounded-full ${current ? 'bg-primary text-primary-foreground' : complete ? 'bg-foreground/10 text-foreground' : 'border border-border'}`}>{complete ? <Check className="size-3" /> : index + 1}</span>
-        {stage.label}<span className="sr-only">{complete ? ', completed' : current ? ', current step' : ', upcoming'}</span>
-      </li>;
-    })}</ol>}
-  </section>;
-  return <SetupForm system={system} label={label} />;
-}
-
-function SetupForm({ system, label }: Omit<Props, 'curation'>) {
+export default function SystemSetup({ system, label }: Props) {
   const [path, setPath] = useState<'shadcn' | 'import'>('shadcn');
   const [preset, setPreset] = useState('');
   const [designMd, setDesignMd] = useState('');
