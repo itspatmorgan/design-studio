@@ -26,6 +26,6 @@ The system contract defines file names, exports, and documentation validation. D
 
 ## Completion
 
-Run `pnpm build`. Inspect `/systems/<system>/<component>` and the examples in supported color modes.
+Run `pnpm build`. Inspect `/systems/<system-id>/components/<component>` using the system's permanent ID, and review examples in supported color modes.
 
 Report completed files and any missing component behavior or source material. Do not claim completion while examples contain placeholders.
