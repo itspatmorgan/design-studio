@@ -1,6 +1,19 @@
 /* shadcn 4.21.0, preset b1Q4Tg. Scoped to Curation Test. */
 @import "@fontsource-variable/manrope";
 .curation-test-theme {
+  --spacing-3_5: 0.875rem;
+  --spacing-7: 1.75rem;
+  --spacing-9: 2.25rem;
+  --spacing-36: 9rem;
+  --leading-snug: 1.375;
+  --color-black: #000000;
+  --blur-xs: 4px;
+  --container-sm: 24rem;
+  --container-xl: 36rem;
+  --container-5xl: 64rem;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
 
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);

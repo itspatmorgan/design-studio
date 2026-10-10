@@ -13,4 +13,4 @@ Add context and skills only when needed. This system’s UI reads its original C
 
 ## Current foundations
 
-See [saved curation decisions](context/curation.md). The shadcn preset uses Base UI, Nova, blue accents, Manrope, and small corners. Manrope is provided by `@fontsource-variable/manrope`; icons will use the installed `lucide-react` package. Foundations are awaiting review.
+See [saved curation decisions](context/curation.md). The shadcn preset uses Base UI, Nova, blue accents, Manrope, and small corners. Manrope is provided by `@fontsource-variable/manrope`; icons will use the installed `lucide-react` package. Foundations were accepted. The seven-component kit and support dashboard are awaiting review.

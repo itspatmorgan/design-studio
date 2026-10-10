@@ -5,11 +5,12 @@ export default {
   overview: {
     code: 'Nova with Base UI, blue accents, Manrope typography, small corners, and Lucide icons.',
     curation: {
-      stage: 'foundations',
+      stage: 'prototype',
       summary: 'Blue accents and Manrope make Curation Test distinct from Product and Marketing.',
-      nextStep: 'Review colors, typography, and corners. Then add the first support-dashboard components.',
+      nextStep: 'Try the support dashboard: search, filter by status, and resolve a ticket. Review the kit before refining it.',
       sources: [{ label: 'Chosen shadcn preset', url: 'https://ui.shadcn.com/create?preset=b1Q4Tg' }],
       record: 'curation.md',
+      prototypeId: 'd4dh23dxhd1pmsjd',
     },
   },
 } satisfies SystemIntro;
