@@ -70,7 +70,7 @@ Try representative screens before relying on an imported system. Components tied
 
 To start in the interface, select **New system**. Overview offers **shadcn/ui**, **Untitled UI**, and **Your React system**. Creating systems requires local Admin access.
 
-For shadcn, explore its builder and bring a preset code or link back to the setup instructions. You can also give your agent a design.md or brand assets. The agent saves your direction on Overview, integrates the selected material, and opens foundations and component examples for review. Overview keeps the next action and a link to your representative prototype as the system grows.
+Choose a starting point, describe your inputs, then select **Copy setup prompt**. Paste the prompt into your agent’s chat and send it to begin. Add links or file paths in **Goals and additional materials**. Attach files in the chat when you send the prompt. For shadcn, explore its builder and paste a preset code or link into the preset field. The agent saves your direction on Overview, integrates the selected material, and opens foundations and component examples for review. Overview keeps the next action and a link to your representative prototype as the system grows.
 
 For existing code, give your agent an accessible React repository, folder, or package. It assesses compatibility and proposes stages before importing. You can resume from the saved assessment on Overview. Populated systems also offer **Curate or bring in a system**.
 

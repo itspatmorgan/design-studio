@@ -7,7 +7,7 @@ description: Overview as the home base for directing, reviewing, and resuming sy
 
 Local active prototype systems offer setup from Overview, even after content arrives. Empty systems show the starting choices directly. Populated systems without a saved curation summary offer **Curate or bring in a system**. Studio and archived systems have no setup controls. Published sites omit the curation panel.
 
-The shadcn starting path links to its upstream builder. An optional preset code or builder link is included in copied instructions. This field does not save or install anything. Untitled UI retains an agent-assisted curation path. **Your React system** starts an assessment, not an import.
+Setup is a three-step prompt handoff: choose a starting point with Studio Tabs, describe inputs, then copy and send the visible prompt in the agent chat. Optional goals and materials are kept separately for each starting point while the page is open. Links and file paths can be entered here; files are attached in the agent chat. These draft inputs are not persisted. The shadcn starting path links to its upstream builder. An optional preset code or builder link is included in copied instructions. This field does not save or install anything. Untitled UI retains an agent-assisted curation path. **Your React system** starts an assessment, not an import.
 
 Save the agreed direction in `intro.tsx` under `overview.curation`. The `SystemCuration` type defines its fields. This is an authored summary, not a live agent activity feed. Content counts do not advance its stage or establish readiness.
 
