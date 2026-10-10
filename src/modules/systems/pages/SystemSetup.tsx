@@ -40,7 +40,6 @@ export default function SystemSetup({ system, label, curation, review, prototype
       {review.length > 0 || prototype ? <div className="mt-5 space-y-2"><p className="text-xs font-medium text-muted-foreground">Review in Studio</p><div className="flex flex-wrap gap-2">{review.map(item => <Button key={item.path} variant="outline" size="sm" render={<Link to={(systemPath(system) + '/' + item.path) as never} />}>{item.label}<ArrowUpRight className="size-3" aria-hidden /></Button>)}{prototype && <Button variant="outline" size="sm" render={<Link {...prototypeLink(prototype)} />}>Try {prototype.title}<ArrowUpRight className="size-3" aria-hidden /></Button>}</div></div> : null}
       <div className="mt-5 border-t border-border pt-4"><p className="mb-1 text-xs font-medium text-muted-foreground">Next with your agent</p><p className="text-sm leading-6">{curation.nextStep}</p></div>
     </> : <>
-      <p className="mb-6 text-sm leading-6 text-muted-foreground">Use these choices to prepare a prompt, then paste it into your agent’s chat to start setup. Your agent builds the system with you. Return to Overview to review its work.</p>
       <Tabs value={path} onValueChange={value => setPath(value as typeof path)} className="gap-5">
         <div><h3 className="mb-3 text-sm font-semibold">1. Choose your starting point</h3>
           <TabsList aria-label="System starting point" className="max-w-full overflow-x-auto">
@@ -50,25 +49,24 @@ export default function SystemSetup({ system, label, curation, review, prototype
           </TabsList>
         </div>
         {(['shadcn', 'untitled', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4 border-t border-border pt-5">
-          <h3 className="text-sm font-semibold">2. {id === 'import' ? 'Point to your existing system' : 'Describe your starting direction'}</h3>
+          <h3 className="text-sm font-semibold">2. {id === 'shadcn' ? 'Choose a shadcn preset' : id === 'import' ? 'Point to your existing system' : 'Describe your toolkit'}</h3>
           {id === 'shadcn' ? <>
-            <p className="text-sm leading-6 text-muted-foreground">Explore themes, fonts, icons, and styles in shadcn’s builder, then paste your preset below. You can leave it blank and ask your agent to recommend a direction.</p>
+            <p className="text-sm leading-6 text-muted-foreground">Open shadcn’s builder, customize your system, and copy its preset. Then return here and paste it below.</p>
             <Button variant="outline" size="sm" render={<a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" />}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></Button>
-            <div><label htmlFor="curation-preset" className="mb-2 block text-sm font-medium">Preset code or builder link <span className="font-normal text-muted-foreground">(optional)</span></label><Input id="curation-preset" value={preset} placeholder="Paste your choice from shadcn" onChange={event => setPreset(event.target.value)} /></div>
+            <div><label htmlFor="curation-preset" className="mb-2 block text-sm font-medium">Paste your preset here</label><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
           </> : id === 'untitled' ? <>
-            <p className="text-sm leading-6 text-muted-foreground">Describe what you want to build and the components you need. Your agent will review the theme, assets, and access to licensed material with you.</p>
+            <p className="text-sm leading-6 text-muted-foreground">Choose components from Untitled UI, then describe what you need below.</p>
             <a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></a>
-          </> : <p className="text-sm leading-6 text-muted-foreground">Start with an assessment of your React code. Your agent will identify what can be reused and propose a staged import. Theme and assets can arrive before components.</p>}
-          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository, files, and goals' : 'Goals and additional materials'} <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Repository URL or local folder, theme files, usage examples, and what to bring in first' : 'What you want to build, a design.md path, fonts, icons, or brand guidelines'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
-            <p className="mt-2 text-xs leading-5 text-muted-foreground">These notes go into your prompt. Add links or file paths here. Attach any files directly in the agent chat when you send it.</p>
+          </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
+          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'Additional context'} <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Repository URL or local folder, theme files, usage examples, and what to bring in first' : 'Goals, design.md, fonts, or brand assets — add notes, links, or file paths'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
           </div>
         </TabsContent>)}
       </Tabs>
     </>}
     <div className="mt-6 border-t border-border pt-5">
       <h3 className="text-sm font-semibold">{curation ? 'Continue in your agent chat' : '3. Copy and send your prompt'}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this prompt into your agent’s chat to take the next step.' : 'The prompt below includes your choices. Copy it into your agent’s chat, attach any files, and send it to begin.'}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat, attach any files, and send.'}</p>
       <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h4 className="text-sm font-medium">{curation ? 'Your continuation prompt' : 'Your setup prompt'}</h4>
