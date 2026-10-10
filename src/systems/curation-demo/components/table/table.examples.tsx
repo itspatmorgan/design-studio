@@ -1,0 +1,2 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from './table';
+export const Tickets = () => <Table><TableCaption>Recent support requests</TableCaption><TableHeader><TableRow><TableHead>Ticket</TableHead><TableHead>Status</TableHead></TableRow></TableHeader><TableBody><TableRow><TableCell>Login issue</TableCell><TableCell>Open</TableCell></TableRow><TableRow><TableCell>Invoice question</TableCell><TableCell>Pending</TableCell></TableRow></TableBody></Table>;

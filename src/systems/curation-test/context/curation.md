@@ -41,4 +41,4 @@ Representative prototype: Curation Support Dashboard, permanent ID d4dh23dxhd1pm
 
 ## Next review
 
-Try the dashboard and component examples in Studio. Review the kit and prototype with the person before marking the system ready. Keep Overview at the prototype stage until that review is complete.
+Try the dashboard and component examples in Studio. Review the kit and prototype with the person before marking the system ready. Keep the saved curation stage at prototype until that review is complete.

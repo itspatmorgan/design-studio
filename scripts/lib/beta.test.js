@@ -288,12 +288,13 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
     const systemFile = path.join(dir, 'src/systems/product/system.ts');
     const { editStudioConfig } = await import('./studio-setup.js');
     fs.writeFileSync(systemFile, editStudioConfig(fs.readFileSync(systemFile, 'utf8'), { status: 'active' }));
-    runGit('add', 'studio.config.ts', 'contributors/sam.json', 'src/systems/product/system.ts', 'src/systems/marketing/system.ts', 'src/systems/studio/system.ts'); runGit('commit', '-qm', 'Trusted grants');
+    runGit('add', 'studio.config.ts', 'contributors/sam.json', ...config.systems.map((key) => `src/systems/${key}/system.ts`)); runGit('commit', '-qm', 'Trusted grants');
     const granted = runGit('rev-parse', 'HEAD');
     fs.writeFileSync(path.join(dir, 'src/systems/product/scope-fixture.md'), '# Assigned system');
     runGit('add', 'src/systems/product/scope-fixture.md'); runGit('commit', '-qm', 'Assigned system work');
     const check = (before, actor = 'sam-fixture', review = false) => spawnSync(process.execPath, ['scripts/check/check-scope.js', '--ci', before, runGit('rev-parse', 'HEAD'), ...(review ? ['--review'] : [])], { cwd: dir, encoding: 'utf8', env: { ...process.env, STUDIO_SCOPE_ACTOR: actor, STUDIO_PLATFORM_ROLE: 'write', MISE_TRUSTED_CONFIG_PATHS: dir } });
-    assert.equal(check(granted).status, 0, 'Assigned maintainer can push system work');
+    const maintainerCheck = check(granted);
+    assert.equal(maintainerCheck.status, 0, 'Assigned maintainer can push system work\n' + maintainerCheck.stderr + maintainerCheck.stdout);
     const beforeImpersonation = runGit('rev-parse', 'HEAD');
     const profileFile = path.join(dir, 'contributors/patrick.json');
     const profile = JSON.parse(fs.readFileSync(profileFile));
