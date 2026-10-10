@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ArrowUpRight, Copy, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Copy } from 'lucide-react';
 import { Button } from '@/systems/studio/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/studio/components/tabs';
 import { Textarea } from '@/systems/studio/components/textarea';
@@ -32,8 +32,8 @@ export default function SystemSetup({ system, label, curation, review, prototype
     const url = sourceUrl(source.url);
     return url ? [{ ...source, url }] : [];
   }) ?? [];
-  return <section className="mb-6 rounded-xl border border-border bg-background p-5" aria-labelledby="system-curation">
-    <div className="mb-4 flex items-center gap-2"><Sparkles className="size-4 text-muted-foreground" aria-hidden /><h2 id="system-curation" className="text-lg font-semibold tracking-tight">{curation ? 'Build your system' : 'Prepare your setup prompt'}</h2></div>
+  return <section className="mb-6 min-w-0 rounded-xl border border-border/50 bg-muted/40 p-6" aria-labelledby="system-curation">
+    <h2 id="system-curation" className="mb-4 text-lg font-semibold tracking-tight">{curation ? 'Build your system' : 'Prepare your setup prompt'}</h2>
     {curation ? <>
       {curation.stage === 'assessment' ? <p className="mb-3 text-xs font-medium text-muted-foreground">Assessing existing React code</p> : <ol className="mb-5 flex flex-wrap gap-x-5 gap-y-2" aria-label="Curation stages">{curationStages.map(stage => <li key={stage.id} aria-current={stage.id === curation.stage ? 'step' : undefined} className={`flex items-center gap-2 text-xs ${stage.id === curation.stage ? 'font-medium text-foreground' : 'text-muted-foreground'}`}><span aria-hidden className={`size-1.5 rounded-full ${stage.id === curation.stage ? 'bg-foreground' : 'bg-muted-foreground/40'}`} />{stage.label}</li>)}</ol>}
       <p className="text-sm leading-6">{curation.summary}</p>
@@ -73,7 +73,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
     <div className="mt-6 pt-5">
       <h3 className="text-sm font-semibold">{curation ? 'Continue in your agent chat' : '3. Copy and send your prompt'}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat and send. Your agent will ask for any files it needs.'}</p>
-      <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
+      <div className="mt-4 overflow-hidden rounded-lg border border-border bg-background">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h4 className="text-sm font-medium">{curation ? 'Your continuation prompt' : 'Your setup prompt'}</h4>
           <Button variant="outline" size="sm" onClick={() => void copy()}><Copy className="size-3" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
