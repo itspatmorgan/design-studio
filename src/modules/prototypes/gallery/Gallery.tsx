@@ -1,3 +1,4 @@
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/systems/studio/components/select';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/systems/studio/components/input-group';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon, CursorInWindowIcon, Search01Icon } from '@hugeicons/core-free-icons';
@@ -52,6 +53,18 @@ function SearchBox({ value, system }: { value: string; system?: string }) {
   );
 }
 
+function SystemFilter({ value, search }: { value?: string; search: string }) {
+  const navigate = useNavigate();
+  const items = [{ value: '__all', label: 'All systems' }, ...Object.entries(PROTOTYPE_SYSTEMS).map(([value, spec]) => ({ value, label: spec.label }))];
+  if (value && !PROTOTYPE_SYSTEMS[value]) items.push({ value, label: value });
+  return <Select items={items} value={value ?? '__all'} onValueChange={next => {
+    if (next) void navigate({ to: '.', search: { q: search || undefined, system: next === '__all' ? undefined : next } as never });
+  }}>
+    <SelectTrigger aria-label="Filter by system" className="max-w-48"><SelectValue className="truncate" /></SelectTrigger>
+    <SelectContent>{items.map(item => <SelectItem key={item.value} value={item.value}>{item.label}</SelectItem>)}</SelectContent>
+  </Select>;
+}
+
 const matches = (p: PrototypeInfo, q: string) =>
   [p.title, p.contributor, p.contributorKey, p.id].some((f) => f?.toLowerCase().includes(q));
 
@@ -60,7 +73,6 @@ export default function Gallery() {
   const filters = useSearch({ strict: false }) as { q?: string; system?: string };
   const search = filters.q ?? '';
   const system = filters.system;
-  const systemLabel = system ? (PROTOTYPE_SYSTEMS[system]?.label ?? system) : undefined;
   const q = search.trim().toLowerCase();
   // Only while the app runs locally, for contributors: the others can't make one.
   const me = useMe();
@@ -108,7 +120,7 @@ export default function Gallery() {
     ) : (
       <div className="py-16 text-center">
         <p className="mb-2 text-lg font-semibold text-foreground">No matches</p>
-        <p className="mb-4 text-sm text-muted-foreground">Try a different search.</p>
+        <p className="mb-4 text-sm text-muted-foreground">Try a different search or system.</p>
         <Link to={'/prototypes' as never} className="text-sm text-primary hover:underline">View all prototypes</Link>
       </div>
     );
@@ -119,19 +131,16 @@ export default function Gallery() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Prototypes</h1>
         {/* The subtitle's line is as tall as the controls (32px), so all of them centre on the same line. */}
-        <div className="mt-0.5 flex items-center justify-between gap-4">
+        <div className="mt-0.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <p className="min-w-0 truncate text-sm leading-8 text-muted-foreground">Explore ideas, build interactive prototypes, and document your thinking.</p>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {!empty && <SearchBox value={search} system={system} />}
+            <SystemFilter value={system} search={search} />
             {!empty && <ViewToggle />}
             <NewPrototypeButton />
           </div>
         </div>
       </header>
-      {system && <div className="mb-4 flex items-center gap-3 text-sm">
-        <span className="text-muted-foreground">System: {systemLabel}</span>
-        <Link to={'/prototypes' as never} search={{ q: search || undefined } as never} className="hover:underline">Clear system filter</Link>
-      </div>}
       {body}
     </main>
   );
