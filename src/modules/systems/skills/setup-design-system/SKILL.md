@@ -22,7 +22,7 @@ Use supplied decisions. Do not present the placeholder's styles as the person's 
 ## Choose the path
 
 - Keep the starter while exploring, adapt it, or create a separate system according to the person's choice. Sample removal is a separate decision.
-- For a curated library kit, follow [Curate from libraries](references/curated-libraries.md). Use shadcn as the primary starting point and Untitled UI when it fits the intended work.
+- For a curated library kit, follow [Curate from libraries](references/curated-libraries.md). Use shadcn as the curated starting point. Other React libraries can be assessed through the existing-system path.
 - For existing React code, follow [Assess an existing system](references/existing-react-system.md) before importing. An assessment request alone does not authorize migration.
 
 Describe the proposed components, theme, assets, dependencies, and known gaps in plain language. Apply already-authorized choices. Ask about unresolved scope or fidelity compromises before dependent work.

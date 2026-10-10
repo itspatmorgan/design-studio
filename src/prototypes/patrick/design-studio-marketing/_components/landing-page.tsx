@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
-import { ArrowUpRight } from '@untitledui/icons';
-import { Button } from '@/systems/marketing/components/button';
-import { Tabs } from '@/systems/marketing/components/tabs';
+import { ArrowUpRight } from 'lucide-react';
+import { buttonVariants } from '@/systems/marketing/components/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/marketing/components/tabs';
 import { ArtifactPreview, StudioPreview } from './demo-previews';
 import { StudioAtmosphere } from './studio-atmosphere';
 import { StudioFoundation } from './studio-foundation';
 import { StudioOwnership } from './studio-ownership';
 import { WebsiteArtifactPreview } from './website-artifacts';
-import agentMarkdown from './agent.txt?raw';
+import agentMarkdown from './agent';
 import styles from './landing.module.css';
 
 const repository = 'https://github.com/itspatmorgan/design-studio-starter';
@@ -22,7 +22,7 @@ function StudioMark({ small = false }: { small?: boolean }) {
 }
 function ResourceLink({ href, children }: { href: string; children: ReactNode }) {
   const external = href.startsWith('https://');
-  return <Button href={href} color="link-gray" size="sm" iconTrailing={ArrowUpRight} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>{children}</Button>;
+  return <a href={href} className={buttonVariants({ variant: "link", size: "sm" })} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>{children}<ArrowUpRight /></a>;
 }
 export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
   const headlines = { 1: <>Your next idea.<br />Make it real.</>, 2: <>A studio for<br />what comes next.</>, 3: <>Design with intent.<br />Build with an agent.</> };
@@ -32,18 +32,18 @@ export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
             <div className={styles.heroCopy}>
             <h1 className="text-display-md font-medium tracking-tight md:text-display-lg">{headlines[version]}</h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-tertiary">{version === 3 ? "An open platform for designers and product managers who build. Turn ideas into working prototypes with an agent that understands your components, context, and design principles." : "An open-source prototype sandbox for designers and builders. Work with your coding agent, your components, and your context."}</p>
-            <div className="mt-6"><Button href="#install" size="lg">Get started</Button></div>
+            <div className="mt-6"><a href="#install" className={buttonVariants({ size: "lg" })}>Get started</a></div>
             </div>
             {version === 2 && <StudioFoundation kind="system" />}
             {version === 3 && <StudioAtmosphere />}
           </section>
           <section className="py-8 md:py-12" aria-labelledby="demo-title">
             <h2 id="demo-title" className="text-display-sm font-medium tracking-tight">{version === 1 ? 'From an idea to a working prototype.' : version === 2 ? 'Give the idea room to move.' : 'Build prototypes that connect the whole idea'}</h2>
-            <Tabs className={version === 3 ? styles.websiteGallery : "mt-6"} defaultSelectedKey={version === 2 ? 'canvas' : 'view'}>
-              <Tabs.List aria-label="Artifact examples" className={version === 3 ? styles.galleryList : undefined}>{examples.map(item => <Tabs.Item key={item.id} id={item.id}>{version === 3 ? {view: 'Interface', diagram: 'Triage flow', canvas: 'Explorations', document: 'Context'}[item.id] : item.label}</Tabs.Item>)}</Tabs.List>
-              {examples.map(item => <Tabs.Panel key={item.id} id={item.id} className={version === 3 ? styles.galleryPanel : "pt-5"}>
+            <Tabs className={version === 3 ? styles.websiteGallery : "mt-6"} defaultValue={version === 2 ? 'canvas' : 'view'}>
+              <TabsList variant="line" aria-label="Artifact examples" className={version === 3 ? styles.galleryList : undefined}>{examples.map(item => <TabsTrigger key={item.id} value={item.id}>{version === 3 ? {view: 'Interface', diagram: 'Triage flow', canvas: 'Explorations', document: 'Context'}[item.id] : item.label}</TabsTrigger>)}</TabsList>
+              {examples.map(item => <TabsContent key={item.id} value={item.id} className={version === 3 ? styles.galleryPanel : "pt-5"}>
                 <figure>{version === 1 ? <ArtifactPreview kind={item.id} /> : <WebsiteArtifactPreview kind={item.id} />}<figcaption className="mt-4 text-md text-text-secondary">{item.text}</figcaption></figure>
-              </Tabs.Panel>)}
+              </TabsContent>)}
             </Tabs>
             <p className="mt-3 text-sm text-text-tertiary">{version === 1 ? "Self-contained examples rendered in code. Try selecting and resolving feedback in the inbox." : "Try filtering and triaging feedback. The diagram, canvas, and context tell the same story."}</p>
           </section>
@@ -90,14 +90,14 @@ export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
             {version !== 3 && <figure className="mt-6">{version === 1 ? <StudioPreview /> : <StudioOwnership kind={1} />}<figcaption className="mt-3 text-sm text-text-tertiary">An example of how your prototypes and design system come together.</figcaption></figure>}
           </section>
         </main>
-        {version !== 3 && <footer className="pb-12"><p className="text-sm leading-relaxed text-text-tertiary">This marketing demo uses its own Marketing system: Geist, warm neutrals, and Untitled UI.</p><div className="mt-4 flex flex-wrap gap-6"><ResourceLink href="/systems/v4576ka1mbpbqdp1">Marketing system</ResourceLink><ResourceLink href={repository}>GitHub</ResourceLink></div></footer>}
+        {version !== 3 && <footer className="pb-12"><p className="text-sm leading-relaxed text-text-tertiary">This marketing demo uses its own Marketing system: Geist, warm neutrals, and shadcn/ui.</p><div className="mt-4 flex flex-wrap gap-6"><ResourceLink href="/systems/v4576ka1mbpbqdp1">Marketing system</ResourceLink><ResourceLink href={repository}>GitHub</ResourceLink></div></footer>}
   </>;
   const brand = <a href="#" className="flex items-center gap-3 text-lg font-semibold"><StudioMark small={version === 3} />Design Studio</a>;
   return <div className={`min-h-full bg-bg-primary font-sans text-text-primary ${version > 1 ? styles.websiteArt : ""}`}>
-    {version === 3 ? <Tabs defaultSelectedKey="human" className={styles.siteWidth}>
-      <header className="flex flex-wrap items-center justify-between gap-6 py-8">{brand}<Tabs.List aria-label="Reading mode" className={styles.modeList}><Tabs.Item id="human" className={styles.modeTab}>Human</Tabs.Item><Tabs.Item id="agent" className={styles.modeTab}>Agent</Tabs.Item></Tabs.List></header>
-      <Tabs.Panel id="human">{content}</Tabs.Panel>
-      <Tabs.Panel id="agent"><main className="pt-8 pb-16"><pre className={styles.markdown}>{agentMarkdown}</pre></main></Tabs.Panel>
+    {version === 3 ? <Tabs defaultValue="human" className={styles.siteWidth}>
+      <header className="flex flex-wrap items-center justify-between gap-6 py-8">{brand}<TabsList aria-label="Reading mode" className={styles.modeList}><TabsTrigger value="human" className={styles.modeTab}>Human</TabsTrigger><TabsTrigger value="agent" className={styles.modeTab}>Agent</TabsTrigger></TabsList></header>
+      <TabsContent value="human">{content}</TabsContent>
+      <TabsContent value="agent"><main className="pt-8 pb-16"><pre className={styles.markdown}>{agentMarkdown}</pre></main></TabsContent>
     </Tabs> : <div className="mx-auto max-w-4xl px-6"><header className="py-8">{brand}</header>{content}</div>}
   </div>;
 }

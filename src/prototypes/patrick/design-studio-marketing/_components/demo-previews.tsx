@@ -19,7 +19,7 @@ function InboxPreview() {
     </div>
     <section className={styles.feedbackDetail} aria-label="Selected feedback">
       <span className={styles.demoBadge}>{resolved ? 'Resolved' : item.status}</span><h4>{item.title}</h4><p>{item.detail}</p>
-      <Button color="secondary" onPress={() => setResolvedItems(items => resolved ? items.filter(index => index !== selected) : [...items, selected])}>{resolved ? 'Reopen feedback' : 'Mark resolved'}</Button>
+      <Button variant="outline" onClick={() => setResolvedItems(items => resolved ? items.filter(index => index !== selected) : [...items, selected])}>{resolved ? 'Reopen feedback' : 'Mark resolved'}</Button>
       <p className={styles.demoMuted} role="status">{resolved ? 'Resolved in this demo.' : 'Select an idea and try changing its status.'}</p>
     </section>
   </div>;

@@ -9,6 +9,6 @@ export default {
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
   docs: 'warn',
-  origin: null,
+  origin: 'shadcn',
   studioId: "v4576ka1mbpbqdp1",
 } satisfies SystemSpec;

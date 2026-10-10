@@ -61,16 +61,16 @@ Ask your agent to assess or create one. Supply your component source or package,
 
 | Starting point | What to expect |
 | --- | --- |
-| shadcn/ui or Untitled UI | The agent can curate a toolkit and Tailwind theme around your needs. |
+| shadcn/ui | The agent can curate a toolkit and Tailwind theme around your needs. |
 | Your own React components | Assess styling, dependencies, and needed adaptations before importing. |
 | Another framework or application-dependent code | Assess feasibility and migration effort first; engineering help may be useful. |
 | Visual references | Guide appearance; they do not supply your production components. |
 
 Try representative screens before relying on an imported system. Components tied to a backend or application shell may need simulated behavior or replacement dependencies.
 
-To start in the interface, select **New system**. Overview offers **shadcn/ui**, **Untitled UI**, and **Your React system**. Creating systems requires local Admin access.
+To start in the interface, select **New system**. Overview offers **Curate from shadcn** and **Bring your own**. Creating systems requires local Admin access.
 
-Choose a starting point, describe your inputs, then select **Copy setup prompt**. Paste the prompt into your agent’s chat and send it to begin. For a curated system, answer **What do you want to build?** to help the agent choose the first components. You can also name any components you already want. The agent asks for files in chat as needed. For shadcn, explore its builder and paste a preset code or link into the preset field. The agent saves your direction on Overview, integrates the selected material, and opens foundations and component examples for review. Overview keeps the next action and a link to your representative prototype as the system grows.
+Choose a starting point, describe your inputs, then select **Copy prompt**. Paste the prompt into your agent’s chat and send it to begin. For a curated system, answer **What do you want to build?** to help the agent choose the first components. You can also name any components you already want. The agent asks for files in chat as needed. For shadcn, explore its builder and paste a preset code or link into the preset field. The agent saves your direction on Overview, integrates the selected material, and opens foundations and component examples for review. Overview keeps the next action and a link to your representative prototype as the system grows.
 
 For existing code, give your agent an accessible React repository, folder, or package. It assesses compatibility and proposes stages before importing. You can resume from the saved assessment on Overview. Populated systems also offer **Curate or bring in a system**.
 

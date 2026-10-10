@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { ArrowUpRight, CircleHelp, Copy } from 'lucide-react';
-import { Button } from '@/systems/studio/components/button';
+import { Button, buttonVariants } from '@/systems/studio/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/studio/components/tabs';
 import { Textarea } from '@/systems/studio/components/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
@@ -18,10 +18,10 @@ type Props = {
 };
 
 export default function SystemSetup({ system, label, curation, review, prototype }: Props) {
-  const [path, setPath] = useState<'shadcn' | 'untitled' | 'import'>('shadcn');
+  const [path, setPath] = useState<'shadcn' | 'import'>('shadcn');
   const [preset, setPreset] = useState('');
-  const [materials, setMaterials] = useState({ shadcn: '', untitled: '', import: '' });
-  const [components, setComponents] = useState({ shadcn: '', untitled: '', import: '' });
+  const [materials, setMaterials] = useState({ shadcn: '', import: '' });
+  const [components, setComponents] = useState({ shadcn: '', import: '' });
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
   const prompt = curationPrompt({ system, label, path, preset, materials: materials[path], components: components[path], curation });
@@ -42,23 +42,22 @@ export default function SystemSetup({ system, label, curation, review, prototype
       {curation.stage === 'assessment' ? <p className="mb-3 text-xs font-medium text-muted-foreground">Assessing existing React code</p> : <ol className="mb-5 flex flex-wrap gap-x-5 gap-y-2" aria-label="Curation stages">{curationStages.map(stage => <li key={stage.id} aria-current={stage.id === curation.stage ? 'step' : undefined} className={`flex items-center gap-2 text-xs ${stage.id === curation.stage ? 'font-medium text-foreground' : 'text-muted-foreground'}`}><span aria-hidden className={`size-1.5 rounded-full ${stage.id === curation.stage ? 'bg-foreground' : 'bg-muted-foreground/40'}`} />{stage.label}</li>)}</ol>}
       <p className="text-sm leading-6">{curation.summary}</p>
       {sources.length > 0 && <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2">{sources.map(source => <a key={source.url} href={source.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">{source.label}<ArrowUpRight className="size-3" aria-hidden /></a>)}</div>}
-      {review.length > 0 || prototype ? <div className="mt-5 space-y-2"><p className="text-xs font-medium text-muted-foreground">Review in Studio</p><div className="flex flex-wrap gap-2">{review.map(item => <Button key={item.path} variant="outline" size="sm" render={<Link to={(systemPath(system) + '/' + item.path) as never} />}>{item.label}<ArrowUpRight className="size-3" aria-hidden /></Button>)}{prototype && <Button variant="outline" size="sm" render={<Link {...prototypeLink(prototype)} />}>Try {prototype.title}<ArrowUpRight className="size-3" aria-hidden /></Button>}</div></div> : null}
+      {review.length > 0 || prototype ? <div className="mt-5 space-y-2"><p className="text-xs font-medium text-muted-foreground">Review in Studio</p><div className="flex flex-wrap gap-2">{review.map(item => <Link key={item.path} to={(systemPath(system) + '/' + item.path) as never} className={buttonVariants({ variant: "outline", size: "sm" })}>{item.label}<ArrowUpRight className="size-3" aria-hidden /></Link>)}{prototype && <Link {...prototypeLink(prototype)} className={buttonVariants({ variant: "outline", size: "sm" })}>Try {prototype.title}<ArrowUpRight className="size-3" aria-hidden /></Link>}</div></div> : null}
       <div className="mt-5 pt-4"><p className="mb-1 text-xs font-medium text-muted-foreground">Next with your agent</p><p className="text-sm leading-6">{curation.nextStep}</p></div>
     </section> : <>
       <Tabs value={path} onValueChange={value => setPath(value as typeof path)} className="gap-4">
         <section className={block} aria-labelledby="system-starting-point"><h2 id="system-starting-point" className={heading}>1. Choose your system foundation</h2>
           <TabsList aria-label="System starting point" className="max-w-full overflow-x-auto">
-            <TabsTrigger value="shadcn">shadcn/ui</TabsTrigger>
-            <TabsTrigger value="untitled">Untitled UI</TabsTrigger>
-            <TabsTrigger value="import">Your React system</TabsTrigger>
+            <TabsTrigger value="shadcn">Curate from shadcn</TabsTrigger>
+            <TabsTrigger value="import">Bring your own</TabsTrigger>
           </TabsList>
         </section>
         <section className={block} aria-labelledby="system-choices">
           <h2 id="system-choices" className={heading}>2. Your choices</h2>
-        {(['shadcn', 'untitled', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
+        {(['shadcn', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
           {id === 'shadcn' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Customize in shadcn’s builder, then bring your preset back here.</p>
-            <Button variant="outline" size="sm" render={<a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" />}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></Button>
+            <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></a>
             <div><div className="mb-2 flex items-center gap-2"><label htmlFor="curation-preset" className="text-sm font-medium">Paste your preset here</label>
               <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Where to find your shadcn preset" />}><CircleHelp className="size-4" aria-hidden /></TooltipTrigger>
                 <TooltipContent side="top" className="block max-w-64 p-3">
@@ -67,9 +66,6 @@ export default function SystemSetup({ system, label, curation, review, prototype
                 </TooltipContent>
               </Tooltip>
             </div><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
-          </> : id === 'untitled' ? <>
-            <p className="text-sm leading-6 text-muted-foreground">Choose components from Untitled UI, then describe what you need below.</p>
-            <Button variant="outline" size="sm" render={<a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" />}>Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></Button>
           </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
           <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
             <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />

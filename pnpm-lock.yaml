@@ -83,9 +83,6 @@ importers:
       '@tanstack/react-router':
         specifier: ^1.170.40
         version: 1.170.40(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@untitledui/icons':
-        specifier: ^0.0.23
-        version: 0.0.23(react@19.3.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -107,9 +104,6 @@ importers:
       react:
         specifier: ^19.3.0
         version: 19.3.0
-      react-aria-components:
-        specifier: ^1.21.1
-        version: 1.21.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       react-dom:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
@@ -487,15 +481,6 @@ packages:
 
   '@iconify/utils@3.1.7':
     resolution: {integrity: sha512-JZHlwdID+dy+lTgbYC8NEC4zeugqeYsc6jewvzb4c58kHauJn+X7rNwQjxz5p2qSjqaEeQoLkCIQ9v/H4PK0/w==}
-
-  '@internationalized/date@3.12.4':
-    resolution: {integrity: sha512-M1dEn4c1U1HsSlaVR8upZtSqvXrTkHDfv18H01uCSJyjVLDxnBR38v/fMxecmlwXKR4i9HeZcmgQAPE6A+aGJQ==}
-
-  '@internationalized/number@3.6.8':
-    resolution: {integrity: sha512-8UmMFia46DUt+k97zKd9fKWXcWHR+k8ae3eYzILETuT2KbIvLyOfac7zesw+sJdRAAZ7Q9pM1Mk22aXp2LD0Ig==}
-
-  '@internationalized/string@3.2.10':
-    resolution: {integrity: sha512-PDx6//vHSpRnHfxqMqto11zQvhsaU74O3mKv2F/0eicGZcl9NLjQmGlbHz/LsJh5tLKp4A4L7ZVTzN1/MmMTvA==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1036,11 +1021,6 @@ packages:
   '@radix-ui/rect@1.1.0':
     resolution: {integrity: sha512-A9+lCBZoaMJlVKcRBz2YByCG+Cp2t6nAnMnNba+XiWxnj6r4JUFqfsgwocMBZU9LPtdxC6wB56ySYpc7LQIoJg==}
 
-  '@react-types/shared@3.36.1':
-    resolution: {integrity: sha512-AzsuD9OfxTOZMMvTRhlN3oHBwOmFN7tDh27LzqmHt4+uOgPhJT7ZM7/kVs/8/o0WxayMUIk3hBmCFRHv1FUoag==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
   '@rolldown/binding-android-arm-eabi@1.2.11':
     resolution: {integrity: sha512-A5kXfGKvKWWZE0TtPrfsvT+q4Y5d1QG8gGUzpYjGydM+fARM9MuX90PrXYXe0XbsDVgyxxNzHo6giCj90bsFNw==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -1325,9 +1305,6 @@ packages:
     resolution: {integrity: sha512-tlqY9xq5ukxTUZBmoOp+m61cqwQD5pHJtFY3Mn8CA8ps6yghLH/Hw8UPdqg4OLmFW3IFlcXnQNmo/dh8HzXYIQ==}
     engines: {node: '>=18'}
 
-  '@swc/helpers@0.5.23':
-    resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
-
   '@tailwindcss/node@4.3.3':
     resolution: {integrity: sha512-/T8IKEsf9VTU6tLjgC7+sv2mOPtQxzE2jMw7u4Tt40Tx+QSZxpzh95/H6cMKoja9XuW7iMdLJYBB0o9G1CaAgg==}
 
@@ -1597,11 +1574,6 @@ packages:
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
 
-  '@untitledui/icons@0.0.23':
-    resolution: {integrity: sha512-WoBtPCXaxweF0RXS9IuqgEeJkBmT7A9SszPHB+vQJOxeAl0hDTFXHlWXsooYniXQ0JmP4+7RADdhWb39GWFT8g==}
-    peerDependencies:
-      react: '>= 16'
-
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
 
@@ -1795,9 +1767,6 @@ packages:
   cli-spinners@2.9.2:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}
     engines: {node: '>=6'}
-
-  client-only@0.0.1:
-    resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
 
   clsx@1.1.1:
     resolution: {integrity: sha512-6/bPho624p3S2pMyvP5kKBPXnI3ufHLObBFCfgx+LkeR5lg2XYy2hqZqUf45ypD8COn2bhgGJSUE+l5dhNBieA==}
@@ -3393,18 +3362,6 @@ packages:
     resolution: {integrity: sha512-K5zQjDllxWkf7Z5xJdV0/B0WTNqx6vxG70zJE4N0kBs4LovmEYWJzQGxC9bS9RAKu3bgM40lrd5zoLJ12MQ5BA==}
     engines: {node: '>= 0.10'}
 
-  react-aria-components@1.21.1:
-    resolution: {integrity: sha512-J88WflYY0z+EhLX0ce+GjFlQ3ag3ubIgfUTjpKSrBQBu92Xtl4Ub9o118HItUddtbk1Ido0jzyPy94/klZy1hg==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
-  react-aria@3.52.1:
-    resolution: {integrity: sha512-fdZZruC9/x/joCg0mhKGs5aHpwrXLCSZ4GOJmhhYyiE0ffyEsk9MLFt9LCOCF9tn8ErTD+UDQP4oDUSlZkmpCg==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-      react-dom: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
-
   react-dom@19.3.0:
     resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
     peerDependencies:
@@ -3438,11 +3395,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  react-stately@3.50.0:
-    resolution: {integrity: sha512-TnckvpDQGU0672wEaLZqdzvhuSeXWjgW6vijMWxiKOxc8CosQUfPGISdcZyfHqjX3XMjEtRxj4w9HumvX4h4mw==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0-rc.1 || ^18.0.0 || ^19.0.0-rc.1
 
   react-style-singleton@2.2.3:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
@@ -4508,18 +4460,6 @@ snapshots:
       '@iconify/types': 2.0.0
       import-meta-resolve: 4.2.0
 
-  '@internationalized/date@3.12.4':
-    dependencies:
-      '@swc/helpers': 0.5.23
-
-  '@internationalized/number@3.6.8':
-    dependencies:
-      '@swc/helpers': 0.5.23
-
-  '@internationalized/string@3.2.10':
-    dependencies:
-      '@swc/helpers': 0.5.23
-
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
@@ -5090,10 +5030,6 @@ snapshots:
 
   '@radix-ui/rect@1.1.0': {}
 
-  '@react-types/shared@3.36.1(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@rolldown/binding-android-arm-eabi@1.2.11':
     optional: true
 
@@ -5267,10 +5203,6 @@ snapshots:
   '@shikijs/vscode-textmate@10.0.2': {}
 
   '@sindresorhus/merge-streams@4.0.0': {}
-
-  '@swc/helpers@0.5.23':
-    dependencies:
-      tslib: 2.8.1
 
   '@tailwindcss/node@4.3.3':
     dependencies:
@@ -5542,10 +5474,6 @@ snapshots:
 
   '@ungap/structured-clone@1.4.0': {}
 
-  '@untitledui/icons@0.0.23(react@19.3.0)':
-    dependencies:
-      react: 19.3.0
-
   '@upsetjs/venn.js@2.0.0':
     optionalDependencies:
       d3-selection: 3.0.0
@@ -5718,8 +5646,6 @@ snapshots:
       restore-cursor: 5.1.0
 
   cli-spinners@2.9.2: {}
-
-  client-only@0.0.1: {}
 
   clsx@1.1.1: {}
 
@@ -7553,32 +7479,6 @@ snapshots:
       iconv-lite: 0.7.3
       unpipe: 1.0.0
 
-  react-aria-components@1.21.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
-    dependencies:
-      '@internationalized/date': 3.12.4
-      '@internationalized/string': 3.2.10
-      '@react-types/shared': 3.36.1(react@19.3.0)
-      '@swc/helpers': 0.5.23
-      client-only: 0.0.1
-      react: 19.3.0
-      react-aria: 3.52.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      react-dom: 19.3.0(react@19.3.0)
-      react-stately: 3.50.0(react@19.3.0)
-
-  react-aria@3.52.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0):
-    dependencies:
-      '@internationalized/date': 3.12.4
-      '@internationalized/number': 3.6.8
-      '@internationalized/string': 3.2.10
-      '@react-types/shared': 3.36.1(react@19.3.0)
-      '@swc/helpers': 0.5.23
-      aria-hidden: 1.2.6
-      clsx: 2.1.1
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
-      react-stately: 3.50.0(react@19.3.0)
-      use-sync-external-store: 1.7.0(react@19.3.0)
-
   react-dom@19.3.0(react@19.3.0):
     dependencies:
       react: 19.3.0
@@ -7608,16 +7508,6 @@ snapshots:
       use-sidecar: 1.1.3(@types/react@19.3.0)(react@19.3.0)
     optionalDependencies:
       '@types/react': 19.3.0
-
-  react-stately@3.50.0(react@19.3.0):
-    dependencies:
-      '@internationalized/date': 3.12.4
-      '@internationalized/number': 3.6.8
-      '@internationalized/string': 3.2.10
-      '@react-types/shared': 3.36.1(react@19.3.0)
-      '@swc/helpers': 0.5.23
-      react: 19.3.0
-      use-sync-external-store: 1.7.0(react@19.3.0)
 
   react-style-singleton@2.2.3(@types/react@19.3.0)(react@19.3.0):
     dependencies:

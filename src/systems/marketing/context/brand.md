@@ -9,4 +9,4 @@ The reference palette is ink `#0F0F0F`, charcoal `#2A2A2A`, gray `#6B6B6B`, ston
 
 Use generous space, restrained type weights, circles, rectangles, and simple geometry. The Design Studio mark combines a vertical bar and a semicircle. Prefer repository-native SVG for this geometry. Follow [Marketing design](design.md) for composition and copy requirements.
 
-Untitled UI provides the imported interaction components. Its default purple palette and Inter font are replaced by the brand choices in this system. Marketing guidance does not change Platform or Product.
+shadcn/Base UI provides the interaction components. Marketing applies its own warm palette, Geist typography, and rounded controls. Marketing guidance does not change Platform or Product.

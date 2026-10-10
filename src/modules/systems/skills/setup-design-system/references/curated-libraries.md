@@ -21,14 +21,11 @@ Use [System curation](../../../context/curation.md) for the Overview summary and
 6. Integrate the small component kit and open live examples, including pop-ups and required states. Then build or reuse a representative prototype and save its permanent ID in the curation summary.
 7. After each meaningful step, update the summary and next action. Carry out authorized mechanics without extra approval. Pause only for unresolved design choices or scope decisions. Mark the final stage after verification and human review, not file presence.
 
-Untitled UI follows the same review loop with its own upstream tools and license requirements. The shadcn preparation command does not install Untitled UI.
-
 ## Import selected components
 
 Read the source library's current official documentation and inspect installed CLI help before choosing commands:
 
 - [shadcn CLI](https://ui.shadcn.com/docs/cli) and [configuration](https://ui.shadcn.com/docs/components-json).
-- [Untitled UI CLI](https://www.untitledui.com/react/docs/cli).
 
 1. Inspect `components.json`, aliases, CSS destinations, dependencies, and the chosen system's declaration. The root configuration may target Product components and Studio CSS. A component output path alone does not redirect CSS or dependency writes.
 2. Preview proposed changes when supported. If a CLI cannot isolate every write, generate in a temporary workspace and integrate selected files deliberately. Do not run library initialization over the existing studio.

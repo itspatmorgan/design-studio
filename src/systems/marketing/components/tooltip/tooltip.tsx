@@ -1,107 +1,23 @@
-"use client";
+import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
+import { cn } from '@/lib/utils';
+import { usePortalContainer } from '@/lib/portal';
 
-import type { ReactNode } from "react";
-import type {
-    ButtonProps as AriaButtonProps,
-    TooltipProps as AriaTooltipProps,
-    TooltipTriggerComponentProps as AriaTooltipTriggerComponentProps,
-} from "react-aria-components";
-import { Button as AriaButton, OverlayArrow as AriaOverlayArrow, Tooltip as AriaTooltip, TooltipTrigger as AriaTooltipTrigger } from "react-aria-components";
-import { usePortalContainer } from "@/lib/portal";
-import { cx } from "../../utils/cx";
-
-export interface TooltipProps extends AriaTooltipTriggerComponentProps, Omit<AriaTooltipProps, "children"> {
-    /**
-     * The title of the tooltip.
-     */
-    title: ReactNode;
-    /**
-     * The description of the tooltip.
-     */
-    description?: ReactNode;
-    /**
-     * Whether to show the arrow on the tooltip.
-     *
-     * @default false
-     */
-    arrow?: boolean;
-    /**
-     * Delay in milliseconds before the tooltip is shown.
-     *
-     * @default 300
-     */
-    delay?: number;
+function TooltipProvider(props: TooltipPrimitive.Provider.Props) {
+  return <TooltipPrimitive.Provider delay={300} {...props} />;
 }
-
-export const Tooltip = ({
-    title,
-    description,
-    children,
-    arrow = false,
-    delay = 300,
-    closeDelay = 0,
-    trigger,
-    isDisabled,
-    isOpen,
-    defaultOpen,
-    offset = 6,
-    crossOffset,
-    placement = "top",
-    onOpenChange,
-    ...tooltipProps
-}: TooltipProps) => {
-    const container = usePortalContainer();
-    const isTopOrBottomLeft = ["top left", "top end", "bottom left", "bottom end"].includes(placement);
-    const isTopOrBottomRight = ["top right", "top start", "bottom right", "bottom start"].includes(placement);
-    // Set negative cross offset for left and right placement to visually balance the tooltip.
-    const calculatedCrossOffset = isTopOrBottomLeft ? -12 : isTopOrBottomRight ? 12 : 0;
-
-    return (
-        <AriaTooltipTrigger {...{ trigger, delay, closeDelay, isDisabled, isOpen, defaultOpen, onOpenChange }}>
-            {children}
-
-            <AriaTooltip
-                {...tooltipProps}
-                UNSTABLE_portalContainer={container ?? undefined}
-                offset={offset}
-                placement={placement}
-                crossOffset={crossOffset ?? calculatedCrossOffset}
-                className="group/tooltip z-50"
-            >
-                {() => (
-                    <div
-                        className={cx(
-                            "z-50 flex max-w-xs origin-(--trigger-anchor-point) flex-col items-start gap-1 rounded-lg bg-bg-primary-solid px-3 shadow-lg will-change-transform",
-                            description ? "py-3" : "py-2",
-                        )}
-                    >
-                        <span className="text-xs font-semibold text-white">{title}</span>
-
-                        {description && <span className="text-xs font-medium text-text-tooltip-supporting-text">{description}</span>}
-
-                        {arrow && (
-                            <AriaOverlayArrow>
-                                <svg
-                                    viewBox="0 0 100 100"
-                                    className="size-2.5 fill-bg-primary-solid group-data-[placement=left]/tooltip:-rotate-90 group-data-[placement=right]/tooltip:rotate-90 group-data-[placement=bottom]/tooltip:rotate-180"
-                                >
-                                    <path d="M0,0 L35.858,35.858 Q50,50 64.142,35.858 L100,0 Z" />
-                                </svg>
-                            </AriaOverlayArrow>
-                        )}
-                    </div>
-                )}
-            </AriaTooltip>
-        </AriaTooltipTrigger>
-    );
-};
-
-type TooltipTriggerProps = AriaButtonProps;
-
-export const TooltipTrigger = ({ children, className, ...buttonProps }: TooltipTriggerProps) => {
-    return (
-        <AriaButton {...buttonProps} className={(values) => cx("h-max w-max outline-hidden", typeof className === "function" ? className(values) : className)}>
-            {children}
-        </AriaButton>
-    );
-};
+function Tooltip(props: TooltipPrimitive.Root.Props) {
+  return <TooltipPrimitive.Root {...props} />;
+}
+function TooltipTrigger(props: TooltipPrimitive.Trigger.Props) {
+  return <TooltipPrimitive.Trigger {...props} />;
+}
+function TooltipContent({ className, children, ...props }: TooltipPrimitive.Popup.Props) {
+  return <TooltipPrimitive.Portal container={usePortalContainer()}>
+    <TooltipPrimitive.Positioner sideOffset={6} className="isolate z-50">
+      <TooltipPrimitive.Popup data-slot="tooltip-content" className={cn('max-w-xs rounded-md bg-foreground px-3 py-2 text-xs text-background shadow-lg', className)} {...props}>
+        {children}
+      </TooltipPrimitive.Popup>
+    </TooltipPrimitive.Positioner>
+  </TooltipPrimitive.Portal>;
+}
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider };

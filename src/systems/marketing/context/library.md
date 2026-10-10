@@ -1,28 +1,26 @@
 ---
 title: Marketing library
-description: The selected Untitled UI subset and its integration with Studio.
+description: The selected shadcn/Base UI subset and its integration with Studio.
 ---
 
-Marketing is a small, independent system for public-facing Design Studio pages. It uses Untitled UI React on React Aria and Tailwind. Product remains the default for product prototypes.
+Marketing is an independent shadcn/Base UI system for public-facing Design Studio pages. Product remains the default for product prototypes. Product uses square controls, Space Grotesk, and emerald accents; Marketing uses rounded controls, Geist, and warm neutrals.
 
 ## Included
 
-- Untitled UI Button: small and large sizes; primary, secondary, and two link variants.
-- Untitled UI Tabs: horizontal underline tabs and associated panels.
-- Untitled UI Tooltip and TooltipTrigger: supplemental information, including a scoped popup.
-- Geist typography, Design Studio’s warm neutral brand colors, neutral surfaces, selected spacing, four display sizes for larger headings, and small rounded controls.
-- Light and dark modes. Both are defined in `styles/theme.css`.
+- Button: default, outline, ghost, and link styles; small, default, and large sizes.
+- Tabs: segmented and underline lists with associated panels.
+- Tooltip: supplemental information in a scoped popup.
+- Lucide icons, Geist typography, warm brand colors, selected spacing, and four display sizes.
+- Light and dark modes, declared in `styles/theme.css`.
 
-The theme file is the inventory. Omitted theme tokens and unimported Untitled UI components are outside this system. Add them deliberately when needed. Landing-page sections are local prototype composition, not imports of paid marketing templates.
+The theme file is the inventory. Add omitted tokens and components deliberately. Landing-page sections are local prototype composition.
 
 ## Source and adaptations
 
-Components and utility helpers are adapted from the [public Untitled UI repository](https://github.com/untitleduico/react), revision `4702dc0ea8d140c3491a85670c7b4fab47b722da`. The original MIT notice is retained in `src/systems/marketing/LICENSE`.
+Components derive from the starter’s vendored [shadcn/ui Base UI components](https://ui.shadcn.com/docs/components). Marketing keeps independent runtime files; it does not import Product. The shadcn MIT notice is retained in `LICENSE`.
 
-Tabs come from `components/application/tabs/tabs.tsx`; Marketing retains horizontal underline tabs without badges or extra variants.
+Button keeps shadcn’s variant pattern and Base UI behavior with 32px, 40px, and 48px controls. Navigation uses plain anchors styled by `buttonVariants`, preserving link semantics. Icons are ordinary children. Tabs use Base UI values and active states, with Marketing’s rounded geometry. Tooltip uses `usePortalContainer()` and omits animation and arrow embellishments.
 
-The Button and Tooltip come from `components/base/buttons/button.tsx` and `components/base/tooltip/tooltip.tsx`. Class merging and component detection come from `utils/cx.ts` and `utils/is-react-component.ts`.
+All styles and popups stay inside Marketing’s theme boundary. Existing warm neutral color aliases remain for prototype composition, alongside shadcn’s semantic roles. The source brand values remain in [Brand](brand.md); dark mode remains a documented adaptation.
 
-Imports point into this system. The Button variant catalog is narrowed. Upstream background/text/border color aliases use native Tailwind names (`bg-bg-primary`, `text-text-primary`, `ring-border-primary`) so no global library theme overrides Studio or Product. Typography values use finite tokens instead of upstream's spacing multiplier. Tooltip portals use `usePortalContainer()`; unused animation variants are removed.
-
-Dependencies are limited to `react-aria-components`, `tailwind-merge`, and `@untitledui/icons`. The full upstream theme, application kit, Next.js integration, and global CSS are not imported.
+Dependencies are `@base-ui/react`, `class-variance-authority`, `tailwind-merge`, `lucide-react`, and `@fontsource-variable/geist`. No full upstream catalog or global theme is installed.
