@@ -17,7 +17,7 @@ export function curationPrompt({ system, label, path, preset, materials = '', cu
   system: string; label: string; path: 'shadcn' | 'untitled' | 'import'; preset: string; materials?: string; curation?: SystemCuration;
 }): string {
   const skill = `Use the setup-design-system skill for system “${system}”.`;
-  const context = materials.trim() ? `\n\nAdditional context:\n${materials.trim()}` : '';
+  const context = materials.trim() ? `\n\n${path === 'import' ? 'Source' : 'I want to build'}:\n${materials.trim()}` : '';
   if (curation) return [
     `Continue ${curation.stage === 'assessment' ? 'assessing' : 'setting up'} “${label}”.`,
     `Direction: ${curation.summary}\nNext: ${curation.nextStep}`,

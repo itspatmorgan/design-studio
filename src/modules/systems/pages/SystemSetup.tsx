@@ -58,15 +58,16 @@ export default function SystemSetup({ system, label, curation, review, prototype
             <p className="text-sm leading-6 text-muted-foreground">Choose components from Untitled UI, then describe what you need below.</p>
             <a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></a>
           </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
-          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'Additional context'} <span className="font-normal text-muted-foreground">(optional)</span></label>
-            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Repository URL or local folder, theme files, usage examples, and what to bring in first' : 'Goals, design.md, fonts, or brand assets — add notes, links, or file paths'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
+          <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
+            {id !== 'import' && <p className="mt-2 text-xs text-muted-foreground">Your agent uses this to choose the first components.</p>}
           </div>
         </TabsContent>)}
       </Tabs>
     </>}
     <div className="mt-6 border-t border-border pt-5">
       <h3 className="text-sm font-semibold">{curation ? 'Continue in your agent chat' : '3. Copy and send your prompt'}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat, attach any files, and send.'}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat and send. Your agent will ask for any files it needs.'}</p>
       <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <h4 className="text-sm font-medium">{curation ? 'Your continuation prompt' : 'Your setup prompt'}</h4>
