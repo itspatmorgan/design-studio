@@ -58,7 +58,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
         {(['shadcn', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
           {id === 'shadcn' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Bring a preset from shadcn’s builder, a DESIGN.md, or both.</p>
-            <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "outline", size: "sm" })}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></a>
+            <a href="https://ui.shadcn.com/create" target="_blank" rel="noreferrer" className={buttonVariants({ variant: "default", size: "sm" })}>Open shadcn builder<ArrowUpRight className="size-3" aria-hidden /></a>
             <div><div className="mb-2 flex items-center gap-2"><label htmlFor="curation-preset" className="text-sm font-medium">Paste your preset here</label>
               <Tooltip><TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Where to find your shadcn preset" />}><CircleHelp className="size-4" aria-hidden /></TooltipTrigger>
                 <TooltipContent side="top" className="block max-w-64 p-3">
