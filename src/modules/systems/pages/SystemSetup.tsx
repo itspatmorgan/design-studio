@@ -19,9 +19,10 @@ export default function SystemSetup({ system, label, curation, review, prototype
   const [path, setPath] = useState<'shadcn' | 'untitled' | 'import'>('shadcn');
   const [preset, setPreset] = useState('');
   const [materials, setMaterials] = useState({ shadcn: '', untitled: '', import: '' });
+  const [components, setComponents] = useState({ shadcn: '', untitled: '', import: '' });
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const prompt = curationPrompt({ system, label, path, preset, materials: materials[path], curation });
+  const prompt = curationPrompt({ system, label, path, preset, materials: materials[path], components: components[path], curation });
   useEffect(() => { setCopied(false); setError(''); }, [prompt]);
   async function copy() {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); setError(''); }
@@ -62,6 +63,10 @@ export default function SystemSetup({ system, label, curation, review, prototype
             <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
             {id !== 'import' && <p className="mt-2 text-xs text-muted-foreground">Your agent uses this to choose the first components.</p>}
           </div>
+          {id !== 'import' && <div>
+            <label htmlFor={'curation-components-' + id} className="mb-2 block text-sm font-medium">Any components you already know you want? <span className="font-normal text-muted-foreground">(optional)</span></label>
+            <Input id={'curation-components-' + id} value={components[id]} placeholder="For example: Buttons, a data table, and a date picker" onChange={event => setComponents(previous => ({ ...previous, [id]: event.target.value }))} />
+          </div>}
         </TabsContent>)}
       </Tabs>
     </>}

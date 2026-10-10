@@ -13,8 +13,8 @@ export function sourceUrl(value: string): string | null {
   catch { return null; }
 }
 
-export function curationPrompt({ system, label, path, preset, materials = '', curation }: {
-  system: string; label: string; path: 'shadcn' | 'untitled' | 'import'; preset: string; materials?: string; curation?: SystemCuration;
+export function curationPrompt({ system, label, path, preset, materials = '', components = '', curation }: {
+  system: string; label: string; path: 'shadcn' | 'untitled' | 'import'; preset: string; materials?: string; components?: string; curation?: SystemCuration;
 }): string {
   const skill = `Use the setup-design-system skill for system “${system}”.`;
   const context = materials.trim() ? `\n\n${path === 'import' ? 'Source' : 'I want to build'}:\n${materials.trim()}` : '';
@@ -27,5 +27,6 @@ export function curationPrompt({ system, label, path, preset, materials = '', cu
   const choice = path === 'shadcn'
     ? (preset.trim() ? `\n\nPreset: ${preset.trim()}` : '\n\nHelp me choose a preset.')
     : '';
-  return `Help me set up “${label}” using ${path === 'shadcn' ? 'shadcn/ui' : 'Untitled UI'}.${choice}${context}\n\n${skill} Start with the theme and assets, and show them in Studio for my review.`;
+  const requested = components.trim() ? `\n\nPlease include: ${components.trim()}` : '';
+  return `Help me set up “${label}” using ${path === 'shadcn' ? 'shadcn/ui' : 'Untitled UI'}.${choice}${context}${requested}\n\n${skill} Start with the theme and assets, and show them in Studio for my review.`;
 }
