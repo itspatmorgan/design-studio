@@ -57,7 +57,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
             <div><label htmlFor="curation-preset" className="mb-2 block text-sm font-medium">Paste your preset here</label><Input id="curation-preset" value={preset} placeholder="Preset code or builder link" onChange={event => setPreset(event.target.value)} /></div>
           </> : id === 'untitled' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Choose components from Untitled UI, then describe what you need below.</p>
-            <a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></a>
+            <Button variant="outline" size="sm" render={<a href="https://www.untitledui.com/react" target="_blank" rel="noreferrer" />}>Explore Untitled UI<ArrowUpRight className="size-3" aria-hidden /></Button>
           </> : <p className="text-sm leading-6 text-muted-foreground">Link your React code below. Your agent will assess it and propose an import plan.</p>}
           <div><label htmlFor={'curation-materials-' + id} className="mb-2 block text-sm font-medium">{id === 'import' ? 'Repository or folder' : 'What do you want to build?'} <span className="font-normal text-muted-foreground">(optional)</span></label>
             <Textarea id={'curation-materials-' + id} value={materials[id]} rows={3} placeholder={id === 'import' ? 'Paste a repository URL or the full path to your React project folder' : 'For example: A dashboard for tracking customer support requests'} onChange={event => setMaterials(previous => ({ ...previous, [id]: event.target.value }))} />
