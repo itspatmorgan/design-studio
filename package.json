@@ -11,6 +11,7 @@
     "new": "node src/modules/prototypes/node/create.js",
     "join": "node scripts/cli/setup-contributor.js",
     "component-docs": "node src/modules/systems/node/scaffold-docs.js",
+    "prepare-shadcn": "node src/modules/systems/node/prepare-shadcn.js",
     "prepare": "husky",
     "check": "node scripts/check/check-modules.js",
     "baseline": "node scripts/cli/baseline.js",

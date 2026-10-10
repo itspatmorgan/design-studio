@@ -57,7 +57,8 @@
         "src/platform/core/artifact-lifecycle/compiled.test.ts",
         "scripts/build/vite-artifact-revisions-plugin.test.js",
         "src/modules/canvas/liveViews.test.ts",
-        "src/modules/canvas/opening.test.ts"
+        "src/modules/canvas/opening.test.ts",
+        "src/modules/systems/curation.test.js"
       ],
       "dependencies": [
         "src/platform/**",
@@ -77,7 +78,8 @@
         "scripts/lib/onboarding.test.js",
         "scripts/lib/studio-settings.test.js",
         "scripts/lib/system-creation.test.js",
-        "src/modules/onboarding/progress.test.ts"
+        "src/modules/onboarding/progress.test.ts",
+        "src/modules/systems/node/prepare-shadcn.test.js"
       ],
       "dependencies": [
         "src/modules/onboarding/**",

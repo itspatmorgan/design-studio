@@ -78,7 +78,16 @@ export type Manifest = {
 // Inventory metrics and theme/component pages come from the system's files.
 export type SystemIntro = { summary?: string; overview?: SystemOverviewSummary; intro?: ReactNode; icons?: DesignSystem['icons'] };
 
-export type SystemOverviewSummary = { guidance?: string; code?: string; starter?: boolean };
+export type SystemCuration = {
+  stage: 'direction' | 'foundations' | 'components' | 'prototype' | 'ready' | 'assessment';
+  summary: string;
+  nextStep: string;
+  sources: { label: string; url: string }[];
+  record?: string; // system context file, relative to context/
+  prototypeId?: string; // permanent ID of the representative prototype
+};
+
+export type SystemOverviewSummary = { guidance?: string; code?: string; starter?: boolean; curation?: SystemCuration };
 
 export type DesignSystem = {
   overview?: SystemOverviewSummary; // authored descriptions; inventory counts stay automatic

@@ -9,6 +9,8 @@ Read the [system authoring context](../../context/authoring.md) and the contract
 
 Inspect the target system, configuration, component destinations, and packages. For replacement or retirement, inspect all consumers, including disabled module content.
 
+Read [System curation](../../context/curation.md) when establishing or resuming setup. Use Overview as the home base for the agreed direction, review links, and next action. Inspect existing records before asking the person to repeat decisions.
+
 Establish whether the person wants to curate a toolkit or bring an existing React system. For curation, start with what they want to prototype. A designer may name components and visual choices. For a product manager, decompose the intended flow into screens, states, and the smallest supporting kit. For an existing system, start with its source, inventory, and dependencies. Do not require a prototype idea to audit it and propose an import plan. Ask only for decisions needed for the next step.
 
 Collect missing system ID, component source or package, tokens, assets, and usage guidance. If only design files exist, inspect available material and report gaps.
@@ -26,6 +28,8 @@ Describe the proposed components, theme, assets, dependencies, and known gaps in
 Context and skills are separate curation decisions. Save supplied product knowledge; do not invent personas or product context to fill folders. Add a skill only for a demonstrated recurring task. Do not install a skills catalog during setup.
 
 For an assessment-only request, report evidence, an import plan, adaptations, and unresolved questions. Cover the reusable system in stages when useful. No new system or prototype is required.
+
+When the person selects an existing target system, save the assessment summary there with stage `assessment` and link its detailed record. Open Overview for review. Missing production material can block one import stage without blocking a portable theme or asset stage. Do not create a system just to hold an assessment unless requested.
 
 ## Establish the kit
 

@@ -21,6 +21,8 @@ A prototype system lives in `src/systems/<id>/` and contains:
 
 `intro.tsx` supplies optional overview content. Its exports and presentation are defined in [Systems interface](context/interface.md#overview).
 
+[System curation](context/curation.md) defines the persistent Overview setup summary, saved decisions, review links, and isolated `pnpm prepare-shadcn` command.
+
 The Studio system lives in `src/systems/studio/` with the same structure as other systems. Its `system.ts` declares `role: 'platform'`; other systems explicitly declare `role: 'prototype'`. Exactly one installed system must declare that role. Discovery resolves the application system by role, independently of its folder name. It must be registered and cannot be removed or assigned to prototypes. Its documentation mode is `off`. Every system explicitly declares `status` (`active` or `archived`), `role`, `styling`, `colorModes`, `docs`, and `origin`. Platform infrastructure remains under `src/platform/`.
 
 Follow the [static asset convention](../../platform/context/assets.md) for system assets and font loading.

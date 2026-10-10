@@ -9,6 +9,20 @@ Translate the intended prototype into a short inventory: screens, interactions, 
 
 Show the proposed kit and its purpose. Let designers specify components and theme details directly. Help product managers review the flow and visual direction without requiring them to choose technical primitives.
 
+## Direct and review in the browser
+
+Use [System curation](../../../context/curation.md) for the Overview summary and staging command. Read an existing curation record and inspect actual progress before restarting setup.
+
+1. For shadcn, offer its [builder](https://ui.shadcn.com/create) to explore themes, fonts, icons, and styles. Reuse a supplied preset or builder link. Recommend Base UI unless the person chooses another base. Do not recreate upstream controls in Studio.
+2. Establish the first useful direction. Accept supplied design.md guidance and assets. Separate explicit design values from proposals and missing materials.
+3. Save the agreed direction, source links, and next action on Overview. Preserve detailed decisions and provenance in one system-owned context record.
+4. Prepare upstream material with `pnpm prepare-shadcn`. Run its printed commands in the isolated workspace. Inspect selected payloads and dependencies before integrating them.
+5. Integrate foundations, then open the relevant theme, font, and icon pages for review. A foundation can be useful before any components arrive.
+6. Integrate the small component kit and open live examples, including pop-ups and required states. Then build or reuse a representative prototype and save its permanent ID in the curation summary.
+7. After each meaningful step, update the summary and next action. Carry out authorized mechanics without extra approval. Pause only for unresolved design choices or scope decisions. Mark the final stage after verification and human review, not file presence.
+
+Untitled UI follows the same review loop with its own upstream tools and license requirements. The shadcn preparation command does not install Untitled UI.
+
 ## Import selected components
 
 Read the source library's current official documentation and inspect installed CLI help before choosing commands:
