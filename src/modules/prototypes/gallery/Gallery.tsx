@@ -60,7 +60,7 @@ function SystemFilter({ value, search }: { value?: string; search: string }) {
   const items = [{ value: '__all', label: 'All systems' }, ...Object.entries(PROTOTYPE_SYSTEMS).map(([value, spec]) => ({ value, label: spec.label }))];
   if (value && !PROTOTYPE_SYSTEMS[value]) items.push({ value, label: value });
   return <Popover.Root>
-    <Popover.Trigger render={<Button variant="outline" />}><HugeiconsIcon icon={FilterHorizontalIcon} aria-hidden />Filters{value && <span>· 1</span>}</Popover.Trigger>
+    <Popover.Trigger render={<Button variant="outline" size="icon" className="relative" />} aria-label={value ? "Filters, 1 active" : "Filters"} title="Filters"><HugeiconsIcon icon={FilterHorizontalIcon} aria-hidden />{value && <span aria-hidden className="absolute top-1 right-1 size-1.5 rounded-full bg-primary" />}</Popover.Trigger>
     <Popover.Portal><Popover.Positioner align="end" sideOffset={8} className="isolate z-50"><Popover.Popup className="w-64 rounded-lg bg-popover p-4 text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none">
       <Popover.Title className="mb-4 text-sm font-semibold">Filters</Popover.Title>
       <label id="gallery-system-filter-label" className="mb-2 block text-sm font-medium">System</label>
