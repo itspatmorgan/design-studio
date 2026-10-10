@@ -116,7 +116,7 @@ The [build-prototype skill](skills/build-prototype/SKILL.md) requires verificati
 
 ## Gallery system filter
 
-`/prototypes?system=<id>` filters the gallery by the resolved system assignment. A system selector alongside search and the view toggle exposes the filter. Choose **All systems** to clear it while preserving search. Title and contributor search (`q`) combines with the system filter and preserves it when typing or clearing search. Archived prototypes remain in their separate gallery section; the system overview counts and previews only active prototypes.
+`/prototypes?system=<id>` filters the gallery by the resolved system assignment. A compact **Filters** button alongside search and the view toggle opens a popover with the System selector. The button shows the active filter count. Choose **All systems** in the popover to clear it while preserving search. Title and contributor search (`q`) combines with the system filter and preserves it when typing or clearing search. Archived prototypes remain in their separate gallery section; the system overview counts and previews only active prototypes.
 
 ## Implementation files
 
