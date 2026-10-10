@@ -43,7 +43,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
   if (blank && spec.status === 'active' && import.meta.env.DEV) return <>
     <PageHeader title={sys.label} description="This system is empty. Choose how you want to build it." />
     <SystemReferenceNotice system={system} />
-    <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview?.curation} review={[]} />
+    <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview?.curation} />
   </>;
 
   return <>
@@ -57,15 +57,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
     {platform && <p className="mb-6 text-[13px] text-muted-foreground">Required application system</p>}
     {sys.overview?.starter && <SystemStarterNotice key={system} system={system} label={sys.label} canCustomize={!platform && spec.status === 'active' && import.meta.env.DEV} />}
     {!platform && spec.status === 'active' && import.meta.env.DEV && (sys.overview?.curation ?
-      <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview.curation} prototype={manifest.prototypes.find(proto => proto.studioId === sys.overview?.curation?.prototypeId && proto.system === system && proto.status !== 'archived' && !proto.systemMissing && !proto.rebuild)} review={[
-        ...(tokens.some(token => token.group === 'colors') ? [{ label: 'Colors', path: 'colors' }] : []),
-        ...(tokens.some(token => token.group === 'typography') ? [{ label: 'Typography', path: 'typography' }] : []),
-        ...(systemAssets(system).some(asset => asset.kind === 'Fonts') ? [{ label: 'Fonts', path: 'fonts' }] : []),
-        ...(systemAssets(system).some(asset => asset.kind === 'Icons') || sys.icons ? [{ label: 'Icons', path: 'icons' }] : []),
-        ...(systemAssets(system).some(asset => asset.kind === 'Images') ? [{ label: 'Images', path: 'images' }] : []),
-        ...components.filter(component => component.files.examples).slice(0, 3).map(component => ({ label: component.title, path: `components/${component.slug}` })),
-        ...(sys.overview.curation.record && guidance[0].artifacts.some(artifact => artifact.path === sys.overview!.curation!.record) ? [{ label: 'Saved decisions', path: `context/${sys.overview.curation.record.replace(/\.md$/, '')}` }] : []),
-      ]} /> : !sys.overview?.starter && <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Curate or bring in a system</summary><div className="mt-4"><SystemSetup system={system} label={sys.label} review={[]} /></div></details>)}
+      <SystemSetup key={system} system={system} label={sys.label} curation={sys.overview.curation} /> : !sys.overview?.starter && <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Curate or bring in a system</summary><div className="mt-4"><SystemSetup system={system} label={sys.label} /></div></details>)}
 
     <div className="mb-4 grid gap-4">
       <section className="min-w-0 rounded-xl border border-border/50 bg-muted/40 p-6" aria-labelledby="system-guidance">

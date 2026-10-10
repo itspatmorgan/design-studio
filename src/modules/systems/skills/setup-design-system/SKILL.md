@@ -9,7 +9,7 @@ Read the [system authoring context](../../context/authoring.md) and the contract
 
 Inspect the target system, configuration, component destinations, and packages. For replacement or retirement, inspect all consumers, including disabled module content.
 
-Read [System curation](../../context/curation.md) when establishing or resuming setup. Use Overview as the home base for the agreed direction, review links, and next action. Inspect existing records before asking the person to repeat decisions.
+Read [System curation](../../context/curation.md) when establishing or resuming setup. Overview shows the current setup stage and the system's metrics. Keep agreed direction, sources, and next action in the saved curation record, and guide reviews in chat using system navigation and prototype links. Inspect existing records before asking the person to repeat decisions.
 
 Overview prompts carry the person's source choice, preset, context, and requested next step. This skill owns the setup procedure and technical constraints. Resolve the target by its supplied system key. Preserve other systems, existing prototypes, and the default unless the person requests changes. A continuation of an assessment remains assessment-only until import is authorized.
 

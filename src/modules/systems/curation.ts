@@ -1,5 +1,3 @@
-import type { SystemCuration } from '../../platform/app/data/types';
-
 export const curationStages = [
   { id: 'direction', label: 'Direction' },
   { id: 'foundations', label: 'Foundations' },
@@ -13,16 +11,11 @@ export function sourceUrl(value: string): string | null {
   catch { return null; }
 }
 
-export function curationPrompt({ system, label, path, preset, designMd = '', materials = '', components = '', curation }: {
-  system: string; label: string; path: 'shadcn' | 'import'; preset: string; designMd?: string; materials?: string; components?: string; curation?: SystemCuration;
+export function curationPrompt({ system, label, path, preset, designMd = '', materials = '', components = '' }: {
+  system: string; label: string; path: 'shadcn' | 'import'; preset: string; designMd?: string; materials?: string; components?: string;
 }): string {
   const skill = `Use the setup-design-system skill for system “${system}”.`;
   const context = materials.trim() ? `\n\n${path === 'import' ? 'Source' : 'I want to build'}:\n${materials.trim()}` : '';
-  if (curation) return [
-    `Continue ${curation.stage === 'assessment' ? 'assessing' : 'setting up'} “${label}”.`,
-    `Direction: ${curation.summary}\nNext: ${curation.nextStep}`,
-    `${skill} Resume from our saved decisions and show me the next result in Studio.`,
-  ].join('\n\n');
   if (path === 'import') return `Assess my existing React system for “${label}” and suggest what to bring into Studio first.${context}\n\n${skill} Show me the plan before importing.`;
   const choice = preset.trim() ? `\n\nPreset: ${preset.trim()}` : designMd.trim() ? '' : '\n\nHelp me choose a preset.';
   const guidance = designMd.trim() ? `\n\nUse this DESIGN.md as my design direction: ${designMd.trim()}` : '';
