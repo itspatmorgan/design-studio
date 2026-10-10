@@ -69,8 +69,14 @@ export default function SystemSetup({ system, label, curation, review, prototype
     <div className="mt-6 border-t border-border pt-5">
       <h3 className="text-sm font-semibold">{curation ? 'Continue in your agent chat' : '3. Copy and send your prompt'}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this prompt into your agent’s chat to take the next step.' : 'The prompt below includes your choices. Copy it into your agent’s chat, attach any files, and send it to begin.'}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-3"><Button size="sm" onClick={() => void copy()}><Copy className="size-3" aria-hidden />{copied ? 'Prompt copied' : curation ? 'Copy continuation prompt' : 'Copy setup prompt'}</Button><span role="status" className="text-xs text-muted-foreground">{error || (copied ? 'Paste into your agent’s chat and send to continue.' : '')}</span></div>
-      <details className="mt-4 text-sm" open={!curation}><summary className="cursor-pointer text-muted-foreground">{curation ? 'View continuation prompt' : 'Your setup prompt'}</summary><p className="mt-3 select-text whitespace-pre-wrap rounded-lg bg-muted/40 p-4 text-sm leading-6">{prompt}</p></details>
+      <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+          <h4 className="text-sm font-medium">{curation ? 'Your continuation prompt' : 'Your setup prompt'}</h4>
+          <Button variant="outline" size="sm" onClick={() => void copy()}><Copy className="size-3" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
+        </div>
+        <p className="select-text whitespace-pre-wrap p-4 text-sm leading-6">{prompt}</p>
+      </div>
+      <p role="status" className="mt-2 text-xs text-muted-foreground">{error || (copied ? 'Paste into your agent’s chat and send to continue.' : '')}</p>
     </div>
   </section>;
 }
