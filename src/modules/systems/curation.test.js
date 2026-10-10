@@ -7,10 +7,11 @@ test('source links reject executable and local URLs', () => {
   assert.equal(sourceUrl('https://ui.shadcn.com/create?preset=chosen'),'https://ui.shadcn.com/create?preset=chosen');
 });
 
-test('resuming an assessment keeps the production import boundary', () => {
+test('resuming an assessment preserves intent and saved next step', () => {
   const prompt=curationPrompt({system:'example',label:'Example',path:'shadcn',preset:'',curation:{stage:'assessment',summary:'Fonts are available; components need review.',nextStep:'Inspect the provider dependencies.',sources:[],record:'curation.md'}});
-  assert.match(prompt,/context\/curation.md/);
-  assert.match(prompt,/Do not import production code without authorization/);
+  assert.match(prompt,/Continue assessing/);
+  assert.match(prompt,/setup-design-system/);
+  assert.match(prompt,/saved decisions/);
   assert.match(prompt,/Inspect the provider dependencies/);
   assert.doesNotMatch(prompt,/Recommend a starting direction/);
 });

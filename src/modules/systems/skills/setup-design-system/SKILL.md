@@ -11,6 +11,8 @@ Inspect the target system, configuration, component destinations, and packages. 
 
 Read [System curation](../../context/curation.md) when establishing or resuming setup. Use Overview as the home base for the agreed direction, review links, and next action. Inspect existing records before asking the person to repeat decisions.
 
+Overview prompts carry the person's source choice, preset, context, and requested next step. This skill owns the setup procedure and technical constraints. Resolve the target by its supplied system key. Preserve other systems, existing prototypes, and the default unless the person requests changes. A continuation of an assessment remains assessment-only until import is authorized.
+
 Establish whether the person wants to curate a toolkit or bring an existing React system. For curation, start with what they want to prototype. A designer may name components and visual choices. For a product manager, decompose the intended flow into screens, states, and the smallest supporting kit. For an existing system, start with its source, inventory, and dependencies. Do not require a prototype idea to audit it and propose an import plan. Ask only for decisions needed for the next step.
 
 Collect missing system ID, component source or package, tokens, assets, and usage guidance. If only design files exist, inspect available material and report gaps.
