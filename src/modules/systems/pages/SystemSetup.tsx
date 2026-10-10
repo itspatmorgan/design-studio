@@ -54,7 +54,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
           </TabsList>
         </section>
         <section className={block} aria-labelledby="system-choices">
-          <h2 id="system-choices" className={heading}>2. Your choices</h2>
+          <h2 id="system-choices" className={heading}>2. Add your setup details</h2>
         {(['shadcn', 'import'] as const).map(id => <TabsContent key={id} value={id} className="space-y-4">
           {id === 'shadcn' ? <>
             <p className="text-sm leading-6 text-muted-foreground">Bring a preset from shadcn’s builder, a DESIGN.md, or both.</p>
@@ -84,7 +84,7 @@ export default function SystemSetup({ system, label, curation, review, prototype
       </Tabs>
     </>}
     <section className={block} aria-labelledby="system-prompt">
-      <h2 id="system-prompt" className={heading}>{curation ? 'Your continuation prompt' : '3. Your prompt'}</h2>
+      <h2 id="system-prompt" className={heading}>{curation ? 'Your continuation prompt' : '3. Copy and send your prompt'}</h2>
       <p className="mb-4 text-sm leading-6 text-muted-foreground">{curation ? 'Paste this into your agent’s chat and send.' : 'Paste this into your agent’s chat and send. Your agent will ask for any files it needs.'}</p>
       <p className="select-text whitespace-pre-wrap rounded-lg border border-border bg-background p-4 text-sm leading-6">{prompt}</p>
       <Button className="mt-4" onClick={() => void copy()}><Copy className="size-4" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
