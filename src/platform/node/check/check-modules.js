@@ -153,7 +153,7 @@ const runtimePolicy = scopePolicy({
   prototypeDirs: PROTOTYPE_DIRS,
 });
 const ids = Object.keys(MODULES);
-const moduleDir = id => path.join(ROOT, MODULE_DIRS[id]);
+const moduleDir = id => path.resolve(ROOT, MODULE_DIRS[id]);
 // The module a file belongs to when it is inside a module root and that module is installed there.
 const moduleOf = file => {
   const id = moduleIdOfPath(path.relative(ROOT, file).split(path.sep).join('/'));

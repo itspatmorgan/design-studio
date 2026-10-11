@@ -1,18 +1,19 @@
 import { Link, getRouteApi } from '@tanstack/react-router';
 import { NavHeader, NavTitle, NavTabs, navTabClass } from '@/platform/app/shell/nav';
 
-import { manualPages } from '@/platform/modules/documentation/manualPages';
+import { moduleApps } from '@/platform/app/modules';
 
 const rootApi = getRouteApi('__root__');
 export default function DocumentationHeader({ reference = false }: { reference?: boolean }) {
-  const manual = manualPages(rootApi.useLoaderData());
+  const manifest = rootApi.useLoaderData();
+  const manualHref = moduleApps.find(({ spec }) => spec.id === 'documentation')?.app.landing?.(manifest);
   return (
     <NavHeader>
       <NavTitle>Documentation</NavTitle>
       <NavTabs label='Documentation sections' wrap>
-        {manual.length > 0 && (
+        {manualHref && (
           <Link
-            to={'/documentation/manual' as never}
+            to={manualHref as never}
             aria-current={!reference ? 'page' : undefined}
             className={navTabClass(!reference)}
           >

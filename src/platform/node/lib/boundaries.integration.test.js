@@ -101,6 +101,58 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     assert.equal(removal.status, 1, removal.stdout + removal.stderr);
     assert.match(removal.stdout + removal.stderr, /private-consumer/);
     fs.rmSync(consumer);
+
+    const declared = parseConfigFile(fs.readFileSync(configFile, 'utf8')).value;
+    fs.writeFileSync(configFile, serializeConfig({ ...declared, modules: { ...declared.modules, extra: true } }));
+    // Exercise the actual checker. Its module recognition must work with the discovery roots' trailing slashes.
+    const probe = 'src/platform/app/boundary-probe.ts';
+    const cases = [
+      [probe, "import '@/platform/modules/documentation/manualPages';", /imports into the documentation module/],
+      [probe, "import('@/platform/modules/documentation/manualPages');", /imports into the documentation module/],
+      [
+        probe,
+        "import type {DocumentationContribution} from '@/platform/modules/documentation/types';",
+        /imports into the documentation module/,
+      ],
+      [
+        'src/platform/modules/documentation/boundary-probe.ts',
+        "import '@/platform/modules/onboarding/progress';",
+        /imports the onboarding module/,
+      ],
+      [
+        'src/platform/modules/documentation/boundary-probe.ts',
+        "import('@/platform/modules/onboarding/progress');",
+        /imports the onboarding module/,
+      ],
+      [
+        'src/platform/modules/documentation/boundary-probe.ts',
+        "import type {progressKey} from '@/platform/modules/onboarding/progress';",
+        /imports the onboarding module/,
+      ],
+      [
+        'src/modules/extra/boundary-probe.ts',
+        "import type {ModuleSpec} from '@/platform/core/modules';",
+        /only through its public API/,
+      ],
+    ];
+    for (const [file, source, diagnostic] of cases) {
+      const target = write(root, file, source);
+      const result = attempt('src/platform/node/check/check-modules.js');
+      assert.equal(result.status, 1, result.stdout + result.stderr);
+      assert.match(result.stderr, diagnostic, file + ': ' + source);
+      fs.rmSync(target);
+    }
+    for (const [file, source] of [
+      [probe, "export {value} from '@module/extra';"],
+      [probe, "import '@/platform/modules/prototypes/lib';"],
+      [probe, "import '@/platform/modules/documentation/module';"],
+      ['src/modules/extra/boundary-probe.ts', "import type {ModuleSpec} from '#studio/module';"],
+    ]) {
+      const target = write(root, file, source);
+      const result = attempt('src/platform/node/check/check-modules.js');
+      assert.equal(result.status, 0, file + ': ' + source + '\n' + result.stdout + result.stderr);
+      fs.rmSync(target);
+    }
     run('src/platform/node/cli/studio.js', 'disable', 'extra');
     run(
       '--input-type=module',
@@ -169,6 +221,16 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     assert.equal(fs.readFileSync(path.join(root, 'dist/404.html'), 'utf8'), html);
     assert.ok(html.includes('/release-fixture/assets/'));
     assert.ok(html.indexOf('studio:deployment-recovery') < html.indexOf('type="module"'));
+    assert.ok(inspectBuild(path.join(root, 'dist')).requests > 0);
+
+    const manifest = () => JSON.parse(fs.readFileSync(path.join(root, 'public/prototypes/manifest.json'), 'utf8'));
+    assert.ok(manifest().contributions.documentation.manual.length > 0);
+    run('src/platform/node/cli/studio.js', 'disable', 'documentation');
+    run('src/platform/node/build/build-manifest.js', '--strict', '--deploy');
+    run('src/platform/node/check/check-modules.js');
+    run('src/platform/node/check/typecheck.js');
+    run('node_modules/vite/bin/vite.js', 'build');
+    assert.equal(manifest().contributions.documentation, undefined);
     assert.ok(inspectBuild(path.join(root, 'dist')).requests > 0);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

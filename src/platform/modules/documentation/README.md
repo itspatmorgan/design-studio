@@ -32,7 +32,7 @@ Legacy Reference and Knowledge URLs redirect to the appropriate scope. System gu
 
 ## Availability and search
 
-Disabling or removing Documentation hides Manual and its module rail entry. The shared Context and Skills browser remains directly accessible. Prototype Documents is independent of both readers.
+Disabling or removing Documentation hides Manual and its module rail entry. The shared header reads the enabled module’s landing contribution to show the Manual tab; it imports no Manual implementation. The shared Context and Skills browser remains directly accessible. Prototype Documents is independent of both readers.
 
 The command menu groups Places, Systems, Prototypes, and Manual in that order. It lists system entries, prototypes, and enabled Manual chapters without individual system files or a Context and Skills link. Individual platform and module README, context, and skill files stay in the instruction browser and are excluded from the command menu. The instruction browser’s search matches titles and source paths, not full document text. Disabled or removed module guidance is excluded.
 
