@@ -5,8 +5,8 @@
 // Creates a studio from <base> in a temporary worktree, makes the changes a team makes (a contributor, a system
 // with its own package dependency, a prototype, a local module, studio settings, and the README), then merges
 // <head> with the update rules in src/platform/node/lib/upstream-merge.js and requires `pnpm check` and `pnpm build` to pass.
-// Until the first release exists, CI passes the pull request's merge base and head, so the base can be older than a
-// change that needs a person's help (see PRE_RELEASE_TRANSITIONS below).
+// CI passes the latest v* release tag as the base once one exists, and until then the pull request's merge base, which
+// can be older than a change that needs a person's help (see PRE_RELEASE_TRANSITIONS below).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -44,7 +44,8 @@ const edit = (file, change) => {
 // change that a released studio would have a migration or an instruction for. Each entry stands in for the manual step
 // a pre-release studio needs after taking such a change. It runs after the merge, and only when its condition holds,
 // so an update from a base that already has the change runs none of them. Nothing here is part of the update rules
-// (src/platform/node/lib/upstream-merge.js). Remove this list when the upgrade test starts from the first release tag.
+// (src/platform/node/lib/upstream-merge.js). Remove this list, and its uses below, in the first pull request after
+// v0.2.0 is tagged: from then on CI starts the test from that tag (.github/workflows/checks.yml), which has every change.
 // An entry with phase: 'merge' runs inside the merge, before regeneration, for a step that regeneration needs first.
 // The team's fixture module and system, as the steps below create them.
 const FIXTURE_MODULE = 'src/modules/fixture-notes';

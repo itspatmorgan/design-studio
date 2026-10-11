@@ -4,7 +4,7 @@ description: How the upstream maintainer cuts a platform release, what the relea
 toc: true
 ---
 
-A release is a tagged commit on the upstream `main`, named `v<version>`. Studios update to release tags with `pnpm studio update` ([Ownership and updates](ownership.md)), so a tag is a promise: the platform at that commit passes its checks, its CHANGELOG entry says what changed, and its `PLATFORM_VERSION` matches the tag. This document is for the upstream maintainer; a studio never releases.
+A release is a tagged commit on the upstream `main`, named `v<version>`. Studios update to release tags with `pnpm studio update` ([Updating a studio](ownership.md#updating-a-studio)), so a tag is a promise: the platform at that commit passes its checks, its CHANGELOG entry says what changed, and its `PLATFORM_VERSION` matches the tag. This document is for the upstream maintainer; a studio never releases.
 
 ## Versions
 

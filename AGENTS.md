@@ -10,7 +10,7 @@ Start with the [platform README](src/platform/README.md) to locate shared contex
 
 Skills are owned by the platform, enabled modules, and registered systems. Inspect their names and descriptions, then read applicable procedures and supporting files. The generated project skill adapters expose the same canonical sources to coding harnesses. A system skill applies only to that system's assigned prototypes or explicit system maintenance.
 
-- For configuring a running studio, use [configure-studio](src/platform/skills/configure-studio/SKILL.md). Missing dependencies alone do not mean initialization is needed.
+- For configuring a running studio, or updating it to a newer Design Studio release, use [configure-studio](src/platform/skills/configure-studio/SKILL.md). Missing dependencies alone do not mean initialization is needed.
 - For contributor registration, use [setup-contributor](src/platform/skills/setup-contributor/SKILL.md).
 - For module or system installation, creation, availability, or removal, use [manage-modules](src/platform/skills/manage-modules/SKILL.md).
 - For shared context or skills, use [maintain-context](src/platform/skills/maintain-context/SKILL.md).

@@ -1,6 +1,6 @@
 ---
 name: configure-studio
-description: "Configure a running studio for the first time or update requested studio settings. Use setup-contributor for someone joining; installation has its own workflow."
+description: "Configure a running studio for the first time, update requested studio settings, or update the studio to a newer Design Studio release. Use setup-contributor for someone joining; installation has its own workflow."
 ---
 
 ## Scope and input
@@ -34,3 +34,14 @@ Run `pnpm studio status --json` to confirm configuration and identity. Follow [w
 Use the UI for review when helpful. Save any context collected there in repository files.
 
 Report completed choices, verified local links, and unresolved input. Leave the local app available. Missing materials block only the import or task that needs them. A usable studio with a chosen starter can complete initial configuration. Product context is curated when supplied; empty context and skills folders do not make setup incomplete.
+
+## Update to a newer release
+
+When the person asks to update Studio itself, read [Ownership and updates](../../context/ownership.md#updating-a-studio) and use `pnpm studio update`. Do not merge upstream by hand.
+
+1. Run `pnpm studio update --dry-run` (or `pnpm studio update <version> --dry-run` for a named release). If the working tree is not clean, ask the person whether to commit their work first; do not stash or discard it. If there is no `upstream` remote, add the one the command prints only with the person's agreement.
+2. Explain the result in plain words: the installed and target releases, and the files the release changes that the studio changed too, with what happens to each. Ask before applying.
+3. Run `pnpm studio update`. It works on a new `studio-update/v<version>` branch and never pushes or changes the person's branch.
+4. On a conflict, show the listed files. Resolve a file only when the person's intent and the release's change are both clear; keep the person's work, take the release's change, and explain each choice. Then `git add` the files and run `pnpm studio update --continue`. If the resolution is unclear, or the person prefers, abort with `git merge --abort`, switch back to their branch, and delete the update branch.
+5. If `pnpm check` or `pnpm build` fails after the merge, fix the cause on the update branch and rerun both. A release note may name a manual step, such as moving settings into a new file; follow it.
+6. Summarize what changed and leave merging the branch into theirs to the person, by pull request in a team studio. Push only when asked.

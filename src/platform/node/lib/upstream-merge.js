@@ -65,11 +65,24 @@ export function mergeUpstream(
   }
   const unresolved = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
   if (unresolved.length) return { merged: false, conflicts: unresolved };
+  finishUpstreamMerge(cwd, { message, run, beforeRegenerate });
+  return { merged: true, changed: true };
+}
+
+// Completes a merge whose conflicts are all resolved: runs `beforeRegenerate()`, regenerates what was taken from
+// upstream or merged as text, and commits. `pnpm studio update --continue` calls it after a person resolves conflicts.
+export function finishUpstreamMerge(
+  cwd,
+  {
+    message,
+    run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }),
+    beforeRegenerate = () => {},
+  },
+) {
+  const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
   beforeRegenerate();
-  // Regenerate what was taken from upstream or merged as text.
   run('pnpm', ['install', '--no-frozen-lockfile']);
   run('pnpm', ['studio', 'sync']);
   git('add', '-A');
   git('commit', '-q', '--no-verify', '-m', message);
-  return { merged: true, changed: true };
 }

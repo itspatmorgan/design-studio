@@ -50,9 +50,23 @@ Modules run inside the application; they are not a protective sandbox. A faulty 
 
 ## How do I update my studio?
 
-Studio does not automatically merge new releases into your folder. Updating a setup plugin does not upgrade that folder either.
+New versions of Design Studio come out as numbered releases, such as 0.2.1. Your studio doesn't change on its own: you choose when to take a release, and your work stays yours.
 
-Ask your agent to compare the update with your local changes, preserve existing work, and verify the application before adopting it. Changes kept to your systems, prototypes, contributors, settings, and your own modules update most easily; your agent can use the [ownership map](/documentation/context/platform.core/context/ownership) to check the rest. Custom systems, modules, and platform changes need maintenance as dependencies and upstream code evolve.
+Ask your agent to update your studio. It runs `pnpm studio update`, which:
+
+1. Checks that your work is saved in Git. Commit your changes first.
+2. Finds the newest release. You can ask for a specific one instead.
+3. Makes a separate branch for the update, named after the release, so the version you are working on stays exactly as it was.
+4. Brings the release's changes into that branch. Your prototypes, contributors, systems, settings, and your own modules are kept as you left them.
+5. Checks that the studio still works and builds.
+
+You can ask your agent for a preview first: it shows which release you would get and which files you changed that the release changes too, without changing anything.
+
+If you or your agent changed a part of Studio that the release also changed, the update stops and lists those files. Your agent can help you decide what to keep from each side, or cancel the update and leave everything as it was. Keeping your changes to your own systems, prototypes, settings, and modules, rather than Studio's own code, makes updates smooth.
+
+When the update finishes, try your studio on the update branch. When you're happy, merge the branch into your own (in a team, through a pull request). Your studio records which release it is on, so the next update knows where to start.
+
+The first time, your agent may need to connect your studio to the Design Studio project with `git remote add upstream https://github.com/itspatmorgan/design-studio-starter.git`; the update command says so. Updating a setup plugin does not update a studio folder. Your agent can use the [ownership map](/documentation/context/platform.core/context/ownership) for the details.
 
 ## Where do I add guidance for my agent?
 

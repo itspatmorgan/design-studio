@@ -26,6 +26,8 @@ import { systemPackage, systemDependencyProblems } from '../lib/system-dependenc
 //   identity-apply <preview> [--yes]     apply the reviewed migration with existing Admin authority
 //   identify <prototype-folder> [--yes] assign missing IDs within one owned prototype
 //   check                             pnpm check, and what has changed from the original of a module you added
+//   update [version] [--dry-run]      take an upstream release on a new studio-update/v<version> branch;
+//   update --continue                 finish one after resolving conflicts (src/platform/node/cli/studio-update.js)
 // Dry runs read declarations as data. --yes trusts the source: its checks run after packages install.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -933,7 +935,7 @@ const commands = {
 };
 if (!command || !Object.hasOwn(commands, command)) {
   console.error(
-    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'identity-audit', 'identity-plan', 'identity-apply', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
+    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'update', 'identity-audit', 'identity-plan', 'identity-apply', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
   );
   process.exit(command ? 1 : 0);
 }
