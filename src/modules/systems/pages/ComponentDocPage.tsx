@@ -16,6 +16,7 @@ import type { PropDoc, SystemComponentDoc } from '@/modules/systems/docs';
 import { shadcnDocsUrl } from '@/modules/systems/sources';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { ErrorBoundary } from 'react-error-boundary';
+import { MDXProvider } from '@mdx-js/react';
 import ViewError from '@/modules/prototypes/viewer/ViewError';
 
 // One component's page in the Systems section, built from its files: the title and description
@@ -25,7 +26,10 @@ import ViewError from '@/modules/prototypes/viewer/ViewError';
 
 // The page's Markdown headings match the page's own sections (18px, under the 26px title), not the
 // 21px h2 the small prose size gives.
-const PAGE_PROSE = 'prose-h2:mt-12 prose-h2:mb-4 prose-h2:text-lg prose-h2:font-semibold prose-h2:tracking-tight prose-h3:text-base';
+const PAGE_PROSE = 'prose-h3:text-base';
+const componentHeadings = {
+  h2: ({ className = '', style, ...props }: React.ComponentProps<'h2'>) => <h2 {...props} className={`mt-12 mb-4 text-lg font-semibold tracking-tight text-foreground ${className}`} style={{ ...style, fontSize: '1.125rem', fontWeight: 600, lineHeight: '1.75rem' }} />,
+};
 
 // "WithIcon" → "With icon".
 const sentence = (name: string) => name.replace(/([a-z\d])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase()).replace(/ ([A-Z])(?![A-Z])/g, (_, c: string) => ` ${c.toLowerCase()}`);
@@ -136,7 +140,7 @@ export function ComponentDocPage({ system, sys, component, origin, loaded }: { s
         />
       </div>
       {errors.length > 0 && <div role="alert" className="space-y-2 rounded-md border border-border p-3 text-sm"><p>Some component files couldn't load.</p>{errors.map((error) => <p key={error} className="text-muted-foreground">{error}</p>)}<Button variant="outline" size="sm" onClick={() => { setRetry((value) => value + 1); void router.invalidate(); }}>Try again</Button></div>}
-      {Doc ? <ErrorBoundary resetKeys={[Doc, retry]} FallbackComponent={ViewError}><Prose className={PAGE_PROSE}><Doc /></Prose></ErrorBoundary> : !doc && <Note>No page yet. Add <code>{stem}.md</code> next to the component to describe it and say when to use it.</Note>}
+      {Doc ? <ErrorBoundary resetKeys={[Doc, retry]} FallbackComponent={ViewError}><Prose className={PAGE_PROSE}><MDXProvider components={componentHeadings}><Doc /></MDXProvider></Prose></ErrorBoundary> : !doc && <Note>No page yet. Add <code>{stem}.md</code> next to the component to describe it and say when to use it.</Note>}
 
 
 
@@ -187,7 +191,7 @@ export function ComponentDocPage({ system, sys, component, origin, loaded }: { s
       {source && loaded.props && (
         <section className="mt-12">
           <Collapsible>
-            <h2>
+            <h2 className="text-lg font-semibold tracking-tight">
               <CollapsibleTrigger className="group flex w-full cursor-pointer flex-wrap items-center gap-2 rounded-sm text-left outline-none focus-visible:ring-3 focus-visible:ring-ring/50">
                 <HugeiconsIcon icon={ArrowDown01Icon} size={16} className="text-muted-foreground transition-transform group-not-data-panel-open:-rotate-90" />
                 <span className="text-lg font-semibold tracking-tight">Props</span>
