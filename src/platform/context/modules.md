@@ -20,7 +20,7 @@ A module cannot import another optional module's implementation. Outside code ca
 
 Prototypes access public libraries through `@module/<id>`. They cannot import private platform paths. Runtime library code has its own dependency checks.
 
-Every module declares `requires`, the oldest platform version it works with, such as `requires: '0.2.0'`. A module without one fails validation. An incompatible module is disabled and reported by checks.
+Every module declares `requires`, the oldest platform version it works with, such as `requires: '0.2.0'`. Supplied modules use `requires: '0.3.0'` for the current declaration fields, browser identity entry, and build contributions. A module without one fails validation. An incompatible module is disabled and reported by checks.
 
 ## Public API
 
@@ -28,11 +28,11 @@ Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import
 
 | Entry | Use it for | Where it loads |
 | --- | --- | --- |
-| `#studio/module` | `ModuleSpec`, `ModuleApp`, `ModuleServer`, `ServerRoute`, `ModuleCheck`, `ModuleBuild` (experimental), `PaletteContext`, `PrototypeAction`, `PLATFORM_VERSION`, and the studio identity: `APP_NAME`, `TAGLINE`, read-only `CONFIG`. | Types anywhere; the identity values in app code. |
+| `#studio/module` | `ModuleSpec`, `ModuleServer`, `ServerRoute`, `ModuleCheck`, `ModuleBuild` (experimental), `PLATFORM_VERSION`. | Browser and Node; type imports anywhere. |
 | `#studio/system` | `SystemSpec`, `SystemLibrary`, `SystemIntro`, and the types inside them. | Types anywhere. |
 | `#studio/files` | Declaring a file type in `type.ts`: `defineFileType`, `FileTypeSpec`, capabilities, identity, and the Markdown declaration to extend. | Browser and Node. |
-| `#studio/data` | Reading content in the app: the manifest, a prototype's files, the current contributor and edit permissions, `callModule`, and what a file type's `loader.ts` and `open.tsx` implement. | Browser. |
-| `#studio/ui` | The shell's building blocks: section navigation, home blocks, collections, documents, and the source editor. | Browser. |
+| `#studio/data` | Reading content in the app: the manifest, `contribution<Data>`, the studio identity (`APP_NAME`, `TAGLINE`, read-only `CONFIG`), a prototype's files, the current contributor and edit permissions, `callModule`, and what a file type's `loader.ts` and `open.tsx` implement. | Browser. |
+| `#studio/ui` | Browser app contributions (`ModuleApp`, `PaletteContext`, `PrototypeAction`) and the shell's building blocks: section navigation, home blocks, collections, documents, and the source editor. | Browser. |
 | `#studio/components` | Studio's interface components, such as `Button`, `Dialog`, `Input`, `Tooltip`, menus, and `toast`. | Browser. |
 
 `src/platform/api/*.ts` lists each export with a JSDoc tag:
@@ -52,11 +52,11 @@ If a capability needs a platform service the API does not offer, propose an addi
 
 `ModuleApp.palette` draws a module's groups in the ⌘K palette; `ModuleApp.paletteOrder` sets their place among the other modules' groups (default `order`). The shell hardcodes no module's palette entries.
 
-`ModuleApp.landing(manifest)` (experimental) returns where the shared `/documentation` address opens, or `undefined` for the default Context & Skills browser. The Documentation module uses it to open the Manual.
+`ModuleApp.landing(manifest)` (stable) returns where the shared `/documentation` address opens, or `undefined` for the default Context & Skills browser. The Documentation module uses it to open the Manual.
 
 `ModuleSpec.settings` (`{ group, order }`) names the group Studio settings lists the module under (`prototyping`, `systems`, or `team`) and its place in it. A module without one is listed under Other modules.
 
-A module reads its own `build.ts` data with `contribution<Data>(manifest, id)`; the manifest has no module-specific fields.
+A module reads its own `build.ts` data with `contribution<Data>(manifest, id)` from `#studio/data`; the manifest has no module-specific fields.
 
 `ModuleApp.navLabel` supplies a shorter navigation label while the declaration retains the full capability name.
 

@@ -51,7 +51,7 @@ export type ModuleApp = {
   palette?: ComponentType<PaletteContext>;
   // Where its palette groups sit among the other modules' groups, low first, when that differs from `order`.
   paletteOrder?: number;
-  /** @experimental Where the shared Documentation address (/documentation) opens, instead of the Context & Skills browser. Receives the manifest; return undefined to leave the default. */
+  /** @stable Where the shared Documentation address (/documentation) opens, instead of the Context & Skills browser. Receives the manifest; return undefined to leave the default. */
   landing?: (manifest: Manifest) => string | undefined;
 };
 

@@ -17,7 +17,7 @@ export default {
   id: 'prototypes',
   label: 'Prototypes',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '0.3.0',
   description: 'What your team is designing, one folder each: screens, notes and canvases.',
   section: { key: 'prototypes', folder: 'src/prototypes', items: 'prototypes', byPerson: true },
 } satisfies ModuleSpec;

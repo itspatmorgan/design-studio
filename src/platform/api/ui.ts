@@ -1,5 +1,11 @@
 // #studio/ui: the shell's building blocks a module renders with: navigation, home blocks, collections, documents
 // and source editing. Studio's interface components are #studio/components. Browser code only.
+/** @stable What a module's app.tsx adds to the app: rail button, routes, home block, palette and menu entries. */
+export type { ModuleApp } from '../app/modules.ts';
+/** @stable What palette entries receive: the manifest, the open prototype and navigation. */
+export type { PaletteContext } from '../app/modules.ts';
+/** @stable One entry a module adds to a prototype's menu. */
+export type { PrototypeAction } from '../app/modules.ts';
 /** @experimental The shell's not-found page. */
 export { NotFound } from '../app/shell/App.tsx';
 /** @experimental A section's side navigation and its parts. */

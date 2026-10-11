@@ -4,12 +4,12 @@ import { Suspense } from 'react';
 import { createRoute, notFound, lazyRouteComponent } from '@tanstack/react-router';
 import { BookOpen01Icon } from '@hugeicons/core-free-icons';
 import { APP_NAME } from '@/platform/app/data/config';
-import type { ModuleApp } from '#studio/module';
+import type { ModuleApp } from '#studio/ui';
 import { loadManifest } from '@/platform/app/data/manifest';
 import { loadManualPage } from './loadManual';
 import { manualPages } from './manualPages';
 import { CommandGroup, CommandItem, CommandSeparator } from '@/platform/systems/studio/components/command';
-import type { PaletteContext } from '#studio/module';
+import type { PaletteContext } from '#studio/ui';
 
 // Manual pages render in DocLayout, loaded with the first Manual page.
 const ManualPage = lazyRouteComponent(() => import('./ManualPage'));

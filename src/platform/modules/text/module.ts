@@ -8,6 +8,6 @@ export default {
   id: 'text',
   label: 'Text files',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '0.3.0',
   description: 'Any other text file in the SystemContent opens read-only as its text.',
 } satisfies ModuleSpec;

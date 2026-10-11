@@ -75,7 +75,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     write(
       root,
       'src/modules/extra/module.ts',
-      "export default {id:'extra',label:'Extra',version:'0.1.0',requires:'0.2.0',optional:true,lib:true};",
+      "export default {id:'extra',label:'Extra',version:'0.1.0',requires:'0.3.0',optional:true,lib:true};",
     );
     write(root, 'src/modules/extra/lib/index.ts', 'export const value = 1;');
     write(root, 'src/modules/extra/lib/private.ts', 'export const hidden = 1;');
@@ -153,6 +153,70 @@ test('private module consumers and symlink scopes are rejected; disabled app and
       assert.equal(result.status, 0, file + ': ' + source + '\n' + result.stdout + result.stderr);
       fs.rmSync(target);
     }
+    // A team build hook imports the Node-safe public entry. Its app reads the contribution through the browser API.
+    write(
+      root,
+      'src/modules/extra/build.ts',
+      `
+      import fs from 'node:fs';
+      import path from 'node:path';
+      import { PLATFORM_VERSION, type ModuleBuild } from '#studio/module';
+      export default {
+        manifest({root}) {
+          fs.appendFileSync(path.join(root, '.extra-build-calls'), 'called\\n');
+          return {data: {label: '__PUBLIC_CONTRIBUTION_PROOF__', version: PLATFORM_VERSION}, errors: 0};
+        },
+      } satisfies ModuleBuild<{label: string; version: string}>;
+    `,
+    );
+    write(
+      root,
+      'src/modules/extra/app.tsx',
+      `
+      import type { ModuleApp } from '#studio/ui';
+      import { APP_NAME, contribution, type Manifest } from '#studio/data';
+      import { Home01Icon } from '@hugeicons/core-free-icons';
+      function Overview({manifest}: {manifest: Manifest}) {
+        const data = contribution<{label: string}>(manifest, 'extra');
+        return <div>{APP_NAME}: {data?.label ?? '__PUBLIC_CONTRIBUTION_MISSING__'}</div>;
+      }
+      export default {icon: Home01Icon, rail: 'none', order: 50, overview: Overview} satisfies ModuleApp;
+    `,
+    );
+    const contributed = () =>
+      JSON.parse(fs.readFileSync(path.join(root, 'public/prototypes/manifest.json'))).contributions.extra;
+    const calls = () => fs.readFileSync(path.join(root, '.extra-build-calls'), 'utf8');
+    run('src/platform/node/build/build-manifest.js', '--strict', '--deploy');
+    assert.deepEqual(contributed(), { label: '__PUBLIC_CONTRIBUTION_PROOF__', version: '0.3.0' });
+    run('src/platform/node/check/check-modules.js');
+    run('src/platform/node/check/typecheck.js');
+    run('node_modules/vite/bin/vite.js', 'build');
+    const enabledCode = fs
+      .readdirSync(path.join(root, 'dist/assets'))
+      .filter(f => f.endsWith('.js'))
+      .map(f => fs.readFileSync(path.join(root, 'dist/assets', f), 'utf8'))
+      .join('');
+    assert.ok(enabledCode.includes('__PUBLIC_CONTRIBUTION_MISSING__'), 'browser public reader is included');
+    const beforeDisable = calls();
+    run('src/platform/node/cli/studio.js', 'disable', 'extra');
+    run('src/platform/node/build/build-manifest.js', '--strict', '--deploy');
+    assert.equal(contributed(), undefined);
+    assert.equal(calls(), beforeDisable, 'disabled build hook does not run');
+    run('src/platform/node/cli/studio.js', 'enable', 'extra');
+    run('src/platform/node/build/build-manifest.js', '--strict', '--deploy');
+    assert.equal(contributed().label, '__PUBLIC_CONTRIBUTION_PROOF__');
+    assert.ok(calls().length > beforeDisable.length);
+    // An incompatible module is unavailable and checks explain how to recover it.
+    const extraSpec = path.join(root, 'src/modules/extra/module.ts');
+    const compatibleSource = fs.readFileSync(extraSpec, 'utf8');
+    fs.writeFileSync(extraSpec, compatibleSource.replace("requires:'0.3.0'", "requires:'99.0.0'"));
+    const incompatible = run('src/platform/node/check/check-modules.js');
+    assert.match(incompatible, /extra module needs platform 99.0.0.*so it is off. Update the platform to use it/);
+    const beforeIncompatible = calls();
+    run('src/platform/node/build/build-manifest.js', '--strict', '--deploy');
+    assert.equal(contributed(), undefined);
+    assert.equal(calls(), beforeIncompatible);
+    fs.writeFileSync(extraSpec, compatibleSource);
     run('src/platform/node/cli/studio.js', 'disable', 'extra');
     run(
       '--input-type=module',

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { DialogDescription } from '@/platform/systems/studio/components/dialog';
 import { Button } from '@/platform/systems/studio/components/button';
-import { CONFIG } from '#studio/module';
+import { CONFIG } from '#studio/data';
 import { ArtifactSketch, SystemSketch, StorySketch, ScopeDiagram } from './Illustrations';
 
 const systemParts = [

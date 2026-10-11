@@ -6,7 +6,7 @@ export default {
   id: 'canvas',
   label: 'Canvases',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '0.3.0',
   description: 'An .excalidraw file opens as a page to arrange views, documents, and notes on.',
   optional: true,
   settings: { group: 'prototyping', order: 2 },

@@ -12,7 +12,7 @@ export default {
   id: 'systems',
   label: 'Systems',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '0.3.0',
   description: 'Theme, components, assets, context, and skills for prototypes.',
   section: { key: 'systems', folder: 'src/systems', policy: 'open' },
 } satisfies ModuleSpec;

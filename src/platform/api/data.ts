@@ -1,5 +1,21 @@
 // #studio/data: the manifest, files and permissions as the app sees them, and what a file type's loader.ts and
 // open.tsx implement (src/platform/context/file-types.md). Browser code only.
+import { CONFIG as STUDIO_CONFIG } from '../app/data/config.ts';
+import type { StudioConfig } from '../core/config.ts';
+
+/** @stable The studio's name, from studio.config.json. */
+export { APP_NAME } from '../app/data/config.ts';
+/** @stable The studio's tagline from studio.config.json, if it has one. */
+export { TAGLINE } from '../app/data/config.ts';
+
+type ReadOnly<T> = T extends (...args: never[]) => unknown
+  ? T
+  : T extends object
+    ? { readonly [K in keyof T]: ReadOnly<T[K]> }
+    : T;
+/** @stable The studio's resolved settings, read-only. */
+export const CONFIG: ReadOnly<StudioConfig> = STUDIO_CONFIG;
+
 /** @experimental A prototype's summary in the manifest. */
 export type { PrototypeInfo } from '../app/data/types.ts';
 /** @experimental A prototype with its files. */
@@ -24,6 +40,8 @@ export type { DocFrontmatter } from '../app/docs/types.ts';
 export { useManifest } from '../app/data/useManifest.ts';
 /** @experimental Loads the manifest, for a route loader. */
 export { loadManifest } from '../app/data/manifest.ts';
+/** @experimental A module's build contribution, or undefined when unavailable. The caller supplies its data type. */
+export { contribution } from '../app/data/manifest.ts';
 /** @experimental Every prototype in the manifest, across sections. */
 export { allPrototypes } from '../app/data/manifest.ts';
 /** @experimental A prototype's file by its slug. */

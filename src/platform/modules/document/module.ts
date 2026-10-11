@@ -6,7 +6,7 @@ export default {
   id: 'document',
   label: 'Documents',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '0.3.0',
   description: 'A .md file in a prototype opens as a written page.',
   optional: true,
   settings: { group: 'prototyping', order: 4 },

@@ -62,7 +62,7 @@ test('experimental exports may change without a version bump, but the snapshot r
   assert.match(problem, /pnpm contract --update/);
   // Removing or demoting a stable export is a contract change.
   const demoted = base();
-  demoted.api['#studio/module'].APP_NAME = 'experimental';
+  demoted.api['#studio/data'].APP_NAME = 'experimental';
   assert.match(contractProblems(demoted, base())[0], /Bump PLATFORM_VERSION/);
 });
 

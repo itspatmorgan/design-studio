@@ -3,7 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
 import { Button } from '@/platform/systems/studio/components/button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/platform/systems/studio/components/dialog';
-import { APP_NAME, CONFIG } from '#studio/module';
+import { APP_NAME, CONFIG } from '#studio/data';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { useMe } from '@/platform/app/data/files';
 import { claimIntroduction, complete, progressKey, recordIntroduction } from './progress';

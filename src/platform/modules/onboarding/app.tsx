@@ -1,5 +1,5 @@
 import { Home01Icon } from '@hugeicons/core-free-icons';
-import type { ModuleApp } from '#studio/module';
+import type { ModuleApp } from '#studio/ui';
 import Welcome from './Welcome';
 
 export default {
