@@ -11,6 +11,7 @@ const modules: ModuleSpec[] = [
     id: 'examples',
     label: 'Examples',
     version: '0.1.0',
+    requires: '0.2.0',
     section: { key: 'examples', folder: 'src/examples', items: 'prototypes', policy: 'maintainers' },
   },
   {
@@ -19,9 +20,10 @@ const modules: ModuleSpec[] = [
     id: 'documentation',
     label: 'Manual',
     version: '0.1.0',
+    requires: '0.2.0',
     section: { key: 'documentation', folder: 'src/platform/modules/documentation/pages' },
   },
-  { optional: false, lib: false, id: 'extra', label: 'Extra', version: '0.1.0' },
+  { optional: false, lib: false, id: 'extra', label: 'Extra', version: '0.1.0', requires: '0.2.0' },
 ];
 
 test('maintainers are a list of at least one contributor key', () => {

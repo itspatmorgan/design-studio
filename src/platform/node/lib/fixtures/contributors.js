@@ -27,7 +27,7 @@ export function ensureTeamManagement(root) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(
       file,
-      "export default { id: 'contributors', label: 'Team fixture', version: '0.1.0', optional: true, lib: false, section: { key: 'contributors' } };\n",
+      "export default { id: 'contributors', label: 'Team fixture', version: '0.1.0', requires: '0.2.0', optional: true, lib: false, section: { key: 'contributors' } };\n",
     );
   }
   const config = path.join(root, CONFIG_FILE);

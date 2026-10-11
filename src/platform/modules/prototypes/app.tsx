@@ -8,7 +8,7 @@ import { HomeHint, HomeSection } from '@/platform/app/items/HomeSection';
 import { useMe } from '@/platform/app/data/files';
 import { APP_NAME } from '@/platform/app/data/config';
 import { newestFirst, prototypeLink } from '@/platform/app/data/manifest';
-import type { ModuleApp, PaletteContext } from '@/platform/core/api';
+import type { ModuleApp, PaletteContext } from '#studio/module';
 import type { Manifest } from '@/platform/app/data/types';
 import Gallery from './gallery/Gallery';
 import NewPrototypeButton from './gallery/NewPrototypeDialog';

@@ -44,6 +44,38 @@ const edit = (file, change) => {
 // a pre-release studio needs after taking such a change. It runs after the merge, and only when its condition holds,
 // so an update from a base that already has the change runs none of them. Nothing here is part of the update rules
 // (src/platform/node/lib/upstream-merge.js). Remove this list when the upgrade test starts from the first release tag.
+// The team's fixture module and system, as the steps below create them.
+const FIXTURE_MODULE = 'src/modules/fixture-notes';
+const FIXTURE_SYSTEM = `${TEAM_SYSTEMS_ROOT}/fixture-kit`;
+// A file's text, or '' when the update or the base does not have it, so a condition on it is simply false.
+const textOf = file => (fs.existsSync(path.join(dir, file)) ? fs.readFileSync(path.join(dir, file), 'utf8') : '');
+// Replaces text in the files that have it; returns whether anything changed.
+const rewrite = (files, replacements) => {
+  let changed = false;
+  for (const file of files) {
+    const before = textOf(file);
+    const after = replacements.reduce((text, [from, to]) => text.replace(from, to), before);
+    if (after === before) continue;
+    fs.writeFileSync(path.join(dir, file), after);
+    changed = true;
+  }
+  return changed;
+};
+// Team code from before the public API imports platform paths directly. A person repoints each import to its
+// #studio/* entry, and declares the platform version the module now requires.
+const PUBLIC_API_IMPORTS = [
+  [/(['"])(?:\.\.\/\.\.\/platform\/core\/api\.ts|@\/platform\/core\/api)\1/g, "'#studio/module'"],
+  [/(['"])(?:\.\.\/\.\.\/platform\/modules\/systems\/spec\.ts)\1/g, "'#studio/system'"],
+  [/(['"])@\/platform\/app\/data\/types\1/g, "'#studio/system'"],
+];
+const PUBLIC_API_FILES = [
+  `${FIXTURE_MODULE}/module.ts`,
+  `${FIXTURE_MODULE}/app.tsx`,
+  `${FIXTURE_SYSTEM}/system.ts`,
+  `${FIXTURE_SYSTEM}/intro.tsx`,
+];
+const platformVersion = () => textOf('src/platform/core/modules/index.ts').match(/PLATFORM_VERSION = '([^']+)'/)?.[1];
+
 const PRE_RELEASE_TRANSITIONS = [
   {
     // The supplied modules moved to src/platform/modules. A team system made before the move imports its spec type from
@@ -51,18 +83,12 @@ const PRE_RELEASE_TRANSITIONS = [
     name: 'repoint the team system spec import',
     applies: () =>
       !fs.existsSync(path.join(dir, 'src/modules/systems/spec.ts')) &&
-      fs
-        .readFileSync(path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts'), 'utf8')
-        .includes("'../../modules/systems/spec.ts'"),
-    apply: () => {
-      const file = path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts');
-      fs.writeFileSync(
-        file,
-        fs
-          .readFileSync(file, 'utf8')
-          .replace("'../../modules/systems/spec.ts'", "'../../platform/modules/systems/spec.ts'"),
-      );
-    },
+      textOf(`${FIXTURE_SYSTEM}/system.ts`).includes("'../../modules/systems/spec.ts'"),
+    apply: () =>
+      rewrite(
+        [`${FIXTURE_SYSTEM}/system.ts`],
+        [["'../../modules/systems/spec.ts'", "'../../platform/modules/systems/spec.ts'"]],
+      ),
   },
   {
     // Settings moved from studio.config.ts to studio.config.json. Upstream deleted the TypeScript file, which the team
@@ -90,14 +116,39 @@ const PRE_RELEASE_TRANSITIONS = [
       run('pnpm', ['studio', 'sync']);
     },
   },
+  {
+    // Team modules and systems import the platform only through #studio/* (src/platform/api/), and every module
+    // declares requires. A team module and system made before that import platform paths and have no requires; a
+    // person repoints the imports and adds the platform version the module was moved to.
+    name: 'move the team module and system to the public #studio API',
+    applies: () =>
+      fs.existsSync(path.join(dir, 'src/platform/api')) &&
+      (PUBLIC_API_FILES.some(file => PUBLIC_API_IMPORTS.some(([from]) => new RegExp(from).test(textOf(file)))) ||
+        (textOf(`${FIXTURE_MODULE}/module.ts`) !== '' && !/\brequires:/.test(textOf(`${FIXTURE_MODULE}/module.ts`)))),
+    apply: () => {
+      rewrite(PUBLIC_API_FILES, PUBLIC_API_IMPORTS);
+      if (!/\brequires:/.test(textOf(`${FIXTURE_MODULE}/module.ts`)))
+        rewrite(
+          [`${FIXTURE_MODULE}/module.ts`],
+          [[/^([ \t]*)version: '([^']+)',$/m, `$1version: '$2',\n$1requires: '${platformVersion()}',`]],
+        );
+    },
+  },
 ];
 
 let ok = false;
 try {
   step(`Create a studio from ${base} (${baseSha.slice(0, 7)})`);
   execFileSync('git', ['worktree', 'add', '-q', '--detach', dir, baseSha], { cwd: ROOT, stdio: 'inherit' });
-  run('git', ['config', 'user.name', 'Fixture Person']);
-  run('git', ['config', 'user.email', 'fixture@example.test']);
+  // The fixture person's Git identity, for every command below. `git config` in a linked worktree would write it
+  // into the repository's shared config, replacing the identity of the checkout running this test.
+  Object.assign(process.env, {
+    GIT_CONFIG_COUNT: '2',
+    GIT_CONFIG_KEY_0: 'user.name',
+    GIT_CONFIG_VALUE_0: 'Fixture Person',
+    GIT_CONFIG_KEY_1: 'user.email',
+    GIT_CONFIG_VALUE_1: 'fixture@example.test',
+  });
   run('pnpm', ['install', '--frozen-lockfile']);
 
   step('Make team changes');
@@ -119,7 +170,7 @@ try {
   ).name;
   run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
   run('pnpm', ['new', 'Fixture Prototype']);
-  run('pnpm', ['studio', 'create-module', 'fixture-notes', '--label', 'Fixture notes', '--yes']);
+  run('pnpm', ['studio', 'create-module', path.basename(FIXTURE_MODULE), '--label', 'Fixture notes', '--yes']);
   // Studio settings: JSON in a studio that has studio.config.json, the older TypeScript file in one that does not yet
   // (a base from before the JSON file; this branch goes away with PRE_RELEASE_TRANSITIONS).
   if (fs.existsSync(path.join(dir, 'studio.config.json')))
@@ -147,6 +198,8 @@ try {
     if (!transition.applies()) continue;
     step(`Pre-release transition: ${transition.name}`);
     transition.apply();
+    // A transition whose condition held but that found nothing to change commits nothing.
+    if (!read('git', ['status', '--porcelain'])) continue;
     run('git', ['add', '-A']);
     run('git', ['commit', '-q', '--no-verify', '-m', `Pre-release transition: ${transition.name}`]);
   }
@@ -165,7 +218,7 @@ try {
     for (const file of ['AGENTS.team.md', 'AGENTS.md'])
       if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(TEAM_AGENTS_LINE))
         throw new Error(`The update lost the team's agent guidance in ${file}.`);
-  for (const folder of ['contributors/fixture.json', 'src/prototypes/fixture', 'src/modules/fixture-notes']) {
+  for (const folder of ['contributors/fixture.json', 'src/prototypes/fixture', FIXTURE_MODULE]) {
     if (!fs.existsSync(path.join(dir, folder))) throw new Error(`The update removed ${folder}.`);
   }
   run('pnpm', ['install', '--frozen-lockfile']);

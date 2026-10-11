@@ -42,7 +42,7 @@ Installing or removing a module is a separate agent task. Ask what will happen t
 
 ## Can my agent add a feature?
 
-Yes. Describe what you need and ask the agent to assess whether a module fits. A module groups its code and integrates through supported platform connections, reducing coupling with the core.
+Yes. Describe what you need and ask the agent to assess whether a module fits. A module groups its code in its own folder and connects to Studio only through Studio's public API, so platform updates are less likely to break it. Each module also names the oldest Studio version it works with; Studio turns off a module that needs a newer one and says why.
 
 For example, you might ask for a new review tool or artifact type. Ask for a proposal that explains the inputs, interface, affected parts, and how the result will be checked.
 

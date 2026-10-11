@@ -1,16 +1,36 @@
 // The platform's public contract as plain JSON, read from source, so a change to it can't skip a PLATFORM_VERSION bump.
-// Covers module entrypoints, core/api.ts exports, the ModuleSpec/SystemSpec/SystemLibrary fields and the runtime package lists.
+// Covers every export of the public API (src/platform/api/, imported as #studio/<entry>) with its stability, the
+// fields of the stable declaration types, and the runtime package lists.
+// A stable export, a declaration type's fields or a runtime package list changes only with a PLATFORM_VERSION bump.
+// An experimental export may change in any 0.x release, but the snapshot still records it, so the change is visible.
 // Snapshot: src/platform/core/contract.snapshot.json, refreshed with `pnpm contract --update` (src/platform/node/check/check-contract.js).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { PLATFORM_VERSION } from '../../core/modules/index.ts';
-import { MODULE_PLATFORM_ENTRIES } from '../../core/modules/boundaries.ts';
+import { API_ENTRIES, API_FOLDER, apiSpecifier } from '../../core/modules/boundaries.ts';
 import { SHARED_RUNTIME_PACKAGES, SYSTEM_RUNTIME_PACKAGES } from './system-dependencies.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 export const SNAPSHOT_FILE = 'src/platform/core/contract.snapshot.json';
+export const STABILITY = ['stable', 'experimental'];
+
+// The stable declaration types whose fields the snapshot records, by the file that defines each.
+const DECLARATION_TYPES = {
+  ModuleSpec: 'src/platform/core/modules/index.ts',
+  ModuleApp: 'src/platform/app/modules.ts',
+  PaletteContext: 'src/platform/app/modules.ts',
+  PrototypeAction: 'src/platform/app/modules.ts',
+  SystemSpec: 'src/platform/modules/systems/spec.ts',
+  SystemLibrary: 'src/platform/modules/systems/spec.ts',
+  SystemIntro: 'src/platform/app/data/types.ts',
+  SystemOverviewSummary: 'src/platform/app/data/types.ts',
+  SystemCuration: 'src/platform/app/data/types.ts',
+  FileTypeSpec: 'src/platform/core/fileTypes.ts',
+  ArtifactCapabilities: 'src/platform/core/fileTypes.ts',
+  IdentityMetadata: 'src/platform/core/resourceIdentity.ts',
+};
 
 const parse = (root, file) =>
   ts.createSourceFile(file, fs.readFileSync(path.join(root, file), 'utf8'), ts.ScriptTarget.Latest, true);
@@ -27,37 +47,86 @@ export function typeFields(source, name) {
     .sort();
 }
 
-// Export names of a module, split into values and types; `export * from` is kept as written.
-export function exportNames(source) {
-  const values = new Set(),
-    types = new Set();
-  for (const node of source.statements) {
-    if (ts.isExportDeclaration(node)) {
-      if (!node.exportClause) values.add(`* from ${node.moduleSpecifier.text}`);
-      else
-        for (const element of node.exportClause.elements)
-          (node.isTypeOnly || element.isTypeOnly ? types : values).add(element.name.text);
-    } else if (ts.canHaveModifiers(node) && ts.getModifiers(node)?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)) {
-      const kind = ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node) ? types : values;
-      if (ts.isVariableStatement(node))
-        node.declarationList.declarations.forEach(d => kind.add(d.name.getText(source)));
-      else if (node.name) kind.add(node.name.text);
-    }
+// The names one export statement adds; `export * from` is refused, since its names would not be listed here.
+function statementExports(node, source) {
+  if (ts.isExportDeclaration(node)) {
+    if (!node.exportClause || !ts.isNamedExports(node.exportClause))
+      return { problem: `export * from ${node.moduleSpecifier?.getText(source)}: name each export instead.` };
+    return { names: node.exportClause.elements.map(element => element.name.text) };
   }
-  return { values: sorted(values), types: sorted(types) };
+  if (ts.isExportAssignment(node)) return { problem: 'a default export: name each export instead.' };
+  if (!(ts.canHaveModifiers(node) && ts.getModifiers(node)?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)))
+    return { names: [] };
+  if (ts.isVariableStatement(node))
+    return { names: node.declarationList.declarations.map(d => d.name.getText(source)) };
+  return { names: node.name ? [node.name.text] : [] };
+}
+
+// The @stable or @experimental tag in the JSDoc comment directly before a statement, with its description.
+function stabilityOf(node, source) {
+  const comments = ts.getLeadingCommentRanges(source.text, node.pos) ?? [];
+  const last = comments.at(-1);
+  const text = last && source.text.slice(last.pos, last.end);
+  const match = text?.match(/^\/\*\*\s*@(stable|experimental)\b\s*([^*]*?)\s*\*\/$/);
+  return match && match[2] ? match[1] : null;
+}
+
+// Every export of one API entry file, by name, with its stability: { names: { Name: 'stable' }, problems: [] }.
+export function apiExports(source) {
+  const names = {};
+  const problems = [];
+  for (const node of source.statements) {
+    const found = statementExports(node, source);
+    if (found.problem) {
+      problems.push(`${source.fileName}: ${found.problem}`);
+      continue;
+    }
+    if (!found.names.length) continue;
+    const stability = stabilityOf(node, source);
+    if (!stability)
+      problems.push(
+        `${source.fileName}: ${found.names.join(', ')} needs a /** @stable ... */ or /** @experimental ... */ comment with a one-line description.`,
+      );
+    for (const name of found.names) names[name] = stability;
+  }
+  return {
+    names: Object.fromEntries(Object.entries(names).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))),
+    problems,
+  };
+}
+
+// What is wrong with the API folder itself: a file for every entry, an entry for every file, and tagged exports.
+export function apiProblems(root = ROOT) {
+  const files = fs
+    .readdirSync(path.join(root, API_FOLDER))
+    .filter(file => file.endsWith('.ts'))
+    .map(file => file.replace(/\.ts$/, ''));
+  return [
+    ...API_ENTRIES.filter(entry => !files.includes(entry)).map(
+      entry =>
+        `${API_FOLDER}/${entry}.ts is missing, but API_ENTRIES (src/platform/core/modules/boundaries.ts) lists it.`,
+    ),
+    ...files
+      .filter(file => !API_ENTRIES.includes(file))
+      .map(file => `${API_FOLDER}/${file}.ts is not in API_ENTRIES (src/platform/core/modules/boundaries.ts).`),
+    ...API_ENTRIES.filter(entry => files.includes(entry)).flatMap(
+      entry => apiExports(parse(root, `${API_FOLDER}/${entry}.ts`)).problems,
+    ),
+  ];
 }
 
 export function computeContract(root = ROOT) {
-  const spec = parse(root, 'src/platform/modules/systems/spec.ts');
   return {
     platformVersion: PLATFORM_VERSION,
-    moduleEntries: [...MODULE_PLATFORM_ENTRIES],
-    apiExports: exportNames(parse(root, 'src/platform/core/api.ts')),
-    types: {
-      ModuleSpec: typeFields(parse(root, 'src/platform/core/modules/index.ts'), 'ModuleSpec'),
-      SystemSpec: typeFields(spec, 'SystemSpec'),
-      SystemLibrary: typeFields(spec, 'SystemLibrary'),
-    },
+    api: Object.fromEntries(
+      API_ENTRIES.filter(entry => fs.existsSync(path.join(root, API_FOLDER, `${entry}.ts`))).map(entry => [
+        apiSpecifier(entry),
+        apiExports(parse(root, `${API_FOLDER}/${entry}.ts`)).names,
+      ]),
+    ),
+    types: Object.fromEntries(
+      Object.entries(DECLARATION_TYPES).map(([name, file]) => [name, typeFields(parse(root, file), name)]),
+    ),
     runtimePackages: { shared: [...SHARED_RUNTIME_PACKAGES], system: [...SYSTEM_RUNTIME_PACKAGES] },
   };
 }
@@ -89,19 +158,45 @@ function changes(a, b, at = '') {
   return JSON.stringify(a) === JSON.stringify(b) ? [] : [`${at}: ${JSON.stringify(a)} -> ${JSON.stringify(b)}`];
 }
 
-// What is wrong with the contract compared with its snapshot, as sentences that say what to do.
-export function contractProblems(current, snapshot) {
-  if (!snapshot) return [`${SNAPSHOT_FILE} is missing or unreadable. Run pnpm contract --update.`];
-  const { platformVersion: nowVersion, ...now } = current;
-  const { platformVersion: thenVersion, ...then } = snapshot;
-  const diff = changes(then, now);
-  if (!diff.length && nowVersion === thenVersion) return [];
-  const list = diff.map(line => `  ${line}`).join('\n');
-  if (nowVersion === thenVersion)
+// The changes an experimental export may make in any 0.x release: added, removed or changed while it is (and
+// stays, or becomes) experimental. Anything that is or was stable needs a new version.
+function apiChanges(then = {}, now = {}) {
+  const lines = { stable: [], experimental: [] };
+  for (const entry of new Set([...Object.keys(then), ...Object.keys(now)])) {
+    const [a = {}, b = {}] = [then[entry], now[entry]];
+    for (const name of new Set([...Object.keys(a), ...Object.keys(b)])) {
+      if (a[name] === b[name]) continue;
+      const line = `api.${entry}.${name}: ${a[name] ?? 'absent'} -> ${b[name] ?? 'absent'}`;
+      lines[a[name] === 'stable' || b[name] === 'stable' ? 'stable' : 'experimental'].push(line);
+    }
+  }
+  return lines;
+}
+
+// What is wrong with the contract compared with its snapshot, as sentences that say what to do. `tags` are the
+// problems apiProblems found in the API folder, reported first.
+export function contractProblems(current, snapshot, tags = []) {
+  if (!snapshot) return [...tags, `${SNAPSHOT_FILE} is missing or unreadable. Run pnpm contract --update.`];
+  const { platformVersion: nowVersion, api: nowApi, ...now } = current;
+  const { platformVersion: thenVersion, api: thenApi, ...then } = snapshot;
+  const api = apiChanges(thenApi, nowApi);
+  const stable = [...changes(then, now), ...api.stable];
+  const all = [...stable, ...api.experimental];
+  const list = lines => lines.map(line => `  ${line}`).join('\n');
+  if (nowVersion !== thenVersion)
     return [
-      `The platform contract changed without a PLATFORM_VERSION change (still ${nowVersion}):\n${list}\nBump PLATFORM_VERSION in src/platform/core/modules/index.ts, then run pnpm contract --update.`,
+      ...tags,
+      `PLATFORM_VERSION is ${nowVersion} but ${SNAPSHOT_FILE} records ${thenVersion}, so the snapshot is stale${all.length ? `:\n${list(all)}\n` : '. '}Run pnpm contract --update.`,
     ];
-  return [
-    `PLATFORM_VERSION is ${nowVersion} but ${SNAPSHOT_FILE} records ${thenVersion}, so the snapshot is stale${diff.length ? `:\n${list}\n` : '. '}Run pnpm contract --update.`,
-  ];
+  if (stable.length)
+    return [
+      ...tags,
+      `The platform contract changed without a PLATFORM_VERSION change (still ${nowVersion}):\n${list(all)}\nBump PLATFORM_VERSION in src/platform/core/modules/index.ts, then run pnpm contract --update.`,
+    ];
+  if (api.experimental.length)
+    return [
+      ...tags,
+      `Experimental API exports changed:\n${list(api.experimental)}\nThey may change without a PLATFORM_VERSION bump; run pnpm contract --update to record them.`,
+    ];
+  return tags;
 }

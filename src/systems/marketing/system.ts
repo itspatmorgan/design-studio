@@ -1,4 +1,4 @@
-import type { SystemSpec } from '../../platform/modules/systems/spec.ts';
+import type { SystemSpec } from '#studio/system';
 
 // Marketing: a design system prototypes can build with. A prototype picks it with "system": "marketing" in its meta.json.
 export default {

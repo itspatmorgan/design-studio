@@ -63,7 +63,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     write(
       root,
       'src/modules/canvas/module.ts',
-      "export default {id:'canvas',label:'Canvas again',version:'0.1.0',optional:true,lib:false};",
+      "export default {id:'canvas',label:'Canvas again',version:'0.1.0',requires:'0.2.0',optional:true,lib:false};",
     );
     const reused = attempt('src/platform/node/check/check-modules.js');
     assert.equal(reused.status, 1, reused.stdout + reused.stderr);
@@ -75,7 +75,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     write(
       root,
       'src/modules/extra/module.ts',
-      "export default {id:'extra',label:'Extra',version:'0.1.0',optional:true,lib:true};",
+      "export default {id:'extra',label:'Extra',version:'0.1.0',requires:'0.2.0',optional:true,lib:true};",
     );
     write(root, 'src/modules/extra/lib/index.ts', 'export const value = 1;');
     write(root, 'src/modules/extra/lib/private.ts', 'export const hidden = 1;');

@@ -1,4 +1,4 @@
-import type { SystemSpec } from '../../platform/modules/systems/spec.ts';
+import type { SystemSpec } from '#studio/system';
 
 // __LABEL__: select source key __ID__ in creation controls. Prototype metadata stores this installation’s permanent studioId.
 export default {

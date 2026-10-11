@@ -4,7 +4,7 @@ title: "Modules and extensions"
 
 A module is a folder with a `module.ts` declaration. The platform discovers declarations without a separate registry.
 
-Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`: `src/platform/modules/<id>/` holds the modules the starter ships, and `<module folder>/` holds the team's own. A module's ID is its folder name in either root, so an ID can exist in only one: a team module must not reuse a supplied module's ID, and `pnpm check` and the build reject it. Creating a module (`pnpm studio create-module`) and adding one from a source write only to `src/modules/`. Supplied modules sit under `src/platform/` but are module code: the boundary rules below, enable and disable, and removal work the same in either root.
+Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`: `src/platform/modules/<id>/` holds the modules the starter ships, and `<module folder>/` holds the team's own. A module's ID is its folder name in either root, so an ID can exist in only one: a team module must not reuse a supplied module's ID, and `pnpm check` and the build reject it. Creating a module (`pnpm studio create-module`) and adding one from a source write only to `src/modules/`. Enable, disable, removal, and the rules between modules work the same in either root. Supplied modules ship in the same release as the platform, so they may import platform internals; team modules use the [public API](#public-api).
 
 Modules are copied into the repository. They are not downloaded or loaded as plugins at runtime.
 
@@ -18,25 +18,33 @@ A module cannot import another optional module's implementation. Outside code ca
 
 Prototypes access public libraries through `@module/<id>`. They cannot import private platform paths. Runtime library code has its own dependency checks.
 
-`src/platform/core/modules/index.ts` defines declarations and compatibility. `src/platform/core/api.ts` identifies shared extension types.
+Every module declares `requires`, the oldest platform version it works with, such as `requires: '0.2.0'`. A module without one fails validation. An incompatible module is disabled and reported by checks.
 
-`requires` declares the minimum platform version. An incompatible module is disabled and reported by checks. The contract is currently 0.x and may change.
+## Public API
 
-## Supported extension API
+Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import platform code only through the public API in `src/platform/api/`, one file per entry. The root `package.json` maps `#studio/*` to those files through its `imports` field, so one specifier works in browser code, Node-loaded files such as `type.ts`, `server.ts`, and `check.ts`, and a system's `system.ts`.
 
-Start with `src/platform/core/api.ts` for module declaration types, application extension types, and studio identity.
-File types use `src/platform/core/fileTypes.ts`, which can also load in Node.
+| Entry | Use it for | Where it loads |
+| --- | --- | --- |
+| `#studio/module` | `ModuleSpec`, `ModuleApp`, `ModuleServer`, `ServerRoute`, `ModuleCheck`, `PaletteContext`, `PrototypeAction`, `PLATFORM_VERSION`, and the studio identity: `APP_NAME`, `TAGLINE`, read-only `CONFIG`. | Types anywhere; the identity values in app code. |
+| `#studio/system` | `SystemSpec`, `SystemLibrary`, `SystemIntro`, and the types inside them. | Types anywhere. |
+| `#studio/files` | Declaring a file type in `type.ts`: `defineFileType`, `FileTypeSpec`, capabilities, identity, and the Markdown declaration to extend. | Browser and Node. |
+| `#studio/data` | Reading content in the app: the manifest, a prototype's files, the current contributor and edit permissions, `callModule`, and what a file type's `loader.ts` and `open.tsx` implement. | Browser. |
+| `#studio/ui` | The shell's building blocks: section navigation, home blocks, collections, documents, and the source editor. | Browser. |
+| `#studio/components` | Studio's interface components, such as `Button`, `Dialog`, `Input`, `Tooltip`, menus, and `toast`. | Browser. |
 
-Artifact modules can implement the [shared revision and lifecycle contract](source.md#artifact-revision-and-preview-lifecycle) through `core/artifact-lifecycle/index.ts`, with evidence appropriate to their renderer.
+`src/platform/api/*.ts` lists each export with a JSDoc tag:
 
-The explicit framework entrypoint inventory is `src/platform/core/modules/boundaries.ts`.
-It covers existing shared navigation, artifact, documentation, source, and data services.
-Module code can import those entries, but not other platform implementation files.
-Changing the inventory, or other public contract listed in the [checks](checks.md), requires a `PLATFORM_VERSION` bump and `pnpm contract --update`.
-Both `pnpm check` and the development/build import guard enforce this boundary.
-Use literal import paths in browser module code and public libraries so checks can resolve dependencies, including type-only imports.
-Node discovery tooling may load declared files by their discovered paths.
-Public module libraries remain subject to the stricter prototype runtime boundary.
+- `@stable`: the declaration types, `PLATFORM_VERSION`, and the identity values. A stable export, and a stable declaration type's fields, change only with a new `PLATFORM_VERSION`.
+- `@experimental`: everything else. It may change in any 0.x release; release notes name the change.
+
+Importing anything under `src/platform/` from team code by another path, including `src/platform/node/` and Studio's system files, is an error in `pnpm check` and in the development and build import guard. Imports between modules use `@module/<id>` as before. Supplied modules may import platform internals, since they ship with the platform; their imports are not examples of the public API.
+
+The [contract snapshot](checks.md#platform-contract) records every API export with its stability. `pnpm contract` fails when an export has no tag, when a stable export changes without a `PLATFORM_VERSION` bump, or when an experimental export changes without `pnpm contract --update`.
+
+Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary.
+
+If a capability needs a platform service the API does not offer, propose an addition to the public API rather than importing a private file.
 
 `ModuleApp.rail: 'none'` lets a module contribute to Home without adding a navigation destination. It can omit routes and a section when it owns no browsable content.
 
@@ -45,7 +53,6 @@ Public module libraries remain subject to the stricter prototype runtime boundar
 `ModuleApp.localOnly: true` restricts a module’s app contributions (rail, routes, home, and search) to local development. Published viewing sites omit them; the module’s source and configuration remain available.
 
 These source contracts are 0.x. Review release guidance when updating them.
-If a capability needs another integration, add a deliberate public contract rather than importing a private file.
 
 ## Capability files
 

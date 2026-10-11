@@ -24,6 +24,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | Path | Tier | Notes |
 | --- | --- | --- |
 | `src/platform/` | Upstream | Shell, core APIs, Node tooling, platform context and skills. |
+| `src/platform/api/` | Upstream | The public API team modules and systems import as `#studio/*`. |
 | `src/platform/systems/studio/` | Upstream | Studio's own interface system, in the supplied system root. |
 | `src/platform/modules/<id>/` | Upstream | Every module the starter ships, required or optional, in the supplied module root. |
 | `<module folder>/` | Team | The team's own modules, in the team module root. Created through [Manage modules](../skills/manage-modules/SKILL.md). |
@@ -49,7 +50,7 @@ Design systems are found in two roots, listed once (supplied first) in `src/plat
 
 ## Module roots
 
-Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`. `src/platform/modules/` is supplied and upstream-owned; it holds the modules the starter ships, required or optional. `src/modules/` is the team's and starts with only a README. A module's ID is its folder name and an ID can exist in only one root, so a team module never reuses a supplied module's ID. Creating and adding modules writes only to the team root. Supplied modules are under `src/platform/`, but they are module code: the module boundary rules apply to them as they do to the team's.
+Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`. `src/platform/modules/` is supplied and upstream-owned; it holds the modules the starter ships, required or optional. `src/modules/` is the team's and starts with only a README. A module's ID is its folder name and an ID can exist in only one root, so a team module never reuses a supplied module's ID. Creating and adding modules writes only to the team root. Supplied modules are upstream code released with the platform, so they may import its internals. Team modules and systems import platform code only through the public API, `#studio/*` (`src/platform/api/`), so an update that reorganizes platform internals does not break them; see [Modules and extensions](modules.md#public-api).
 
 ## Agent instructions
 

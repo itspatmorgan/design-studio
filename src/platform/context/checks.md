@@ -29,7 +29,15 @@ Keep tests for failure-prone behavior and boundaries. Use synthetic fixtures ins
 
 See [Personal & team use](/documentation/manual/team) for how these checks fit the workflow. Configure branch protection and required checks to enforce the team's merge policy.
 
-The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records the module entrypoints, `core/api.ts` exports, `ModuleSpec`, `SystemSpec` and `SystemLibrary` fields, runtime package lists, and `PLATFORM_VERSION`. `pnpm contract` and the upstream regression suite fail if the contract changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`. A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.
+## Platform contract
+
+The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records `PLATFORM_VERSION`, every export of the [public API](modules.md#public-api) (`src/platform/api/`, imported as `#studio/<entry>`) with its stability, the fields of the stable declaration types (`ModuleSpec`, `ModuleApp`, `SystemSpec`, `FileTypeSpec`, and the types inside them), and the runtime package lists. `pnpm contract` and the upstream regression suite fail when:
+
+- an API export has no `@stable` or `@experimental` JSDoc tag with a one-line description;
+- a stable export, a declaration type's fields, or a runtime package list changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`;
+- an experimental export is added, removed, or changed: it needs no new version, but run `pnpm contract --update` so the change is recorded and visible in review.
+
+A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.
 
 ## Minimum sufficient verification
 

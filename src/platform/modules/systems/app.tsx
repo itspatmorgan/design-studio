@@ -16,7 +16,7 @@ import { APP_NAME } from '@/platform/app/data/config';
 import { artifactLabel, loadManifest } from '@/platform/app/data/manifest';
 import { contentId } from '@/platform/core/roots';
 import { prepareContent } from './content/SystemContentPage';
-import type { ModuleApp, PaletteContext } from '@/platform/core/api';
+import type { ModuleApp, PaletteContext } from '#studio/module';
 
 // Loaded on first visit, so it isn't in the main bundle:
 // https://tanstack.com/router/latest/docs/framework/react/guide/code-splitting

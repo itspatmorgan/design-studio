@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { scopePolicy } from './scope.js';
 import { importsOf, dependencyResolver, moduleConsumers } from './imports.js';
 import { cssProblems } from './css-scope.js';
@@ -428,48 +429,92 @@ test('group and peer markers do not inherit another utility request', async () =
   }
 });
 
-test('module implementations use supported platform entries and cannot reach private shell code, in either module root', async () => {
-  const { modulePlatformProblem } = await import('../../core/modules/boundaries.ts');
-  // Supplied modules sit under src/platform/ but are module code, bound by the same entries as the team's.
-  for (const module of ['src/modules/research/app.tsx', 'src/platform/modules/canvas/app.tsx']) {
-    assert.equal(modulePlatformProblem(module, 'src/platform/core/api.ts'), null, module);
-    assert.equal(modulePlatformProblem(module, 'src/platform/node/lib/modules.js'), null, module);
-    assert.equal(modulePlatformProblem(module, 'src/platform/app/shell/nav/index.ts'), null, module);
-    assert.equal(
-      modulePlatformProblem(module, 'src/platform/systems/studio/components/button/button.tsx'),
-      null,
-      module,
+test('team modules and systems reach the platform only through #studio/*; supplied modules are platform code', async () => {
+  const { platformImportProblem, API_ENTRIES } = await import('../../core/modules/boundaries.ts');
+  for (const file of [
+    'src/modules/research/app.tsx',
+    'src/modules/research/node/tool.js',
+    'src/systems/kit/system.ts',
+  ]) {
+    // Allowed: each API entry, by its specifier.
+    for (const entry of API_ENTRIES)
+      assert.equal(platformImportProblem(file, `src/platform/api/${entry}.ts`, `#studio/${entry}`), null, file);
+    assert.equal(platformImportProblem(file, 'src/platform/api/ui.ts', '#studio/ui'), null, file);
+    // Rejected: a deep relative or aliased import of the same files, platform internals, Node tooling, Studio's system.
+    assert.match(
+      platformImportProblem(file, 'src/platform/api/ui.ts', '../../platform/api/ui.ts'),
+      /#studio\/module, #studio\/system/,
+      file,
     );
-    assert.match(modulePlatformProblem(module, 'src/platform/app/router.tsx'), /private platform/, module);
-    assert.match(modulePlatformProblem(module, 'src/platform/app/shell/nav/private.ts'), /private platform/, module);
-    assert.match(modulePlatformProblem(module, 'src/platform/core/modules/pack.ts'), /private platform/, module);
-    // Other modules' files, in either root, are not platform code; the module-to-module rules are check-modules.js's.
-    assert.equal(modulePlatformProblem(module, 'src/platform/modules/view/EmptyView.tsx'), null, module);
-    assert.equal(modulePlatformProblem(module, 'src/modules/research/lib/index.ts'), null, module);
-    assert.equal(modulePlatformProblem(module, 'src/platform/modules/README.md'), null, module);
+    assert.match(
+      platformImportProblem(file, 'src/platform/app/shell/nav/index.ts', '../../platform/app/shell/nav/index.ts'),
+      /imports the platform only through its public API/,
+      file,
+    );
+    assert.match(
+      platformImportProblem(file, 'src/platform/core/fileTypes.ts', '@/platform/core/fileTypes'),
+      /public API/,
+    );
+    assert.match(
+      platformImportProblem(file, 'src/platform/node/lib/modules.js', '../../platform/node/lib/modules.js'),
+      /public API/,
+      file,
+    );
+    assert.match(
+      platformImportProblem(
+        file,
+        'src/platform/systems/studio/components/button/index.ts',
+        '@/platform/systems/studio/components/button',
+      ),
+      /public API/,
+      file,
+    );
+    assert.match(
+      platformImportProblem(file, 'src/platform/core/fileTypes.ts', '#studio/../core/fileTypes'),
+      /public API/,
+    );
+    // A module's public library, wherever it lives, and anything outside src/platform/ are judged elsewhere.
+    assert.equal(platformImportProblem(file, 'src/platform/modules/canvas/lib/index.ts', '@module/canvas'), null, file);
+    assert.equal(platformImportProblem(file, 'src/lib/utils.ts', '@/lib/utils'), null, file);
+    assert.equal(platformImportProblem(file, 'src/modules/other/lib/index.ts', '@module/other'), null, file);
   }
-  // Platform code and other src/platform folders are not module code, whatever they import.
-  assert.equal(modulePlatformProblem('src/platform/app/router.tsx', 'src/platform/app/shell/App.tsx'), null);
-  assert.equal(modulePlatformProblem('src/platform/app/router.tsx', 'src/platform/modules/canvas/Canvas.tsx'), null);
-  assert.equal(modulePlatformProblem('src/platform/modulesque/x.ts', 'src/platform/app/router.tsx'), null);
-  assert.equal(modulePlatformProblem('src/platform/modules/README.md', 'src/platform/app/router.tsx'), null);
-  assert.equal(modulePlatformProblem('src/lib/shared.ts', 'src/platform/app/router.tsx'), null);
-});
-
-test('knowledge readers can inspect support files without executing private platform code', async () => {
-  const { modulePlatformProblem } = await import('../../core/modules/boundaries.ts');
-  const script = 'src/platform/skills/create/scripts/helper.js';
-  assert.equal(modulePlatformProblem('src/platform/modules/text/loader.ts', script, true), null);
-  assert.match(modulePlatformProblem('src/platform/modules/text/loader.ts', script), /private platform/);
-  assert.match(modulePlatformProblem('src/platform/modules/canvas/lib/index.ts', script, true), /private platform/);
+  assert.match(
+    platformImportProblem('src/systems/kit/intro.tsx', 'src/platform/app/data/types.ts', '@/platform/app/data/types'),
+    /A team system/,
+  );
+  assert.match(
+    platformImportProblem('src/modules/research/app.tsx', 'src/platform/app/router.tsx', '@/platform/app/router'),
+    /A team module/,
+  );
+  // Supplied modules ship with the platform and import its internals like platform code does.
+  for (const [target, specifier] of [
+    ['src/platform/app/router.tsx', '@/platform/app/router'],
+    ['src/platform/node/lib/modules.js', '../../node/lib/modules.js'],
+    ['src/platform/core/modules/pack.ts', '../../core/modules/pack.ts'],
+    ['src/platform/context/principles.md', '../../context/principles.md'],
+  ])
+    assert.equal(platformImportProblem('src/platform/modules/canvas/app.tsx', target, specifier), null, target);
+  // Platform code, shared utilities and prototypes are not judged here.
   assert.equal(
-    modulePlatformProblem('src/platform/modules/systems/loader.ts', 'src/platform/context/principles.md'),
+    platformImportProblem('src/platform/app/router.tsx', 'src/platform/app/shell/App.tsx', './shell/App'),
     null,
   );
-  // The reader exemptions name the supplied loaders exactly; a team module gets no knowledge access by its name.
-  assert.match(modulePlatformProblem('src/modules/text/loader.ts', script, true), /private platform/);
-  assert.match(
-    modulePlatformProblem('src/modules/systems/loader.ts', 'src/platform/context/principles.md'),
-    /private platform/,
+  assert.equal(
+    platformImportProblem('src/lib/shared.ts', 'src/platform/app/router.tsx', '@/platform/app/router'),
+    null,
   );
+  assert.equal(platformImportProblem('src/modules/README.md', 'src/platform/app/router.tsx', 'x'), null);
+  assert.equal(platformImportProblem('src/modulesque/x.ts', 'src/platform/app/router.tsx', 'x'), null);
+});
+
+test('the API entries match the files in src/platform/api', async () => {
+  const { API_ENTRIES, API_FOLDER } = await import('../../core/modules/boundaries.ts');
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+  const files = fs.readdirSync(path.join(root, API_FOLDER)).map(file => file.replace(/\.ts$/, ''));
+  assert.deepEqual([...files].sort(), [...API_ENTRIES].sort());
+  // One specifier resolves in Node too: the root package.json maps #studio/* to the entry files.
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  assert.deepEqual(pkg.imports, { '#studio/*': './src/platform/api/*.ts' });
+  const declarations = await import('#studio/files');
+  assert.equal(typeof declarations.defineFileType, 'function');
 });

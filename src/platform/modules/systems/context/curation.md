@@ -14,7 +14,7 @@ The component request uses a textarea. The primary copy action sits below the al
 Save the agreed direction in `intro.tsx` under `overview.curation`. The `SystemCuration` type defines its fields. This is an authored summary, not a live agent activity feed. Content counts do not advance its stage or establish readiness.
 
 ```tsx
-import type { SystemIntro } from '@/platform/app/data/types';
+import type { SystemIntro } from '#studio/system';
 
 export default {
   overview: {

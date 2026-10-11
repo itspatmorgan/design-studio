@@ -126,7 +126,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     fs.mkdirSync(pack);
     fs.writeFileSync(
       path.join(pack, 'module.ts'),
-      "export default { id: 'failing-fixture', label: 'Failing fixture', version: '0.1.0', optional: true, lib: false };\n",
+      "export default { id: 'failing-fixture', label: 'Failing fixture', version: '0.1.0', requires: '0.2.0', optional: true, lib: false };\n",
     );
     fs.writeFileSync(path.join(pack, 'check.ts'), "export default () => ['Deliberate fixture failure'];\n");
     assert.throws(() => run(dir, 'src/platform/node/cli/studio.js', 'add', pack, '--yes'), /Command failed/);

@@ -1,4 +1,4 @@
-import type { SystemIntro } from '@/platform/app/data/types';
+import type { SystemIntro } from '#studio/system';
 
 export default {
   summary: 'An example system for prototyping product interfaces. Adapt it or replace it with your own.',

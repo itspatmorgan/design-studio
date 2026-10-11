@@ -1,6 +1,6 @@
 import { createRoute } from '@tanstack/react-router';
 import { UserGroupIcon } from '@hugeicons/core-free-icons';
-import { APP_NAME, CONFIG, type ModuleApp, type PaletteContext } from '@/platform/core/api';
+import { APP_NAME, CONFIG, type ModuleApp, type PaletteContext } from '#studio/module';
 import { CommandItem } from '@/platform/systems/studio/components/command';
 import Contributors from './Contributors';
 

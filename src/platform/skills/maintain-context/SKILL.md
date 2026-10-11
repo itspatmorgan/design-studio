@@ -12,7 +12,7 @@ Inspect the owner's README and related context or skills. Reuse an existing sour
 ## Author and expose
 
 1. Write knowledge and standing requirements in the owner's `context/`. Write recognizable task procedures in `skills/<name>/SKILL.md`, with matching lowercase, hyphenated folder and frontmatter name.
-2. Give the skill a precise trigger, necessary input, decision steps, and completion criteria. Reuse commands for deterministic mechanics; add code under its owner when a demonstrated gap needs it. Keep optional branches in supporting references. Link contracts and standing policy instead of copying them. A short convention can remain context.
+2. Give the skill a precise trigger, necessary input, decision steps, and completion criteria. Reuse commands for deterministic mechanics; add code under its owner when a demonstrated gap needs it. For a team module or system, name platform interfaces by their `#studio/*` entry ([public API](../../context/modules.md#public-api)), not by internal file paths. Keep optional branches in supporting references. Link contracts and standing policy instead of copying them. A short convention can remain context.
 3. Update the owner's README and affected callers. For a module task route, use a module-relative `instructions` path. For discovery changes, consult [Agent context routing](../../context/agent-context.md).
 4. After changing skills or capability availability, run `pnpm studio sync`. Inspect warnings and preserve user-authored adapter entries; generated entries are not authoring sources.
 

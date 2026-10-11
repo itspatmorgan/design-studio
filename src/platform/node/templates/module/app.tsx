@@ -3,8 +3,7 @@
 // every prototype's "…" menu: see src/platform/context/modules.md.
 import { createRoute } from '@tanstack/react-router';
 import { Home01Icon } from '@hugeicons/core-free-icons';
-import { APP_NAME } from '@/platform/core/api';
-import type { ModuleApp } from '@/platform/core/api';
+import { APP_NAME, type ModuleApp } from '#studio/module';
 
 function Page() {
   return (

@@ -8,7 +8,8 @@ import { systemDirOf } from './system-folders.js';
 export const SHARED_RUNTIME_PACKAGES = ['react', 'react-dom', 'lucide-react', '@tanstack/react-router'];
 export const SYSTEM_RUNTIME_PACKAGES = ['react', 'react-dom'];
 export function packageName(source) {
-  if (!source || /^(?:\.|\/|@\/|@module\/|\0)/.test(source)) return null;
+  // #studio/<entry> is a subpath import of the repository itself (package.json "imports"), not a package.
+  if (!source || /^(?:\.|\/|@\/|@module\/|#|\0)/.test(source)) return null;
   return source.startsWith('@') ? source.split('/').slice(0, 2).join('/') : source.split('/')[0];
 }
 export function systemPackage(dir) {

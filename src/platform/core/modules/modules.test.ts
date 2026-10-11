@@ -9,12 +9,16 @@ const examples: ModuleSpec = {
   id: 'examples',
   label: 'Examples',
   version: '0.1.0',
+  requires: '0.2.0',
   section: { key: 'examples', folder: 'src/examples' },
 };
 
 test('a well formed module has no problems', () => {
   assert.deepEqual(moduleProblems(examples, 'examples'), []);
-  assert.deepEqual(moduleProblems({ optional: false, lib: false, id: 'x', label: 'X', version: '1.2.3' }, 'x'), []);
+  assert.deepEqual(
+    moduleProblems({ optional: false, lib: false, id: 'x', label: 'X', version: '1.2.3', requires: '0.2.0' }, 'x'),
+    [],
+  );
 });
 
 test('the id has to be the folder name', () => {
@@ -23,7 +27,10 @@ test('the id has to be the folder name', () => {
 
 test('a missing label or a malformed version is named', () => {
   assert.match(moduleProblems({ ...examples, label: ' ' }, 'examples')[0], /add a label/);
-  assert.match(moduleProblems({ ...examples, version: '1' }, 'examples')[0], /version should look like 0\.1\.0/);
+  assert.match(
+    moduleProblems({ ...examples, version: '1', requires: '0.2.0' }, 'examples')[0],
+    /version should look like 0\.1\.0/,
+  );
 });
 
 test('a section folder can not climb out of the repo', () => {
@@ -53,6 +60,7 @@ test('two modules can not share a section key or folder', () => {
     id: 'other',
     label: 'Other',
     version: '0.1.0',
+    requires: '0.2.0',
     section: { key: 'examples', folder: 'src/examples' },
   };
   const problems = listProblems([examples, other]);
@@ -62,9 +70,10 @@ test('two modules can not share a section key or folder', () => {
 });
 
 test('section keys skip modules with no section', () => {
-  assert.deepEqual(sectionKeys([examples, { optional: false, lib: false, id: 'x', label: 'X', version: '0.1.0' }]), [
-    'examples',
-  ]);
+  assert.deepEqual(
+    sectionKeys([examples, { optional: false, lib: false, id: 'x', label: 'X', version: '0.1.0', requires: '0.2.0' }]),
+    ['examples'],
+  );
 });
 
 test('modules cannot replace the core settings page', () => {
@@ -126,9 +135,14 @@ test('items must be a known kind, in a folder directly under src', () => {
   );
 });
 
-test('a module may say the oldest platform it works with', () => {
+test('a module says the oldest platform it works with', () => {
   assert.deepEqual(moduleProblems({ ...examples, requires: '0.1.0' }, 'examples'), []);
-  assert.match(moduleProblems({ ...examples, requires: '^0.1' }, 'examples')[0], /requires should look like 0\.1\.0/);
+  assert.match(
+    moduleProblems({ ...examples, requires: '^0.1' }, 'examples')[0],
+    /requires should look like \d+\.\d+\.\d+/,
+  );
+  const { requires: _, ...without } = examples;
+  assert.match(moduleProblems(without, 'examples')[0], /add requires/);
 });
 
 test('a module needing a newer platform than this one is not compatible', () => {

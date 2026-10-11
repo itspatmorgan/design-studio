@@ -28,8 +28,13 @@
     "allowJs": true,
     "checkJs": false,
 
-    /* shadcn/ui import alias */
-    "paths": { "@/*": ["./src/*"], "@module/*": ["./src/platform/modules/*/lib/index", "./src/modules/*/lib/index"] }
+    /* shadcn/ui import alias. #studio/* also resolves through package.json "imports"; the path covers team
+       systems, whose own package.json is the nearest one and has no "imports". */
+    "paths": {
+      "@/*": ["./src/*"],
+      "@module/*": ["./src/platform/modules/*/lib/index", "./src/modules/*/lib/index"],
+      "#studio/*": ["./src/platform/api/*.ts"]
+    }
   },
   "include": ["src"],
   "exclude": [

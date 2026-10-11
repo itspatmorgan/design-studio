@@ -28,25 +28,6 @@ const item = (name = 'notes.md', folder = 'example', id = artifact) => ({
   parent: `src/prototypes/pat/${folder}`,
 });
 
-test('the one sample-author ownership transition is allowed and nothing else', () => {
-  const before = report([prototype(parent, 'example', '01ketxwns61brr7r')]);
-  assert.deepEqual(
-    resourceIdentityChangeProblems(before, report([prototype(parent, 'example', '62bhewkp605tb9y6')])),
-    [],
-  );
-  assert.match(
-    resourceIdentityChangeProblems(before, report([prototype(parent, 'example', owner)])).join('\n'),
-    /owner identity/,
-  );
-  assert.match(
-    resourceIdentityChangeProblems(
-      report([prototype(parent, 'example', owner)]),
-      report([prototype(parent, 'example', '62bhewkp605tb9y6')]),
-    ).join('\n'),
-    /owner identity/,
-  );
-});
-
 test('identity change policy preserves moves and copies but rejects replacement, ownership mutation and transfer', () => {
   const before = report([prototype(), item()]);
   assert.deepEqual(

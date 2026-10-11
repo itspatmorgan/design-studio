@@ -5,10 +5,10 @@
 // This file has no imports but the import-free roots.ts, so Node scripts can load it directly.
 import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../roots.ts';
 
-// The version of the module contract this copy of the platform offers: what a module's module.ts, app.tsx and
-// server.ts may rely on. It is 0.x while the contract can still change; a module says the oldest one it works
-// with in `requires`.
-export const PLATFORM_VERSION = '0.1.0';
+// The version of the public contract this copy of the platform offers: the declaration types and the #studio/*
+// API (src/platform/api/) a module or system is written against. A stable export changes only with a new version;
+// experimental ones may change in any 0.x release. A module says the oldest version it works with in `requires`.
+export const PLATFORM_VERSION = '0.2.0';
 export const CORE_PAGE_KEYS = ['settings'] as const;
 
 export type ModuleSpec = {
@@ -16,9 +16,9 @@ export type ModuleSpec = {
   label: string; // "Examples"
   version: string; // this module's own version, like "0.1.0"
   description?: string; // one sentence on what it adds, shown when you list or add modules
-  // The oldest platform version the module works with, like "0.1.0". A module that needs a newer one than
-  // this copy has is turned off, and `pnpm check` says why, so an old copy never breaks on a new module.
-  requires?: string;
+  // The oldest platform version the module works with, like "0.2.0". Every module declares it. A module that needs
+  // a newer one than this copy has is turned off, and `pnpm check` says why, so an old copy never breaks on a new module.
+  requires: string;
   // Explicitly declare whether studio.config.json may turn this module off.
   optional: boolean;
   // The top-level area the module adds: its address in the app (/examples) and, if it keeps content, the folder
@@ -92,8 +92,14 @@ export function moduleProblems(spec: unknown, folder: string, dir = `${TEAM_MODU
   if (typeof m.label !== 'string' || !m.label.trim()) problems.push(`${where}: add a label, the name people see.`);
   if (typeof m.version !== 'string' || !VERSION.test(m.version))
     problems.push(`${where}: version should look like 0.1.0.`);
-  if (m.requires !== undefined && (typeof m.requires !== 'string' || !VERSION.test(m.requires)))
-    problems.push(`${where}: requires should look like 0.1.0, the oldest platform version it works with.`);
+  if (m.requires === undefined)
+    problems.push(
+      `${where}: add requires, the oldest platform version the module works with, like requires: '${PLATFORM_VERSION}'.`,
+    );
+  else if (typeof m.requires !== 'string' || !VERSION.test(m.requires))
+    problems.push(
+      `${where}: requires should look like ${PLATFORM_VERSION}, the oldest platform version it works with.`,
+    );
   if (m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 200))
     problems.push(`${where}: description should be one short sentence.`);
   if (typeof m.lib !== 'boolean') problems.push(`${where}: declare lib as true or false.`);

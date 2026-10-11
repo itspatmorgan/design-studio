@@ -1,4 +1,4 @@
-import type { ModuleSpec } from '../../core/api.ts';
+import type { ModuleSpec } from '#studio/module';
 
 // Systems: the design systems prototypes are built with (/systems), in src/systems/ (and Studio's own interface system in src/platform/systems/).
 export default {
@@ -11,6 +11,7 @@ export default {
   id: 'systems',
   label: 'Systems',
   version: '0.1.0',
+  requires: '0.2.0',
   description: 'Theme, components, assets, context, and skills for prototypes.',
   section: { key: 'systems', folder: 'src/systems', policy: 'open' },
 } satisfies ModuleSpec;

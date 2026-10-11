@@ -20,6 +20,8 @@ A system lives in a folder named for its id, in one of two system roots, and con
 | `package.json` | Prototype-system dependency ownership and shared React peer requirements. |
 | `libraries/` | Declared external library entries available to assigned prototypes. |
 
+A team system's `system.ts` and `intro.tsx` import their declaration types, `SystemSpec` and `SystemIntro`, from `#studio/system`. Team systems import platform code only through the [public API](../../context/modules.md#public-api); runtime components import none.
+
 `system.ts`, introductions, examples, and Markdown are documentation adapters. Runtime components and prototypes cannot import these adapters.
 
 `intro.tsx` supplies optional overview content. Its exports and presentation are defined in [Systems interface](context/interface.md#overview).

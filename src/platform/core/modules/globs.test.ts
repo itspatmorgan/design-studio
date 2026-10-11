@@ -17,6 +17,7 @@ const module = (id: string, section?: ModuleSpec['section']): ModuleSpec => ({
   id,
   label: id,
   version: '0.1.0',
+  requires: '0.2.0',
   section,
 });
 // The supplied modules are found in the supplied root and the team's examples in the team root, where discovery
@@ -115,6 +116,7 @@ test(
       id: 'playbooks',
       label: 'Playbooks',
       version: '0.1.0',
+      requires: '0.2.0',
       section: { key: 'playbooks', folder: 'src/playbooks', items: 'prototypes' },
     };
     assert.ok(globsFor('view', types, [...modules, playbooks]).includes('/playbooks/**/*.{tsx,jsx}'));

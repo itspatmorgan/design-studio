@@ -23,7 +23,7 @@ Other prototype files remain plain files. Underscore helpers are excluded from n
 
 ## Files and fields
 
-`src/platform/core/fileTypes.ts` defines `FileTypeSpec`, `defineFileType`, and artifact slug handling.
+`src/platform/core/fileTypes.ts` defines `FileTypeSpec`, `defineFileType`, and artifact slug handling. A team module imports them from `#studio/files`, and the browser side of a file type (the manifest, file reading, `createLoader`, `FileTypeModule`) from `#studio/data` ([public API](modules.md#public-api)).
 
 The `identity` adapter for prototype file types reads and writes permanent prototype-artifact metadata. Views, Documents, Diagrams, and Canvases provide it. System content keeps its existing path identification. Creation allocates IDs, saves preserve them, and public prototype routes use them. New directly authored files require `pnpm studio identify <prototype-folder> --yes`; builds never allocate them. See [Resource identity](resource-identity.md).
 
@@ -34,7 +34,7 @@ The `identity` adapter for prototype file types reads and writes permanent proto
 | `open.tsx` | Icon, loader, page, optional live `Embed`, and module-owned actions. |
 | `loader.ts` | Production file globs and its own HMR acceptance. |
 
-`type.ts` imports only `../../platform/core/fileTypes.ts`, because Node loads it directly.
+`type.ts` imports only the file type declarations, because Node loads it directly: `#studio/files` in a team module, `../../core/fileTypes.ts` in a supplied one.
 
 `inPrototype`, `inSystemContent`, and `fallback` are required booleans. `inPrototype: true` permits prototype artifacts; `inSystemContent: true` permits system knowledge files. Omission fails validation. A `fallback` type opens other system context text files without claiming extensions.
 

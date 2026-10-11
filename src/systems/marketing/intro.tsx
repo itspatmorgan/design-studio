@@ -1,5 +1,5 @@
 
-import type { SystemIntro } from '@/platform/app/data/types';
+import type { SystemIntro } from '#studio/system';
 export default {
   summary: 'An example system for prototyping marketing pages. Adapt it or replace it with your own.',
   overview: {

@@ -1,4 +1,4 @@
-import { modulePlatformProblem } from '../../core/modules/boundaries.ts';
+import { apiSpecifier, platformImportProblem } from '../../core/modules/boundaries.ts';
 import { scopePolicy } from '../lib/scope.js';
 import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 // Checks the modules in the module roots, src/platform/modules/ and src/modules/ (src/platform/core/roots.ts, src/platform/core/modules/index.ts):
@@ -12,8 +12,11 @@ import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 //   - nothing outside an optional module imports its files other than its module.ts, and no module imports an
 //     optional one, so deleting its folder leaves nothing broken (a required module is part of the platform,
 //     so the platform and the other modules may import it)
+//   - a team module or system imports platform code only through the public API, #studio/<entry>
+//     (src/platform/core/modules/boundaries.ts)
 //   - a file type (a module with a type.ts, src/platform/context/file-types.md) has an open.tsx, its type.ts imports
-//     only src/platform/core/fileTypes.ts (the build loads it directly in Node), and its loader.ts lists its files with the
+//     only the file type declarations (src/platform/core/fileTypes.ts, or #studio/files in a team module; the build loads it
+//     directly in Node), and its loader.ts lists its files with the
 //     ['/__studio_globs__/*'] placeholder, so a new section and archived files reach it (src/platform/node/build/vite-globs-plugin.js)
 // Usage: node src/platform/node/check/check-modules.js
 import fs from 'node:fs';
@@ -173,9 +176,10 @@ for (const file of [...sourceFiles(path.join(ROOT, 'src')), path.join(ROOT, 'vit
     }
     const resolved = resolveDependency(specifier, file);
     if (!resolved) continue;
-    const platformProblem = modulePlatformProblem(
+    const platformProblem = platformImportProblem(
       rel.replaceAll(path.sep, '/'),
       path.relative(ROOT, resolved).replaceAll(path.sep, '/'),
+      specifier,
     );
     if (platformProblem) problems.push(platformProblem);
     const problem = runtimePolicy.problem(specifier, file, resolved);
@@ -211,8 +215,10 @@ for (const id of typeIds) {
   for (const [, specifier] of fs
     .readFileSync(path.join(dir, 'type.ts'), 'utf8')
     .matchAll(/^import\b[^\n]*?\bfrom\s*['"]([^'"]+)['"]/gm)) {
-    // The same file from either root: ../../core/fileTypes.ts in the supplied root, ../../platform/core/fileTypes.ts in the team's.
-    const allowed = path.relative(dir, path.join(ROOT, 'src/platform/core/fileTypes.ts')).split(path.sep).join('/');
+    // A supplied type.ts imports ../../core/fileTypes.ts; a team one imports the same declarations as #studio/files.
+    const allowed = MODULE_DIRS[id].startsWith(`${TEAM_MODULES_ROOT}/`)
+      ? apiSpecifier('files')
+      : path.relative(dir, path.join(ROOT, 'src/platform/core/fileTypes.ts')).split(path.sep).join('/');
     if (specifier !== allowed)
       problems.push(
         `${where}/type.ts imports "${specifier}". A type.ts can import only ${allowed}, because the build loads it directly in Node.`,

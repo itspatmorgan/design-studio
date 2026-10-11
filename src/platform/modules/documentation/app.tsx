@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 import { createRoute, notFound, lazyRouteComponent } from '@tanstack/react-router';
 import { BookOpen01Icon } from '@hugeicons/core-free-icons';
 import { APP_NAME } from '@/platform/app/data/config';
-import type { ModuleApp } from '@/platform/core/api';
+import type { ModuleApp } from '#studio/module';
 import { loadManifest } from '@/platform/app/data/manifest';
 import { loadManualPage } from './loadManual';
 
