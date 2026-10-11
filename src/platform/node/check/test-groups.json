@@ -39,6 +39,7 @@
         "src/platform/node/lib/system-actions.test.js",
         "src/platform/node/lib/system-transition.test.js",
         "src/platform/node/lib/upstream-merge.test.js",
+        "src/platform/node/lib/release.test.js",
         "src/platform/modules/canvas/tools.test.ts",
         "src/platform/modules/systems/content/content.test.ts",
         "src/platform/modules/systems/docs.test.ts",

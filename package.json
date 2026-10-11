@@ -20,6 +20,7 @@
     "contract": "node src/platform/node/check/check-contract.js",
     "ownership": "node src/platform/node/check/check-ownership.js",
     "baseline": "node src/platform/node/cli/baseline.js",
+    "release": "node src/platform/node/cli/release.js",
     "studio": "node src/platform/node/cli/studio.js",
     "canvas": "node src/platform/modules/canvas/cli.ts",
     "test": "node src/platform/node/check/test.js",

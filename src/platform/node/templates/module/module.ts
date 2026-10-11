@@ -7,7 +7,7 @@ export default {
   id: '__ID__',
   label: '__LABEL__',
   version: '0.1.0',
-  requires: '0.2.0',
+  requires: '__REQUIRES__',
   description: 'Say what __LABEL__ adds, in one sentence.',
   optional: true,
   section: { key: '__ID__' },

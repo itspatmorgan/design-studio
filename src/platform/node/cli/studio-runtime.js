@@ -691,7 +691,9 @@ function create(kind) {
   const label = flags.label ?? titleOf(id);
   if (/[\n\r<>`$\\]/.test(label)) fail('The label should be plain text.');
   const template = rel('src', 'platform', 'node', 'templates', kind);
-  const fill = text => text.replaceAll('__ID__', id).replaceAll('__LABEL__', label);
+  // A new module requires the platform it was made with, so a release never edits the template.
+  const fill = text =>
+    text.replaceAll('__ID__', id).replaceAll('__LABEL__', label).replaceAll('__REQUIRES__', PLATFORM_VERSION);
   const templateFiles = walk(template).map(f => f.rel);
   const sourceOf = new Map(templateFiles.map(f => [fill(f), f])); // a file's name has the id in it too
   const files = templateFiles.map(fill);
