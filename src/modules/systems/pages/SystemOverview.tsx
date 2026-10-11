@@ -55,7 +55,7 @@ export default function SystemOverview({ system, sys, components, tokens }: {
       <AlertDescription>Files are kept locally and excluded from deployment. Choose Restore from the system menu to use it again.</AlertDescription>
     </Alert>}
     {platform && <p className="mb-6 text-[13px] text-muted-foreground">Required application system</p>}
-    {sys.overview?.starter && <SystemStarterNotice key={system} system={system} label={sys.label} canCustomize={!platform && spec.status === 'active' && import.meta.env.DEV} />}
+    {sys.overview?.starter && <SystemStarterNotice label={sys.label} />}
     {!platform && spec.status === 'active' && import.meta.env.DEV && !sys.overview?.curation && !sys.overview?.starter && <details className="mb-6"><summary className="cursor-pointer text-sm font-medium">Curate or bring in a system</summary><div className="mt-4"><SystemSetup system={system} label={sys.label} /></div></details>}
 
     <div className="mb-4 grid gap-4">
