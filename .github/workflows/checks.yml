@@ -50,8 +50,11 @@ jobs:
             export STUDIO_PLATFORM_ROLE
             node src/platform/node/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF"
           fi
-          node src/platform/node/check/check-ownership.js
           node src/platform/node/check/check-asset-size.js --ci "$BASE_REF" "$HEAD_REF"
+      # Only the upstream project requires every path to be named in the ownership map; a studio's own files are its own.
+      - name: Check the ownership map covers every path
+        if: github.repository == 'itspatmorgan/design-studio-starter'
+        run: node src/platform/node/check/check-ownership.js --strict
   regressions:
     name: Selected regressions
     runs-on: ubuntu-24.04

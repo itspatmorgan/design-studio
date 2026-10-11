@@ -31,7 +31,7 @@ See [Personal & team use](/documentation/manual/team) for how these checks fit t
 
 ## Ownership map
 
-`pnpm check`, `pnpm ownership`, and the `scope` job in CI fail when a tracked path matches no rule in `.studio/ownership.json`, when two rules of different tiers claim it equally, or when the map cannot be read. A folder that is not a Git checkout skips it in `pnpm check`. The mixed files, which today are only `package.json`, are listed and do not fail. This check reads the map and the tracked paths, not the contributor, so the personal-studio skip below applies to the contributor scope check only. See [Ownership and updates](ownership.md).
+In a studio, any tracked path the map does not name is the team's own: `pnpm check`, `pnpm build`, and `pnpm ownership` list it and pass, so a team can add top-level files without editing `.studio/ownership.json`. They fail when two rules of different tiers claim a path equally or when the map cannot be read, since only upstream edits the map. The upstream project is stricter, as it is for `pnpm contract`: its CI `scope` job runs `pnpm ownership --strict`, which also fails on an unnamed path, and the upstream regression suite tests the same. A folder that is not a Git checkout skips the check in `pnpm check`. The mixed files, which today are only `package.json`, are listed and do not fail. This check reads the map and the tracked paths, not the contributor, so the personal-studio skip below applies to the contributor scope check only. See [Ownership and updates](ownership.md).
 
 ## Platform contract
 

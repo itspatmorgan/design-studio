@@ -1,8 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { ownershipFails, printOwnership } from '../check/check-ownership.js';
 import { classify, mapProblems, ownershipReport, tierOf, trackedFiles } from './ownership.js';
 
@@ -84,7 +86,7 @@ test('the repository map has no unknown or conflicting tracked paths', () => {
   assert.deepEqual([r.problems, r.unknown, r.conflicts], [[], [], []]);
 });
 
-test('unknown paths, conflicts and an unreadable map fail; mixed files do not', () => {
+test('unknown paths fail only strictly; conflicts and an unreadable map fail everywhere; mixed files never', () => {
   const report = (extra = {}) => ({
     files: 1,
     problems: [],
@@ -94,10 +96,39 @@ test('unknown paths, conflicts and an unreadable map fail; mixed files do not', 
     ...extra,
   });
   assert.equal(ownershipFails(report()), false);
-  assert.equal(ownershipFails(report({ unknown: ['stray.txt'] })), true);
+  assert.equal(ownershipFails(report({ unknown: ['stray.txt'] })), false);
+  assert.equal(ownershipFails(report({ unknown: ['stray.txt'] }), { strict: true }), true);
   assert.equal(ownershipFails(report({ conflicts: [{ path: 'a', tiers: ['seed', 'team'], globs: [] }] })), true);
   assert.equal(ownershipFails(report({ problems: ['The ownership map could not be checked.'] })), true);
   const lines = [];
-  printOwnership(report({ unknown: ['stray.txt'] }), line => lines.push(line));
+  printOwnership(report({ unknown: ['stray.txt'] }), line => lines.push(line), { strict: true });
   assert.match(lines[0], /^\[ownership\] error: 1 tracked path/);
+  lines.length = 0;
+  printOwnership(report({ unknown: ['stray.txt'] }), line => lines.push(line));
+  assert.match(lines[0], /^\[ownership\] 1 tracked path\(s\) match no rule and are treated as team-owned/);
+});
+
+test('a stray top-level file passes pnpm check in a studio but fails the upstream ownership check', t => {
+  const source = path.resolve(import.meta.dirname, '../../../..');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-ownership-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  fs.cpSync(source, dir, {
+    recursive: true,
+    filter: file => !['node_modules', 'dist', '.git'].includes(path.basename(file)),
+  });
+  fs.symlinkSync(path.join(source, 'node_modules'), path.join(dir, 'node_modules'));
+  linkSystemDependencies(source, dir);
+  const git = (...args) => execFileSync('git', args, { cwd: dir, stdio: 'ignore' });
+  git('init', '-q');
+  fs.appendFileSync(path.join(dir, '.git/info/exclude'), 'node_modules\n');
+  fs.writeFileSync(path.join(dir, 'team-notes.txt'), 'Our own file.\n');
+  git('add', '-A');
+  const run = (...args) => spawnSync(process.execPath, args, { cwd: dir, encoding: 'utf8' });
+  const check = run('src/platform/node/check/check-modules.js');
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  assert.match(check.stdout, /team-notes\.txt/);
+  assert.equal(run('src/platform/node/check/check-ownership.js').status, 0);
+  const strict = run('src/platform/node/check/check-ownership.js', '--strict');
+  assert.equal(strict.status, 1);
+  assert.match(strict.stdout, /error: 1 tracked path\(s\) match no rule/);
 });
