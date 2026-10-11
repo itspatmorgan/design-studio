@@ -51,7 +51,9 @@ export function systemDependencyProblems(root, systems) {
     }
     for (const library of Array.isArray(spec.libraries) ? spec.libraries : []) {
       if (!library || typeof library !== 'object') continue;
+      if (library.kind === 'source') continue;
       if (!pkg.dependencies?.[library.package]) fail(`${library.package} is exposed as a library but is not a direct dependency.`);
+      if (library.entry === undefined) continue;
       const entry = path.resolve(dir, typeof library.entry === 'string' ? library.entry : '');
       if (!entry.startsWith(dir + path.sep) || !fs.existsSync(entry) || !fs.statSync(entry).isFile() || !fs.realpathSync(entry).startsWith(fs.realpathSync(dir) + path.sep)) fail(`library entry ${library.entry} is missing or outside its system.`);
     }
@@ -63,6 +65,7 @@ export function systemLibraryInventory(root, id, spec) {
   const dir = path.resolve(root, spec.dir ?? `src/systems/${id}`);
   const pkg = systemPackage(dir);
   return spec.libraries.map(library => {
+    if (library.kind === 'source') return { ...library, requirement: null, version: library.version ?? null };
     let version = null;
     try { if (fs.existsSync(path.join(dir, 'node_modules', library.package))) version = installedPackage(dir, library.package).version; } catch { /* Report missing installation in the UI. */ }
     return { ...library, requirement: pkg.dependencies?.[library.package] ?? null, version };

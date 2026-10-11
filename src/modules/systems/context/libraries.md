@@ -23,14 +23,17 @@ Use the package name from that system's manifest. Commit its manifest and the sh
 
 System creation, installation, rename, and deletion synchronize workspace lock entries. Archive keeps packages locally while excluding system content from deployment. Removing one system does not remove another system's dependency declaration.
 
-## Public libraries
+## Library inventory and public APIs
 
-Declare `libraries: []` in `system.ts` when no external APIs are exposed. Internal dependencies do not need a library declaration.
+Declare the system’s meaningful building blocks in `system.ts`: curated sources, component foundations, icon sets, fonts, and capabilities such as charts. Use `libraries: []` when none have been selected. Omit implementation helpers and transitive dependencies.
 
-A public library declares `id`, `label`, `package`, `description`, `entry`, and an HTTPS `docs` link. `entry` identifies a system-owned runtime file under `libraries/`. Optional `components` lists documented component slugs using that library. The package must be a direct dependency. Installed versions come from package resolution; do not duplicate them in the declaration.
+Each library declares `kind`, `id`, `label`, `description`, and an HTTPS `docs` link. A `package` library names a direct system dependency; its installed version comes from package resolution. A `source` library records curated code such as shadcn/ui without pretending that its CLI is a runtime dependency. A source may record an evidenced version.
+
+Optional `assets` lists fonts, icons, or images supplied by the library and connects its card to those pages. Optional `components` lists documented component slugs. A package can additionally declare `entry`, a public runtime file under `libraries/`, when assigned prototypes need direct API access. Listing a library alone does not grant import access.
 
 ```ts
 libraries: [{
+  kind: 'package',
   id: 'charts',
   label: 'Recharts',
   package: 'recharts',
@@ -56,6 +59,6 @@ Package access checks cover static imports, re-exports, type imports, literal dy
 
 ## Review and discovery
 
-The system's Libraries page presents public libraries, installed versions, documentation, component example links, and import entries. Internal helpers and transitive dependencies are omitted. Fonts and icons retain their Assets surfaces.
+Libraries follows Overview in navigation and presents what the system is built from on one page. Cards show a name, contribution, resolved version when applicable, documentation, and links to assets or component examples. Asset pages distinguish library catalogs from local files. Fonts and icons do not need to be copied into assets/ to be available. Runtime entries remain in the declaration for agents; the human page omits import paths.
 
 Verify component examples and a representative assigned prototype after adding a library. Confirm another system cannot import it. A working package API does not establish theme fidelity or provider compatibility.

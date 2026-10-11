@@ -173,6 +173,7 @@ function SystemNav({ system, components, tokens, page }: { system: SystemId; com
       </div>
       <NavList>
         {matches('Overview') && file(undefined, 'Overview')}
+        {librariesMatch && <Link to={`${systemPath(system)}/libraries` as never} activeOptions={{ includeSearch: false }} className={navLinkClass} style={navLinkStyle}>{navIcon(Library)}Libraries</Link>}
         {contentSections.map(({ id, section, proto }) => <FileTree key={proto.id} proto={proto} current={page === id && params._splat ? findArtifact(proto, params._splat) : undefined} embedded contentIcon={navIcon(CONTENT_ICONS[id])} branch={{ label: section.title, path: source.dir + id + '/', active: page === id }} navigation={{ query: matches(section.title) ? '' : q, searching: Boolean(q), expanded: groupOpen(id), onExpandedChange: open => changeGroup(id, open), folderCommand, onFoldersExpanded: open => setFoldersExpanded(prev => prev[id] === open ? prev : { ...prev, [id]: open }) }} />)}
         {(matchingFoundations.length > 0 || matches('Theme')) && <SystemBranch label="Theme" path={source.theme} open={groupOpen('theme')} onOpenChange={open => changeGroup('theme', open)}>
           {matchingFoundations.map(p => file(p.id, p.label))}
@@ -181,7 +182,6 @@ function SystemNav({ system, components, tokens, page }: { system: SystemId; com
         {assetPages.length > 0 && <SystemBranch label="Assets" path={source.dir + 'assets/'} open={groupOpen('assets')} onOpenChange={open => changeGroup('assets', open)}>
           {assetPages.map(item => item.id === 'icons' && SYSTEMS[system].icons ? file('icons', 'Icons') : <Link key={item.id} to={`${systemPath(system)}/${item.id}` as never} activeOptions={{ includeSearch: false }} className={navLinkClass} style={navLinkStyle}>{navIcon(item.icon)}{item.label}</Link>)}
         </SystemBranch>}
-        {librariesMatch && <Link to={`${systemPath(system)}/libraries` as never} activeOptions={{ includeSearch: false }} className={navLinkClass} style={navLinkStyle}>{navIcon(Library)}Libraries</Link>}
         {(matchingComponents.length > 0 || matches('Components')) && <SystemBranch label="Components" path={source.components} open={groupOpen('components')} onOpenChange={open => changeGroup('components', open)}>
           {matchingComponents.map(c => file(c.slug, c.title, true))}
           {!components.length && <p className="px-3 py-1 text-[12px] text-muted-foreground">Empty folder</p>}

@@ -1,7 +1,9 @@
 import { systemPath } from '../data/systems';
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Image, Smile, Type } from 'lucide-react';
+import { ExternalLink, Image, Smile, Type } from 'lucide-react';
+import { useManifest } from '@/platform/app/data/useManifest';
+import { buttonVariants } from '@/systems/studio/components/button';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { NotFound } from '@/platform/app/shell/App';
 import { IconsPage, PageHeader } from './foundations';
@@ -33,6 +35,7 @@ function FontPreview({ asset }: { asset: SystemAsset }) {
 
 export default function SystemAssets({ system, sys, kind, path }: { system: string; sys: DesignSystem; kind?: SystemAsset['kind']; path?: string }) {
   const assets = systemAssets(system);
+  const libraries = (useManifest().systems[system]?.libraries ?? []).filter(library => library.assets?.some(asset => asset === kind?.toLowerCase()));
   if (path) {
     const asset = assets.find(item => item.path === path);
     if (!asset || (kind && asset.kind !== kind)) return <NotFound />;
@@ -53,11 +56,6 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
     Icons: 'Icons for your system’s interface.',
     Images: 'Logos and shared images for your prototypes.',
   }[kind];
-  const packageNote = {
-    Fonts: 'Fonts supplied by packages won’t appear in this local file collection.',
-    Icons: 'Icons supplied by packages won’t appear in this local file collection.',
-    Images: 'Images supplied by packages won’t appear in this local file collection.',
-  }[kind];
   const Icon = { Fonts: Type, Icons: Smile, Images: Image }[kind];
   const emptyDescription = {
     Fonts: 'Ask your agent to bring in your product’s font files and connect them to this system’s theme.',
@@ -66,21 +64,25 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
   }[kind];
   return <>
     <PageHeader title={kind} description={description} />
-    {kind === 'Icons' && sys.icons && <p className="mb-6 text-sm leading-6 text-foreground/80">This system uses {sys.icons.library}.</p>}
+    {libraries.length > 0 && <div className="mb-6 space-y-4">{libraries.map(library => <section key={library.id} className="rounded-xl border border-border bg-muted/40 p-6">
+      <h2 className="text-lg font-semibold">{library.label}</h2>
+      <p className="mt-2 text-sm text-muted-foreground">{kind === 'Icons' ? 'Use icons from this library’s full catalog in your prototypes.' : library.description}</p>
+      <a href={library.docs} target="_blank" rel="noreferrer" className={`mt-4 ${buttonVariants({ variant: 'outline', size: 'sm' })}`}>{kind === 'Icons' ? 'Browse icons' : 'Documentation'} <ExternalLink aria-hidden="true" className="size-3.5" /></a>
+    </section>)}</div>}
+    {kind === 'Icons' && sys.icons && <ThemeScope themeClass={sys.scopeClass}><IconsPage icons={sys.icons} /></ThemeScope>}
+    <h2 className="mb-2 text-lg font-semibold">Local {kind.toLowerCase()}</h2>
+    <p className="mb-4 text-sm text-muted-foreground">Files added directly to this system.</p>
     {items.length ? <ul className="space-y-2">{items.map(asset => <li key={asset.path}>
       <Link to={assetLink(system, asset) as never} className="flex items-center gap-4 rounded-lg border border-border px-4 py-3 hover:bg-muted">
         {kind !== 'Fonts' && <img src={asset.url} alt="" loading="lazy" className="size-10 shrink-0 object-contain" />}
         <span className="min-w-0 break-all text-sm">{asset.path}</span>
       </Link>
-    </li>)}</ul> : empty && <Empty className="min-h-[16rem] border border-solid border-border/50 bg-muted/40">
+    </li>)}</ul> : libraries.length || (kind === 'Icons' && sys.icons) ? <p className="text-sm text-muted-foreground">No local {kind.toLowerCase()} added.</p> : empty && <Empty className="min-h-[16rem] border border-solid border-border/50 bg-muted/40">
       <EmptyHeader>
         <EmptyMedia variant="icon" className="bg-background"><Icon aria-hidden="true" /></EmptyMedia>
         <EmptyTitle>No local {kind.toLowerCase()} yet</EmptyTitle>
         <EmptyDescription>{emptyDescription}</EmptyDescription>
       </EmptyHeader>
     </Empty>}
-    <p className="mt-4 text-sm leading-6 text-foreground/80">{packageNote}</p>
-    {!empty && <p className="my-6 text-sm leading-6 text-foreground/80">{emptyDescription}</p>}
-    {kind === 'Icons' && sys.icons && <ThemeScope themeClass={sys.scopeClass}><IconsPage icons={sys.icons} /></ThemeScope>}
   </>;
 }

@@ -38,7 +38,7 @@ When the person selects an existing target system, save the assessment summary t
 1. Adapt the chosen installed system in place if requested. Otherwise, preview `pnpm studio create-system` and apply authorized creation.
 2. Import components or connect the package. Avoid unnecessary copies of package code.
 3. Adapt aliases, dependencies, themes, and portals to the system contract. Place fonts, logos, and imagery using the [static asset convention](../../../../platform/context/assets.md).
-   Install packages in the target system's workspace, following [System libraries and dependencies](../../context/libraries.md). Expose library APIs deliberately when prototypes need capabilities beyond the documented components. Keep internal dependencies out of the public library inventory.
+   Install packages in the target system's workspace, following [System libraries and dependencies](../../context/libraries.md). Expose library APIs deliberately when prototypes need capabilities beyond the documented components. Record the selected component sources, foundations, icon sets, fonts, and other meaningful libraries in the library inventory. Omit implementation helpers and transitive dependencies. Listing a source does not expose its package API.
 4. Follow [document-component](../document-component/SKILL.md) for component pages and examples.
 5. Create or reuse one representative prototype in the person's folder. Verify the kit there and on its Systems pages.
 

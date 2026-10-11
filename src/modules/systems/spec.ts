@@ -19,12 +19,15 @@ export function systemColorMode(supported: readonly ColorMode[], global: ColorMo
 export type DocsMode = 'warn' | 'strict' | 'off';
 
 export type SystemLibrary = {
+  kind: 'package' | 'source';
   id: string;
   label: string;
-  package: string;
+  package?: string; // installed dependency for kind: package
+  version?: string; // authored provenance for kind: source
   description: string;
-  entry: string; // system-relative public runtime entry, e.g. libraries/charts.ts
+  entry?: string; // optional public runtime entry, e.g. libraries/charts.ts
   docs: string;
+  assets?: readonly ('fonts' | 'icons' | 'images')[];
   components?: readonly string[];
 };
 
@@ -79,8 +82,13 @@ export function systemProblems(spec: unknown, folder: string): string[] {
       if (typeof library.id !== 'string' || !ID.test(library.id) || ids.has(library.id)) problems.push(`${where}: library IDs must be unique lowercase names.`);
       ids.add(library.id);
       if (![library.label, library.description].every(value => typeof value === 'string' && value.trim())) problems.push(`${where}: libraries need a label and description.`);
-      if (typeof library.package !== 'string' || !/^(?:@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(library.package)) problems.push(`${where}: libraries must name an npm package, without a subpath.`);
-      if (typeof library.entry !== 'string' || !/^libraries\/[a-z0-9/-]+\.(?:ts|tsx|js|jsx)$/.test(library.entry) || library.entry.split('/').includes('..')) problems.push(`${where}: library entry must be a runtime file under libraries/.`);
+      if (!['package', 'source'].includes(library.kind)) problems.push(`${where}: library kind must be package or source.`);
+      if (library.kind === 'package' && (typeof library.package !== 'string' || !/^(?:@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(library.package))) problems.push(`${where}: package libraries must name an npm package, without a subpath.`);
+      if (library.kind === 'source' && (library.package !== undefined || library.entry !== undefined)) problems.push(`${where}: source libraries do not declare a package or runtime entry.`);
+      if (library.kind === 'package' && library.version !== undefined) problems.push(`${where}: installed library versions come from package resolution.`);
+      if (library.version !== undefined && (typeof library.version !== 'string' || !library.version.trim())) problems.push(`${where}: source version must be nonempty when provided.`);
+      if (library.entry !== undefined && (typeof library.entry !== 'string' || !/^libraries\/[a-z0-9/-]+\.(?:ts|tsx|js|jsx)$/.test(library.entry) || library.entry.split('/').includes('..'))) problems.push(`${where}: library entry must be a runtime file under libraries/.`);
+      if (library.assets !== undefined && (!Array.isArray(library.assets) || library.assets.some((asset: unknown) => typeof asset !== 'string' || !['fonts', 'icons', 'images'].includes(asset)))) problems.push(`${where}: library assets must be fonts, icons, or images.`);
       if (typeof library.docs !== 'string' || !/^https:\/\/\S+$/.test(library.docs)) problems.push(`${where}: libraries need an HTTPS documentation link.`);
       if (library.components !== undefined && (!Array.isArray(library.components) || library.components.some((slug: unknown) => typeof slug !== 'string' || !ID.test(slug)))) problems.push(`${where}: library components must be component slugs.`);
     }

@@ -72,7 +72,7 @@ export function scopePolicy({ root, systems, modules, prototypeDirs = [] }) {
       if (!scope) return null;
       if (target.split(path.sep).includes('node_modules')) return packageName(source) ? null : `${scope.kind} scope: import packages by their declared name, not a node_modules file path.`;
       const system = runtimeSystem(target);
-      if (scope.kind === 'Prototype' && system && inside(target, path.join(system.dir, 'libraries')) && !(systems[system.id].libraries ?? []).some(library => realFile(path.join(system.dir, library.entry)) === target)) return 'Prototype scope: use a declared public library entry from the assigned system.';
+      if (scope.kind === 'Prototype' && system && inside(target, path.join(system.dir, 'libraries')) && !(systems[system.id].libraries ?? []).some(library => library.entry && realFile(path.join(system.dir, library.entry)) === target)) return 'Prototype scope: use a declared public library entry from the assigned system.';
       const lib = publicLibrary(source, target);
       const own = inside(target, scope.dir) && (scope.kind !== 'Design system' || !systemDocumentation(target, scope.dir));
       const allowed = own || (scope.kind !== 'Shared utility' && inside(target, shared)) ||

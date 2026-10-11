@@ -16,13 +16,13 @@ The Systems layout remains mounted across its child routes. Component route load
 
 ## Assets browser
 
-Assets lists local files in `assets/` for the selected registered system. Its navigation contains Fonts, Icons, and Images pages, even when empty. Icons combines local icons with the declared library’s existing examples. There is no combined Assets page. Pages with no local files and no configured icon library use Studio’s Empty component with guidance for adding material. Files under `icons/` appear as Icons; other image files appear as Images. Supported extensions are SVG, PNG, JPG, JPEG, WebP, AVIF, GIF, ICO, WOFF, WOFF2, TTF, and OTF. The browser and Overview's local-asset count use the same inventory. Package files are not counted as local assets.
+Assets has Fonts, Icons, and Images pages, even when empty. Each page first identifies selected library providers from `system.ts.libraries[].assets`, with a link to the upstream catalog or documentation. A separate Local section lists files in `assets/`. Existing authored icon examples remain available. There is no combined Assets page. Pages with no local files, library providers, or configured icon examples use Studio’s Empty component with guidance for adding material. Files under `icons/` appear as Icons; other image files appear as Images. Supported extensions are SVG, PNG, JPG, JPEG, WebP, AVIF, GIF, ICO, WOFF, WOFF2, TTF, and OTF. The browser and Overview's local-asset count use the same inventory. Package files are not counted as local assets.
 
 Type pages use `/systems/<id>/fonts`, `/systems/<id>/icons`, and `/systems/<id>/images`. Individual previews append the asset’s relative path to its type page. The system segment is its permanent ID; there is no legacy Assets redirect. Images render through image elements rather than inline SVG execution. Font previews load only the selected font under a unique temporary family and remove it on navigation. Previews use Studio's appearance and do not activate assets in a system theme. Unknown files show Not Found. Assets have no text-source editor or structural file actions; use the agent or repository editor to add and maintain them.
 
 ## Libraries
 
-Libraries opens `/systems/<system-id>/libraries` in Studio’s appearance. Its cards use the system’s declared public libraries and resolved package versions. They link to upstream documentation and declared component examples. Each card identifies the system-owned import entry. Internal dependencies do not appear. An empty system offers guidance to ask the agent for additional capabilities. This generated page has no source editor.
+Libraries opens `/systems/<system-id>/libraries` in Studio’s appearance. Its simple cards show the system’s selected sources and libraries, what they contribute, and resolved package versions where applicable. They link to documentation and relevant asset pages or component examples. Transitive dependencies and implementation helpers do not appear. An empty system offers guidance to ask the agent for additional capabilities. This generated page has no source editor.
 
 ## Source editing
 
@@ -34,7 +34,7 @@ Only these system source files and discovered component files are accessible thr
 
 ## Navigation and organization
 
-The selected system has one navigation tree, ordered Overview, Context, Skills, Theme, Assets, Libraries, and Components. The configured default shows “Default system” below its name in the navigation header, outside the actions menu. Overview opens the system’s overview source. Context, Skills, Theme, Assets, and Components start expanded. Context and Skills read this system’s original guidance files. Branches use disclosure chevrons; individual pages use icons to distinguish their type.
+The selected system has one navigation tree, ordered Overview, Libraries, Context, Skills, Theme, Assets, and Components. The configured default shows “Default system” below its name in the navigation header, outside the actions menu. Overview opens the system’s overview source. Context, Skills, Theme, Assets, and Components start expanded. Context and Skills read this system’s original guidance files. Branches use disclosure chevrons; individual pages use icons to distinguish their type.
 
 The Resources toolbar searches all system navigation and provides an expand-all or collapse-all action. Search matches navigation names and file paths, temporarily revealing matching branches. Clearing search restores their previous expansion state. Context and Skills provide creation actions in their own branches.
 

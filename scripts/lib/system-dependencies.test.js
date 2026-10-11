@@ -17,7 +17,7 @@ function fixture(t) {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const write = (file, value) => { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), typeof value === 'string' ? value : JSON.stringify(value)); };
   const systems = {
-    a: { role: 'prototype', studioId: '0123456789abcdef', dir: 'src/systems/a', libraries: [{ id: 'charts', label: 'Charts', package: 'chart-library', description: 'Charts', docs: 'https://example.test', entry: 'libraries/charts.ts' }] },
+    a: { role: 'prototype', studioId: '0123456789abcdef', dir: 'src/systems/a', libraries: [{ kind: 'package', id: 'charts', label: 'Charts', package: 'chart-library', description: 'Charts', docs: 'https://example.test', entry: 'libraries/charts.ts' }] },
     b: { role: 'prototype', studioId: 'abcdefghjkmnpqrs', dir: 'src/systems/b', libraries: [] },
   };
   write('package.json', { private: true, dependencies: { react: '^19.3.0', 'react-dom': '^19.3.0' } });
@@ -48,6 +48,12 @@ test('package access follows system ownership, including types, subpaths, reexpo
   assert.match(policy.packageProblem('chart-library', file('src/lib/shared.ts')), /belongs in a system/);
   assert.deepEqual(systemDependencyProblems(root, systems), []);
   assert.equal(systemLibraryInventory(root, 'a', systems.a)[0].version, '1.0.0');
+  systems.a.libraries.unshift({ kind: 'source', id: 'curated', label: 'Curated source', description: 'Components', docs: 'https://example.test' });
+  assert.deepEqual(systemDependencyProblems(root, systems), []);
+  assert.equal(systemLibraryInventory(root, 'a', systems.a)[0].version, null);
+  delete systems.a.libraries[1].entry;
+  assert.deepEqual(systemDependencyProblems(root, systems), []);
+  assert.match(policy.problem('@/systems/a/libraries/charts', file('src/prototypes/alex/a/view.ts'), entry), /public library entry/);
   fs.rmSync(file('src/systems/a/node_modules'), { recursive: true });
   assert.match(policy.packageProblem('chart-library', file('src/systems/a/components/chart.ts')), /declared but not installed/);
 });
