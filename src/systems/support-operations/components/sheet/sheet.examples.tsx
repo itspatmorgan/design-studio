@@ -1,3 +1,0 @@
-import {Sheet,SheetTrigger,SheetContent,SheetHeader,SheetTitle,SheetDescription,SheetFooter,SheetClose} from '@/systems/support-operations/components/sheet';
-import {Button} from '@/systems/support-operations/components/button';
-export const Ticket=()=> <Sheet><SheetTrigger render={<Button/>}>Review ticket</SheetTrigger><SheetContent><SheetHeader><SheetTitle>Ticket details</SheetTitle><SheetDescription>Review a request without leaving the inbox.</SheetDescription></SheetHeader><p className="px-4 text-sm">Our teammates cannot see the shared inbox.</p><SheetFooter><SheetClose render={<Button variant="outline"/>}>Back to inbox</SheetClose></SheetFooter></SheetContent></Sheet>;

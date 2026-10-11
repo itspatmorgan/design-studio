@@ -1,3 +1,0 @@
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from './dialog';
-import { Button } from '../button';
-export const TicketDetails = () => <Dialog><DialogTrigger render={<Button />}>View ticket</DialogTrigger><DialogContent><DialogHeader><DialogTitle>Login issue</DialogTitle><DialogDescription>Ticket #1042 · Alex Rivera</DialogDescription></DialogHeader><p>A customer needs help signing in to their account.</p><DialogFooter><DialogClose render={<Button variant="outline" />}>Done</DialogClose></DialogFooter></DialogContent></Dialog>;

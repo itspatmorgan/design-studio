@@ -1,3 +1,0 @@
-import {Bar,BarChart,CartesianGrid,XAxis} from 'recharts';
-import {ChartContainer,ChartTooltip,ChartTooltipContent} from '@/systems/support-operations/components/chart';
-export const Volume=()=> <ChartContainer className="h-[200px] w-full aspect-auto" config={{tickets:{label:'Tickets',color:'var(--chart-3)'}}}><BarChart accessibilityLayer data={[{day:'Mon',tickets:42},{day:'Tue',tickets:68},{day:'Wed',tickets:51},{day:'Thu',tickets:74},{day:'Fri',tickets:59}]}><CartesianGrid vertical={false}/><XAxis dataKey="day" tickLine={false} axisLine={false}/><ChartTooltip content={<ChartTooltipContent/>}/><Bar dataKey="tickets" fill="var(--color-tickets)" radius={4} isAnimationActive={false}/></BarChart></ChartContainer>;

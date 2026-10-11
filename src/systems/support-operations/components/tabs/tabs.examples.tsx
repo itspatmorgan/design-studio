@@ -1,2 +1,0 @@
-import {Tabs,TabsList,TabsTrigger,TabsContent} from '@/systems/support-operations/components/tabs';
-export const QueueTabs=()=> <Tabs defaultValue="active"><TabsList><TabsTrigger value="active">Active</TabsTrigger><TabsTrigger value="resolved">Resolved</TabsTrigger></TabsList><TabsContent value="active">Requests that need a response.</TabsContent><TabsContent value="resolved">Closed requests.</TabsContent></Tabs>;
