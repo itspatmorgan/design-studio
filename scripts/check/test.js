@@ -28,10 +28,7 @@ if (args[0] === '--changed') {
 } else {
   if (args.some(arg => arg !== '--release'))
     throw new Error('Usage: test.js [--release] | --changed <base> <head> [--plan-only] [--full] [--merge-base]');
-  files = discoverTests().filter(
-    file =>
-      args.includes('--release') || (!file.endsWith('.integration.test.js') && !file.startsWith('scripts/plugins/')),
-  );
+  files = discoverTests().filter(file => args.includes('--release') || !file.endsWith('.integration.test.js'));
   if (!files.length) throw new Error('No retained regression tests found.');
 }
 if (!files.length) {

@@ -106,7 +106,7 @@ jobs:
           path: ${{ steps.store.outputs.path }}
           key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
       - run: pnpm install --frozen-lockfile
-      - run: pnpm harness:check
+      - run: pnpm studio sync --check
       - run: pnpm format:check
       - name: Configure Pages
         if: github.repository == 'itspatmorgan/design-studio-starter' && github.event_name == 'push' && github.ref == 'refs/heads/main'

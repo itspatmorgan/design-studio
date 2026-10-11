@@ -86,7 +86,7 @@ export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
           <section className="pb-16 md:pb-20">
             <h2 className="text-display-sm font-medium tracking-tight">Make it yours.</h2>
             <p className="mt-5 max-w-2xl text-md leading-relaxed text-text-tertiary">Open your repository folder in the editor or coding agent you already use, and run Studio alongside it. Ask your agent to configure your studio, bring your design system, or start a prototype. Review the results in your browser.</p>
-            <div className="mt-4"><ResourceLink href="https://github.com/itspatmorgan/design-studio-starter/blob/main/SETUP.md">Read the setup instructions</ResourceLink></div>
+            <div className="mt-4"><ResourceLink href="https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md">Read the setup instructions</ResourceLink></div>
             {version !== 3 && <figure className="mt-6">{version === 1 ? <StudioPreview /> : <StudioOwnership kind={1} />}<figcaption className="mt-3 text-sm text-text-tertiary">An example of how your prototypes and design system come together.</figcaption></figure>}
           </section>
         </main>

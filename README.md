@@ -4,7 +4,7 @@
 
 An open-source, local prototype sandbox for designers and product managers who build with coding agents. Turn ideas into interactive prototypes, keep the thinking behind them close, and shape an environment that fits your team.
 
-**[View demo](https://itspatmorgan.com/design-studio-starter/) · [Set up Design Studio](SETUP.md)**
+**[View demo](https://itspatmorgan.com/design-studio-starter/) · [Set up Design Studio](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md)**
 
 ## What you can do
 
@@ -14,9 +14,9 @@ An open-source, local prototype sandbox for designers and product managers who b
 
 ## Get started
 
-Use Codex, Claude Code, or Cursor in a local desktop session. Copy one prompt from [the setup guide](SETUP.md) to install the plugin and create your studio. Your agent handles setup and opens it on your computer.
+Use Codex, Claude Code, or Cursor in a local desktop session. Copy one prompt from [the setup guide](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md) to install the [Design Studio plugin](https://github.com/itspatmorgan/design-studio-plugin) and create your studio. Your agent handles setup and opens it on your computer.
 
-The guide also covers [direct setup without a plugin](SETUP.md#4-direct-from-the-source-repository) and [manual installation](SETUP.md#manual-installation). If ChatGPT Sites is available, the [setup-and-publish prompt](SETUP.md#set-up-and-publish-with-chatgpt-sites) includes a viewing link you can share. Editing stays local.
+The guide also covers [direct setup without a plugin](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#4-direct-from-the-source-repository) and [manual installation](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#manual-installation). If ChatGPT Sites is available, the [setup-and-publish prompt](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#set-up-and-publish-with-chatgpt-sites) includes a viewing link you can share. Editing stays local.
 
 ## Explore further
 

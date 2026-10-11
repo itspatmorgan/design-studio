@@ -12,7 +12,7 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | Before push | Scope summary. It does not run the full build or block platform changes. |
 | `pnpm build` | Manifest validation, module checks, type checking, and the production bundle. |
 | `pnpm test` | Focused platform and enabled-module regression tests. |
-| `pnpm test:release` | All regression tests, including disposable setup/production fixtures and plugin distribution tests when present. |
+| `pnpm test:release` | All regression tests, including disposable setup/production fixtures. |
 | `pnpm test:changed <base> <head>` | Execute affected regression groups. Add `--plan-only` to inspect selection or `--full` to force all tests. |
 | `pnpm build:release` | Full regression suite followed by the production build. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |

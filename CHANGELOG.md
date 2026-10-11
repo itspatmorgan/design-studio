@@ -1,5 +1,11 @@
 # Changelog
 
+## Foundation
+
+- The setup plugin, its host catalogs, and SETUP.md moved to [design-studio-plugin](https://github.com/itspatmorgan/design-studio-plugin). The starter no longer ships plugin files, and `pnpm harness:sync` and `pnpm harness:check` are replaced by `pnpm studio sync` and `pnpm studio sync --check`.
+- Upstream code is formatted with Biome; `pnpm format:check` runs in CI.
+- `.studio/ownership.json` and `pnpm ownership` map every path to an owner tier, and an upgrade test proves a customized studio can take a newer upstream revision.
+
 ## Portable setup preparation
 
 - One experimental plugin package exposes the same create, open, and use skills to Codex, Claude Code, and Cursor through generated host manifests.

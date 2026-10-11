@@ -7,7 +7,7 @@ toc: true
 
 ## How do I set it up?
 
-If you are reading this in your local studio, it is already running. For a new installation, choose a path in the [public setup instructions](https://github.com/itspatmorgan/design-studio-starter/blob/main/SETUP.md):
+If you are reading this in your local studio, it is already running. For a new installation, choose a path in the [public setup instructions](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md):
 
 | Path | Where to start |
 | --- | --- |

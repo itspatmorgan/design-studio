@@ -52,7 +52,7 @@
     },
     {
       "tier": "upstream",
-      "paths": ["scripts/**", "plugins/**", "patches/**", "public/**"],
+      "paths": ["scripts/**", "patches/**", "public/**"],
       "note": "Tooling, setup, dependency patches, shared static files."
     },
     {
@@ -74,16 +74,13 @@
         "CHANGELOG.md",
         "CONTRIBUTING.md",
         "SECURITY.md",
-        "SETUP.md",
         "LICENSE",
         "CLAUDE.md",
         ".gitignore",
-        ".claude-plugin/**",
-        ".cursor-plugin/**",
-        ".agents/plugins/**",
+        ".git-blame-ignore-revs",
         ".studio/ownership.json"
       ],
-      "note": "Project documents, plugin manifests, and this map."
+      "note": "Project documents, blame settings, and this map."
     },
     { "tier": "generated", "paths": ["pnpm-lock.yaml"], "note": "pnpm install" },
     {

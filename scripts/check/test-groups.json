@@ -122,27 +122,6 @@
         "scripts/lib/scope.js",
         "scripts/lib/fixtures/**"
       ]
-    },
-    "distribution": {
-      "tests": [
-        "scripts/plugins/design-studio/tests/benchmark.test.mjs",
-        "scripts/plugins/design-studio/tests/bootstrap.test.mjs",
-        "scripts/plugins/design-studio/tests/manifests.test.mjs",
-        "scripts/plugins/design-studio/tests/starter-package.test.mjs",
-        "scripts/plugins/design-studio/tests/toolchain.test.mjs",
-        "scripts/plugins/design-studio/tests/check-package.test.mjs"
-      ],
-      "dependencies": [
-        "plugins/**",
-        ".agents/plugins/**",
-        ".claude-plugin/**",
-        ".cursor-plugin/**",
-        "scripts/cli/sync-harnesses.js",
-        "scripts/lib/agent-skills.js",
-        "scripts/lib/harness-*.js",
-        "src/**/skills/**",
-        "scripts/plugins/**"
-      ]
     }
   }
 }

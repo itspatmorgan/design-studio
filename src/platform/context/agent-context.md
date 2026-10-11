@@ -50,11 +50,9 @@ Local project exposure does not require a global plugin. The Design Studio plugi
 
 ## Plugin distribution and installed studios
 
-The maintainer repository contains one plugin package at `plugins/design-studio`. Its root `plugin.json` owns identity and OpenAI interface metadata. Generated host manifests and repository catalogs adapt that definition to each harness. Keep compatibility manifests until native tests establish that removing them preserves installation, discovery, and updates.
+The setup plugin lives in its own repository, [design-studio-plugin](https://github.com/itspatmorgan/design-studio-plugin), with its host manifests, catalogs, and setup instructions. The starter carries no plugin files. `pnpm studio sync` is the only generator for project routing and skill adapters, used during capability changes and development startup.
 
-Run `pnpm harness:sync` to regenerate plugin metadata and synchronize project routing and skills. `pnpm harness:check` checks both without writing. In an installed studio without the plugin package, these commands inspect only project guidance. `pnpm studio sync` remains the command used during capability changes and development startup.
-
-The shared installer selects working-studio contents through `starter-package.mjs`. New studios retain app code, examples, dependency configuration, project instructions, and skill adapters. They omit plugin distribution files, repository publishing workflows, and maintainer evaluations. The installer writes a studio-specific README and creates a clean local Git baseline with no remote. The local receipt records the original source revision; it is not the new repository's HEAD. Existing studios are never repackaged. All three plugins and agent-assisted direct-source setup use this same selection. Manual template copies retain the complete maintainer repository.
+The plugin's installer selects working-studio contents through its `starter-package.mjs`. New studios retain app code, examples, dependency configuration, project instructions, and skill adapters. They omit plugin distribution files, repository publishing workflows, and maintainer evaluations. The installer writes a studio-specific README and creates a clean local Git baseline with no remote. The local receipt records the original source revision; it is not the new repository's HEAD. Existing studios are never repackaged. All three plugins and agent-assisted direct-source setup use this same selection. Manual template copies retain the complete maintainer repository.
 
 Host conventions: [Codex skills](https://learn.chatgpt.com/docs/build-skills), [Claude Code skills](https://code.claude.com/docs/en/skills), [Cursor skills](https://cursor.com/docs/skills).
 

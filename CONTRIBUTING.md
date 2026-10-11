@@ -2,7 +2,7 @@
 
 Design Studio Starter is an early beta. The current priority is a reliable local workflow: studio initialization, contributor onboarding, prototypes and their file types, design systems, and the system content. Portable static publishing is part of the workflow; each studio chooses and configures its own host.
 
-For local setup, follow [manual installation](SETUP.md#manual-installation) and the [Manual](src/modules/documentation/pages/index.md). Coding agents should start with [AGENTS.md](AGENTS.md), which points to platform context, principles, personas, and task skills.
+For local setup, follow [manual installation](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#manual-installation) and the [Manual](src/modules/documentation/pages/index.md). Coding agents should start with [AGENTS.md](AGENTS.md), which points to platform context, principles, personas, and task skills.
 
 ## Proposing a change
 
@@ -15,14 +15,15 @@ Create a branch in your fork and submit a pull request to `main`. Changes to the
 ```sh
 pnpm install --frozen-lockfile
 pnpm check
-pnpm harness:check
+pnpm format:check
+pnpm studio sync --check
 pnpm build:release
 pnpm build:inspect
 ```
 
-Use `pnpm test:changed <base> <head>` for affected regression groups, or add `--plan-only` to review the decision. [Checks and fixes](src/platform/context/checks.md#minimum-sufficient-verification) owns the dependency map and fallback policy. Use `pnpm test` during development for all focused regressions. `pnpm test:release` also exercises disposable setup and production fixtures and plugin distribution tests when present. `pnpm build` validates current source, types, and static output without rerunning tests. `pnpm build:release` performs both release regressions and the build. Keep committed files below 750 KB. Include useful tests for behavior changes, and update the Manual or agent instructions when a workflow changes.
+Use `pnpm test:changed <base> <head>` for affected regression groups, or add `--plan-only` to review the decision. [Checks and fixes](src/platform/context/checks.md#minimum-sufficient-verification) owns the dependency map and fallback policy. Use `pnpm test` during development for all focused regressions. `pnpm test:release` also exercises disposable setup and production fixtures. `pnpm build` validates current source, types, and static output without rerunning tests. `pnpm build:release` performs both release regressions and the build. Keep committed files below 750 KB. Include useful tests for behavior changes, and update the Manual or agent instructions when a workflow changes.
 
-Run `pnpm harness:sync` after changing plugin identity or canonical project skills. It generates all three host manifests and catalogs, then synchronizes project routing and skill adapters. Edit canonical sources instead of generated files. See [Agent context routing](src/platform/context/agent-context.md) for ownership and installed-studio packaging.
+Run `pnpm studio sync` after changing canonical project skills. It synchronizes project routing and skill adapters. The setup plugin and its host manifests live in [design-studio-plugin](https://github.com/itspatmorgan/design-studio-plugin). Edit canonical sources instead of generated files. See [Agent context routing](src/platform/context/agent-context.md) for ownership and installed-studio packaging.
 
 Use fictional sample data. Do not commit credentials, local environment files, proprietary design-system code, or company information you do not have permission to share. Check both files and commit history before publishing your own studio.
 

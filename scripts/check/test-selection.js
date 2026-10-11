@@ -8,7 +8,6 @@ const patterns = [
   'src/modules/**/*.test.ts',
   'src/modules/**/*.test.js',
   'scripts/**/*.test.js',
-  'scripts/plugins/design-studio/tests/*.test.mjs',
 ];
 export const discoverTests = (root = process.cwd()) => [...fs.globSync(patterns, { cwd: root })].sort();
 export function matches(file, glob) {

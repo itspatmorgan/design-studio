@@ -31,9 +31,9 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `contributors/` | Team | The sample contributor is seed. |
 | `studio.config.ts` | Seed | The team's settings after creation. |
 | `README.md` | Seed | The starter's README; rewrite it for the team. |
-| `scripts/`, `plugins/`, `patches/`, `public/` | Upstream | Tooling, setup, dependency patches, and shared static files. |
+| `scripts/`, `patches/`, `public/` | Upstream | Tooling, dependency patches, and shared static files. |
 | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `vite.config.ts`, `tsconfig*.json`, `mise.toml`, `.github/`, `.husky/` | Upstream | Root tooling and workflows. |
-| `.studio/ownership.json`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SETUP.md`, `LICENSE`, `CLAUDE.md`, `.gitignore`, plugin manifests | Upstream | The ownership map, project documents, and plugin manifests. |
+| `.studio/ownership.json`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `CLAUDE.md`, `.gitignore`, `.git-blame-ignore-revs` | Upstream | The ownership map, project documents, and blame settings. |
 | `pnpm-lock.yaml` | Generated | `pnpm install` |
 | `AGENTS.md` module routing block | Generated | `pnpm studio sync` |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |

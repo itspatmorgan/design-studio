@@ -18,8 +18,6 @@
     "ownership": "node scripts/check/check-ownership.js",
     "baseline": "node scripts/cli/baseline.js",
     "studio": "node scripts/cli/studio.js",
-    "harness:sync": "node scripts/cli/sync-harnesses.js",
-    "harness:check": "node scripts/cli/sync-harnesses.js --check",
     "canvas": "node src/modules/canvas/cli.ts",
     "test": "node scripts/check/test.js",
     "test:release": "node scripts/check/test.js --release",

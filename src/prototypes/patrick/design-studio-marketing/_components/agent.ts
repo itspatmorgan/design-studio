@@ -40,7 +40,7 @@ V3 adapts the personal website’s drafting-table illustrations and feedback-tri
 ## Reference
 
 Repository: https://github.com/itspatmorgan/design-studio-starter
-Setup instructions: https://github.com/itspatmorgan/design-studio-starter/blob/main/SETUP.md
+Setup instructions: https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md
 `;
 
 export default agentMarkdown;
