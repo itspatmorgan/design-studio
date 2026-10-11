@@ -14,7 +14,7 @@ Read the relevant [module contract](../../context/modules.md) sections for capab
 - For system lifecycle changes, read the [Systems contract](../../modules/systems/README.md#system-lifecycle). Preview `rename-system`, `archive-system`, `restore-system`, or `delete-system` before `--yes`. Rename repairs local references automatically. Archive preserves source and archives associated active prototypes. Delete permanently removes system source; retained prototypes need a rebuild. Choose another default before archive or deletion, and resolve whether restoration includes associated prototypes.
 - Apply already-authorized choices without asking again. Ask for unresolved source, scope, or destructive choices.
 - Treat installed modules as trusted code, not sandboxed data. Review the source and proposed dependencies before installation.
-- Do not manually edit `studio.lock.json`, the generated module routing in `AGENTS.md`, or config module flags. Use studio commands.
+- Do not manually edit `studio.lock.json`, the generated `AGENTS.md`, or config module flags. Use studio commands.
 - Do not bypass required-module constraints or unresolved dependencies with `--force`.
 - If the license check rejects a source, obtain the person's decision before using `--allow-license`.
 - Restart the dev server after CLI configuration, module installation, or system installation changes. Saving in local Studio settings restarts it automatically. Ordinary component edits update during development.

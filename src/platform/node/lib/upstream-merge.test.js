@@ -24,8 +24,8 @@ function studio(changes) {
     schema: 1,
     rules: [
       { tier: 'upstream', paths: ['src/platform/**', '.studio/ownership.json'] },
-      { tier: 'generated', paths: ['pnpm-lock.yaml'] },
-      { tier: 'seed', paths: ['README.md', 'src/prototypes/sam/**'] },
+      { tier: 'generated', paths: ['pnpm-lock.yaml', 'AGENTS.md'] },
+      { tier: 'seed', paths: ['README.md', 'AGENTS.team.md', 'src/prototypes/sam/**'] },
     ],
   };
   write({
@@ -96,21 +96,14 @@ test('an already merged revision changes nothing', () => {
   assert.equal(git('rev-parse', 'HEAD'), before);
 });
 
-test('a conflict inside the generated module block of AGENTS.md takes upstream and is regenerated; elsewhere it is reported', () => {
-  const block = lines => `intro\n<!-- studio:modules -->\n${lines}<!-- /studio:modules -->\noutro\n`;
+test('AGENTS.md is generated and takes upstream; the team file AGENTS.team.md keeps the team copy', () => {
   const { dir, read } = studio({
-    studio: { 'AGENTS.md': block('a old\nteam module\n') },
-    upstream: { 'AGENTS.md': block('a new\nb new\n') },
+    studio: { 'AGENTS.md': 'team text\n', 'AGENTS.team.md': 'team guidance\n' },
+    upstream: { 'AGENTS.md': 'release text\n', 'AGENTS.team.md': 'seed\n' },
   });
-  const result = mergeUpstream(dir, 'upstream', { run });
-  assert.equal(result.merged, true);
-  assert.equal(read('AGENTS.md'), block('a new\nb new\n'));
-
-  const outside = studio({
-    studio: { 'AGENTS.md': 'team intro\n' },
-    upstream: { 'AGENTS.md': 'release intro\n' },
-  });
-  assert.deepEqual(mergeUpstream(outside.dir, 'upstream', { run }), { merged: false, conflicts: ['AGENTS.md'] });
+  assert.equal(mergeUpstream(dir, 'upstream', { run }).merged, true);
+  assert.equal(read('AGENTS.md'), 'release text\n');
+  assert.equal(read('AGENTS.team.md'), 'team guidance\n');
 });
 
 // Upstream renames a seed file (settings.old.txt to settings.new.txt) and its map then lists only the new name.

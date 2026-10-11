@@ -14,9 +14,9 @@ The Documentation surface offers Manual and Context and Skills. The latter shows
 
 ## Entry and platform baseline
 
-Root `AGENTS.md` routes to [working context](working-in-studio.md). Essential requirements cover preservation, contributor scope, assignment, enabled capabilities, and verification. Full [Principles](principles.md) and [Personas](personas.md) apply to platform product and architecture decisions. Studio interface work follows its system entry point and writing context.
+Root `AGENTS.md` is generated from `src/platform/AGENTS.md`, the module routing block, and the team's `AGENTS.team.md`; edit those sources, not the output. It routes to [working context](working-in-studio.md). Essential requirements cover preservation, contributor scope, assignment, enabled capabilities, and verification. Full [Principles](principles.md) and [Personas](personas.md) apply to platform product and architecture decisions. Studio interface work follows its system entry point and writing context.
 
-[Responsibilities](contracts-and-instructions.md) defines canonical ownership. Enabled modules declare optional task routes through module-relative `instructions: [{ path, when }]`. `pnpm studio sync` refreshes the root `studio:modules` block and native project skill exposure. Adding, removing, and configuring capabilities invokes synchronization; development startup also synchronizes. A build validates sources without rewriting adapters.
+[Responsibilities](contracts-and-instructions.md) defines canonical ownership. Enabled modules declare optional task routes through module-relative `instructions: [{ path, when }]`. `pnpm studio sync` regenerates root `AGENTS.md` (including the `studio:modules` block) and native project skill exposure. Adding, removing, and configuring capabilities invokes synchronization; development startup also synchronizes. A build validates sources without rewriting adapters.
 
 ## Resolve a prototype's system
 

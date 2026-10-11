@@ -31,6 +31,7 @@ const step = title => console.log(`\n[upgrade] ${title}`);
 const run = (command, args) =>
   execFileSync(command, args, { cwd: dir, stdio: 'inherit', env: { ...process.env, CI: process.env.CI ?? '1' } });
 const read = (command, args) => execFileSync(command, args, { cwd: dir, encoding: 'utf8' }).trim();
+const TEAM_AGENTS_LINE = 'Fixture team agent guidance.';
 const edit = (file, change) => {
   const target = path.join(dir, file);
   fs.writeFileSync(target, change(fs.readFileSync(target, 'utf8')));
@@ -125,6 +126,12 @@ try {
     edit('studio.config.json', text => serializeConfig({ ...JSON.parse(text), name: 'Fixture Studio' }));
   else edit('studio.config.ts', text => text.replace(/name: '[^']*'/, "name: 'Fixture Studio'"));
   edit('README.md', text => `${text}\nFixture team notes.\n`);
+  // A studio whose base predates the team agent file has nothing to edit.
+  const teamAgents = fs.existsSync(path.join(dir, 'AGENTS.team.md'));
+  if (teamAgents) {
+    edit('AGENTS.team.md', text => `${text}\n${TEAM_AGENTS_LINE}\n`);
+    run('pnpm', ['studio', 'sync']);
+  }
   run('pnpm', ['check']);
   run('git', ['add', '-A']);
   run('git', ['commit', '-q', '--no-verify', '-m', 'Team changes']);
@@ -153,6 +160,11 @@ try {
     if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(text))
       throw new Error(`The update lost the team's change to ${file}.`);
   }
+  // The team's agent guidance survives in its own file and in the generated AGENTS.md, when the base had the file.
+  if (teamAgents)
+    for (const file of ['AGENTS.team.md', 'AGENTS.md'])
+      if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(TEAM_AGENTS_LINE))
+        throw new Error(`The update lost the team's agent guidance in ${file}.`);
   for (const folder of ['contributors/fixture.json', 'src/prototypes/fixture', 'src/modules/fixture-notes']) {
     if (!fs.existsSync(path.join(dir, folder))) throw new Error(`The update removed ${folder}.`);
   }

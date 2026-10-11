@@ -53,3 +53,7 @@ Modules run inside the application; they are not a protective sandbox. A faulty 
 Studio does not automatically merge new releases into your folder. Updating a setup plugin does not upgrade that folder either.
 
 Ask your agent to compare the update with your local changes, preserve existing work, and verify the application before adopting it. Changes kept to your systems, prototypes, contributors, settings, and your own modules update most easily; your agent can use the [ownership map](/documentation/context/platform.core/context/ownership) to check the rest. Custom systems, modules, and platform changes need maintenance as dependencies and upstream code evolve.
+
+## Where do I add guidance for my agent?
+
+Add your team's conventions and product context to `AGENTS.team.md` in the studio's root. `AGENTS.md` is generated from Studio's own instructions, the modules you have turned on, and your file, so don't edit it directly; ask your agent to run `pnpm studio sync` after you change the sources. Guidance that applies to one design system belongs in that system's own context.

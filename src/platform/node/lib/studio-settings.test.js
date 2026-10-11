@@ -23,10 +23,9 @@ function fixture(t) {
   };
   writeProfiles(root, { sam: { name: 'Sam' }, alex: { name: 'Alex' } });
   const { directory } = writeFixtureConfig(root, config);
-  fs.writeFileSync(
-    path.join(root, 'AGENTS.md'),
-    'Shared guidance\n<!-- studio:modules -->\n<!-- /studio:modules -->\n',
-  );
+  fs.mkdirSync(path.join(root, 'src/platform'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'src/platform/AGENTS.md'), '# Shared\n\nShared guidance\n');
+  fs.writeFileSync(path.join(root, 'AGENTS.md'), 'stale\n');
   const options = {
     root,
     directory,

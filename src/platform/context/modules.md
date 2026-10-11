@@ -88,7 +88,7 @@ pnpm check
 
 Add, remove, and create commands preview changes. Applying them requires `--yes`. Use CLI help for source formats and optional flags.
 
-Studio commands register and unregister capabilities, manage config module flags, `studio.lock.json`, and module-owned routing in `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
+Studio commands register and unregister capabilities, manage config module flags, `studio.lock.json`, and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
 
 Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
 

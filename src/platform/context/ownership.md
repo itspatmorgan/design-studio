@@ -37,7 +37,8 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `vite.config.ts`, `tsconfig*.json`, `mise.toml`, `.github/`, `.husky/` | Upstream | Root tooling and workflows. |
 | `.studio/ownership.json`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `CLAUDE.md`, `.gitignore`, `.git-blame-ignore-revs` | Upstream | The ownership map, project documents, and blame settings. |
 | `pnpm-lock.yaml` | Generated | `pnpm install` |
-| `AGENTS.md` module routing block | Generated | `pnpm studio sync` |
+| `AGENTS.md` | Generated | `pnpm studio sync`, from `src/platform/AGENTS.md`, the enabled modules' routing, and `AGENTS.team.md`. |
+| `AGENTS.team.md` | Seed | The team's own guidance for coding agents. `src/platform/AGENTS.md` is upstream. |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
 `.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
@@ -50,11 +51,14 @@ Design systems are found in two roots, listed once (supplied first) in `src/plat
 
 Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`. `src/platform/modules/` is supplied and upstream-owned; it holds the modules the starter ships, required or optional. `src/modules/` is the team's and starts with only a README. A module's ID is its folder name and an ID can exist in only one root, so a team module never reuses a supplied module's ID. Creating and adding modules writes only to the team root. Supplied modules are under `src/platform/`, but they are module code: the module boundary rules apply to them as they do to the team's.
 
+## Agent instructions
+
+`AGENTS.md` is generated, so an update never conflicts on it. `pnpm studio sync` writes it from three sources: the upstream guidance in `src/platform/AGENTS.md`, the routing lines for the enabled modules, and the team's own `AGENTS.team.md`, appended last. Never edit `AGENTS.md`; the next sync overwrites it. Put your team's conventions and product context for agents in `AGENTS.team.md` (or, for one system, in that system's `AGENTS.md`). `pnpm studio sync --check` fails when `AGENTS.md` is stale.
+
 ## Mixed paths
 
 Some paths hold more than one tier. Change only your part of each:
 
-- `AGENTS.md`: the module routing block is generated. Other lines are upstream guidance; add team guidance in your systems' context instead.
 - `package.json`: a team module's dependencies are added to the root manifest. Systems keep their dependencies in their own `package.json`.
 
 ## Related contracts

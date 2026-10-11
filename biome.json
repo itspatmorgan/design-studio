@@ -10,6 +10,7 @@
       "**",
       "!pnpm-lock.yaml",
       "!studio.config.json",
+      "!AGENTS.team.md",
       "!.agents",
       "!.claude",
       "!contributors",

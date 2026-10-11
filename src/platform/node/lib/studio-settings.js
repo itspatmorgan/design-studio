@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { readDeclaration as readSystemDeclaration } from '../../core/modules/pack.ts';
 import { configProblems, studioRole } from '../../core/config.ts';
 import { compatible } from '../../core/modules/index.ts';
-import { agentsBlock, applyAgentsBlock } from '../../core/modules/pack.ts';
+import { renderAgents } from './agents-file.js';
 import { applySetupChanges } from './studio-setup.js';
 import { serializeConfig, withSettings } from '../../core/config-file.ts';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
@@ -101,20 +101,16 @@ export function planSettings({
   const pins = [];
   const edits = [...pins, { file: current.file, before: current.source, after: source }];
   const agents = path.join(root, 'AGENTS.md');
-  if (fs.existsSync(agents)) {
-    const before = fs.readFileSync(agents, 'utf8');
+  if (fs.existsSync(agents))
     edits.push({
       file: agents,
-      before,
-      after: applyAgentsBlock(
-        before,
-        agentsBlock(
-          modules.filter(m => next.modules[m.id] === true && compatible(m)),
-          platformId,
-        ),
+      before: fs.readFileSync(agents, 'utf8'),
+      after: renderAgents(
+        root,
+        modules.filter(m => next.modules[m.id] === true && compatible(m)),
+        platformId,
       ),
     });
-  }
   return { config: next, edits: edits.filter(edit => edit.before !== edit.after), pins };
 }
 

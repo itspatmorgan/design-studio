@@ -16,6 +16,8 @@ Inspect the owner's README and related context or skills. Reuse an existing sour
 3. Update the owner's README and affected callers. For a module task route, use a module-relative `instructions` path. For discovery changes, consult [Agent context routing](../../context/agent-context.md).
 4. After changing skills or capability availability, run `pnpm studio sync`. Inspect warnings and preserve user-authored adapter entries; generated entries are not authoring sources.
 
+Root `AGENTS.md` is generated; never edit it. Change upstream agent guidance in `src/platform/AGENTS.md` (with links relative to that file) and the team's own in `AGENTS.team.md`, then run `pnpm studio sync`.
+
 ## Verify
 
 Check metadata, links, rendered headings, correct ownership, and source access. For skills, walk through requests that should and should not activate them, including disabled modules and unrelated systems. Check the full reading and action path for unnecessary work. Verify new mechanics with representative inputs and failures. Follow platform working context for required checks and commits.

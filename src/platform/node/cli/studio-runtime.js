@@ -33,14 +33,7 @@ import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-s
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { compatible, listProblems, moduleProblems, PLATFORM_VERSION } from '../../core/modules/index.ts';
-import {
-  agentsBlock,
-  applyAgentsBlock,
-  licenseVerdict,
-  packPlan,
-  parseSource,
-  readDeclaration,
-} from '../../core/modules/pack.ts';
+import { licenseVerdict, packPlan, parseSource, readDeclaration } from '../../core/modules/pack.ts';
 import { systemProblems } from '../../modules/systems/spec.ts';
 import { MODULES, ENABLED_MODULES, CONFIG } from '../lib/modules.js';
 import {
@@ -55,6 +48,7 @@ import { CONFIG_FILE, configProblems } from '../../core/config.ts';
 import { parseConfigFile, serializeConfig, withModule, withSettings } from '../../core/config-file.ts';
 import { applySetupChanges, editDeclaration } from '../lib/studio-setup.js';
 import { planSettings } from '../lib/studio-settings.js';
+import { renderAgents } from '../lib/agents-file.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { fetchSource, walk } from '../lib/fetch-source.js';
 import { loadContributors } from '../lib/contributors.js';
@@ -169,14 +163,10 @@ function removeEmptyParents(abs) {
 // ---- AGENTS.md
 function syncAgents() {
   const file = rel('AGENTS.md');
-  if (!fs.existsSync(file)) {
-    if (flags.check) throw new Error('AGENTS.md is missing. Restore project instructions before checking routing.');
-    return false;
-  }
-  const text = fs.readFileSync(file, 'utf8');
-  const next = applyAgentsBlock(text, agentsBlock(ENABLED_MODULES, PLATFORM_ID));
+  const text = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+  const next = renderAgents(ROOT, ENABLED_MODULES, PLATFORM_ID);
   if (next === text) return false;
-  if (flags.check) throw new Error('AGENTS.md module routing is stale. Run pnpm studio sync.');
+  if (flags.check) throw new Error('AGENTS.md is stale. Run pnpm studio sync.');
   fs.writeFileSync(file, next);
   return true;
 }

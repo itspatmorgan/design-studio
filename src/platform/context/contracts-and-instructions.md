@@ -16,7 +16,7 @@ Design Studio has two kinds of agent guidance: context and skills. Both belong t
 
 Context can describe facts, rationale, or standing requirements. Label requirements clearly; a context document is not necessarily optional advice. Skills define task triggers, required input, procedures, supporting resources, and completion criteria. Keep short relevant constraints in the skill when they do not need an independent shared document.
 
-Root `AGENTS.md` supplies essential operating requirements and routes. System entry points select relevant product guidance. The Manual explains the environment to people; the Context and Skills browser displays original owner files. Neither surface creates another authoritative copy.
+Root `AGENTS.md` supplies essential operating requirements and routes. It is generated: upstream requirements are written in `src/platform/AGENTS.md` and the team's own in `AGENTS.team.md`. System entry points select relevant product guidance. The Manual explains the environment to people; the Context and Skills browser displays original owner files. Neither surface creates another authoritative copy.
 
 ## Technical requirements
 
