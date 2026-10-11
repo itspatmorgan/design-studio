@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { ExternalLink, Image, Smile, Type } from 'lucide-react';
 import { useManifest } from '@/platform/app/data/useManifest';
-import { buttonVariants } from '@/systems/studio/components/button';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { NotFound } from '@/platform/app/shell/App';
 import { IconsPage, PageHeader } from './foundations';
@@ -50,7 +49,6 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
   }
   if (!kind) return <NotFound />;
   const items = assets.filter(asset => asset.kind === kind);
-  const empty = !items.length && !(kind === 'Icons' && sys.icons);
   const description = {
     Fonts: 'Fonts for your system’s typography.',
     Icons: 'Icons for your system’s interface.',
@@ -64,23 +62,26 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
   }[kind];
   return <>
     <PageHeader title={kind} description={description} />
-    {libraries.length > 0 && <div className="mb-6 space-y-4">{libraries.map(library => <section key={library.id} className="rounded-xl border border-border bg-muted/40 p-6">
-      <h2 className="text-lg font-semibold">{library.label}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">{kind === 'Icons' ? 'Use icons from this library’s full catalog in your prototypes.' : library.description}</p>
-      <a href={library.docs} target="_blank" rel="noreferrer" className={`mt-4 ${buttonVariants({ variant: 'outline', size: 'sm' })}`}>{kind === 'Icons' ? 'Browse icons' : 'Documentation'} <ExternalLink aria-hidden="true" className="size-3.5" /></a>
-    </section>)}</div>}
+    {libraries.length > 0 && <ul aria-label={`${kind} libraries`} className="mb-6 space-y-2">{libraries.map(library => <li key={library.id}>
+      <a href={library.docs} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted">
+        <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 flex-1"><span className="font-medium">{library.label}</span><span className="ml-2 text-muted-foreground">{kind === 'Icons' ? 'Icon library' : kind === 'Fonts' ? 'Font library' : 'Image library'}</span></span>
+        <ExternalLink aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+      </a>
+    </li>)}</ul>}
     {kind === 'Icons' && sys.icons && <ThemeScope themeClass={sys.scopeClass}><IconsPage icons={sys.icons} /></ThemeScope>}
-    <h2 className="mb-2 text-lg font-semibold">Local {kind.toLowerCase()}</h2>
-    <p className="mb-4 text-sm text-muted-foreground">Files added directly to this system.</p>
-    {items.length ? <ul className="space-y-2">{items.map(asset => <li key={asset.path}>
+    {items.length ? <>
+      <h2 className="mb-2 text-lg font-semibold">Local {kind.toLowerCase()}</h2>
+      <p className="mb-4 text-sm text-muted-foreground">Files added directly to this system.</p>
+      <ul className="space-y-2">{items.map(asset => <li key={asset.path}>
       <Link to={assetLink(system, asset) as never} className="flex items-center gap-4 rounded-lg border border-border px-4 py-3 hover:bg-muted">
         {kind !== 'Fonts' && <img src={asset.url} alt="" loading="lazy" className="size-10 shrink-0 object-contain" />}
         <span className="min-w-0 break-all text-sm">{asset.path}</span>
       </Link>
-    </li>)}</ul> : libraries.length || (kind === 'Icons' && sys.icons) ? <p className="text-sm text-muted-foreground">No local {kind.toLowerCase()} added.</p> : empty && <Empty className="min-h-[16rem] border border-solid border-border/50 bg-muted/40">
+    </li>)}</ul></> : <Empty className={`${libraries.length || (kind === 'Icons' && sys.icons) ? 'min-h-[12rem]' : 'min-h-[16rem]'} border border-solid border-border/50 bg-muted/40`}>
       <EmptyHeader>
         <EmptyMedia variant="icon" className="bg-background"><Icon aria-hidden="true" /></EmptyMedia>
-        <EmptyTitle>No local {kind.toLowerCase()} yet</EmptyTitle>
+        <EmptyTitle>No local {kind.toLowerCase()} added</EmptyTitle>
         <EmptyDescription>{emptyDescription}</EmptyDescription>
       </EmptyHeader>
     </Empty>}
