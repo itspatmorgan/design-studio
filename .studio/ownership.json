@@ -32,6 +32,11 @@
       "note": "The team's prototypes and contributor profiles."
     },
     {
+      "tier": "team",
+      "paths": ["studio.lock.json"],
+      "note": "What the studio installed: its upstream platform release and the modules and systems added from a source. Written by pnpm studio update, pnpm studio add, and the installer; the starter does not ship it."
+    },
+    {
       "tier": "seed",
       "paths": ["studio.config.json", "README.md", "AGENTS.team.md"],
       "note": "The team's settings, README, and agent guidance after creation."

@@ -192,6 +192,12 @@ const checkInFreshProcess = () => {
 // ---- commands
 function list() {
   const lock = readLock();
+  say(
+    lock.platform
+      ? `Platform ${PLATFORM_VERSION}, from upstream release v${lock.platform.version} (${lock.platform.commit.slice(0, 7)})`
+      : `Platform ${PLATFORM_VERSION}; the upstream release is not recorded yet (pnpm studio update records it)`,
+  );
+  say();
   say('Modules');
   for (const [id, m] of Object.entries(MODULES)) {
     if (!m || typeof m !== 'object') continue;

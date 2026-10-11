@@ -32,6 +32,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `src/systems/product/`, `src/systems/marketing/` | Seed | Example systems; adapt or replace them. |
 | `src/prototypes/<contributor>/` | Team | The sample prototypes are seed. |
 | `contributors/` | Team | The sample contributor is seed. |
+| `studio.lock.json` | Team | What the studio installed: its upstream platform release (`platform`) and the modules and systems added with `pnpm studio add`. Studio commands write it; the starter does not ship it. See [The installed release](#the-installed-release). |
 | `studio.config.json` | Seed | The team's settings after creation. Its schema, `src/platform/core/studio.config.schema.json`, is upstream. |
 | `README.md` | Seed | The starter's README; rewrite it for the team. |
 | `patches/`, `public/` | Upstream | Dependency patches and shared static files. |
@@ -43,6 +44,23 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
 `.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. In a studio, any path the map does not name is yours: it is treated as team-owned, so you can add top-level files without editing the map. Two rules of different tiers claiming one path is an error, since only upstream edits the map. The upstream project's CI also runs `pnpm ownership --strict`, which fails on an unnamed path so the map stays complete. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
+
+## The installed release
+
+`studio.lock.json` records the upstream release a studio is on:
+
+```json
+{
+  "lockfileVersion": 1,
+  "platform": { "version": "0.2.1", "commit": "<full commit id of the v0.2.1 tag>" },
+  "modules": {},
+  "systems": {}
+}
+```
+
+`pnpm studio update` writes the entry in the update's merge commit, and the installer writes it when it creates a studio. The upstream starter never ships a lock with a `platform` entry, since its own commit would be wrong for every copy. A studio without the entry, or with one the tools can't read, is on an unknown release: `pnpm studio list` says so, and an update falls back to Git's merge base between the studio and the release. Once written, the lock always exists; `pnpm studio add` and `remove` keep the entry.
+
+The lock is team-owned. Upstream tools write it, but it describes the team's studio, and upstream does not ship it, so it is not a seed file and an update never merges an upstream copy over it. Don't edit it by hand.
 
 ## System roots
 
