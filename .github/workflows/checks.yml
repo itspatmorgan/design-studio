@@ -148,22 +148,15 @@ jobs:
           path: ${{ steps.store.outputs.path }}
           key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
       - run: pnpm install --frozen-lockfile
-      # Start from the latest release tag (v<major>.<minor>.<patch>) once one exists, as a studio would; before the first
-      # release, from the pull request's merge base.
+      # Start from the latest release tag (v<major>.<minor>.<patch>), as a studio would.
       - name: Update a customized studio from the latest release
         env:
-          BASE_REF: ${{ github.event.pull_request.base.sha }}
           HEAD_REF: ${{ github.event.pull_request.head.sha }}
         run: |
           RELEASE=$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)
-          if [ -n "$RELEASE" ]; then
-            echo "Upgrade test base: release $RELEASE"
-            BASE="$RELEASE"
-          else
-            echo "Upgrade test base: merge base (no release tag yet)"
-            BASE=$(git merge-base "$BASE_REF" "$HEAD_REF")
-          fi
-          node src/platform/node/check/upgrade-test.js "$BASE" "$HEAD_REF"
+          test -n "$RELEASE" || { echo "No release tag found"; exit 1; }
+          echo "Upgrade test base: release $RELEASE"
+          node src/platform/node/check/upgrade-test.js "$RELEASE" "$HEAD_REF"
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
     needs: [bundle, regressions]

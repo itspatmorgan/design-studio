@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- CI no longer falls back to the merge base when choosing the upgrade test base; it always starts from the latest release tag.
+
 ## 0.2.1 (2026-10-11)
 
 - The upgrade test now starts from the latest release.
