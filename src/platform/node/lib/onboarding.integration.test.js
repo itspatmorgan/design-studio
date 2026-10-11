@@ -36,12 +36,12 @@ test('local personal setup resumes, then a second clone joins a team without cha
     copy(root, dir);
     ensureTeamManagement(dir);
     git(dir, 'init', '-q');
-    git(dir, 'config', 'user.name', 'Patrick Morgan');
+    git(dir, 'config', 'user.name', 'Sam Rivera');
     git(dir, 'config', 'user.email', 'legacy@example.test');
     // Own the fixture data: a team's real contributors, systems and prototypes are arbitrary.
     fs.rmSync(path.join(dir, 'contributors'), { recursive: true, force: true });
     writeProfiles(dir, {
-      patrick: { studioId: '0123456789abcdef', name: 'Patrick Morgan', email: '', github: '', welcomeDismissed: false },
+      samples: { studioId: '0123456789abcdef', name: 'Sam Rivera', email: '', github: '', welcomeDismissed: false },
     });
     for (const folder of ['src/prototypes', 'src/systems']) {
       fs.rmSync(path.join(dir, folder), { recursive: true, force: true });
@@ -64,7 +64,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     writeFixtureConfig(dir, {
       name: 'Fixture Studio',
       usage: 'team',
-      admins: ['patrick'],
+      admins: ['samples'],
       tagline: 'Fixture',
       modules: Object.fromEntries(moduleIdsIn(dir).map(id => [id, id !== 'documentation'])),
       systems: ['bootstrap'],
@@ -137,7 +137,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.equal(declared().modules['failing-fixture'], true);
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'failing-fixture', '--yes');
     fs.rmSync(pack, { recursive: true });
-    assert.equal(run(dir, 'src/platform/node/cli/resolve-contributor.js').trim(), 'patrick');
+    assert.equal(run(dir, 'src/platform/node/cli/resolve-contributor.js').trim(), 'samples');
     run(dir, 'src/platform/modules/prototypes/node/create.js', 'Sample');
     git(dir, 'config', 'user.name', 'Sam Solo');
     git(dir, 'config', 'user.email', 'sam@gmail.com');
@@ -199,7 +199,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.equal(status.contributor, 'sam');
     assert.equal(status.modules.disabled.includes('documentation'), hasDocumentation);
     // Retire the sample's dependency in this disposable copy only, before replacing Product.
-    fs.rmSync(path.join(dir, 'src/prototypes/patrick'), { recursive: true, force: true });
+    fs.rmSync(path.join(dir, 'src/prototypes/samples'), { recursive: true, force: true });
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'product', '--yes');
     run(dir, 'src/platform/node/build/build-manifest.js', '--strict');
     run(dir, 'src/platform/node/cli/studio.js', 'configure', '--usage', 'team', '--yes');

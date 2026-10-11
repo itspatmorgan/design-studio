@@ -18,7 +18,7 @@ export default function markdownRefresh() {
     transform(code, id) {
       const file = id.split('?')[0];
       if (!file.startsWith(SRC + path.sep) || !file.endsWith('.md')) return null;
-      // The id is the file's key in the loader's glob: "/prototypes/patrick/hello-world/notes.md".
+      // The id is the file's key in the loader's glob: "/prototypes/samples/hello-world/notes.md".
       const key = '/' + path.relative(SRC, file).split(path.sep).join('/');
       return {
         code: `${code}\nif (import.meta.hot) import.meta.hot.accept((mod) => { if (mod) window.dispatchEvent(new CustomEvent('studio:markdown', { detail: { key: ${JSON.stringify(key)}, reference: ${JSON.stringify(/[?&]reference(?:&|$)/.test(id))}, mod } })); });\n`,

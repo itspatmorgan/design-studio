@@ -48,7 +48,7 @@ export type Ctx = {
   artifact(path: string): ArtifactInfo | null;
   // The artifacts in this prototype, for the `artifacts` tool and hints. A canvas shows only its own prototype's artifacts.
   artifacts?(): ArtifactInfo[];
-  // A link's app path: "https://host/patrick/x" is "/patrick/x". App paths pass through. Null if it isn't a link into the app.
+  // A link's app path: "https://host/samples/x" is "/samples/x". App paths pass through. Null if it isn't a link into the app.
   linkPath?(link: string): string | null;
 };
 

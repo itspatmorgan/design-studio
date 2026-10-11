@@ -18,7 +18,7 @@ const APP_PAGES = new Set(MODULES.flatMap(m => (m.section && !m.section?.items ?
 // The app's address on this origin, without a trailing slash: "" at the root, "/repo" under a base path.
 const base = () => import.meta.env.BASE_URL.replace(/\/$/, '');
 
-// An item's path in the app, without the base: "/prototypes/patrick/hello-world/lofi/main" (or "/systems/studio/context/principles").
+// An item's path in the app, without the base: "/prototypes/samples/hello-world/lofi/main" (or "/systems/studio/context/principles").
 export const artifactPath = (p: Prototype, item: Artifact) =>
   !isSectionKey(p.contributorKey)
     ? artifactAddress(resourceId(p.studioId), resourceId(item.studioId))
@@ -42,7 +42,7 @@ export function sourceArtifactPath(manifest: Manifest, path: string): string | n
   return proto && item ? artifactPath(proto as Prototype, item) : null;
 }
 
-// Whether an app path ("/prototypes/patrick/hello-world/lofi/main", or the older "/patrick/hello-world/lofi/main")
+// Whether an app path ("/prototypes/samples/hello-world/lofi/main", or the older "/samples/hello-world/lofi/main")
 // is in a prototype. A canvas shows only items from its own prototype, so prototypes stay self-contained.
 export const isInPrototype = (path: string, p: { contributorKey: string; id: string; studioId?: string }) => {
   if (!isSectionKey(p.contributorKey)) {
@@ -53,9 +53,9 @@ export const isInPrototype = (path: string, p: { contributorKey: string; id: str
   return Boolean(address && address.rest.length && address.contributor === p.contributorKey && address.id === p.id);
 };
 
-// The app path a link points at ("/prototypes/patrick/hello-world/lofi/main"), or null if it isn't a link
+// The app path a link points at ("/prototypes/samples/hello-world/lofi/main"), or null if it isn't a link
 // into this app: another origin, another site, or a page that isn't a prototype item. A link saved in the older
-// form, "/patrick/hello-world/lofi/main", comes back in today's.
+// form, "/samples/hello-world/lofi/main", comes back in today's.
 export function appPathOf(link: string): string | null {
   let url: URL;
   try {

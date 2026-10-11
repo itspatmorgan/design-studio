@@ -48,7 +48,7 @@ export default defineFileType({
     if (canvas.files && Object.keys(canvas.files).length)
       problems.push('"files" must be empty. Images aren\'t stored in a canvas.');
     // A canvas shows only its own prototype's items, so a prototype is all of its own. Links are stored as app
-    // paths ("/prototypes/patrick/hello-world/lofi/main", or the older "/patrick/hello-world/lofi/main").
+    // paths ("/prototypes/samples/hello-world/lofi/main", or the older "/samples/hello-world/lofi/main").
     if (prototype && Array.isArray(canvas.elements)) {
       // (This file can import only ../index.ts, so the address is checked here in both forms.)
       const isHere = (link: string) => {

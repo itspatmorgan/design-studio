@@ -12,7 +12,7 @@ const LIMIT_KB = 750;
 // Files allowed over the limit, each with a one-line reason. Add one only when the file
 // can't be compressed or resized.
 const ALLOWLIST = [
-  // 'src/prototypes/patrick/demo/assets/walkthrough.mp4',  // already compressed
+  // 'src/prototypes/samples/demo/assets/walkthrough.mp4',  // already compressed
 ];
 
 const [mode, before, after] = process.argv.slice(2);

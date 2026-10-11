@@ -7,7 +7,7 @@
 // - Fields at Excalidraw's default are dropped; `restoreElements` fills them back in on load.
 //   `version`, `versionNonce` and `index` are kept: merging changes needs them.
 // - Numbers are rounded, keys are sorted, and volatile fields (`updated`) are dropped.
-// - A link to an item is stored as its address in the app ("/patrick/hello-world/lofi/main"),
+// - A link to an item is stored as its address in the app ("/samples/hello-world/lofi/main"),
 //   so a canvas works on any host and under any base path.
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import { appPathOf } from '@/platform/app/artifacts/artifactLinks';

@@ -10,7 +10,7 @@ const map = {
   rules: [
     { tier: 'upstream', paths: ['src/platform/**', 'src/platform/modules/canvas/**'] },
     { tier: 'team', paths: ['src/modules/**'] },
-    { tier: 'seed', paths: ['src/prototypes/patrick/**'] },
+    { tier: 'seed', paths: ['src/prototypes/samples/**'] },
     { tier: 'team', paths: ['src/prototypes/**'] },
   ],
   mixed: [{ paths: ['AGENTS.md'], reason: 'Generated block.' }],
@@ -21,7 +21,7 @@ test('a clean map covers every file, preferring the most specific rule', () => {
     'src/platform/a.ts',
     'src/platform/modules/canvas/x.ts',
     'src/modules/mine/x.ts',
-    'src/prototypes/patrick/a.tsx',
+    'src/prototypes/samples/a.tsx',
     'src/prototypes/sam/a.tsx',
     'AGENTS.md',
   ]);
@@ -34,7 +34,7 @@ test('one path resolves to its tier, mixed, or unknown', () => {
     [
       'src/platform/modules/canvas/x.ts',
       'src/modules/mine/x.ts',
-      'src/prototypes/patrick/a.tsx',
+      'src/prototypes/samples/a.tsx',
       'AGENTS.md',
       'notes.txt',
     ].map(file => tierOf(map, file)),

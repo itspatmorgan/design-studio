@@ -61,6 +61,10 @@ export function readContributors(root = ROOT) {
     if (entry?.welcomeDismissed !== undefined && typeof entry.welcomeDismissed !== 'boolean')
       problems.push(`Contributor "${key}": welcomeDismissed must be true or false.`);
   }
+  for (const [key, entry] of Object.entries(contributors)) {
+    if (entry?.sample !== undefined && entry.sample !== true)
+      problems.push(`Contributor "${key}": sample must be true; omit it for a real contributor.`);
+  }
   for (const field of ['email', 'github', 'studioId']) {
     const identities = new Map();
     for (const [key, entry] of Object.entries(contributors)) {

@@ -37,7 +37,7 @@ test('owner README and relative context links use the same browser', () => {
     '/systems/studio/context/writing',
   );
   assert.equal(resolve('../../platform/systems/studio/README.md', '/modules/research'), '/systems/studio');
-  assert.equal(resolve('./main.tsx', '/prototypes/patrick/example'), '/prototypes/patrick/example/main.tsx');
+  assert.equal(resolve('./main.tsx', '/prototypes/samples/example'), '/prototypes/samples/example/main.tsx');
   assert.equal(markdownPath('/platform/modules/documentation/pages/prototypes.md'), '/documentation/manual/prototypes');
   assert.equal(markdownPath('/platform/modules/documentation/pages/index.md'), '/documentation/manual');
   assert.equal(markdownPath('/modules/documentation/pages/prototypes.md'), '/documentation/manual/prototypes');

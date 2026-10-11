@@ -11,7 +11,7 @@ import {
   EmptyTitle,
 } from '@/platform/systems/studio/components/empty';
 
-// `path` is the view's path in the repo, like "src/prototypes/patrick/checkout/review.tsx". Only known in dev: the
+// `path` is the view's path in the repo, like "src/prototypes/samples/checkout/review.tsx". Only known in dev: the
 // deployed site has no source to point at.
 export default function EmptyView({ path }: { path: string | null }) {
   const prompt = path ? `In ${path}, build ` : '';

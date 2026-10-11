@@ -28,19 +28,19 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
       delete spec.studioId;
       fs.writeFileSync(path.join(root, file), 'export default ' + JSON.stringify(spec) + ';');
     }
-    const personFile = path.join(root, 'contributors/patrick.json');
+    const personFile = path.join(root, 'contributors/samples.json');
     const person = JSON.parse(fs.readFileSync(personFile));
     delete person.studioId;
     fs.writeFileSync(personFile, JSON.stringify(person));
     fs.rmSync(path.join(root, 'src/prototypes'), { recursive: true, force: true });
-    const folder = 'src/prototypes/patrick/example',
+    const folder = 'src/prototypes/samples/example',
       dir = path.join(root, folder);
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'meta.json'), '{"title":"Example","systemId":null}');
     fs.writeFileSync(path.join(dir, 'main.tsx'), 'export default function View(){ return <div>Example</div> }');
     fs.writeFileSync(
       path.join(dir, 'notes.md'),
-      '# Notes\n[View](/prototypes/patrick/example/main) [File](./main.tsx)',
+      '# Notes\n[View](/prototypes/samples/example/main) [File](./main.tsx)',
     );
     fs.writeFileSync(
       path.join(dir, 'board.excalidraw'),
@@ -129,12 +129,12 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
     assert.equal(denied.status, 1);
     assert.equal(fs.readFileSync(boardFile, 'utf8'), canvasAfter);
     // Location changes while the server is closed retain permanent metadata.
-    fs.renameSync(dir, path.join(root, 'src/prototypes/patrick/renamed'));
-    const relocated = JSON.parse(run('context', 'src/prototypes/patrick/renamed', '--json'));
+    fs.renameSync(dir, path.join(root, 'src/prototypes/samples/renamed'));
+    const relocated = JSON.parse(run('context', 'src/prototypes/samples/renamed', '--json'));
     assert.equal(relocated.prototype.studioId, meta.studioId);
     assert.ok(
       fs
-        .readFileSync(path.join(root, 'src/prototypes/patrick/renamed/notes.md'), 'utf8')
+        .readFileSync(path.join(root, 'src/prototypes/samples/renamed/notes.md'), 'utf8')
         .includes(`/prototypes/${meta.studioId}/artifacts/`),
     );
   } finally {

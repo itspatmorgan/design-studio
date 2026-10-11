@@ -20,10 +20,11 @@ export type PrototypeInfo = {
   studioId?: string; // permanent prototype identity; location remains id/contributorKey
   ownerContributorId?: string; // permanent contributor owner, validated against contributorKey
   id: string; // folder name, e.g. "hello-world"
-  contributorKey: string; // contributor key, e.g. "patrick"
+  contributorKey: string; // contributor key, e.g. "pat"
   title: string;
   description?: string; // shared section descriptions; prototypes use artifacts for context
   contributor: string; // display name, from contributor profiles
+  contributorSample?: true; // the contributor profile is marked "sample": true (the shipped sample author)
   contributorGithub?: string; // registered GitHub account, for optional profile photos
   created: string | null;
   system: string | null; // resolved source key; null means custom styling

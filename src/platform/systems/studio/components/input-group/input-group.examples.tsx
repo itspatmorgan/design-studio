@@ -29,7 +29,7 @@ export const WithText = () => (
 
 export const WithButton = () => (
   <InputGroup className='w-xs'>
-    <InputGroupInput defaultValue='localhost:5173/patrick/hello-world' readOnly />
+    <InputGroupInput defaultValue='localhost:5173/samples/hello-world' readOnly />
     <InputGroupAddon align='inline-end'>
       <InputGroupButton aria-label='Copy link'>
         <HugeiconsIcon icon={Copy01Icon} size={14} />

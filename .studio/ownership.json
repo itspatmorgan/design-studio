@@ -23,7 +23,7 @@
     },
     {
       "tier": "seed",
-      "paths": ["src/prototypes/patrick/**", "contributors/patrick.json"],
+      "paths": ["src/prototypes/samples/**", "contributors/samples.json"],
       "note": "Sample prototypes and sample contributor."
     },
     {

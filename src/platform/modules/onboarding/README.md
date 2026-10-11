@@ -8,6 +8,8 @@ Each contributor’s first local home-page visit opens a skippable dialog over H
 
 Each slide communicates one idea through a heading, an illustration, and one explanation. Each tab has a distinct illustration for its point. Systems introduces components and theme, context, and skills. Artifact choices cover diagrams, lo-fi wireframes, hi-fi prototypes, and canvases according to enabled modules. When Documents is enabled, the brief slide explains saving Markdown inside the prototype as lasting agent context. Otherwise it introduces briefing the agent through conversation. Publishing, sharing a viewing link, and collaborating on source are separate slides. Collaboration explains source sharing and contributor scope when that module is enabled. The final slide points to examples already in the studio or starting an idea with the agent, with one action to enter the studio. Its illustration and text reflect the available samples. No particular artifact sequence or system import is required.
 
+The explore slide links to the shipped sample prototypes whose contributor profile declares `"sample": true`; the manifest carries that as `contributorSample`. Nothing matches a contributor by key or name.
+
 **Explore my studio**, **Skip introduction**, Escape, and backdrop dismissal all record completion and close the introduction. It has no rail item, search entry, standalone page, or route. Later visits go directly to the studio. The Manual retains the concepts for later reading.
 
 It does not create work, install dependencies, or register contributors. Its only profile change records whether that contributor has already seen the introduction.

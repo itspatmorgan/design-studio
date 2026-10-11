@@ -25,59 +25,59 @@ const modules: ModuleSpec[] = [
 ];
 
 test('maintainers are a list of at least one contributor key', () => {
-  assert.deepEqual(parseMaintainers(['patrick']), ['patrick']);
-  assert.deepEqual(parseMaintainers(['patrick', 'abigail', 'patrick']), ['patrick', 'abigail']);
+  assert.deepEqual(parseMaintainers(['samples']), ['samples']);
+  assert.deepEqual(parseMaintainers(['samples', 'abigail', 'samples']), ['samples', 'abigail']);
   assert.equal(parseMaintainers([]), null);
-  assert.equal(parseMaintainers('patrick'), null);
+  assert.equal(parseMaintainers('samples'), null);
   assert.equal(parseMaintainers(undefined), null);
   assert.equal(parseMaintainers([3]), null);
 });
 
 test('a key that could climb out of a folder is not a maintainer', () => {
-  assert.equal(parseMaintainers(['../patrick']), null);
+  assert.equal(parseMaintainers(['../samples']), null);
   assert.equal(parseMaintainers(['a/b']), null);
   assert.equal(parseMaintainers(['']), null);
 });
 
 test('only a listed maintainer may maintain', () => {
-  assert.equal(canMaintain(['patrick', 'abigail'], 'abigail'), true);
-  assert.equal(canMaintain(['patrick'], 'abigail'), false);
-  assert.equal(canMaintain(['patrick'], null), false);
-  assert.equal(canMaintain(undefined, 'patrick'), false);
+  assert.equal(canMaintain(['samples', 'abigail'], 'abigail'), true);
+  assert.equal(canMaintain(['samples'], 'abigail'), false);
+  assert.equal(canMaintain(['samples'], null), false);
+  assert.equal(canMaintain(undefined, 'samples'), false);
 });
 
 test('a key no module claims is a contributor, and a section says its own policy', () => {
-  assert.equal(policyFor('patrick', modules), 'owner');
+  assert.equal(policyFor('samples', modules), 'owner');
   assert.equal(policyFor('examples', modules), 'maintainers');
   assert.equal(policyFor('system-content', modules), 'open');
   assert.equal(policyFor('documentation', modules), 'none');
 });
 
 test("you own your own prototypes and nobody else's", () => {
-  assert.equal(canOwn('owner', { me: 'patrick', key: 'patrick' }), true);
-  assert.equal(canOwn('owner', { me: 'abigail', key: 'patrick' }), false);
-  assert.equal(canOwn('owner', { me: null, key: 'patrick' }), false);
+  assert.equal(canOwn('owner', { me: 'samples', key: 'samples' }), true);
+  assert.equal(canOwn('owner', { me: 'abigail', key: 'samples' }), false);
+  assert.equal(canOwn('owner', { me: null, key: 'samples' }), false);
 });
 
 test('a maintained section item is owned by its maintainers, whoever started it', () => {
-  assert.equal(canOwn('maintainers', { me: 'abigail', key: 'examples', maintainers: ['patrick', 'abigail'] }), true);
-  assert.equal(canOwn('maintainers', { me: 'sam', key: 'examples', maintainers: ['patrick'] }), false);
-  assert.equal(canOwn('maintainers', { me: 'patrick', key: 'examples' }), false);
+  assert.equal(canOwn('maintainers', { me: 'abigail', key: 'examples', maintainers: ['samples', 'abigail'] }), true);
+  assert.equal(canOwn('maintainers', { me: 'sam', key: 'examples', maintainers: ['samples'] }), false);
+  assert.equal(canOwn('maintainers', { me: 'samples', key: 'examples' }), false);
 });
 
 test('open section files require resource authority and have no artifact owner', () => {
   assert.equal(canChange('open', { me: null, key: 'system-content' }), false);
-  assert.equal(canOwn('open', { me: 'patrick', key: 'system-content' }), false);
+  assert.equal(canOwn('open', { me: 'samples', key: 'system-content' }), false);
 });
 
 test('nobody changes a section with no policy', () => {
-  assert.equal(canChange('none', { me: 'patrick', key: 'documentation' }), false);
+  assert.equal(canChange('none', { me: 'samples', key: 'documentation' }), false);
 });
 
 test('section-level changing needs ownership', () => {
-  assert.equal(canChange('owner', { me: 'patrick', key: 'patrick' }), true);
-  assert.equal(canChange('owner', { me: 'abigail', key: 'patrick' }), false);
-  assert.equal(canChange('maintainers', { me: 'sam', key: 'examples', maintainers: ['patrick'] }), false);
+  assert.equal(canChange('owner', { me: 'samples', key: 'samples' }), true);
+  assert.equal(canChange('owner', { me: 'abigail', key: 'samples' }), false);
+  assert.equal(canChange('maintainers', { me: 'sam', key: 'examples', maintainers: ['samples'] }), false);
 });
 
 test('the reason says what to do', () => {

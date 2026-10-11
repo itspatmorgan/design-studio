@@ -54,7 +54,7 @@ export function useFileTree(proto: PrototypeInfo) {
   return { files, reload };
 }
 
-// The file's path from the repo root, like src/prototypes/patrick/hello-world/meta.json (the
+// The file's path from the repo root, like src/prototypes/samples/hello-world/meta.json (the
 // prototype's folder for an empty `file`).
 export const repoPath = (p: PrototypeInfo, file: string) =>
   `src/${rootOf(p.contributorKey, p.id)}${file ? `/${file}` : ''}`;

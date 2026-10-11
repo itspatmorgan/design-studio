@@ -64,14 +64,14 @@ test('prototype file images compile into block embeds while inline references st
 
 test('file references resolve nested files and remain within the document prototype', async () => {
   const { artifactReference } = await import('../../app/artifacts/artifactReference.ts');
-  const base = '/prototypes/patrick/feedback-inbox/research';
+  const base = '/prototypes/samples/feedback-inbox/research';
   assert.deepEqual(artifactReference('../feedback-flow.mermaid', base), {
-    contributor: 'patrick',
+    contributor: 'samples',
     prototype: 'feedback-inbox',
     path: 'feedback-flow.mermaid',
   });
   assert.deepEqual(artifactReference('sequence.mmd', base), {
-    contributor: 'patrick',
+    contributor: 'samples',
     prototype: 'feedback-inbox',
     path: 'research/sequence.mmd',
   });

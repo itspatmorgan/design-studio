@@ -181,7 +181,7 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
   let maintainers;
   if (maintained) {
     maintainers = parseMaintainers(meta.maintainers);
-    if (!maintainers) return skip('needs "maintainers": a list with at least one contributor key, like ["patrick"]');
+    if (!maintainers) return skip('needs "maintainers": a list with at least one contributor key, like ["samples"]');
     for (const key of maintainers)
       if (!(key in contributors))
         out.warn(`[manifest] ${metaFile}: maintainer "${key}" isn't registered in contributors/`);
@@ -236,6 +236,7 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
       contributor: maintained
         ? maintainers.map(k => contributors[k]?.name ?? k).join(', ')
         : (contributors[contributorKey]?.name ?? ''),
+      ...(!maintained && contributors[contributorKey]?.sample === true && { contributorSample: true }),
       ...(!maintained &&
         typeof contributors[contributorKey]?.github === 'string' &&
         contributors[contributorKey].github.trim() && {

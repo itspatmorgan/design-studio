@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { forDeploy, linksToArchived, parseStatus } from './archive.ts';
 
-const proto = (id: string, extra: object = {}) => ({ id, contributorKey: 'patrick', ...extra });
+const proto = (id: string, extra: object = {}) => ({ id, contributorKey: 'samples', ...extra });
 
 test('parseStatus accepts only statuses', () => {
   assert.equal(parseStatus('archived'), 'archived');
@@ -24,16 +24,16 @@ test('a deploy leaves out an archived prototype whole', () => {
     kept.map(p => p.id),
     ['new'],
   );
-  assert.deepEqual(archived, ['/prototypes/patrick/old/**']);
+  assert.deepEqual(archived, ['/prototypes/samples/old/**']);
 });
 
 test('a canvas link into an archived prototype is found, but not into one with a longer name', () => {
-  const canvas = '{"link":"http://localhost:5173/patrick/old/lofi/main"}';
-  assert.deepEqual(linksToArchived(canvas, ['/patrick/old']), ['/patrick/old']);
-  assert.deepEqual(linksToArchived('{"link":"http://localhost:5173/patrick/older/lofi/main"}', ['/patrick/old']), []);
+  const canvas = '{"link":"http://localhost:5173/samples/old/lofi/main"}';
+  assert.deepEqual(linksToArchived(canvas, ['/samples/old']), ['/samples/old']);
+  assert.deepEqual(linksToArchived('{"link":"http://localhost:5173/samples/older/lofi/main"}', ['/samples/old']), []);
 });
 
 test('a link at the end of a sentence, or with nothing after it, is still found', () => {
-  assert.deepEqual(linksToArchived('Open /patrick/old.', ['/patrick/old']), ['/patrick/old']);
-  assert.deepEqual(linksToArchived('Open /patrick/old', ['/patrick/old']), ['/patrick/old']);
+  assert.deepEqual(linksToArchived('Open /samples/old.', ['/samples/old']), ['/samples/old']);
+  assert.deepEqual(linksToArchived('Open /samples/old', ['/samples/old']), ['/samples/old']);
 });

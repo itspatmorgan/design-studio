@@ -126,7 +126,7 @@ export const PROTOTYPES_KEY = 'prototypes';
 // address is a section's key, or, for a prototype, "prototypes" and then the person's.
 export const isSectionKey = (key: string) => key === SYSTEM_CONTENT_KEY || key === SYSTEMS_KEY || sectionKeys.has(key);
 
-// An item's address in the app, up to its id and without a base path: "/prototypes/patrick/hello-world"
+// An item's address in the app, up to its id and without a base path: "/prototypes/samples/hello-world"
 // for a prototype, "/examples/sample" for a section item.
 export const addressOf = (contributor: string, id: string) =>
   contributor === SYSTEM_CONTENT_KEY
@@ -136,7 +136,7 @@ export const addressOf = (contributor: string, id: string) =>
       : `/${PROTOTYPES_KEY}/${contributor}/${id}`;
 
 // Reads an item's address back: who or what holds it, its id, and the path after it. It also reads the
-// older form of a prototype's address, "/patrick/hello-world/…", so links saved before prototypes moved
+// older form of a prototype's address, "/samples/hello-world/…", so links saved before prototypes moved
 // under /prototypes still open. Null if there isn't an id.
 export function parseAddress(path: string): { contributor: string; id: string; rest: string[] } | null {
   const parts = path
@@ -150,7 +150,7 @@ export function parseAddress(path: string): { contributor: string; id: string; r
   return body.length >= 2 ? { contributor: body[0], id: body[1], rest: body.slice(2) } : null;
 }
 
-// An item path in today's form: the older "/patrick/hello-world/lofi/main" becomes "/prototypes/patrick/hello-world/lofi/main".
+// An item path in today's form: the older "/samples/hello-world/lofi/main" becomes "/prototypes/samples/hello-world/lofi/main".
 // Paths already in today's form, and anything that isn't an item's address, come back unchanged.
 export function canonicalPath(path: string): string {
   const address = parseAddress(path);

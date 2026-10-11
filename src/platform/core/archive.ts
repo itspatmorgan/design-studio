@@ -13,7 +13,7 @@ export const parseStatus = (value: unknown): Status | null =>
   typeof value === 'string' && (STATUSES as readonly string[]).includes(value) ? (value as Status) : null;
 
 // What the deployed site keeps: every prototype that isn't archived. `archived` lists what was left
-// out as paths in the app's file globs ("/prototypes/patrick/checkout/**"), for
+// out as paths in the app's file globs ("/prototypes/samples/checkout/**"), for
 // src/platform/node/build/vite-globs-plugin.js.
 type Proto = { id: string; contributorKey: string; status?: Status; systemMissing?: unknown };
 export function forDeploy<P extends Proto>(prototypes: P[]) {
@@ -26,8 +26,8 @@ export function forDeploy<P extends Proto>(prototypes: P[]) {
 
 // Links to archived prototypes, in the text of a canvas or document that stays on the deployed site.
 // The site has nothing to open there, so it shows a placeholder, and the build names the file so it
-// can be fixed. `prototypes` are archived prototypes' addresses without /prototypes ("/patrick/checkout"), which also finds the full address
-// ("/prototypes/patrick/checkout") and the older one. Returns the
+// can be fixed. `prototypes` are archived prototypes' addresses without /prototypes ("/samples/checkout"), which also finds the full address
+// ("/prototypes/samples/checkout") and the older one. Returns the
 // ones the text links to. Reads text and changes nothing.
 const slugChar = (c: string | undefined) => c !== undefined && /[A-Za-z0-9_%\-/]/.test(c);
 export function linksToArchived(text: string, prototypes: string[]): string[] {
