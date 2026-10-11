@@ -16,14 +16,19 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | `pnpm test:changed <base> <head>` | Execute affected regression groups. Add `--plan-only` to inspect selection or `--full` to force all tests. |
 | `pnpm build:release` | Full regression suite followed by the production build. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |
-| GitHub pull request | Scope review, asset sizes, selected regressions, and production build. Platform proposals are flagged for review. |
+| `node scripts/check/upgrade-test.js <base> <head>` | Create a studio from `<base>`, make typical team changes, update it to `<head>`, and require a clean merge, `pnpm check`, and `pnpm build`. Add `--keep` to inspect the result. |
+| GitHub pull request | Scope review, asset sizes, selected regressions, production build, and the upgrade test. Platform proposals are flagged for review. |
 | Push to `main` | Scope authorization, asset sizes, selected regressions, and production build. Platform changes require an admin or maintainer role. |
 
 Ordinary builds use the same command in source clones and packaged studios. Publishing does not rerun maintainer regressions. The upstream **Checks and deployment** workflow (`.github/workflows/checks.yml`) runs **Selected regressions**, **Production build**, and `scope` concurrently; its required `build` check succeeds only when the production build and regression job both succeed. An authoring-only regression job succeeds after reporting that no platform tests are needed. The `scope` check remains independently required. Pages deployment on upstream `main` waits directly for scope, tests, and bundling to succeed. The `build` summary runs alongside deployment, avoiding another runner on the deployment dependency chain. The required check names `scope` and `build` remain stable. Copies choose their own CI and publishing policy.
 
+The **Upgrade test** job proves that a customized studio can take the change. It updates a studio made from the pull request's merge base, with a new contributor, a system that declares its own package, a prototype, a local module, changed settings, and an edited README. Generated files are regenerated, seed files keep the studio's copy, and any other conflict fails the job.
+
 Keep tests for failure-prone behavior and boundaries. Use synthetic fixtures instead of asserting the starter's sample content or visual token choices. Production integration tests end in `.integration.test.js` and run in the release tier. Optional module tests disappear with their module; plugin tests run only when the distribution source is present.
 
 See [Personal & team use](/documentation/manual/team) for how these checks fit the workflow. Configure branch protection and required checks to enforce the team's merge policy.
+
+The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records the module entrypoints, `core/api.ts` exports, `ModuleSpec`, `SystemSpec` and `SystemLibrary` fields, runtime package lists, and `PLATFORM_VERSION`. `pnpm contract` and the upstream regression suite fail if the contract changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`. A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.
 
 ## Minimum sufficient verification
 

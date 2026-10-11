@@ -120,6 +120,33 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
+  # A customized studio from the base revision must update to this head with no conflicts and still build.
+  upgrade:
+    name: Upgrade test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: upgrade-${{ github.workflow }}-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: jdx/mise-action@v5
+      - name: Locate dependency store
+        id: store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ${{ steps.store.outputs.path }}
+          key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
+      - run: pnpm install --frozen-lockfile
+      - name: Update a customized studio from the merge base
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/check/upgrade-test.js "$(git merge-base "$BASE_REF" "$HEAD_REF")" "$HEAD_REF"
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
     needs: [bundle, regressions]
