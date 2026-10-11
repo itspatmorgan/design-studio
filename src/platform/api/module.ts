@@ -12,6 +12,8 @@ export type { ModuleServer } from '../core/modules/index.ts';
 export type { ServerRoute } from '../core/modules/index.ts';
 /** @stable The default export of a module's check.ts, run by pnpm check while the module is enabled. */
 export type { ModuleCheck } from '../core/modules/index.ts';
+/** @experimental The default export of a module's build.ts: the data it adds to the manifest, folders the dev server watches, and the source files it exposes. */
+export type { ModuleBuild } from '../core/modules/index.ts';
 /** @stable What a module's app.tsx adds to the app: rail button, routes, home block, palette and menu entries. */
 export type { ModuleApp } from '../app/modules.ts';
 /** @stable What palette entries receive: the manifest, the open prototype and navigation. */

@@ -26,7 +26,7 @@ Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import
 
 | Entry | Use it for | Where it loads |
 | --- | --- | --- |
-| `#studio/module` | `ModuleSpec`, `ModuleApp`, `ModuleServer`, `ServerRoute`, `ModuleCheck`, `PaletteContext`, `PrototypeAction`, `PLATFORM_VERSION`, and the studio identity: `APP_NAME`, `TAGLINE`, read-only `CONFIG`. | Types anywhere; the identity values in app code. |
+| `#studio/module` | `ModuleSpec`, `ModuleApp`, `ModuleServer`, `ServerRoute`, `ModuleCheck`, `ModuleBuild` (experimental), `PaletteContext`, `PrototypeAction`, `PLATFORM_VERSION`, and the studio identity: `APP_NAME`, `TAGLINE`, read-only `CONFIG`. | Types anywhere; the identity values in app code. |
 | `#studio/system` | `SystemSpec`, `SystemLibrary`, `SystemIntro`, and the types inside them. | Types anywhere. |
 | `#studio/files` | Declaring a file type in `type.ts`: `defineFileType`, `FileTypeSpec`, capabilities, identity, and the Markdown declaration to extend. | Browser and Node. |
 | `#studio/data` | Reading content in the app: the manifest, a prototype's files, the current contributor and edit permissions, `callModule`, and what a file type's `loader.ts` and `open.tsx` implement. | Browser. |
@@ -63,6 +63,7 @@ These source contracts are 0.x. Review release guidance when updating them.
 | `type.ts`, `open.tsx`, `loader.ts` | File-type declaration, rendering, and production loading. |
 | `server.ts` | Local routes at `POST /__studio/<module>/<route>`. |
 | `check.ts` | Module validation while enabled. |
+| `build.ts` | Optional manifest contribution while enabled: `manifest({ root, enabled, out })` returns `{ data, errors }`, stored as `manifest.contributions[<id>]` (its printed problems count as manifest errors); `watch` lists folders whose Markdown changes rebuild the manifest in development; `sourceFiles(data, { root })` lists repo-relative files the Documentation surface may edit. Experimental. |
 | `lib/index.ts(x)` | Public entry exposed when `lib: true`. |
 | `context/`, `skills/` | Module-owned knowledge and procedures. |
 | `instructions/` in a pack | Optional packaging prefix for declared context and skills, installed into this module. |

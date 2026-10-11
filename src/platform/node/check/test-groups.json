@@ -20,7 +20,7 @@
         "src/platform/node/lib/boundaries.test.js",
         "src/platform/node/lib/contract.test.js",
         "src/platform/node/lib/guidance-titles.test.js",
-        "src/platform/node/lib/manual-pages.test.js",
+        "src/platform/modules/documentation/manual-pages.test.js",
         "src/platform/node/lib/mermaid-source.test.js",
         "src/platform/node/lib/module-folders.test.js",
         "src/platform/node/lib/ownership.test.js",

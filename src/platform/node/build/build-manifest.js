@@ -15,14 +15,7 @@ import { PROTOTYPE_SYSTEMS, SYSTEM_SOURCES, SYSTEM_SPECS, refreshSystems } from 
 import { PLATFORM_ID } from '../../modules/systems/node/systems.js';
 import { isHelper, artifactSlug } from '../../core/fileTypes.ts';
 import { jsonIdentity } from '../../core/resourceIdentity.ts';
-import {
-  SYSTEM_CONTENT_KEY,
-  SYSTEM_CONTENT_SECTIONS,
-  TEAM_SYSTEMS_ROOT,
-  rootOf,
-  contentId,
-  moduleFolder,
-} from '../../core/roots.ts';
+import { SYSTEM_CONTENT_KEY, SYSTEM_CONTENT_SECTIONS, TEAM_SYSTEMS_ROOT, rootOf, contentId } from '../../core/roots.ts';
 import { STATUSES, forDeploy, linksToArchived, parseStatus } from '../../core/archive.ts';
 import { byOrder, parseOrder } from '../../core/order.ts';
 import { parseMaintainers } from '../../core/permissions.ts';
@@ -30,7 +23,7 @@ import { FILE_TYPES, INSTALLED_FILE_TYPES, fileTypeOf, systemContentTypeOf, isTe
 import { auditResourceIdentities } from '../lib/resource-identity-audit.js';
 import { ENABLED_MODULES, MODULES, PROTOTYPE_SECTIONS, SECTION_KEYS } from '../lib/modules.js';
 import { frontmatter } from '../lib/frontmatter.js';
-import { manualChapterEnabled } from '../lib/manual-pages.js';
+import { moduleBuilds } from '../lib/module-builds.js';
 import { contributorsSignature, loadContributors } from '../lib/contributors.js';
 import { systemContentProblems } from '../../modules/systems/content/node/content-check.js';
 import { systemDocs } from '../../modules/systems/node/docs.js';
@@ -43,9 +36,6 @@ import { systemContentMap } from '../../modules/systems/content/map.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PROTOS = path.join(ROOT, 'src', 'prototypes');
 
-// The Manual's pages, or null when its module is off or not installed.
-const documentationModule = ENABLED_MODULES.find(m => m.id === 'documentation');
-const MANUAL = documentationModule?.section?.folder ? path.join(ROOT, documentationModule.section.folder) : null;
 const OUT_DIR = path.join(ROOT, 'public', 'prototypes');
 const OUT = path.join(OUT_DIR, 'manifest.json');
 // Each prototype's artifacts, one file each: artifacts/<contributor>/<prototype>.json. The app fetches a
@@ -558,70 +548,17 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
     }
   }
 
-  // Human chapters have one home. Module associations control availability, not source ownership.
-  const manual = [];
-  const manualFiles =
-    MANUAL && fs.existsSync(MANUAL)
-      ? fs
-          .readdirSync(MANUAL)
-          .filter(f => f.endsWith('.md'))
-          .sort()
-      : [];
-  const pages = manualFiles.map(file => ({
-    file: path.join(MANUAL, file),
-    where: `src/${moduleFolder('documentation')}/pages/${file}`,
-    slug: file.replace(/\.md$/, ''),
-  }));
-  const taken = new Map();
-  for (const page of pages) {
-    const fm = frontmatter(fs.readFileSync(page.file, 'utf8'));
-    if (fm?.module !== undefined && (typeof fm.module !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(fm.module))) {
-      out.error(`[manifest] Skipped ${page.where}: module must be a capability ID`);
-      errors++;
-      continue;
-    }
-    if (
-      !manualChapterEnabled(
-        fm,
-        ENABLED_MODULES.map(m => m.id),
-      )
-    )
-      continue;
-    const { where } = page;
-    if (!fm || typeof fm.title !== 'string' || !fm.title) {
-      out.error(`[manifest] Skipped ${where}: needs frontmatter with a "title"`);
-      errors++;
-      continue;
-    }
-    if (typeof fm.order !== 'number') {
-      out.error(`[manifest] Skipped ${where}: needs a numeric "order" in its frontmatter`);
-      errors++;
-      continue;
-    }
-    const slug = page.slug;
-    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-      out.error(`[manifest] Skipped ${where}: its address "${slug}" must be lowercase letters, numbers, and hyphens`);
-      errors++;
-      continue;
-    }
-    if (taken.has(slug)) {
-      out.error(
-        `[manifest] Skipped ${where}: ${taken.get(slug)} already has the Manual address /documentation/manual/${slug}`,
-      );
-      errors++;
-      continue;
-    }
-    taken.set(slug, where);
-    manual.push({
-      slug,
-      title: fm.title,
-      description: fm.description ?? '',
-      section: fm.section || null,
-      order: fm.order,
-      source: `/${moduleFolder('documentation')}/pages/${slug}.md`,
-    });
+  // What the enabled modules contribute through their build.ts (src/platform/core/modules/index.ts, ModuleBuild),
+  // such as the Documentation module's Manual.
+  const contributions = {};
+  for (const [id, build] of moduleBuilds()) {
+    if (!build.manifest) continue;
+    const result = build.manifest({ root: ROOT, enabled: ENABLED_MODULES.map(m => m.id), out });
+    contributions[id] = result.data;
+    errors += result.errors;
   }
-  manual.sort((a, b) => a.order - b.order);
+  // The app still reads the Manual from `manual`; it moves to the contribution when the app is cut over.
+  const manual = contributions.documentation?.manual ?? [];
 
   // What the deployed site leaves out (src/platform/core/archive.ts).
   const { kept, archived } = forDeploy([...prototypes, ...Object.values(sections).flat()]);
@@ -642,7 +579,8 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   const manifest = {
     prototypes: deploy ? keptPrototypes : prototypes,
     sections: deploy ? keptSections : sections,
-    manual: manual.map(({ order, ...page }) => page),
+    manual,
+    contributions,
     systemContent,
     systemContentMaps: maps,
     platformReferences: platformReferences({

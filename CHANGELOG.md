@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A module can add an optional `build.ts` (`ModuleBuild`, experimental in `#studio/module`) that contributes data to the manifest as `manifest.contributions[<id>]`, folders to watch, and editable source files. The Documentation module now scans the Manual through it; the Manual and its pages behave as before.
 - CI no longer falls back to the merge base when choosing the upgrade test base; it always starts from the latest release tag.
 
 ## 0.2.1 (2026-10-11)

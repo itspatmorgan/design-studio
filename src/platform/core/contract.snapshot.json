@@ -10,6 +10,7 @@
       "APP_NAME": "stable",
       "CONFIG": "stable",
       "ModuleApp": "stable",
+      "ModuleBuild": "experimental",
       "ModuleCheck": "stable",
       "ModuleServer": "stable",
       "ModuleSpec": "stable",

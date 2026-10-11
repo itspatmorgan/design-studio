@@ -6,6 +6,8 @@ The Documentation module owns the human Manual at `/documentation/manual`. The s
 
 Human chapters live in `src/platform/modules/documentation/pages/*.md`. Each requires `title` and numeric `order` frontmatter. Optional `description` supplies a summary; `section` groups navigation. The filename supplies its slug; `index.md` opens at the Manual root.
 
+The module scans its chapters through its optional `build.ts` ([build hook](../../context/modules.md#capability-files)), which supplies the manifest's Manual data, the folder the dev server watches, and the chapters the Documentation surface can edit.
+
 A capability chapter declares `module: <id>`. Discovery includes it only when the module is installed and enabled. Disabling or removing the capability preserves the chapter but hides its reading route, navigation, and search target. Unassociated chapters remain available while Manual is enabled.
 
 Invalid metadata produces a local warning and fails strict builds. Source mode keeps malformed chapters repairable. The sidebar lists reference pages. There is no previous/next reading sequence.

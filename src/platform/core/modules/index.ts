@@ -71,6 +71,23 @@ export type ModuleServer = Record<string, ServerRoute>;
 // root folder and returns a sentence for each problem it finds, or an empty list. It runs only while the module is on.
 export type ModuleCheck = (context: { root: string }) => string[] | Promise<string[]>;
 
+/**
+ * A module can contribute to the build (<module folder>/build.ts, default export) while it is enabled. `manifest` gets
+ * the repo root, the IDs of the enabled modules, and a logger. It runs on every manifest build and returns the module's
+ * data, stored as `manifest.contributions[<module id>]`, with the count of problems it printed through `out`. `watch`
+ * lists folders (relative to the repo root) whose Markdown changes rebuild the manifest in the dev server.
+ * `sourceFiles` lists the repo-relative files of that data the Documentation surface may open for editing.
+ */
+export type ModuleBuild<Data = unknown> = {
+  manifest?(context: {
+    root: string;
+    enabled: string[];
+    out: { log(...args: unknown[]): void; warn(...args: unknown[]): void; error(...args: unknown[]): void };
+  }): { data: Data; errors: number };
+  watch?: string[];
+  sourceFiles?(data: Data | undefined, context: { root: string }): string[];
+};
+
 const ID = /^[a-z][a-z0-9-]*$/;
 const VERSION = /^\d+\.\d+\.\d+$/;
 const KEY = /^[a-z0-9][a-z0-9-]*$/;

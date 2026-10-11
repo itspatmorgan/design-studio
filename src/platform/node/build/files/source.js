@@ -2,28 +2,14 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { canonicalDirectory } from '../../lib/safe-paths.js';
 import { MAX_SOURCE_BYTES, versionOf } from './paths.js';
-import { moduleFolder } from '../../../core/roots.ts';
-import '../../lib/modules.js'; // discovering the modules registers where each module's folder is
+import { contributedSourceFiles } from '../../lib/module-builds.js';
 
 export function documentationSources(root, manifest) {
-  // The Manual's pages, in the Documentation module's folder wherever that is (src/platform/core/roots.ts).
-  const folder = `src/${moduleFolder('documentation')}/pages`;
+  // The Manual's pages come from the Documentation module's build hook (its build.ts).
   const allowed = [
     ...manifest.platformReferences.flatMap(group => group.references.map(ref => 'src' + ref.source)),
-    ...manifest.manual.map(page => 'src' + (page.source ?? `/${folder.slice(4)}/${page.slug}.md`)),
+    ...contributedSourceFiles(root, manifest),
   ];
-  // Keep standalone chapters repairable when their metadata is temporarily invalid.
-  if (
-    manifest.platformReferences.some(group => group.id === 'documentation' && group.enabled) &&
-    fs.existsSync(path.join(root, folder))
-  ) {
-    allowed.push(
-      ...fs
-        .readdirSync(path.join(root, folder), { withFileTypes: true })
-        .filter(entry => entry.isFile() && entry.name.endsWith('.md'))
-        .map(entry => folder + '/' + entry.name),
-    );
-  }
   return [...new Set(allowed)];
 }
 

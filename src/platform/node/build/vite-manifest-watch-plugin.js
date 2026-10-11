@@ -1,6 +1,6 @@
 // Keeps the manifest live during `pnpm dev`, without reloading the page.
 //
-// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, the system roots (src/platform/systems/ and src/systems/), the module roots (src/platform/modules/ and src/modules/, Markdown only), the Manual's pages (src/platform/modules/documentation/pages/), or a module contract
+// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, the system roots (src/platform/systems/ and src/systems/), the module roots (src/platform/modules/ and src/modules/, Markdown only), the folders a module's build.ts watches (the Manual's pages, src/platform/modules/documentation/pages/), or a module contract
 // changes (from the app, an agent, or your editor), this rebuilds the manifest in-process
 // and pushes it to the app over Vite's dev connection. The app swaps it in and refreshes
 // only the routes that use it (see router.tsx), so the open view and scroll position stay.
@@ -15,13 +15,13 @@ import { buildManifest } from './build-manifest.js';
 import { FILE_TYPES, fileTypeOf } from '../lib/file-types.js';
 import { ENABLED_MODULES, PROTOTYPE_DIRS } from '../lib/modules.js';
 import { CONTRIBUTORS_DIR } from '../lib/contributors.js';
+import { contributedWatchDirs } from '../lib/module-builds.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PROTOS = path.join(ROOT, 'src', 'prototypes');
 const SYSTEM_CONTENT = path.join(ROOT, 'src', 'platform');
-// The Manual's pages, or null when its module is off or not installed.
-const documentationModule = ENABLED_MODULES.find(m => m.id === 'documentation');
-const MANUAL = documentationModule?.section?.folder ? path.join(ROOT, documentationModule.section.folder) : null;
+// Folders the enabled modules' build.ts hooks ask to watch, such as the Manual's pages.
+const HOOK_DIRS = contributedWatchDirs();
 // Where systems live: the supplied root (inside src/platform) and the team's.
 const SYSTEMS = SYSTEM_ROOTS.map(systemsRoot => path.join(ROOT, systemsRoot));
 // Where modules live: the supplied root (inside src/platform) and the team's.
@@ -45,7 +45,7 @@ const inside = (dir, file) => file === dir || file.startsWith(dir + path.sep);
 // in its own text). Other edits to a view's code are left to Vite's hot reload.
 function relevant(file, kind) {
   if (inside(CONTRIBUTORS_DIR, file) || file === AGENTS) return true;
-  if (MANUAL && inside(MANUAL, file)) return file.endsWith('.md');
+  if (HOOK_DIRS.some(dir => inside(dir, file))) return file.endsWith('.md');
   // A system's component docs: files coming and going, and edits to the ones that describe a component
   // and to its theme (the tokens it lists). The platform system is inside src/platform, so this comes first.
   if (SYSTEMS.some(dir => inside(dir, file)))
@@ -76,7 +76,7 @@ export default function manifestWatch() {
         PROTOS,
         ...PROTOTYPE_DIRS,
         SYSTEM_CONTENT,
-        ...(MANUAL ? [MANUAL] : []),
+        ...HOOK_DIRS,
         ...SYSTEMS,
         CONTRIBUTORS_DIR,
         AGENTS,

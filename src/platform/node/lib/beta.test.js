@@ -465,7 +465,9 @@ test('shared documentation catalog covers Manual and Reference and keeps damaged
       fs.writeFileSync(path.join(root, file), '# Source');
     }
     const manifest = {
-      manual: [{ slug: 'index', source: '/platform/modules/documentation/pages/index.md' }],
+      contributions: {
+        documentation: { manual: [{ slug: 'index', source: '/platform/modules/documentation/pages/index.md' }] },
+      },
       platformReferences: [
         { id: 'documentation', enabled: true, references: [] },
         { id: 'prototypes', enabled: true, references: [{ source: '/platform/modules/prototypes/README.md' }] },
@@ -488,7 +490,7 @@ test('shared documentation catalog covers Manual and Reference and keeps damaged
       '---\ntitle: broken',
     );
     manifest.platformReferences[0].enabled = false;
-    manifest.manual = [];
+    delete manifest.contributions.documentation;
     assert.ok(!documentationSources(root, manifest).includes(chapter));
     assert.equal(sourceFile(root, allowed, { action: 'read', path: '../../README.md' }).status, 404);
   } finally {

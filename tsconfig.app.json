@@ -47,7 +47,9 @@
     "src/platform/node/templates/module",
     "src/platform/node/templates/system",
     "src/platform/modules/*/server.ts",
+    "src/platform/modules/*/build.ts",
     "src/modules/*/server.ts",
+    "src/modules/*/build.ts",
     "src/platform/modules/canvas/cli.ts"
   ]
 }
