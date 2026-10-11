@@ -72,7 +72,7 @@ button/
 
 The Markdown page has a `title`, `description`, and `## When to use` section. Other sections are optional.
 
-Optional `source` frontmatter supplies a short provenance sentence, such as the library, CLI version, and preset. The page groups it with the `docs` link in one Source section. Keep technical adaptation details in system context.
+Optional `source` frontmatter supplies a short provenance sentence, such as the library, CLI version, and preset. The compact Source block links the system’s declared origin and libraries whose `components` include this component to their Libraries entries. It preserves the component-specific upstream `docs` link. Label generation versions as shadcn CLI, not as runtime library versions. Keep technical adaptation details in system context.
 
 Each capitalized export from the examples file is one live example. The platform frames examples with the system's theme.
 

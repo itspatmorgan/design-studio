@@ -226,7 +226,7 @@ function SystemPage({ system, sys, components, tokens, origin, page, componentSl
       return <SystemAssets system={system} sys={sys} kind="Icons" path={assetPath} />;
   }
   const found = page === 'components' ? components.find((c) => c.slug === componentSlug) : undefined;
-  return found && pageData?.componentData && pageData.componentKey === system + '/' + found.slug ? <ComponentDocPage key={pageData.componentKey} sys={sys} component={found} origin={origin} loaded={pageData.componentData} /> : null;
+  return found && pageData?.componentData && pageData.componentKey === system + '/' + found.slug ? <ComponentDocPage key={pageData.componentKey} system={system} sys={sys} component={found} origin={origin} loaded={pageData.componentData} /> : null;
 }
 
 export default function SystemsPage() {

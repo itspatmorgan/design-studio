@@ -1,5 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useRouter } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
+import { ArrowRight, ExternalLink, Library } from 'lucide-react';
+import { useManifest } from '@/platform/app/data/useManifest';
+import { systemPath } from '../data/systems';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
 import { Button } from '@/systems/studio/components/button';
@@ -104,11 +107,12 @@ function webLink(url: string | null) {
 // `origin`
 // is where the system's components come from: 'shadcn' links the page to that component's shadcn/ui
 // docs, unless its frontmatter gives a link of its own.
-export function ComponentDocPage({ sys, component, origin, loaded }: { sys: DesignSystem; component: SystemComponentDoc; loaded: ComponentPageData; origin: 'shadcn' | null }) {
+export function ComponentDocPage({ system, sys, component, origin, loaded }: { system: string; sys: DesignSystem; component: SystemComponentDoc; loaded: ComponentPageData; origin: 'shadcn' | null }) {
   const { source, examples, doc } = component.files;
   const errors = loaded.errors;
   const [retry, setRetry] = useState(0);
   const router = useRouter();
+  const libraries = (useManifest().systems[system]?.libraries ?? []).filter(library => library.id === origin || library.components?.includes(component.slug));
   const version = useDocsVersion();
   const previousVersion = useRef(version);
   useEffect(() => {
@@ -120,32 +124,32 @@ export function ComponentDocPage({ sys, component, origin, loaded }: { sys: Desi
 
   const stem = (source ?? component.name).replace(/^.*\//, '').replace(/\.[jt]sx$/, '');
   const docsLink = webLink(component.docsUrl) ?? webLink(origin === 'shadcn' && source ? shadcnDocsUrl(stem) : null);
+  const hasSource = !!(component.sourceNote || libraries.length || docsLink);
   const Doc = loaded.doc;
   return (
     <>
       <div className="relative">
         <PageHeader
           title={component.title}
-          description={component.description || docsLink ? (
-            <>
-              {component.description}
-              {docsLink && !component.sourceNote && (
-                <a href={docsLink.href} target="_blank" rel="noreferrer" className={`block font-medium text-foreground underline underline-offset-4 ${component.description ? 'mt-2' : ''}`}>
-                  {docsLink.hostname === 'ui.shadcn.com' ? 'shadcn/ui docs' : `Docs on ${docsLink.hostname}`} ↗
-                </a>
-              )}
-            </>
-          ) : undefined}
+          description={component.description || undefined}
         />
       </div>
       {errors.length > 0 && <div role="alert" className="space-y-2 rounded-md border border-border p-3 text-sm"><p>Some component files couldn't load.</p>{errors.map((error) => <p key={error} className="text-muted-foreground">{error}</p>)}<Button variant="outline" size="sm" onClick={() => { setRetry((value) => value + 1); void router.invalidate(); }}>Try again</Button></div>}
       {Doc ? <ErrorBoundary resetKeys={[Doc, retry]} FallbackComponent={ViewError}><Prose className={PAGE_PROSE}><Doc /></Prose></ErrorBoundary> : !doc && <Note>No page yet. Add <code>{stem}.md</code> next to the component to describe it and say when to use it.</Note>}
 
-      {component.sourceNote && <Section title="Source">
-        <p className="text-sm leading-6">{component.sourceNote}</p>
-        {docsLink && <a href={docsLink.href} target="_blank" rel="noreferrer" className="mt-2 inline-block text-sm font-medium underline underline-offset-4">
-          {docsLink.hostname === 'ui.shadcn.com' ? 'shadcn/ui docs' : `Docs on ${docsLink.hostname}`} ↗
-        </a>}
+      {hasSource && <Section title="Source">
+        <div className="flex items-start gap-3 rounded-lg border border-border p-4">
+          <Library aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3">
+            <div className="min-w-0 flex-1 basis-56">
+              {libraries.length > 0 && <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium">{libraries.map(library => <Link key={library.id} to={`${systemPath(system)}/libraries` as never} hash={library.id} className="inline-flex items-center gap-1 hover:underline" aria-label={`${library.label} in Libraries`}>{library.label}<ArrowRight aria-hidden="true" className="size-3.5 text-muted-foreground" /></Link>)}</div>}
+              {component.sourceNote && <p className={`${libraries.length ? 'mt-1 ' : ''}text-sm leading-6 text-muted-foreground`}>{component.sourceNote}</p>}
+            </div>
+            {docsLink && <a href={docsLink.href} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-muted-foreground">
+              Component docs <ExternalLink aria-hidden="true" className="size-3.5" />
+            </a>}
+          </div>
+        </div>
       </Section>}
 
       <Section title="Examples">

@@ -2,7 +2,7 @@
 title: Select
 description: A single-choice status filter with a themed popup.
 docs: https://ui.shadcn.com/docs/components/base/select
-source: Generated with shadcn CLI 4.21.0, Base UI Nova, preset b1Q4Tg.
+source: "shadcn CLI 4.21.0 · Base UI Nova · Preset b1Q4Tg"
 ---
 
 ## When to use
