@@ -12,7 +12,7 @@ A release is a tagged commit on the upstream `main`, named `v<version>`. Studios
 
 ## Cut a release
 
-1. Merge everything the release includes into `main`, and make sure each change has a line under `## Unreleased` in `CHANGELOG.md`.
+1. Merge everything the release includes into `main`, and make sure each change has a line under `## Unreleased` in `CHANGELOG.md`. Run `pnpm test:release` and `node src/platform/node/check/upgrade-test.js` on the frozen candidate. After a supported public tag exists, also run the rehearsal with `--from <preceding-public-tag>`. The release command’s shorter checks do not replace this acceptance.
 2. On a clean `main` that matches `origin/main`, preview the release:
 
    ```sh
@@ -48,7 +48,7 @@ The release commit goes to `main` directly, so the person pushing needs the righ
 
 ## After pushing
 
-The public launch tag establishes the first compatibility baseline. Before that tag, CI rehearses upgrades between synthetic revisions of the candidate foundation ([Checks and fixes](checks.md)). Historical pre-release tags do not require compatibility. Subsequent release verification must also exercise updates from the preceding supported public release.
+The public launch tag establishes the first compatibility baseline. Before that tag, CI rehearses upgrades between synthetic revisions of the candidate foundation ([Checks and fixes](checks.md)). Historical pre-release tags do not require compatibility. CI also exercises source from the latest supported public release when one exists; subsequent release acceptance uses the preceding supported tag explicitly. Upgrade success is part of the required `build` gate for upstream pull requests.
 
 If a release is wrong after it is pushed, cut a new patch release rather than moving or deleting the tag: studios may already have updated to it.
 

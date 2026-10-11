@@ -54,25 +54,27 @@ Upstream releases are tags named `v<version>` on the Design Studio project ([Rel
 | Command | What it does |
 | --- | --- |
 | `pnpm studio update --dry-run` | Shows the installed release, the target release, the commit range, and the files the release changes that the studio changed too, with each one's tier and what the update does to it. Changes nothing but the fetched tag refs. |
-| `pnpm studio update [version]` | Updates to the latest release, or to `version` (`0.2.1` or `v0.2.1`). |
+| `pnpm studio update [version]` | Updates to the latest release, or to `version` (`0.3.0` or `v0.3.0`). |
 | `pnpm studio update --continue` | Finishes an update after a person resolves its conflicts. |
 
 The update:
 
 1. Requires a clean working tree, no merge in progress, and an `upstream` remote. Without the remote it prints the command to add one: `git remote add upstream https://github.com/itspatmorgan/design-studio-starter.git`.
 2. Fetches the `v*` tags from `upstream` into `refs/studio/upstream-tags/`, so they never replace the team's own tags. Without a version it takes the newest release that is not a pre-release.
-3. Stops with nothing to do if the studio already contains the release's commit, or `studio.lock.json` records it or a later one.
+3. Stops with nothing to do if the studio already contains the release’s commit. A lock record alone does not substitute for ancestry.
 4. Creates and switches to `studio-update/v<version>` from the current HEAD, and merges the release with the update rules (`src/platform/node/lib/upstream-merge.js`): existing seed and team paths keep the studio's complete copy or deletion, genuinely new seed paths take the release, generated files take the release and are regenerated, and upstream or mixed files merge as text.
 5. On a conflict, leaves the merge in progress and lists the files the release and the team both changed. The person resolves them, runs `git add`, and runs `pnpm studio update --continue`; or runs `git merge --abort`, switches back to their branch, and deletes the update branch.
 6. On success, records the release in `studio.lock.json` within the merge commit, then runs `pnpm check` and `pnpm build` and reports the result. The next step is to review the branch and merge it into the team's branch.
 
 It never pushes and never changes the branch it started from. It runs before the studio runtime loads, so a studio whose settings don't validate can still update.
 
+Workspace commands warn about stale dependencies instead of automatically installing before they run. This lets `pnpm studio update --continue` reach the updater while the merged manifests and lockfile still differ. After conflicts are resolved, the updater regenerates dependencies before its checks. Explicit frozen installs in CI and release acceptance still reject a mismatched lockfile.
+
 The update's base is Git's merge base with the release. New studios clone a tagged release with the starter's history, keep the starter as `upstream`, and start a local `main` branch. The default [installation guide](installing.md) uses this release clone directly. The separate plugin installer also records the tag's version and commit in `studio.lock.json` and commits that record on top of the release.
 
 Clone a release with its history for manual setup too. Updates need release ancestry; a ZIP download or shallow studio clone does not preserve the required history. Keep `upstream` for fetching releases. If you connect a private or company repository for your studio, use `origin` for that repository. Your team controls its access and when updates are reviewed and merged. Do not push studio work to the starter's `upstream`.
 
-For an older studio without shared history, the release recorded in `studio.lock.json` is the fallback base. The update first records that release as an ancestor while keeping the studio's files. A studio with neither shared history nor a recorded release can't be updated by the command.
+A studio without shared release history cannot use the update command, including when its lock records a release. Preserve its original files and transfer owned work into an isolated full release clone before retrying. The updater does not join unrelated histories.
 
 ## The installed release
 
@@ -81,7 +83,7 @@ For an older studio without shared history, the release recorded in `studio.lock
 ```json
 {
   "lockfileVersion": 1,
-  "platform": { "version": "0.2.1", "commit": "<full commit id of the v0.2.1 tag>" },
+  "platform": { "version": "0.3.0", "commit": "<full commit id of the v0.3.0 tag>" },
   "modules": {},
   "systems": {}
 }

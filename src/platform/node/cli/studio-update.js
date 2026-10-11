@@ -63,7 +63,7 @@ if (flags.has('--continue')) {
     process.exit(0);
   }
   say(
-    `Changes:           ${plan.commits} upstream commit(s), ${short(plan.base)}..${short(plan.commit)} (base from ${plan.baseSource === 'lock' ? 'studio.lock.json' : 'Git merge base'}), ${plan.upstreamChanged.length} file(s)`,
+    `Changes:           ${plan.commits} upstream commit(s), ${short(plan.base)}..${short(plan.commit)} (base from Git merge base), ${plan.upstreamChanged.length} file(s)`,
   );
   if (plan.overlap.length) {
     say(`\nFiles this release changes that your studio changed too (${plan.overlap.length}):`);

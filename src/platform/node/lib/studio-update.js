@@ -5,14 +5,12 @@
 // team's own tags. The update branch `studio-update/v<version>` starts at the current HEAD, and the release merges into
 // it with the update rules of upstream-merge.js; the original branch is never changed, and nothing is pushed.
 //
-// The base of the update is Git's merge base with the release. A studio that shares no history with upstream (the
-// installer makes a fresh repository) uses the release recorded in studio.lock.json instead: the update branch first
-// records that release as an ancestor, keeping the studio's files, so the merge sees only what changed since it.
+// Updates require shared release ancestry from a full release clone. Recorded metadata never substitutes for history.
 import { execFileSync } from 'node:child_process';
 import semver from 'semver';
 import { finishUpstreamMerge, mergeUpstream } from './upstream-merge.js';
 import { readLock, recordPlatform } from './lock.js';
-import { tierOf } from './ownership.js';
+import { mapProblems, tierOf } from './ownership.js';
 
 export const UPSTREAM_REMOTE = 'upstream';
 export const UPSTREAM_URL = 'https://github.com/itspatmorgan/design-studio-starter.git';
@@ -105,35 +103,48 @@ export function planUpdate(cwd, requested, { fetch = true } = {}) {
   const lock = readLock(cwd).platform;
   const lockCommit = lock && ok('cat-file', '-e', `${lock.commit}^{commit}`) ? lock.commit : null;
   plan.installed = lock ? { ...lock, known: Boolean(lockCommit) } : null;
-  // Already there: the studio contains the release, or records it (or a later one) as installed.
-  plan.upToDate =
-    ok('merge-base', '--is-ancestor', plan.commit, 'HEAD') ||
-    Boolean(lockCommit && ok('merge-base', '--is-ancestor', plan.commit, lockCommit));
+  // Already there only when the studio contains the release in its history.
+  plan.upToDate = ok('merge-base', '--is-ancestor', plan.commit, 'HEAD');
   if (plan.upToDate) return plan;
   const mergeBase = tryGit('merge-base', 'HEAD', plan.commit);
-  if (mergeBase) Object.assign(plan, { base: mergeBase, baseSource: 'merge-base', joinHistory: false });
-  else if (lockCommit) Object.assign(plan, { base: lockCommit, baseSource: 'lock', joinHistory: true });
-  else
+  if (!mergeBase)
     return stop(
-      `This studio shares no history with ${UPSTREAM_REMOTE}, and studio.lock.json does not record the release it came from, so there is no base to update from.`,
+      `This studio shares no release history with ${UPSTREAM_REMOTE}. Updates require a full release clone. Preserve this studio and transfer its owned work into an isolated release clone before retrying.`,
     );
+  Object.assign(plan, { base: mergeBase });
   if (ok('rev-parse', '-q', '--verify', `refs/heads/${plan.branch}`))
     stop(`The branch ${plan.branch} already exists. Finish or delete it first (git branch -D ${plan.branch}).`);
-  // With joined history, the studio's side of the comparison is its files against the recorded release.
-  const diff = (from, to) => lines(git('diff', '--no-renames', '--name-only', from, to));
+  const diff = (from, to) =>
+    execFileSync('git', ['diff', '--no-renames', '--name-only', '-z', from, to], {
+      cwd,
+      encoding: 'utf8',
+      maxBuffer: 1 << 28,
+    })
+      .split('\0')
+      .filter(Boolean);
   plan.commits = Number(git('rev-list', '--count', `${plan.base}..${plan.commit}`));
   plan.upstreamChanged = diff(plan.base, plan.commit);
   const teamChanged = new Set(diff(plan.base, 'HEAD'));
-  let map = null;
+  let map, previous;
   try {
     map = JSON.parse(git('show', `${plan.commit}:.studio/ownership.json`));
+    previous = JSON.parse(git('show', 'HEAD:.studio/ownership.json'));
+    const invalid = [...mapProblems(map), ...mapProblems(previous)];
+    if (invalid.length) return stop(`Cannot plan preservation with invalid ownership rules: ${invalid.join(' ')}`);
   } catch {
-    /* A release without a map: every overlap needs a person. */
+    return stop(
+      'Both this studio and the selected release need valid .studio/ownership.json rules before an update can preserve work.',
+    );
   }
   plan.overlap = plan.upstreamChanged
     .filter(file => teamChanged.has(file))
     .map(file => {
-      const tier = map ? tierOf(map, file) : 'unknown';
+      const oldTier = tierOf(previous, file);
+      const tier = ['seed', 'team', 'unknown'].includes(oldTier)
+        ? oldTier === 'unknown'
+          ? 'team'
+          : oldTier
+        : tierOf(map, file);
       const name = typeof tier === 'string' ? tier : 'conflicting';
       return { file, tier: name, resolution: resolutionOf(name) };
     });
@@ -159,21 +170,6 @@ export function applyUpdate(cwd, plan, { run, log = () => {} }) {
   const { git } = gitIn(cwd);
   log(`Create the branch ${plan.branch} from ${plan.originalBranch ?? plan.head.slice(0, 7)}.`);
   git('switch', '-q', '-c', plan.branch);
-  if (plan.joinHistory) {
-    log(`Record v${plan.installed.version} (${plan.base.slice(0, 7)}) as the release this studio started from.`);
-    git(
-      'merge',
-      '-q',
-      '--no-ff',
-      '--no-verify',
-      '-s',
-      'ours',
-      '--allow-unrelated-histories',
-      '-m',
-      `Record Design Studio v${plan.installed.version} as this studio's base`,
-      plan.base,
-    );
-  }
   log(`Merge Design Studio ${plan.tag}.`);
   const result = mergeUpstream(cwd, plan.commit, {
     message: `Update to Design Studio ${plan.tag}`,

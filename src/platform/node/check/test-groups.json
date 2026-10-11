@@ -10,6 +10,7 @@
         "src/platform/node/build/vite-preview-theme-plugin.test.js",
         "src/platform/node/build/vite-resource-directory-plugin.test.js",
         "src/platform/node/check/inspect-build.test.js",
+        "src/platform/node/check/merge-gate.test.js",
         "src/platform/node/check/navigation.test.js",
         "src/platform/node/check/settings-restart.test.js",
         "src/platform/node/check/test-selection.test.js",

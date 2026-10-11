@@ -46,6 +46,8 @@ The canvas module uses [Excalidraw](https://excalidraw.com). It loads when a can
 
 [Mise](https://mise.jdx.dev) pins [Node](https://nodejs.org) and [pnpm](https://pnpm.io) versions. [Husky](https://typicode.github.io/husky/) runs local Git hooks.
 
+The workspace sets pnpm's [dependency verification](https://pnpm.io/settings/build#verifydepsbeforerun) to `warn`, so commands can reach update recovery before installing a merged dependency graph. Installation remains explicit; CI and release checks use `pnpm install --frozen-lockfile`.
+
 [GitHub Actions](https://docs.github.com/en/actions) runs scope, asset-size, and build checks for pull requests and pushes to `main`.
 
 ## Built site

@@ -108,7 +108,6 @@ test('a dry run names the latest release, the range, and the files both sides ch
   assert.equal(plan.tag, 'v0.3.0');
   assert.equal(plan.commit, latest);
   assert.equal(plan.installed, null, 'no lock: an unknown release');
-  assert.equal(plan.baseSource, 'merge-base');
   assert.equal(plan.commits, 2);
   assert.deepEqual(plan.upstreamChanged.sort(), [
     'README.md',
@@ -243,7 +242,7 @@ test('a conflict stops with the merge in progress, and --continue finishes it on
   assert.equal(studio.git('rev-list', '--parents', '-n1', 'HEAD').split(' ').length, 3);
 });
 
-// The installer makes a fresh repository from a release's files and records the release in studio.lock.json.
+// An unsupported files-only copy can contain release metadata, but lacks the required ancestry.
 const installed = ({ lock }) => {
   const { root, upstream, release } = setup();
   const dir = path.join(root, 'installed');
@@ -267,27 +266,31 @@ const installed = ({ lock }) => {
   return { studio, release };
 };
 
-test('a studio with no shared history updates from the release its lock records', () => {
+test('unrelated history is refused even when a lock records the fetched release', () => {
   const { studio, release } = installed({ lock: true });
-  const commit = release('0.2.1', { 'src/platform/a.ts': 'release\n', 'README.md': 'release\n' });
-  const plan = planUpdate(studio.dir);
-  assert.equal(plan.baseSource, 'lock');
-  assert.equal(plan.joinHistory, true);
-  assert.deepEqual(
-    plan.overlap.map(entry => entry.file),
-    ['README.md'],
+  const commit = release('0.2.1', { 'src/platform/a.ts': 'release\n' });
+  studio.commit(
+    {
+      'studio.lock.json': JSON.stringify({
+        lockfileVersion: 1,
+        platform: { version: '0.2.1', commit },
+        modules: {},
+        systems: {},
+      }),
+    },
+    'Recorded metadata without ancestry',
   );
-  assert.deepEqual(applyUpdate(studio.dir, plan, { run: recorder().run }), { merged: true, checks: 'passed' });
-  assert.equal(studio.read('src/platform/a.ts'), 'release\n');
-  assert.equal(studio.read('README.md'), 'team\n');
-  assert.deepEqual(readLock(studio.dir).platform, { version: '0.2.1', commit });
-  assert.equal(planUpdate(studio.dir).upToDate, true);
+  const before = studio.git('rev-parse', 'HEAD');
+  const plan = planUpdate(studio.dir);
+  assert.match(plan.problems[0], /shares no release history.*full release clone/);
+  assert.equal(studio.git('rev-parse', 'HEAD'), before);
+  assert.equal(studio.git('branch', '--list', 'studio-update/*'), '');
 });
 
 test('a studio with no shared history and no recorded release is refused', () => {
   const { studio, release } = installed({ lock: false });
   release('0.2.1', { 'src/platform/a.ts': 'release\n' });
-  assert.match(planUpdate(studio.dir).problems[0], /shares no history/);
+  assert.match(planUpdate(studio.dir).problems[0], /shares no release history/);
 });
 
 test('an existing update branch is refused', () => {
@@ -295,4 +298,28 @@ test('an existing update branch is refused', () => {
   release('0.2.1', { 'src/platform/a.ts': 'release\n' });
   studio.git('branch', 'studio-update/v0.2.1');
   assert.match(planUpdate(studio.dir).problems[0], /branch studio-update\/v0\.2\.1 already exists/);
+});
+
+test('planning refuses missing ownership rules and uses protected prior tiers across retiering', () => {
+  const { studio, release } = setup();
+  studio.commit({ 'README.md': 'complete team seed bytes\n' }, 'Seed customization');
+  const incoming = structuredClone(MAP);
+  incoming.rules = incoming.rules.filter(rule => rule.tier !== 'seed');
+  incoming.rules[0].paths.push('README.md');
+  release('0.3.0', { '.studio/ownership.json': JSON.stringify(incoming), 'README.md': 'incoming bytes\n' });
+  assert.equal(planUpdate(studio.dir).overlap.find(entry => entry.file === 'README.md').tier, 'seed');
+  release('0.3.1', { '.studio/ownership.json': 'invalid JSON' });
+  assert.match(planUpdate(studio.dir).problems[0], /valid .studio\/ownership.json rules/);
+  assert.equal(studio.git('branch', '--list', 'studio-update/*'), '');
+});
+
+test('planning retains literal whitespace paths in ownership reports', () => {
+  const { studio, release } = setup();
+  const file = 'src/prototypes/me/with\ttab.txt';
+  studio.commit({ [file]: 'team bytes\n' }, 'Team whitespace file');
+  release('0.3.0', { [file]: 'incoming bytes\n' });
+  assert.deepEqual(
+    planUpdate(studio.dir).overlap.find(entry => entry.file === file),
+    { file, tier: 'team', resolution: 'keeps your copy' },
+  );
 });

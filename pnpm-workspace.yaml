@@ -6,6 +6,8 @@ hoist: false
 autoInstallPeers: false
 strictPeerDependencies: false # Studio checks shared React compatibility in system runtime graphs.
 sharedWorkspaceLockfile: true
+# Let update recovery run before regenerating dependencies after a resolved merge.
+verifyDepsBeforeRun: warn
 
 patchedDependencies:
   # Excalidraw draws a link icon on every element with a `link`, and a canvas needs `link`

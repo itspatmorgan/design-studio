@@ -1,156 +1,329 @@
-// Upgrade test: prove a customized studio can take a newer upstream revision.
-//
-//   node src/platform/node/check/upgrade-test.js <base> <head> [--synthetic] [--keep]
-//
-// Creates a studio from <base> in a temporary worktree, makes the changes a team makes (a contributor, a system
-// with its own package dependency, a prototype, a local module, studio settings, and the README), then merges
-// <head> with the update rules in src/platform/node/lib/upstream-merge.js and requires `pnpm check` and `pnpm build` to pass.
-// Before the public baseline, CI uses --synthetic to rehearse two revisions of the candidate foundation, without an old pre-release compatibility gate.
+// Actual update-command acceptance in an isolated release repository and customized studio.
+// Usage: upgrade-test.js [--working] [--from <public-tag>] [--keep]
+// Default: two synthetic releases of the current candidate foundation. --from uses a supported release's source.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
-import { mergeUpstream } from '../lib/upstream-merge.js';
+import { execFileSync, spawnSync } from 'node:child_process';
+import semver from 'semver';
 import { loadOwnership, tierOf, trackedFiles } from '../lib/ownership.js';
-import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
-import { serializeConfig } from '../../core/config-file.ts';
+import { readLock, writeLock, sha256 } from '../lib/lock.js';
+import { parseConfigFile, serializeConfig, withSettings } from '../../core/config-file.ts';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
-const [base, head, ...options] = process.argv.slice(2);
-if (!base || !head || options.some(option => !['--keep', '--synthetic'].includes(option)))
-  throw new Error('Usage: upgrade-test.js <base> <head> [--synthetic] [--keep]');
-const resolve = ref =>
-  execFileSync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).trim();
-let [baseSha, headSha] = [resolve(base), resolve(head)];
-if (options.includes('--synthetic') && baseSha !== headSha)
-  throw new Error('--synthetic requires the same candidate revision for base and head.');
-
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-upgrade-'));
-const step = title => console.log(`\n[upgrade] ${title}`);
-const run = (command, args) =>
-  execFileSync(command, args, { cwd: dir, stdio: 'inherit', env: { ...process.env, CI: process.env.CI ?? '1' } });
-const read = (command, args) => execFileSync(command, args, { cwd: dir, encoding: 'utf8' }).trim();
-const TEAM_AGENTS_LINE = 'Fixture team agent guidance.';
-const edit = (file, change) => {
-  const target = path.join(dir, file);
-  fs.writeFileSync(target, change(fs.readFileSync(target, 'utf8')));
+const ROOT = path.resolve(import.meta.dirname, '../../../..');
+const args = process.argv.slice(2);
+const fromAt = args.indexOf('--from');
+const from = fromAt >= 0 ? args[fromAt + 1] : null;
+const options = fromAt >= 0 ? args.filter((_, index) => index !== fromAt && index !== fromAt + 1) : args;
+if (fromAt >= 0 && (!from || from.startsWith('--'))) throw new Error('--from requires a public release tag.');
+if (options.some(option => !['--working', '--keep'].includes(option)))
+  throw new Error('Usage: upgrade-test.js [--working] [--from <public-tag>] [--keep]');
+const box = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-update-cli-'));
+const upstream = path.join(box, 'upstream'),
+  studio = path.join(box, 'studio');
+const env = {
+  ...process.env,
+  CI: '1',
+  MISE_TRUSTED_CONFIG_PATHS: [upstream, studio].join(path.delimiter),
+  GIT_CONFIG_COUNT: '4',
+  GIT_CONFIG_KEY_0: 'user.name',
+  GIT_CONFIG_VALUE_0: 'Update Fixture',
+  GIT_CONFIG_KEY_1: 'user.email',
+  GIT_CONFIG_VALUE_1: 'fixture@example.test',
+  GIT_CONFIG_KEY_2: 'commit.gpgsign',
+  GIT_CONFIG_VALUE_2: 'false',
+  GIT_CONFIG_KEY_3: 'tag.gpgsign',
+  GIT_CONFIG_VALUE_3: 'false',
 };
-
-const FIXTURE_MODULE = 'src/modules/fixture-notes';
-
-let ok = false;
-try {
-  step(`Create a studio from ${base} (${baseSha.slice(0, 7)})`);
-  execFileSync('git', ['worktree', 'add', '-q', '--detach', dir, baseSha], { cwd: ROOT, stdio: 'inherit' });
-  // The fixture person's Git identity, for every command below. `git config` in a linked worktree would write it
-  // into the repository's shared config, replacing the identity of the checkout running this test.
-  Object.assign(process.env, {
-    GIT_CONFIG_COUNT: '2',
-    GIT_CONFIG_KEY_0: 'user.name',
-    GIT_CONFIG_VALUE_0: 'Fixture Person',
-    GIT_CONFIG_KEY_1: 'user.email',
-    GIT_CONFIG_VALUE_1: 'fixture@example.test',
-  });
-  if (options.includes('--synthetic')) {
-    step('Create sibling revisions of the candidate foundation');
-    // The incoming release changes upstream code; the installed revision has its own seed copy.
-    // Both use the candidate API, so this validates preservation without shipping legacy aliases.
-    edit('src/platform/core/modules/index.ts', text => `${text}\n// Synthetic incoming release proof.\n`);
-    run('git', ['add', 'src/platform/core/modules/index.ts']);
-    run('git', ['commit', '-q', '--no-verify', '-m', 'Synthetic incoming release']);
-    headSha = read('git', ['rev-parse', 'HEAD']);
-    run('git', ['checkout', '-q', '--detach', baseSha]);
-    edit('README.md', text => `${text}\nSynthetic installed seed copy.\n`);
-    run('git', ['add', 'README.md']);
-    run('git', ['commit', '-q', '--no-verify', '-m', 'Synthetic installed release']);
-    baseSha = read('git', ['rev-parse', 'HEAD']);
+const run = (cwd, command, commandArgs) => execFileSync(command, commandArgs, { cwd, env, stdio: 'inherit' });
+const read = (cwd, command, commandArgs) =>
+  execFileSync(command, commandArgs, { cwd, env, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }).trim();
+const git = (cwd, ...commandArgs) => read(cwd, 'git', commandArgs);
+const step = title => console.log(`\n[upgrade] ${title}`);
+const write = (cwd, file, text) => {
+  const target = path.join(cwd, file);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, text);
+};
+const edit = (cwd, file, change) => write(cwd, file, change(fs.readFileSync(path.join(cwd, file), 'utf8')));
+function source(cwd, revision, working = false) {
+  fs.mkdirSync(cwd, { recursive: true });
+  if (working) {
+    const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
+      .split('\0')
+      .filter(Boolean);
+    for (const file of new Set(files))
+      if (fs.existsSync(path.join(ROOT, file))) {
+        fs.mkdirSync(path.dirname(path.join(cwd, file)), { recursive: true });
+        fs.cpSync(path.join(ROOT, file), path.join(cwd, file), {
+          preserveTimestamps: true,
+          recursive: true,
+          verbatimSymlinks: true,
+        });
+      }
+  } else {
+    const archive = path.join(box, `source-${path.basename(cwd)}.tar`);
+    execFileSync('git', ['archive', '--format=tar', '-o', archive, revision], { cwd: ROOT });
+    execFileSync('tar', ['-xf', archive, '-C', cwd]);
+    fs.rmSync(archive);
   }
-  run('pnpm', ['install', '--frozen-lockfile']);
-  const originalDependencies = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies;
+}
+const versionFile = 'src/platform/core/modules/index.ts',
+  snapshotFile = 'src/platform/core/contract.snapshot.json';
+const platformVersion = cwd =>
+  fs.readFileSync(path.join(cwd, versionFile), 'utf8').match(/PLATFORM_VERSION = '([^']+)'/)[1];
+const stack = 'src/platform/context/stack.md',
+  seed = 'src/systems/product/_update-seed.txt',
+  newSeed = 'src/systems/product/_new-update-seed.txt';
+const commit = (cwd, message) => {
+  run(cwd, 'git', ['add', '-A']);
+  run(cwd, 'git', ['commit', '-q', '--no-verify', '-m', message]);
+  return git(cwd, 'rev-parse', 'HEAD');
+};
+const cli = (...commandArgs) => run(studio, 'pnpm', ['studio', 'update', ...commandArgs]);
+const attempt = (...commandArgs) =>
+  spawnSync('pnpm', ['studio', 'update', ...commandArgs], {
+    cwd: studio,
+    env,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+const requireFailure = (result, pattern) => {
+  if (result.status === 0 || !pattern.test(result.stdout + result.stderr))
+    throw new Error(`Expected refusal ${pattern}:\n${result.stdout}\n${result.stderr}`);
+};
+const entry = (cwd, file) => {
+  const target = path.join(cwd, file),
+    stat = fs.lstatSync(target);
+  if (!stat.isFile() && !stat.isSymbolicLink()) throw new Error(`Unsupported tracked directory ${file}`);
+  return {
+    kind: stat.isSymbolicLink() ? 'link' : 'file',
+    executable: Boolean(stat.mode & 0o111),
+    bytes: stat.isSymbolicLink() ? Buffer.from(fs.readlinkSync(target)) : fs.readFileSync(target),
+  };
+};
+const inventory = cwd =>
+  new Map(
+    trackedFiles(cwd).map(file => {
+      const value = entry(cwd, file);
+      return [file, sha256(Buffer.concat([Buffer.from(`${value.kind}:${value.executable}\0`), value.bytes]))];
+    }),
+  );
+const assertInventory = (cwd, before) => {
+  const after = inventory(cwd);
+  if (JSON.stringify([...before]) !== JSON.stringify([...after]))
+    throw new Error('The dry run changed tracked files or their inventory.');
+};
+try {
+  step(`Prepare isolated source releases${from ? ' from ' + from : ' from the candidate foundation'}`);
+  source(upstream, from ?? 'HEAD', !from && options.includes('--working'));
+  run(upstream, 'git', ['init', '-q', '-b', 'main']);
+  edit(upstream, stack, text => `${text}\nUpdate fixture choice: base.\n`);
+  write(upstream, seed, 'Installed seed bytes.\n');
+  const baseVersion = platformVersion(upstream),
+    baseCommit = commit(upstream, 'Synthetic installed release');
+  run(upstream, 'git', ['tag', '-a', `v${baseVersion}`, '-m', 'Synthetic installed release']);
+  run(box, 'git', ['clone', '--no-local', '-q', upstream, studio]);
+  run(studio, 'git', ['remote', 'rename', 'origin', 'upstream']);
+  // Build the incoming release on the same synthetic history, using candidate source for a supported-tag rehearsal.
+  if (from) {
+    for (const file of trackedFiles(upstream)) fs.rmSync(path.join(upstream, file), { force: true });
+    source(upstream, 'HEAD', options.includes('--working'));
+    edit(upstream, stack, text => `${text}\nUpdate fixture choice: incoming.\n`);
+  } else
+    edit(upstream, stack, text => text.replace('Update fixture choice: base.', 'Update fixture choice: incoming.'));
+  const candidate = platformVersion(upstream);
+  const targetVersion = semver.gt(candidate, baseVersion) ? candidate : semver.inc(baseVersion, 'patch');
+  edit(upstream, versionFile, text =>
+    text.replace(/PLATFORM_VERSION = '[^']+'/, `PLATFORM_VERSION = '${targetVersion}'`),
+  );
+  edit(upstream, snapshotFile, text => {
+    const snapshot = JSON.parse(text);
+    snapshot.platformVersion = targetVersion;
+    return JSON.stringify(snapshot, null, 2) + '\n';
+  });
+  edit(upstream, 'README.md', text => text + '\nIncoming README bytes.\n');
+  fs.rmSync(path.join(upstream, seed), { force: true });
+  write(upstream, newSeed, 'New incoming seed bytes.\n');
+  edit(upstream, 'package.json', text => {
+    const pkg = JSON.parse(text);
+    pkg.scripts['update-fixture-proof'] = 'node -e "process.exit(0)"';
+    return JSON.stringify(pkg, null, 2) + '\n';
+  });
+  const targetCommit = commit(upstream, 'Synthetic incoming release');
+  run(upstream, 'git', ['tag', '-a', `v${targetVersion}`, '-m', 'Synthetic incoming release']);
 
-  step('Make team changes');
-  run('pnpm', [
+  step('Customize the installed studio through supported commands');
+  // Fixture construction establishes personal authority; real studio lifecycle uses the managed commands below.
+  edit(studio, 'studio.config.json', text =>
+    serializeConfig(withSettings(parseConfigFile(text).value, { usage: 'personal', admins: [] })),
+  );
+  run(studio, 'pnpm', ['install', '--frozen-lockfile']);
+  run(studio, 'pnpm', [
     'join',
     '--key',
     'fixture',
     '--name',
-    'Fixture Person',
+    'Update Fixture',
     '--email',
     'fixture@example.test',
     '--github',
     'fixture-person',
     '--yes',
   ]);
-  run('pnpm', ['studio', 'create-system', 'fixture-kit', '--label', 'Fixture kit', '--yes']);
-  const system = JSON.parse(
-    fs.readFileSync(path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/package.json'), 'utf8'),
-  ).name;
-  run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
-  run('pnpm', ['add', '-w', 'clsx@2.1.1']);
-  run('pnpm', ['new', 'Fixture Prototype']);
-  run('pnpm', ['studio', 'create-module', path.basename(FIXTURE_MODULE), '--label', 'Fixture notes', '--yes']);
-  edit('studio.config.json', text => serializeConfig({ ...JSON.parse(text), name: 'Fixture Studio' }));
-  edit('README.md', text => `${text}\nFixture team notes.\n`);
-  edit('AGENTS.team.md', text => `${text}\n${TEAM_AGENTS_LINE}\n`);
-  run('pnpm', ['studio', 'sync']);
-  run('pnpm', ['check']);
-  run('git', ['add', '-A']);
-  run('git', ['commit', '-q', '--no-verify', '-m', 'Team changes']);
-
-  const ownership = loadOwnership(dir);
-  const protectedFiles = trackedFiles(dir).filter(file =>
-    ['seed', 'team', 'unknown'].includes(tierOf(ownership, file)),
+  run(studio, 'pnpm', ['studio', 'create-system', 'fixture-kit', '--label', 'Fixture kit', '--yes']);
+  const system = JSON.parse(fs.readFileSync(path.join(studio, 'src/systems/fixture-kit/package.json'))).name;
+  run(studio, 'pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
+  run(studio, 'pnpm', ['add', '-w', 'clsx@2.1.1']);
+  run(studio, 'pnpm', ['new', 'Fixture Prototype']);
+  run(studio, 'pnpm', ['studio', 'create-module', 'fixture-notes', '--label', 'Fixture notes', '--yes']);
+  edit(studio, 'studio.config.json', text =>
+    serializeConfig({ ...parseConfigFile(text).value, name: 'Fixture Studio' }),
   );
-  const protectedBytes = new Map(protectedFiles.map(file => [file, fs.readFileSync(path.join(dir, file))]));
-  const dependencies = Object.fromEntries(
-    Object.entries(JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies).filter(
-      ([name, version]) => originalDependencies[name] !== version,
-    ),
+  edit(studio, 'README.md', text => text + '\nComplete team README customization.\n');
+  edit(studio, 'AGENTS.team.md', text => text + '\nFixture team agent guidance.\n');
+  write(studio, 'team-binary.bin', Buffer.from([0, 255, 1, 9]));
+  const modules = {
+    'fixture-notes': {
+      source: 'fixture-notes',
+      files: {
+        'src/modules/fixture-notes/module.ts': sha256(
+          fs.readFileSync(path.join(studio, 'src/modules/fixture-notes/module.ts')),
+        ),
+      },
+    },
+  };
+  const systems = {
+    'fixture-kit': {
+      source: 'fixture-kit',
+      files: {
+        'src/systems/fixture-kit/package.json': sha256(
+          fs.readFileSync(path.join(studio, 'src/systems/fixture-kit/package.json')),
+        ),
+      },
+    },
+  };
+  writeLock({ platform: { version: baseVersion, commit: baseCommit }, modules, systems }, studio);
+  run(studio, 'pnpm', ['studio', 'sync']);
+  run(studio, 'pnpm', ['check']);
+  const customized = commit(studio, 'Team customizations');
+  const originalBranch = git(studio, 'symbolic-ref', '--short', 'HEAD');
+  const ownership = loadOwnership(studio);
+  const protectedFiles = trackedFiles(studio).filter(
+    file => file !== 'studio.lock.json' && ['seed', 'team', 'unknown'].includes(tierOf(ownership, file)),
   );
-
-  step(`Update to ${head} (${headSha.slice(0, 7)})`);
-  const result = mergeUpstream(dir, headSha, { message: `Update to ${headSha.slice(0, 7)}`, run });
-  if (!result.merged)
-    throw new Error(
-      `Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`,
-    );
-
-  step('Verify the updated studio');
+  const protectedBytes = new Map(protectedFiles.map(file => [file, entry(studio, file)]));
+  const dependencyBytes = JSON.parse(fs.readFileSync(path.join(studio, 'package.json'))).dependencies;
+  const localTags = git(studio, 'show-ref', '--tags'),
+    before = inventory(studio);
+  step('Dry-run the actual update command');
+  cli(targetVersion, '--dry-run');
   if (
-    options.includes('--synthetic') &&
-    !fs
-      .readFileSync(path.join(dir, 'src/platform/core/modules/index.ts'), 'utf8')
-      .includes('Synthetic incoming release proof.')
+    git(studio, 'rev-parse', 'HEAD') !== customized ||
+    git(studio, 'symbolic-ref', '--short', 'HEAD') !== originalBranch ||
+    git(studio, 'show-ref', '--tags') !== localTags ||
+    git(studio, 'status', '--porcelain')
   )
-    throw new Error('The update did not apply the synthetic upstream change.');
-  for (const [file, bytes] of protectedBytes) {
-    if (!fs.existsSync(path.join(dir, file)) || !fs.readFileSync(path.join(dir, file)).equals(bytes))
-      throw new Error(`The update changed or removed the team's complete copy of ${file}.`);
-  }
-  const current = new Set(trackedFiles(dir));
-  const expected = new Set(protectedFiles);
-  for (const file of current)
-    if (['team', 'unknown'].includes(tierOf(ownership, file)) && !expected.has(file))
-      throw new Error(`The update introduced an unexpected team file: ${file}.`);
-  const updatedDependencies = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies;
-  for (const [name, version] of Object.entries(dependencies))
-    if (updatedDependencies[name] !== version)
-      throw new Error(
-        `The update changed the studio's dependency ${name}: ${version} -> ${updatedDependencies[name]}.`,
-      );
-  if (!fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8').includes(TEAM_AGENTS_LINE))
-    throw new Error('The update lost the team guidance in regenerated AGENTS.md.');
-  run('pnpm', ['install', '--frozen-lockfile']);
-  run('pnpm', ['studio', 'sync', '--check']);
-  run('pnpm', ['check']);
-  run('pnpm', ['build']);
-  if (read('git', ['status', '--porcelain']))
-    throw new Error('Verification changed tracked files:\n' + read('git', ['status', '--short']));
-  ok = true;
-  console.log(`\n[upgrade] A customized studio from ${baseSha.slice(0, 7)} updates cleanly to ${headSha.slice(0, 7)}.`);
+    throw new Error('The dry run changed the branch, tags, or working tree.');
+  assertInventory(studio, before);
+
+  step('Apply the actual update command and verify complete ownership and receipt preservation');
+  cli(targetVersion);
+  const verify = () => {
+    if (git(studio, 'rev-parse', originalBranch) !== customized)
+      throw new Error('The update changed the original branch.');
+    if (git(studio, 'symbolic-ref', '--short', 'HEAD') !== `studio-update/v${targetVersion}`)
+      throw new Error('The update used the wrong branch.');
+    const parents = git(studio, 'rev-list', '--parents', '-n1', 'HEAD').split(' ');
+    if (parents.length !== 3 || parents[1] !== customized || parents[2] !== targetCommit)
+      throw new Error('The update did not create the expected two-parent merge.');
+    const lock = readLock(studio);
+    if (
+      JSON.stringify(lock.platform) !== JSON.stringify({ version: targetVersion, commit: targetCommit }) ||
+      JSON.stringify(lock.modules) !== JSON.stringify(modules) ||
+      JSON.stringify(lock.systems) !== JSON.stringify(systems)
+    )
+      throw new Error('The release stamp or installed capability records changed incorrectly.');
+    if (
+      JSON.stringify(JSON.parse(git(studio, 'show', 'HEAD:studio.lock.json'))) !==
+      JSON.stringify(JSON.parse(fs.readFileSync(path.join(studio, 'studio.lock.json'))))
+    )
+      throw new Error('The release stamp is not in the merge commit.');
+    for (const [file, before] of protectedBytes) {
+      if (!fs.existsSync(path.join(studio, file))) throw new Error(`Lost protected path: ${file}`);
+      const after = entry(studio, file);
+      if (before.kind !== after.kind || before.executable !== after.executable || !before.bytes.equals(after.bytes))
+        throw new Error(`Lost complete protected content or mode: ${file}`);
+    }
+    const expected = new Set(protectedFiles);
+    for (const file of trackedFiles(studio))
+      if (file !== 'studio.lock.json' && ['team', 'unknown'].includes(tierOf(ownership, file)) && !expected.has(file))
+        throw new Error(`Unexpected incoming team file: ${file}`);
+    const dependencies = JSON.parse(fs.readFileSync(path.join(studio, 'package.json'))).dependencies;
+    for (const [name, value] of Object.entries(dependencyBytes))
+      if (dependencies[name] !== value) throw new Error(`Changed dependency ${name}`);
+    if (fs.readFileSync(path.join(studio, newSeed), 'utf8') !== 'New incoming seed bytes.\n')
+      throw new Error('The new incoming seed was not installed.');
+    if (!fs.readFileSync(path.join(studio, 'AGENTS.md'), 'utf8').includes('Fixture team agent guidance.'))
+      throw new Error('Generated team guidance was lost.');
+    if (git(studio, 'status', '--porcelain')) throw new Error('The updated studio is not clean.');
+  };
+  verify();
+  run(studio, 'pnpm', ['install', '--frozen-lockfile']);
+  run(studio, 'pnpm', ['studio', 'sync', '--check']);
+  run(studio, 'pnpm', ['check']);
+  run(studio, 'pnpm', ['build']);
+  verify();
+
+  step('Stop on a real upstream conflict and finish through --continue');
+  run(studio, 'git', ['switch', '-q', originalBranch]);
+  edit(studio, stack, text => text.replace('Update fixture choice: base.', 'Update fixture choice: team.'));
+  const conflictStart = commit(studio, 'Team platform edit');
+  run(studio, 'git', ['branch', '-D', `studio-update/v${targetVersion}`]);
+  requireFailure(attempt(targetVersion), /update stopped/);
+  if (
+    git(studio, 'rev-parse', 'MERGE_HEAD') !== targetCommit ||
+    git(studio, 'rev-parse', originalBranch) !== conflictStart
+  )
+    throw new Error('Conflict handling lost the merge or original branch.');
+  requireFailure(attempt('--continue'), /Resolve these files/);
+  edit(studio, stack, text =>
+    text.replace(/<<<<<<<[\s\S]*?>>>>>>>[^\n]*\n/g, 'Update fixture choice: reviewed resolution.\n'),
+  );
+  run(studio, 'git', ['add', stack]);
+  cli('--continue');
+  if (
+    git(studio, 'status', '--porcelain') ||
+    git(studio, 'rev-parse', originalBranch) !== conflictStart ||
+    readLock(studio).platform.commit !== targetCommit
+  )
+    throw new Error('Continue did not finish cleanly with the original branch preserved.');
+
+  step('Report an actual failed check without claiming update success');
+  run(studio, 'git', ['switch', '-q', originalBranch]);
+  run(studio, 'git', ['reset', '--hard', customized]);
+  run(studio, 'git', ['branch', '-D', `studio-update/v${targetVersion}`]);
+  write(
+    studio,
+    'src/modules/fixture-notes/check.ts',
+    "export default () => ['Deliberate update acceptance failure.'];\n",
+  );
+  const failedStart = commit(studio, 'Fixture failing module check');
+  const failed = attempt(targetVersion);
+  requireFailure(failed, /is committed.*pnpm check failed/);
+  if (
+    /pnpm check and pnpm build passed/.test(failed.stdout) ||
+    git(studio, 'rev-parse', originalBranch) !== failedStart ||
+    readLock(studio).platform.commit !== targetCommit
+  )
+    throw new Error('Failed-check reporting claimed success or changed the original branch.');
+  console.log(
+    `\n[upgrade] Actual CLI dry-run, preservation, conflict/continue, and failed-check acceptance pass (${baseVersion} -> ${targetVersion}).`,
+  );
 } finally {
-  if (options.includes('--keep')) console.log(`[upgrade] Kept the studio at ${dir}`);
-  else execFileSync('git', ['worktree', 'remove', '--force', dir], { cwd: ROOT, stdio: 'inherit' });
+  if (options.includes('--keep')) console.log(`[upgrade] Kept isolated fixtures at ${box}`);
+  else fs.rmSync(box, { recursive: true, force: true });
 }
-process.exit(ok ? 0 : 1);

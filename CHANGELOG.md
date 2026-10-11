@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Update acceptance now runs the actual CLI in isolated release/studio repositories: dry-run invariants, complete seed/team/dependency/receipt preservation, exact merge stamping, conflict/continue, frozen builds, and failed-check reporting. The required build gate depends on upgrade success for upstream PRs and explicitly permits intentional omissions elsewhere. Updates require shared release ancestry; legacy history joining and metadata-only success are removed. Planning requires valid ownership maps, protects prior seed/team tiers, and retains literal whitespace paths.
+
 - Contract snapshots now record semantic export signatures, generic parameters, nested and referenced types, readonly/optional fields, class constructors, and Node/pnpm/React runtime requirements. CI reports PR-base changes and independently compares against supported public tags; the release command uses the same comparison. Public compatibility begins at v0.3.0, with no legacy snapshot reader or historical pre-release gate. Refreshing a future snapshot cannot hide a stable change requiring a 0.x minor release.
 
 - `#studio/module` now loads the platform version safely in Node. Browser app contribution types (`ModuleApp`, `PaletteContext`, `PrototypeAction`) move to `#studio/ui`. Studio identity values (`APP_NAME`, `TAGLINE`, read-only `CONFIG`) move to browser-only `#studio/data`, which also exports the documented experimental `contribution()` reader. Shipped callers and scaffolds use the new entry. `ModuleApp.landing` is stable, and supplied modules require platform 0.3.0 for their current declarations and APIs.

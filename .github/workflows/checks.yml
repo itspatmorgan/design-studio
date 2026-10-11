@@ -132,10 +132,10 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: dist
-  # A customized studio from the base revision must update to this head with no conflicts and still build.
+  # Rehearse preservation, conflict recovery, and failed-check reporting through the actual updater.
   upgrade:
     name: Upgrade test
-    if: github.event_name == 'pull_request'
+    if: github.repository == 'itspatmorgan/design-studio-starter' && github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     concurrency:
       group: upgrade-${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -155,22 +155,31 @@ jobs:
           path: ${{ steps.store.outputs.path }}
           key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
       - run: pnpm install --frozen-lockfile
-      # The public launch establishes the first compatibility baseline; historical pre-release tags are not a gate.
-      - name: Update a customized studio within the candidate foundation
-        env:
-          HEAD_REF: ${{ github.event.pull_request.head.sha }}
-        run: node src/platform/node/check/upgrade-test.js "$HEAD_REF" "$HEAD_REF" --synthetic
+      # Rehearse the actual command within the candidate foundation and, after launch, from the supported release.
+      - name: Rehearse the actual update command
+        run: |
+          node src/platform/node/check/upgrade-test.js
+          RELEASE=$(git tag --list 'v*' --sort=-v:refname | node --input-type=module -e "import fs from 'node:fs'; import semver from 'semver'; import {FIRST_PUBLIC_RELEASE} from './src/platform/node/lib/contract.js'; console.log(fs.readFileSync(0,'utf8').trim().split('\n').find(tag => semver.valid(tag.slice(1)) && !semver.prerelease(tag.slice(1)) && semver.gte(tag.slice(1), FIRST_PUBLIC_RELEASE)) ?? '')")
+          if [ -n "$RELEASE" ]; then
+            node src/platform/node/check/upgrade-test.js --from "$RELEASE"
+          fi
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
-    needs: [bundle, regressions]
+    needs: [bundle, regressions, upgrade]
     if: always()
     runs-on: ubuntu-24.04
     steps:
-      - name: Require bundle and regression success
+      - name: Require bundle, regression, and upgrade success
         env:
           BUNDLE_RESULT: ${{ needs.bundle.result }}
           REGRESSION_RESULT: ${{ needs.regressions.result }}
-        run: test "$BUNDLE_RESULT" = success && test "$REGRESSION_RESULT" = success
+          UPGRADE_RESULT: ${{ needs.upgrade.result }}
+          UPGRADE_REQUIRED: ${{ github.repository == 'itspatmorgan/design-studio-starter' && github.event_name == 'pull_request' }}
+        run: |
+          test "$BUNDLE_RESULT" = success && test "$REGRESSION_RESULT" = success || exit 1
+          if [ "$UPGRADE_REQUIRED" = true ]; then
+            test "$UPGRADE_RESULT" = success || exit 1
+          fi
   deploy:
     name: Deploy Pages
     if: github.repository == 'itspatmorgan/design-studio-starter' && github.event_name == 'push' && github.ref == 'refs/heads/main'
