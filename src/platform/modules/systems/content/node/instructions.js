@@ -2,13 +2,14 @@
 // repository and system entry points for the diagnostic routing map.
 import fs from 'node:fs';
 import path from 'node:path';
-import { TEAM_MODULES_ROOT } from '../../../../core/roots.ts';
+import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../../../../core/roots.ts';
 
 const LINK = /\[([^\]]*)\]\(([^)\s]+)\)/g;
 const external = target => /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(target);
 const resolve = (file, target) => path.posix.normalize(path.posix.join(path.posix.dirname(file), target));
 
-export function systemInstructions({ root, systemRoot, platform = false }) {
+/** @param {{root: string, systemRoot: string, platform?: boolean, moduleDirs?: string[]}} options */
+export function systemInstructions({ root, systemRoot, platform = false, moduleDirs }) {
   const entries = [...(platform ? ['AGENTS.md'] : []), systemRoot + '/AGENTS.md'];
   const exists = file => fs.existsSync(path.join(root, file)) && fs.statSync(path.join(root, file)).isFile();
   const read = file => fs.readFileSync(path.join(root, file), 'utf8');
@@ -18,6 +19,16 @@ export function systemInstructions({ root, systemRoot, platform = false }) {
     target.startsWith(`${TEAM_MODULES_ROOT}/`) ||
     target.startsWith(systemRoot + '/');
   const targetOf = (file, target) => (target.startsWith('src/') ? target : resolve(file, target));
+  const installed = moduleDirs && new Set(moduleDirs.map(dir => dir.replace(/\/+$/, '')));
+  const unavailable = target =>
+    installed &&
+    MODULE_ROOTS.some(moduleRoot => {
+      if (!target.startsWith(moduleRoot + '/')) return false;
+      const relative = target.slice(moduleRoot.length + 1);
+      if (!relative.includes('/')) return false; // Root READMEs are not module owners.
+      const id = relative.split('/')[0];
+      return id && !installed.has(`${moduleRoot}/${id}`);
+    });
   const agents = entries
     .filter(exists)
     .map(file =>
@@ -40,7 +51,7 @@ export function systemInstructions({ root, systemRoot, platform = false }) {
       const resolved = targetOf(file, target).split('#')[0];
       // Audit the system's instruction graph, including context and skill references.
       // Platform/module contracts outside this system have their own documentation checks.
-      if (!scoped(resolved)) continue;
+      if (!scoped(resolved) || unavailable(resolved)) continue;
       if (!exists(resolved)) {
         missing.add(resolved);
         continue;

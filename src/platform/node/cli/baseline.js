@@ -14,6 +14,8 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { MODULE_ROOTS } from '../../core/roots.ts';
+import { writeProfiles } from '../lib/fixtures/contributors.js';
+import { linkSystemDependencies } from '../lib/fixtures/workspace-dependencies.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
@@ -52,7 +54,15 @@ function run(cwd, cmd, args) {
   const start = performance.now();
   try {
     // The scratch copy's mise.toml is new to mise, so trust it for these commands only.
-    const env = { ...process.env, MISE_TRUSTED_CONFIG_PATHS: cwd };
+    const env = {
+      ...process.env,
+      MISE_TRUSTED_CONFIG_PATHS: cwd,
+      GIT_CONFIG_COUNT: '2',
+      GIT_CONFIG_KEY_0: 'user.name',
+      GIT_CONFIG_VALUE_0: 'Baseline Fixture',
+      GIT_CONFIG_KEY_1: 'user.email',
+      GIT_CONFIG_VALUE_1: 'baseline@example.test',
+    };
     execFileSync(cmd, args, {
       cwd,
       env,
@@ -63,7 +73,13 @@ function run(cwd, cmd, args) {
     return { ok: true, seconds: (performance.now() - start) / 1000 };
   } catch (e) {
     const text = `${e.stdout || ''}${e.stderr || ''}`.trim().split('\n');
-    return { ok: false, seconds: (performance.now() - start) / 1000, tail: text.slice(-8).join('\n') };
+    const log = path.join(tmp('baseline-error'), 'output.log');
+    fs.writeFileSync(log, text.join('\n') + '\n');
+    return {
+      ok: false,
+      seconds: (performance.now() - start) / 1000,
+      tail: text.slice(-8).join('\n') + `\nFull output: ${log}`,
+    };
   }
 }
 
@@ -80,6 +96,7 @@ function scratchCopy(name) {
     fs.rmSync(archive);
   }
   fs.symlinkSync(path.join(ROOT, 'node_modules'), path.join(dest, 'node_modules'), 'dir');
+  linkSystemDependencies(ROOT, dest);
   return dest;
 }
 
@@ -176,7 +193,7 @@ function build(dir) {
 const STEPS = [
   ['manifest', 'node', ['src/platform/node/build/build-manifest.js', '--strict', '--deploy']],
   ['modules', 'node', ['src/platform/node/check/check-modules.js']],
-  ['typecheck', 'node', ['node_modules/typescript/bin/tsc', '-b']],
+  ['typecheck', 'node', ['src/platform/node/check/typecheck.js']],
   ['tests', 'node', TESTS],
   ['bundle', 'node', VITE],
 ];
@@ -189,7 +206,8 @@ function removal(id) {
   }
   const dir = scratchCopy(`remove-${id}`);
   try {
-    if (id === 'contributors') {
+    writeProfiles(dir, { baseline: { name: 'Baseline Fixture', email: 'baseline@example.test' } });
+    {
       const personal = run(dir, 'node', [
         'src/platform/node/cli/studio.js',
         'configure',
@@ -202,15 +220,36 @@ function removal(id) {
         console.log(`${id}: FAILS at personal configuration\n${personal.tail}`);
         return false;
       }
-      console.log('Checking Contributors & Permissions availability in personal use. Team use requires it.');
+      if (id === 'contributors')
+        console.log('Checking Contributors & Permissions availability in personal use. Team use requires it.');
     }
     if (id !== 'none') {
       const args = process.argv.includes('--off') ? ['disable', id] : ['remove', id, '--yes'];
+      if (!process.argv.includes('--off')) {
+        const preview = run(dir, 'node', ['src/platform/node/cli/studio.js', 'remove', id]);
+        if (!preview.ok) {
+          console.log(`${id}: FAILS at removal preview\n${preview.tail}`);
+          return false;
+        }
+      }
       const operation = run(dir, 'node', ['src/platform/node/cli/studio.js', ...args]);
       if (!operation.ok) {
         console.log(`${id}: FAILS at capability change\n${operation.tail}`);
         return false;
       }
+    }
+    // Some retained regression groups inspect committed source. Give the disposable fixture its own history.
+    for (const args of [
+      ['init', '-q', '-b', 'main'],
+      ['add', '-A'],
+      ['-c', 'commit.gpgsign=false', 'commit', '-q', '--no-verify', '-m', 'Availability fixture'],
+    ]) {
+      const initialized = run(dir, 'git', args);
+      if (!initialized.ok) {
+        console.log(`${id}: FAILS at fixture history\n${initialized.tail}`);
+        return false;
+      }
+      if (args[0] === 'init') fs.appendFileSync(path.join(dir, '.git/info/exclude'), '\nnode_modules\n');
     }
     for (const [name, cmd, args] of STEPS) {
       const r = run(dir, cmd, args);

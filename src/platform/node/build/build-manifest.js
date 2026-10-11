@@ -21,7 +21,7 @@ import { byOrder, parseOrder } from '../../core/order.ts';
 import { parseMaintainers } from '../../core/permissions.ts';
 import { FILE_TYPES, INSTALLED_FILE_TYPES, fileTypeOf, systemContentTypeOf, isTextFile } from '../lib/file-types.js';
 import { auditResourceIdentities } from '../lib/resource-identity-audit.js';
-import { ENABLED_MODULES, MODULES, PROTOTYPE_SECTIONS, SECTION_KEYS } from '../lib/modules.js';
+import { ENABLED_MODULES, MODULES, MODULE_DIRS, PROTOTYPE_SECTIONS, SECTION_KEYS } from '../lib/modules.js';
 import { frontmatter } from '../lib/frontmatter.js';
 import { moduleBuilds } from '../lib/module-builds.js';
 import { contributorsSignature, loadContributors } from '../lib/contributors.js';
@@ -478,6 +478,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
       root: ROOT,
       systemRoot: owner.root,
       platform: owner.kind !== 'system',
+      moduleDirs: Object.values(MODULE_DIRS),
     });
     maps[system] = systemContentMap({
       agents: instructions.agents,

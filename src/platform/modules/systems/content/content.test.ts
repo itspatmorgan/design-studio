@@ -357,6 +357,37 @@ test('Studio instructions combine repository and local routes using the declared
 });
 
 // Repository-relative links must reach the same document as a sibling-relative link.
+test('instruction links skip absent module owners while missing files in retained owners still fail', async () => {
+  const { systemInstructions } = await import('./node/instructions.js');
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-instructions-'));
+  try {
+    fs.mkdirSync(path.join(root, 'src/platform'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'AGENTS.md'),
+      'Read [platform](src/platform/missing.md), [retained](src/platform/modules/view/missing.md), ' +
+        '[removed](src/platform/modules/documentation/README.md), [team](src/modules/removed/README.md).',
+    );
+    const options = { root, systemRoot: 'src/platform', platform: true, moduleDirs: ['src/platform/modules/view/'] };
+    assert.deepEqual(systemInstructions(options).missing, [
+      'src/platform/missing.md',
+      'src/platform/modules/view/missing.md',
+    ]);
+    assert.deepEqual(
+      systemInstructions({ ...options, moduleDirs: [...options.moduleDirs, 'src/platform/modules/documentation/'] })
+        .missing,
+      [
+        'src/platform/missing.md',
+        'src/platform/modules/documentation/README.md',
+        'src/platform/modules/view/missing.md',
+      ],
+    );
+    fs.appendFileSync(path.join(root, 'AGENTS.md'), ' Read [module root](src/modules/README.md).');
+    assert.ok(systemInstructions(options).missing.includes('src/modules/README.md'));
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('document routes follow repository-relative links without crossing system scopes', () => {
   const map = systemContentMap({
     root: 'src/systems/product',

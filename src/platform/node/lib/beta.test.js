@@ -454,29 +454,31 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
   }
 });
 
-test('shared documentation catalog covers Manual and Reference and keeps damaged chapters repairable', async () => {
+test('shared documentation catalog deduplicates owner sources and limits access to the current catalog', async () => {
   const { documentationSources, sourceFile } = await import('../build/files/source.js');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-documentation-catalog-'));
   try {
-    const chapter = 'src/platform/modules/documentation/pages/index.md';
     const readme = 'src/platform/modules/prototypes/README.md';
-    for (const file of [chapter, readme]) {
+    for (const file of [readme]) {
       fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
       fs.writeFileSync(path.join(root, file), '# Source');
     }
     const manifest = {
-      contributions: {
-        documentation: { manual: [{ slug: 'index', source: '/platform/modules/documentation/pages/index.md' }] },
-      },
+      contributions: {},
       platformReferences: [
-        { id: 'documentation', enabled: true, references: [] },
-        { id: 'prototypes', enabled: true, references: [{ source: '/platform/modules/prototypes/README.md' }] },
+        {
+          id: 'prototypes',
+          enabled: true,
+          references: [
+            { source: '/platform/modules/prototypes/README.md' },
+            { source: '/platform/modules/prototypes/README.md' },
+          ],
+        },
       ],
     };
     const allowed = documentationSources(root, manifest);
-    assert.ok(allowed.includes(chapter));
     assert.equal(allowed.filter(file => file === readme).length, 1);
-    for (const file of [chapter, readme]) {
+    for (const file of [readme]) {
       const before = sourceFile(root, allowed, { action: 'read', path: file });
       assert.equal(
         sourceFile(root, allowed, { action: 'write', path: file, content: '# Edited', base: before.body.version })
@@ -484,14 +486,13 @@ test('shared documentation catalog covers Manual and Reference and keeps damaged
         undefined,
       );
     }
-    fs.writeFileSync(path.join(root, chapter), '---\ntitle: broken');
+    fs.writeFileSync(path.join(root, readme), '---\ntitle: broken');
     assert.equal(
-      sourceFile(root, documentationSources(root, manifest), { action: 'read', path: chapter }).body.content,
+      sourceFile(root, documentationSources(root, manifest), { action: 'read', path: readme }).body.content,
       '---\ntitle: broken',
     );
-    manifest.platformReferences[0].enabled = false;
-    delete manifest.contributions.documentation;
-    assert.ok(!documentationSources(root, manifest).includes(chapter));
+    manifest.platformReferences = [];
+    assert.equal(sourceFile(root, documentationSources(root, manifest), { action: 'read', path: readme }).status, 404);
     assert.equal(sourceFile(root, allowed, { action: 'read', path: '../../README.md' }).status, 404);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

@@ -21,6 +21,7 @@
         "src/platform/node/lib/contract.test.js",
         "src/platform/node/lib/guidance-titles.test.js",
         "src/platform/modules/documentation/manual-pages.test.js",
+        "src/platform/modules/documentation/source-files.test.ts",
         "src/platform/node/lib/mermaid-source.test.js",
         "src/platform/node/lib/module-folders.test.js",
         "src/platform/node/lib/ownership.test.js",
@@ -113,7 +114,10 @@
       ]
     },
     "publishing": {
-      "tests": ["src/platform/node/lib/boundaries.integration.test.js"],
+      "tests": [
+        "src/platform/node/lib/boundaries.integration.test.js",
+        "src/platform/node/lib/module-removal.integration.test.js"
+      ],
       "dependencies": [
         "src/platform/node/build/**",
         "src/platform/app/router.tsx",

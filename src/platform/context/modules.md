@@ -12,6 +12,8 @@ Modules are copied into the repository. They are not downloaded or loaded as plu
 
 Keep a feature's implementation inside its module. Optional modules must support disabling and removal in their supported configurations. Contributors & Permissions is optional for personal use and required for team use. Configuration validation rejects team use without it.
 
+Instruction-link validation uses the installed module directories. Links into a removed module owner are unavailable and excluded from the graph. Missing files within an installed owner remain errors, including when that module is disabled. Platform and system links remain checked.
+
 Prototypes, Views, Text files, and Systems are required. Platform code and modules may depend on required modules.
 
 A module cannot import another optional module's implementation. Outside code can read an optional module's declaration or its enabled public library entry.
@@ -132,7 +134,7 @@ The manifest scans declared content sections. Vite supplies file globs and theme
 
 `pnpm check` validates declarations, configuration, section collisions, dependency boundaries, file-type contracts, and enabled module checks.
 
-`pnpm baseline removal <id>` checks physical removal. Optional-module verification should also cover disabling and retained content.
+`pnpm baseline removal <id>` checks physical removal in an authorized Personal-mode fixture with its own Git history and linked installed dependencies. Add `--off` for disabling or `--working` to test uncommitted changes. The release suite runs the enabled control and each retained supplied optional module disabled and removed. Lifecycle checks also verify Team-mode restrictions, retained external content, and re-enabling.
 
 A module owns one canonical technical contract in its README.md. Human workflows live in `src/platform/modules/documentation/pages/`, where a chapter declares `module: <id>` to follow that capability’s availability. Context includes standing requirements. Skills describe tasks. Link to contracts instead of copying them.
 

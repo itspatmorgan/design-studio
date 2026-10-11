@@ -99,6 +99,15 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.equal(required.status, 1);
     assert.match(required.stderr, /cannot be removed/);
     assert.ok(fs.existsSync(path.join(dir, 'src/platform/systems/studio/system.ts')));
+    for (const id of ['prototypes', 'systems', 'view', 'text']) {
+      const denied = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', 'remove', id, '--yes'], {
+        cwd: dir,
+        encoding: 'utf8',
+      });
+      assert.equal(denied.status, 1);
+      assert.match(denied.stderr, /can't be removed/);
+      assert.ok(fs.existsSync(path.join(dir, 'src/platform/modules', id, 'module.ts')));
+    }
     // One successful lifecycle journey complements the rollback below. Keep it
     // separate from prototype authoring rather than duplicating full builds.
     run(dir, 'src/platform/node/cli/studio.js', 'create-module', 'lifecycle-fixture', '--yes');
@@ -106,6 +115,18 @@ test('local personal setup resumes, then a second clone joins a team without cha
     // New modules are made in the team root, never beside the supplied ones.
     assert.ok(fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture/module.ts')));
     assert.ok(!fs.existsSync(path.join(dir, 'src/platform/modules/lifecycle-fixture')));
+    const lifecycleSpec = path.join(dir, 'src/modules/lifecycle-fixture/module.ts');
+    fs.writeFileSync(
+      lifecycleSpec,
+      fs
+        .readFileSync(lifecycleSpec, 'utf8')
+        .replace(
+          "section: { key: 'lifecycle-fixture' }",
+          "section: { key: 'lifecycle-fixture', folder: 'fixture-notes' }",
+        ),
+    );
+    fs.mkdirSync(path.join(dir, 'fixture-notes'));
+    fs.writeFileSync(path.join(dir, 'fixture-notes/notes.md'), 'Retained contributor notes.\n');
     // A team module can't take a supplied module's id, and a supplied module is removed from its own root.
     const reused = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', 'create-module', 'view', '--yes'], {
       cwd: dir,
@@ -118,9 +139,11 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.equal(declared().modules['lifecycle-fixture'], false);
     run(dir, 'src/platform/node/cli/studio.js', 'enable', 'lifecycle-fixture');
     assert.equal(declared().modules['lifecycle-fixture'], true);
+    assert.equal(fs.readFileSync(path.join(dir, 'fixture-notes/notes.md'), 'utf8'), 'Retained contributor notes.\n');
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'lifecycle-fixture', '--yes');
     assert.equal(Object.hasOwn(declared().modules, 'lifecycle-fixture'), false);
     assert.ok(!fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture')));
+    assert.equal(fs.readFileSync(path.join(dir, 'fixture-notes/notes.md'), 'utf8'), 'Retained contributor notes.\n');
     const beforeFailedInstall = fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8');
     const pack = path.join(dir, 'failing-pack');
     fs.mkdirSync(pack);
