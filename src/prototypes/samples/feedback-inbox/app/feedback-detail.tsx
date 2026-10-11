@@ -4,8 +4,8 @@
 // shows the newest item instead of an empty page. DetailScreen takes optional starting state, so the
 // files in states/ can show it with the edit dialog or the delete confirmation open.
 import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { ArrowLeft, Pencil, Trash2 } from 'lucide-react';
+import { Link, useNavigate } from '@module/prototypes';
+import { ArrowLeft, Pencil, Trash2 } from '@/systems/product/libraries/icons';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
@@ -17,7 +17,6 @@ import { Textarea } from '@/systems/product/components/textarea';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { ScreenLink, useScreenPath } from './_components/nav';
 import { PRIORITIES, STATUSES, addNote, formatDate, removeFeedback, updateFeedback, useFeedback, useStore, type Priority, type Status } from './_components/store';
 
 export function DetailScreen({ editing: startEditing = false, deleting: startDeleting = false }: { editing?: boolean; deleting?: boolean }) {
@@ -27,10 +26,9 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
   const [deleting, setDeleting] = useState(startDeleting);
   const [note, setNote] = useState('');
   const navigate = useNavigate();
-  const screen = useScreenPath();
 
   const back = (
-    <ScreenLink to="app/feedback-inbox" className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Feedback inbox</ScreenLink>
+    <Link to="app/feedback-inbox" className="mb-5 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Feedback inbox</Link>
   );
 
   if (!item) {
@@ -129,7 +127,7 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
           <DialogHeader><DialogTitle>Delete this feedback?</DialogTitle><DialogDescription>“{item.title}” and its notes will be removed. Reset the sample data to get it back.</DialogDescription></DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleting(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => { removeFeedback(item.id); setDeleting(false); navigate({ to: screen('app/feedback-inbox') as never }); }}>Delete</Button>
+            <Button variant="destructive" onClick={() => { removeFeedback(item.id); setDeleting(false); navigate('app/feedback-inbox'); }}>Delete</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

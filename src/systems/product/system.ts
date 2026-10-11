@@ -53,6 +53,7 @@ export default {
       "label": "Lucide",
       "package": "lucide-react",
       "description": "Icon catalog",
+      "entry": "libraries/icons.ts",
       "docs": "https://lucide.dev/icons/",
       "assets": [
         "icons"

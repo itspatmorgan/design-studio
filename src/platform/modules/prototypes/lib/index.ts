@@ -1,6 +1,7 @@
 // Supported runtime navigation for prototype code. Paths remain authoring
 // dependencies; the supplied inventory resolves them to permanent public URLs.
-import { createContext, useContext } from 'react';
+import { createContext, createElement, useContext, type ComponentPropsWithoutRef, type ReactElement } from 'react';
+import { Link as RouterLink, useNavigate as useRouterNavigate } from '@tanstack/react-router';
 
 export type PrototypeNavigationScope = {
   studioId?: string;
@@ -40,4 +41,23 @@ export function useIsPrototypeArtifact(path: string): boolean {
     prototype.currentArtifactId &&
       href === `/prototypes/${prototype.studioId}/artifacts/${prototype.currentArtifactId}`,
   );
+}
+
+// A target is a prototype-relative path such as "app/main" (optionally with ?search or #hash). It resolves to the
+// file's permanent URL. A target that already starts with "/" is an application URL and is used as given.
+const targetHref = (resolve: (path: string) => string, to: string) => (to.startsWith('/') ? to : resolve(to));
+
+export type LinkProps = Omit<ComponentPropsWithoutRef<'a'>, 'href'> & { to: string };
+
+/** A link to another file of this prototype, by its prototype-relative path. */
+export function Link({ to, ...props }: LinkProps): ReactElement {
+  const resolve = usePrototypeArtifactHref();
+  return createElement(RouterLink, { ...props, to: targetHref(resolve, to) as never });
+}
+
+/** Returns a function that navigates to a prototype-relative path. */
+export function useNavigate(): (to: string) => void {
+  const navigate = useRouterNavigate();
+  const resolve = usePrototypeArtifactHref();
+  return to => void navigate({ to: targetHref(resolve, to) as never });
 }

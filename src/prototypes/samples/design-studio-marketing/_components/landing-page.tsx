@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from '@/systems/marketing/libraries/icons';
 import { buttonVariants } from '@/systems/marketing/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/marketing/components/tabs';
 import { ArtifactPreview, StudioPreview } from './demo-previews';

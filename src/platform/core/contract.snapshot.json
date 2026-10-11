@@ -308,9 +308,7 @@
   "runtimePackages": {
     "shared": [
       "react",
-      "react-dom",
-      "lucide-react",
-      "@tanstack/react-router"
+      "react-dom"
     ],
     "system": [
       "react",

@@ -3,21 +3,19 @@
 // click it and you're in the feedback table, already filtered to those items. Below are two small
 // breakdowns and the newest feedback. Everything is computed from the same data as the table, so it
 // changes when you add, edit, or delete.
-import { useNavigate } from '@tanstack/react-router';
-import { ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from '@module/prototypes';
+import { ArrowRight } from '@/systems/product/libraries/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
 import AppShell from './_components/AppShell';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { ScreenLink, useScreenPath } from './_components/nav';
 import { SOURCES, STATUSES, formatDate, select, showFiltered, useStore, type Filter } from './_components/store';
 
 function Metric({ label, value, hint, filter }: { label: string; value: number; hint: string; filter: Filter }) {
   const navigate = useNavigate();
-  const screen = useScreenPath();
   return (
     <button
       type="button"
-      onClick={() => { showFiltered(filter); navigate({ to: screen('app/feedback-inbox') as never }); }}
+      onClick={() => { showFiltered(filter); navigate('app/feedback-inbox'); }}
       className="group/metric rounded-square border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent/40"
     >
       <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -48,7 +46,6 @@ function Bars({ rows }: { rows: { label: string; count: number }[] }) {
 export default function Overview() {
   const { items } = useStore();
   const navigate = useNavigate();
-  const screen = useScreenPath();
   const open = items.filter((f) => f.status !== 'resolved');
   const newest = [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
 
@@ -78,7 +75,7 @@ export default function Overview() {
             <ul className="divide-y divide-border">
               {newest.map((f) => (
                 <li key={f.id}>
-                  <button type="button" className="flex w-full items-center gap-3 py-2.5 text-left text-sm hover:text-primary" onClick={() => { select(f.id); navigate({ to: screen('app/feedback-detail') as never }); }}>
+                  <button type="button" className="flex w-full items-center gap-3 py-2.5 text-left text-sm hover:text-primary" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
                     <span className="flex-1 truncate font-medium">{f.title}</span>
                     <PriorityBadge priority={f.priority} />
                     <StatusBadge status={f.status} />
@@ -87,7 +84,7 @@ export default function Overview() {
                 </li>
               ))}
             </ul>
-            <ScreenLink to="app/feedback-inbox" onClick={() => showFiltered({ status: 'all', priority: null })} className="mt-3 inline-block text-sm font-medium text-primary hover:underline">See all feedback</ScreenLink>
+            <Link to="app/feedback-inbox" onClick={() => showFiltered({ status: 'all', priority: null })} className="mt-3 inline-block text-sm font-medium text-primary hover:underline">See all feedback</Link>
           </CardContent>
         </Card>
       </div>

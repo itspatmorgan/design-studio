@@ -5,7 +5,9 @@ import { createRequire } from 'node:module';
 import semver from 'semver';
 import { systemDirOf } from './system-folders.js';
 
-export const SHARED_RUNTIME_PACKAGES = ['react', 'react-dom', 'lucide-react', '@tanstack/react-router'];
+// What every prototype may import by bare name. Icons and other libraries come from the assigned system's declared
+// libraries; navigation comes from @module/prototypes.
+export const SHARED_RUNTIME_PACKAGES = ['react', 'react-dom'];
 export const SYSTEM_RUNTIME_PACKAGES = ['react', 'react-dom'];
 export function packageName(source) {
   // #studio/<entry> is a subpath import of the repository itself (package.json "imports"), not a package.

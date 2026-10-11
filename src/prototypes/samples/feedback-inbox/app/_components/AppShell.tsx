@@ -1,23 +1,24 @@
 // The frame every screen shares: a top bar and a page. Screens are separate files so each has its
 // own address, and this keeps them looking like one product.
 import type { ReactNode } from 'react';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText } from '@/systems/product/libraries/icons';
 import { Avatar, AvatarFallback } from '@/systems/product/components/avatar';
 import { Button } from '@/systems/product/components/button';
 import { cn } from '@/lib/utils';
-import { ScreenLink, useIsOn } from './nav';
+import { Link } from '@module/prototypes';
+import { useIsOn } from './nav';
 import { NO_FILTER, resetData, showFiltered } from './store';
 
 function NavItem({ to, children, onClick }: { to: string; children: ReactNode; onClick?: () => void }) {
   const on = useIsOn(to);
   return (
-    <ScreenLink
+    <Link
       to={to}
       onClick={onClick}
       className={cn('relative flex h-14 items-center gap-1.5 px-1 text-sm font-medium text-muted-foreground hover:text-foreground', on && 'text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary')}
     >
       {children}
-    </ScreenLink>
+    </Link>
   );
 }
 

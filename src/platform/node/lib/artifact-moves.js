@@ -148,7 +148,7 @@ export function repairText(text, oldFile, newFile, before, moves, address) {
         let next = appTarget(node.text);
         if (!imported && next === node.text) {
           const [target, suffix] = splitSuffix(node.text);
-          // Prototype helpers such as ScreenLink/useScreenPath accept paths from the prototype root.
+          // Prototype navigation such as Link/useNavigate from @module/prototypes accepts paths from the prototype root.
           const mapped = moves.get(target) ?? urlMoves.get(target);
           if (mapped && (target.includes('/') || attribute)) next = mapped + suffix;
         }

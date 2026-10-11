@@ -42,7 +42,7 @@ Moving, renaming, or deleting an artifact must update its `order` entries. The a
 
 Invalid metadata skips the prototype with a local warning and fails the production build.
 
-With `systemId: null`, views start from browser colors and a system font, without registered system tokens or components. Use local components, CSS Modules, shared utilities, and the declared shared runtime packages. System imports remain outside this prototype's runtime boundary. Layout utilities without system tokens remain available; style colors, typography, and spacing in local CSS. This is distinct from an invalid system ID, which fails validation.
+With `systemId: null`, views start from browser colors and a system font, without registered system tokens or components. Use local components, CSS Modules, shared utilities, and React. System imports remain outside this prototype's runtime boundary. Layout utilities without system tokens remain available; style colors, typography, and spacing in local CSS. This is distinct from an invalid system ID, which fails validation.
 
 `pnpm new "Prototype Name"` assigns the studio default. Use `--system <source-key>` to choose another installed prototype system, or `--no-system` for custom styling.
 
@@ -72,7 +72,7 @@ While the dev server is running, the same repair follows unambiguous filesystem 
 
 Moves made while the server is stopped, dynamically assembled paths, and incoming links from other prototypes still need an agent to update and verify them. Keep the server running while organizing files when automatic repair is wanted.
 
-Use `usePrototypeArtifactHref` from the public `@module/prototypes` library to resolve a prototype-relative path such as `app/main` to its permanent URL. This hook is available in rendered views and their embeds. Pass the result to TanStack Router's `Link`. Source paths remain subject to the existing literal-path repair; do not construct them dynamically if automatic repair is needed. See its [navigation documentation](https://tanstack.com/router/latest/docs/framework/react/guide/navigation).
+Navigate with the public `@module/prototypes` library, never by importing TanStack Router. `Link` (`<Link to="app/main">`) and `useNavigate` (`const navigate = useNavigate(); navigate('app/main')`) take a prototype-relative path such as `app/main` and go to its permanent URL; a target that starts with `/` is used as given. `usePrototypeArtifactHref` returns the URL for a path when you need the string, and `useIsPrototypeArtifact` tells whether a path is the file being shown. These are available in rendered views and their embeds. Source paths remain subject to the existing literal-path repair; do not construct them dynamically if automatic repair is needed.
 
 ## Duplication and system rebuilds
 
@@ -90,7 +90,7 @@ Remove the comment for normal appearance. A folder named `lofi` has no special b
 
 ## Dependency boundaries
 
-Prototype runtime code may depend on its own files, its assigned system's runtime components, assets, and declared library entries, independent shared utilities, the shared runtime packages, and enabled public module libraries. System documentation adapters are outside runtime code.
+Prototype runtime code may depend on its own files, its assigned system's runtime components, assets, and declared library entries, independent shared utilities, React and React DOM (the only packages Studio supplies to every prototype), and enabled public module libraries. Icons and other libraries come from the assigned system's declared library entries, and navigation from `@module/prototypes`. A direct import of `lucide-react`, `@tanstack/react-router`, or any other package is an error in `pnpm check` and the development and build import guard. System documentation adapters are outside runtime code.
 
 Public module libraries are accessed through `@module/<id>` only. Private platform implementation, another prototype, and another system are outside this boundary. An enabled module must declare a public library before it can be reused this way.
 

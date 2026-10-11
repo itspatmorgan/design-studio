@@ -6,8 +6,8 @@
 // FeedbackInboxScreen takes optional starting state, so the files in states/ can show it filtered,
 // empty, with the panel open, and so on. The default export is the screen as people reach it.
 import { useMemo, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { MoreHorizontal, Plus, Search, X } from 'lucide-react';
+import { useNavigate } from '@module/prototypes';
+import { MoreHorizontal, Plus, Search, X } from '@/systems/product/libraries/icons';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/systems/product/components/dropdown-menu';
@@ -18,7 +18,6 @@ import { Tabs, TabsList, TabsTrigger } from '@/systems/product/components/tabs';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { useScreenPath } from './_components/nav';
 import { NO_FILTER, STATUSES, addFeedback, formatDate, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
 
 export type FeedbackInboxStart = {
@@ -36,9 +35,8 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
   const [query, setQuery] = useState(startQuery);
   const [adding, setAdding] = useState(startAdding);
   const navigate = useNavigate();
-  const screen = useScreenPath();
 
-  const open = (id: string) => { select(id); navigate({ to: screen('app/feedback-detail') as never }); };
+  const open = (id: string) => { select(id); navigate('app/feedback-detail'); };
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
     return items.filter((f) => matchesFilter(f, filter) && (!q || `${f.title} ${f.customer} ${f.tags.join(' ')}`.toLowerCase().includes(q)));
