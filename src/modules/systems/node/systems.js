@@ -7,6 +7,7 @@ import { readPersistedStudioConfig } from '../../../../scripts/lib/persisted-stu
 import { readDeclaration } from '../../../platform/core/declarations.ts';
 import { platformSourceOf, sourceOf } from '../sources.ts';
 import { platformSystemId, systemProblems, themeClassProblems } from '../spec.ts';
+import { systemDependencyProblems, systemPeerProblems } from '../../../../scripts/lib/system-dependencies.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const DIR = path.join(ROOT, 'src', 'systems');
 export let SYSTEM_SPECS = {};
@@ -33,4 +34,4 @@ export function refreshSystems() {
   SYSTEM_IDS = ids.filter(id => SYSTEM_SPECS[id].role === 'prototype');
 }
 refreshSystems();
-export const systemDeclarationProblems = () => [...Object.entries(SYSTEM_SPECS).flatMap(([id, spec]) => systemProblems(spec, id)), ...themeClassProblems(SYSTEM_SPECS)];
+export const systemDeclarationProblems = () => [...Object.entries(SYSTEM_SPECS).flatMap(([id, spec]) => systemProblems(spec, id)), ...themeClassProblems(SYSTEM_SPECS), ...systemDependencyProblems(ROOT, SYSTEM_SPECS), ...systemPeerProblems(ROOT, SYSTEM_SPECS)];

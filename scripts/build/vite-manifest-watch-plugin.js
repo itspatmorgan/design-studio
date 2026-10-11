@@ -46,7 +46,7 @@ function relevant(file, kind) {
   if (file.endsWith('.md') && /src[\\/](?:platform[\\/]core|modules)[\\/]/.test(file)) return true;
   // A system's component docs: files coming and going, and edits to the ones that describe a component
   // and to its theme (the tokens it lists).
-  if (inside(SYSTEMS, file)) return kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$/.test(file);
+  if (inside(SYSTEMS, file)) return kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$|(?:system\.ts|package\.json)$/.test(file);
   if (![PROTOS, ...PROTOTYPE_DIRS].some((dir) => inside(dir, file))) return false;
   return kind !== 'change' || path.basename(file) === 'meta.json' || hasFidelity(file);
 }

@@ -1,3 +1,4 @@
+import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -14,6 +15,7 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
   try {
     fs.cpSync(original, root, { recursive: true, filter: file => !['node_modules', 'dist', '.git'].includes(path.basename(file)) });
     fs.symlinkSync(path.join(original, 'node_modules'), path.join(root, 'node_modules'));
+    linkSystemDependencies(original, root);
     const runtime = readPersistedStudioConfig(root).config;
     runtime.usage = 'personal';
     fs.writeFileSync(path.join(root, 'studio.config.ts'), 'export default ' + JSON.stringify(runtime) + ';');

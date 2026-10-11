@@ -1,0 +1,10 @@
+{
+  "name": "@studio-system/__ID__",
+  "private": true,
+  "type": "module",
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

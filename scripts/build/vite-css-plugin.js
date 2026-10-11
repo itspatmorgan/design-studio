@@ -3,6 +3,7 @@ import postcss from 'postcss';
 import { tailwindThemeProblems, themeInventory, themeAdapter, scopeThemeUtilities } from '../lib/tailwind-theme.js';
 import { SYSTEM_SPECS, refreshSystems } from '../../src/modules/systems/node/systems.js';
 import { cssProblems } from '../lib/css-scope.js';
+import { scopePolicy } from '../lib/scope.js';
 // Fills in the two lists in the app's stylesheet (src/platform/app/styles.css) that depend on what is installed,
 // so adding a design system or a module needs no edit to it. CSS can't be given a list at run time, so the stylesheet
 // has a marker where each goes and this puts the lines in as the file is read:
@@ -26,7 +27,7 @@ function validateThemes() {
   const problems = Object.keys(SYSTEM_SPECS).flatMap((id) => {
     const file = path.join(ROOT, 'src/systems', id, 'styles/theme.css');
     const code = fs.readFileSync(file, 'utf8');
-    return [...(SYSTEM_SPECS[id].role === 'platform' ? [] : cssProblems(code, { file, themeClass: SYSTEM_SPECS[id].themeClass })), ...tailwindThemeProblems(code, { file, ...SYSTEM_SPECS[id] })];
+    return [...(SYSTEM_SPECS[id].role === 'platform' ? [] : cssProblems(code, { file, themeClass: SYSTEM_SPECS[id].themeClass, packagePolicy: scopePolicy({ root: ROOT, systems: PROTOTYPE_SYSTEMS, modules: [] }).packageProblem })), ...tailwindThemeProblems(code, { file, ...SYSTEM_SPECS[id] })];
   });
   if (problems.length) return problems.join('\n');
 }

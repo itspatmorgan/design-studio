@@ -1,3 +1,4 @@
+import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { writeProfiles, ensureTeamManagement } from './fixtures/contributors.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -81,6 +82,7 @@ test('create and rename preserve addresses, file errors recover, and system remo
     fs.cpSync(root, dir, { recursive: true, filter: (file) => !['node_modules', 'dist', '.git'].includes(path.basename(file)) });
     ensureTeamManagement(dir);
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
+    linkSystemDependencies(root, dir);
     // This journey creates prototypes with both starter systems, regardless of the host's QA state.
     const { editStudioConfig } = await import('./studio-setup.js');
     for (const id of ['product', 'marketing']) {
@@ -389,6 +391,7 @@ test('standalone diagrams are discovered by both extensions and disabling preser
   try {
     fs.cpSync(root, dir, { recursive: true, filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)) });
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
+    linkSystemDependencies(root, dir);
     // Availability is a metadata contract, independent of the Manual's editorial structure.
     const pages = path.join(dir, 'src/modules/documentation/pages');
     if (fs.existsSync(pages)) fs.writeFileSync(path.join(pages, 'diagrams.md'), '---\ntitle: Diagrams fixture\norder: 99\nmodule: diagrams\n---\nFixture chapter.\n');

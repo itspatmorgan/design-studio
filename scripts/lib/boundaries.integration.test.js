@@ -1,3 +1,4 @@
+import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -18,6 +19,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
   try {
     fs.cpSync(original, root, { recursive: true, filter: (file) => !['node_modules', 'dist', '.git'].includes(path.basename(file)) });
     fs.symlinkSync(path.join(original, 'node_modules'), path.join(root, 'node_modules'));
+    linkSystemDependencies(original, root);
     writeProfiles(root, { 'boundary-fixture': { name: 'Boundary Fixture', email: 'boundary@example.test' } });
     const configFile = path.join(root, 'studio.config.ts');
     fs.writeFileSync(configFile, editStudioConfig(fs.readFileSync(configFile, 'utf8'), { usage: 'personal', admins: [JSON.parse(fs.readFileSync(path.join(root, 'contributors/boundary-fixture.json'))).studioId] }));

@@ -30,7 +30,7 @@ Read the source library's current official documentation and inspect installed C
 1. Inspect the target system's `components.json`, dependencies, and declaration. Follow [shadcn configuration and design guidance](shadcn.md) for upstream skills and commands. Studio has no root shadcn configuration; system folders are not independent CLI projects. A component output path alone does not redirect CSS or dependency writes.
 2. Preview proposed changes when supported. If a CLI cannot isolate every write, generate in a temporary workspace and integrate selected files deliberately. Do not run library initialization over the existing studio.
 3. Select components by name. Review transitive dependencies, global CSS, fonts, and license or account requirements. Use material the person can access and is authorized to use.
-4. Adapt imports, scoped tokens, portals, and assets to the system contract. Preserve component APIs. Document intentional adaptations and the upstream version or revision.
+4. Install reviewed dependencies in the selected system’s workspace, then adapt imports, scoped tokens, portals, and assets to the system contract. Preserve component APIs. Document intentional adaptations and the upstream version or revision.
 5. Verify required states in examples and one representative prototype. Add components or tokens when that work demonstrates a gap.
 
 Do not use bulk installation, overwrite existing components, or apply a global theme preset merely to accelerate setup. Starter systems demonstrate integrations; their presence does not prove every upstream component already works here.

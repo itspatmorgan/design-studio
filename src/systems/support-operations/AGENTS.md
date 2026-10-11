@@ -3,3 +3,5 @@
 Use this system only for assigned prototypes or explicit system maintenance. Follow the platform working context and the [setup record](context/curation.md).
 
 Reuse this system’s components and sidebar block. Keep chart series and pop-ups inside its theme boundary. Prototype data is synthetic and changes are local to the preview.
+
+Use [the Charts library entry](libraries/charts.ts) for additional Recharts APIs. Dependencies belong to this system’s `package.json`; follow [system library ownership](../../modules/systems/context/libraries.md).

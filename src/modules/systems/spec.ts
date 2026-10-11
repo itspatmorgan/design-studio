@@ -18,6 +18,16 @@ export function systemColorMode(supported: readonly ColorMode[], global: ColorMo
 // so, 'strict' fails the build, and 'off' says nothing.
 export type DocsMode = 'warn' | 'strict' | 'off';
 
+export type SystemLibrary = {
+  id: string;
+  label: string;
+  package: string;
+  description: string;
+  entry: string; // system-relative public runtime entry, e.g. libraries/charts.ts
+  docs: string;
+  components?: readonly string[];
+};
+
 export type SystemSpec = {
   studioId?: string;           // permanent installed identity; optional until explicit migration
   role: 'platform' | 'prototype';
@@ -35,6 +45,7 @@ export type SystemSpec = {
   // shadcn/ui docs; a page can set its own link with `docs:` in its frontmatter. Use null for a
   // system that isn't shadcn/ui; declare null instead.
   origin: 'shadcn' | null;
+  libraries: readonly SystemLibrary[];
 };
 
 const ID = /^[a-z][a-z0-9-]*$/;
@@ -60,6 +71,20 @@ export function systemProblems(spec: unknown, folder: string): string[] {
   if (!['tailwind', 'custom'].includes(s.styling ?? '')) problems.push(`${where}: styling must be 'tailwind' or 'custom'.`);
   if (!s.docs || !['warn', 'strict', 'off'].includes(s.docs)) problems.push(`${where}: docs should be 'warn', 'strict', or 'off'.`);
   if (s.origin !== null && s.origin !== 'shadcn') problems.push(`${where}: origin should be 'shadcn', or explicitly null.`);
+  if (!Array.isArray(s.libraries)) problems.push(`${where}: libraries must be an explicit list (use [] when empty).`);
+  else {
+    const ids = new Set<string>();
+    for (const library of s.libraries) {
+      if (!library || typeof library !== 'object') { problems.push(`${where}: each library must be an object.`); continue; }
+      if (typeof library.id !== 'string' || !ID.test(library.id) || ids.has(library.id)) problems.push(`${where}: library IDs must be unique lowercase names.`);
+      ids.add(library.id);
+      if (![library.label, library.description].every(value => typeof value === 'string' && value.trim())) problems.push(`${where}: libraries need a label and description.`);
+      if (typeof library.package !== 'string' || !/^(?:@[a-z0-9._-]+\/)?[a-z0-9._-]+$/.test(library.package)) problems.push(`${where}: libraries must name an npm package, without a subpath.`);
+      if (typeof library.entry !== 'string' || !/^libraries\/[a-z0-9/-]+\.(?:ts|tsx|js|jsx)$/.test(library.entry) || library.entry.split('/').includes('..')) problems.push(`${where}: library entry must be a runtime file under libraries/.`);
+      if (typeof library.docs !== 'string' || !/^https:\/\/\S+$/.test(library.docs)) problems.push(`${where}: libraries need an HTTPS documentation link.`);
+      if (library.components !== undefined && (!Array.isArray(library.components) || library.components.some((slug: unknown) => typeof slug !== 'string' || !ID.test(slug)))) problems.push(`${where}: library components must be component slugs.`);
+    }
+  }
   return problems;
 }
 

@@ -3,6 +3,7 @@ import type { SystemContentMap } from '@/modules/systems/content/map';
 import type { SystemComponentDoc } from '@/modules/systems/docs';
 import type { ThemeToken } from '@/modules/systems/themeTokens';
 import type { DocsMode } from '@/modules/systems/sources';
+import type { SystemLibrary } from '@/modules/systems/spec';
 
 
 // public/prototypes/manifest.json, written by scripts/build/build-manifest.js, with each prototype's artifacts
@@ -71,7 +72,7 @@ export type PlatformReferenceGroup = { id: string; label: string; enabled: boole
 export type Manifest = {
   prototypes: PrototypeRef[]; sections: Record<string, PrototypeRef[]>; manual: ManualPage[]; systemContent: Prototype[]; systemContentMaps: Record<string, SystemContentMap>; platformReferences: PlatformReferenceGroup[];
   skillCatalog: { owner: NonNullable<PrototypeInfo['owner']>; folder: string; name: string; description: string; source: string }[];
-  systems: Record<string, { docs: DocsMode; origin: 'shadcn' | null; components: SystemComponentDoc[]; tokens: ThemeToken[] }>;
+  systems: Record<string, { docs: DocsMode; origin: 'shadcn' | null; components: SystemComponentDoc[]; tokens: ThemeToken[]; libraries?: (SystemLibrary & { requirement: string | null; version: string | null })[] }>;
 };
 
 // Authored overview copy, optional additional content, and icon examples live in src/systems/<id>/intro.tsx.

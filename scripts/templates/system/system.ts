@@ -9,5 +9,6 @@ export default {
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
   docs: 'warn',
+  libraries: [],
   origin: null,
 } satisfies SystemSpec;

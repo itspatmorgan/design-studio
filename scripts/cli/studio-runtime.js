@@ -4,6 +4,7 @@ import { planSystemLifecycle, applySystemLifecycle } from '../lib/system-lifecyc
 import { prototypeContext } from '../lib/prototype-context.js';
 import { resourceId } from '../../src/platform/core/resourceIdentity.ts';
 import { moduleConsumers } from '../lib/imports.js';
+import { systemPackage, systemDependencyProblems } from '../lib/system-dependencies.js';
 // pnpm studio <command>: add, remove, turn on or off, and make modules and design systems. For your agent: designers
 // ask in plain words and the agent runs these. Every command that changes files says what it will do first, and
 // changes nothing until it is run again with --yes.
@@ -168,6 +169,7 @@ async function add() {
   let pack;
   try { pack = await fetchSource(source, flags.path); } catch (e) { fail(e.message); }
   const created = [];       // files this run wrote
+  let createdSystem;
   const backups = new Map(); // text of files to put back if it goes wrong
   const remember = (file) => { if (!backups.has(file)) backups.set(file, fs.existsSync(file) ? fs.readFileSync(file) : null); };
   try {
@@ -182,6 +184,7 @@ async function add() {
     const id = kind === 'module' ? spec.id : (flags.id ?? slug(spec.label ?? ''));
     if (typeof id !== 'string' || !ID.test(id)) fail(kind === 'module' ? 'module.ts needs an id: lowercase letters, numbers, and dashes.' : 'Give the system an id with --id <name>: lowercase letters, numbers, and dashes.');
     const problems = kind === 'module' ? moduleProblems(spec, id) : systemProblems(spec, id);
+    if (kind === 'system') problems.push(...systemDependencyProblems(ROOT, { [id]: { ...spec, dir: pack.dir } }));
     if (kind === 'module' && !compatible(spec)) problems.push(`It needs platform ${spec.requires} or newer, and this is ${PLATFORM_VERSION}. Update the platform first.`);
     const installed = kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : fs.existsSync(rel('src', 'systems', id));
     if (installed) problems.push(`There's already a ${kind === 'module' ? 'module' : 'design system'} called "${id}". Remove it first (pnpm studio remove ${id}), or add this one with another id.`);
@@ -195,7 +198,7 @@ async function add() {
     if (verdict === 'not-permissive' && !flags['allow-license']) problems.push(`Its library is under ${spec.upstream.license}, which isn't one of the permissive licenses (MIT, Apache-2.0, BSD, ISC, and similar). If your company says it's fine, add --allow-license.`);
     const taken = plan.moves.filter((m) => fs.existsSync(rel(m.to)) && !m.to.startsWith(`${spec.section?.folder}/`));
     for (const m of taken) problems.push(`${m.to} already exists, and a module never overwrites a file.`);
-    const deps = Object.entries(spec.dependencies ?? {});
+    const deps = Object.entries(kind === 'system' ? systemPackage(pack.dir).dependencies ?? {} : spec.dependencies ?? {});
     const pkg = JSON.parse(fs.readFileSync(rel('package.json'), 'utf8'));
     const needed = deps.filter(([name]) => !(name in (pkg.dependencies ?? {})) && !(name in (pkg.devDependencies ?? {})));
 
@@ -231,12 +234,14 @@ async function add() {
 
     // The package ID describes its source; this ID identifies this installation.
     const installationId = kind === 'system' ? allocateResourceIdentity(retainedResourceIds(ROOT, INSTALLED_FILE_TYPES)) : undefined;
+    if (kind === 'system') createdSystem = rel('src/systems', id);
     // Add it.
     for (const m of plan.moves) {
       const to = rel(m.to);
       if (fs.existsSync(to)) continue; // content that was already there stays
       fs.mkdirSync(path.dirname(to), { recursive: true });
       if (kind === 'system' && m.from === 'system.ts') fs.writeFileSync(to, editStudioConfig(fs.readFileSync(path.join(pack.dir, m.from), 'utf8'), { studioId: installationId }));
+      else if (kind === 'system' && m.from === 'package.json') fs.writeFileSync(to, JSON.stringify({ ...systemPackage(pack.dir), name: `@studio-system/${installationId}` }, null, 2) + '\n');
       else fs.copyFileSync(path.join(pack.dir, m.from), to);
       created.push(to);
     }
@@ -249,9 +254,12 @@ async function add() {
     };
     lock[kind === 'module' ? 'modules' : 'systems'][id] = entry;
     writeLock(lock);
-    if (needed.length) {
+    if (kind === 'system') {
+      say('Installing this system’s workspace dependencies ...');
+      run('pnpm', ['install', '--ignore-scripts', '--no-frozen-lockfile']);
+    } else if (needed.length) {
       say(`Installing ${needed.map(([n]) => n).join(', ')} ...`);
-      run('pnpm', ['add', '--ignore-scripts', ...needed.map(([n, v]) => `${n}@${v}`)]);
+      run('pnpm', ['add', '--workspace-root', '--ignore-scripts', ...needed.map(([n, v]) => `${n}@${v}`)]);
     }
     registerCapability(kind, id, true, remember);
     const problem = checkInFreshProcess();
@@ -260,6 +268,8 @@ async function add() {
     say(`Added ${spec.label}. Restart the dev server to see it.`);
   } catch (e) {
     for (const file of created.reverse()) { fs.rmSync(file, { force: true }); removeEmptyParents(file); }
+    // Failed workspace installation can leave dependency links in a newly created system.
+    if (createdSystem) fs.rmSync(createdSystem, { recursive: true, force: true });
     for (const [file, content] of backups) { if (content === null) fs.rmSync(file, { force: true }); else fs.writeFileSync(file, content); }
     console.error(`Nothing was added. ${e.message}`);
     process.exitCode = 1;
@@ -279,6 +289,7 @@ function lifecycle(action) {
   const marker = rel('.studio-system-operation');
   const markerFd = fs.openSync(marker, 'wx'); fs.closeSync(markerFd);
   const lockBefore = fs.existsSync(rel('studio.lock.json')) ? fs.readFileSync(rel('studio.lock.json'), 'utf8') : null;
+  const packageLockBefore = fs.readFileSync(rel('pnpm-lock.yaml'));
   try {
     const result = applySystemLifecycle(plan, () => {
       const lock = readLock();
@@ -289,12 +300,14 @@ function lifecycle(action) {
       }
       if (action === 'delete') delete lock.systems[positional[0]];
       writeLock(lock);
+      if (plan.move || plan.remove) run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
       const problem = checkInFreshProcess();
       if (problem) throw new Error(problem);
       syncInFreshProcess();
     });
     say(JSON.stringify(result));
   } catch (error) {
+    fs.writeFileSync(rel('pnpm-lock.yaml'), packageLockBefore);
     if (lockBefore === null) fs.rmSync(rel('studio.lock.json'), { force: true }); else fs.writeFileSync(rel('studio.lock.json'), lockBefore);
     throw error;
   } finally { fs.rmSync(marker, { force: true }); }
@@ -374,6 +387,7 @@ function remove() {
   delete lock[isModule ? 'modules' : 'systems'][id];
   writeLock(lock);
   registerCapability(isModule ? 'module' : 'system', id, false);
+  if (!isModule) run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
   syncInFreshProcess();
   say(`Removed ${id}. Restart the dev server.`);
 }
@@ -415,16 +429,24 @@ function create(kind) {
   const installationId = kind === 'system' ? allocateResourceIdentity(retainedResourceIds(ROOT, INSTALLED_FILE_TYPES)) : undefined;
   const written = [];
   const backups = new Map();
+  if (kind === 'system') backups.set(rel('pnpm-lock.yaml'), fs.readFileSync(rel('pnpm-lock.yaml')));
   try {
     for (const m of plan.moves) {
       const to = rel(m.to);
       if (fs.existsSync(to)) throw new Error(`${m.to} already exists.`);
       fs.mkdirSync(path.dirname(to), { recursive: true });
       const content = fill(fs.readFileSync(path.join(template, sourceOf.get(m.from)), 'utf8'));
-      fs.writeFileSync(to, kind === 'system' && sourceOf.get(m.from) === 'system.ts' ? editStudioConfig(content, { studioId: installationId }) : content);
+      let source = content;
+      if (kind === 'system' && sourceOf.get(m.from) === 'system.ts') source = editStudioConfig(content, { studioId: installationId });
+      if (kind === 'system' && sourceOf.get(m.from) === 'package.json') {
+        const host = JSON.parse(fs.readFileSync(rel('package.json'), 'utf8'));
+        source = JSON.stringify({ ...JSON.parse(content), name: `@studio-system/${installationId}`, peerDependencies: Object.fromEntries(['react', 'react-dom'].map(name => [name, host.dependencies[name]])) }, null, 2) + '\n';
+      }
+      fs.writeFileSync(to, source);
       written.push(to);
     }
     registerCapability(kind, id, true, (file) => backups.set(file, fs.readFileSync(file)));
+    if (kind === 'system') run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
     const problem = checkInFreshProcess();
     if (problem) throw new Error(problem);
   } catch (e) {

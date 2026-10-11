@@ -1,4 +1,6 @@
 import { cssProblems } from '../lib/css-scope.js';
+import { systemLibraryInventory } from '../lib/system-dependencies.js';
+import { scopePolicy } from '../lib/scope.js';
 import { prototypeAssignment } from '../lib/prototype-assignment.js';
 import { prototypeSourceForIdentity } from '../lib/resource-directory.js';
 // Usage: node scripts/build/build-manifest.js [--strict] [--deploy]
@@ -351,7 +353,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   for (const [id, sys] of Object.entries(PROTOTYPE_SYSTEMS)) {
     const file = path.join(ROOT, sys.dir, 'styles', 'theme.css');
     if (!fs.existsSync(file)) { out.error(`[manifest] ${path.relative(ROOT, file)} is missing (the ${id} system's theme)`); errors++; continue; }
-    for (const problem of cssProblems(fs.readFileSync(file, 'utf8'), { file, themeClass: sys.themeClass })) { out.error(`[manifest] ${problem}`); errors++; }
+    for (const problem of cssProblems(fs.readFileSync(file, 'utf8'), { file, themeClass: sys.themeClass, packagePolicy: scopePolicy({ root: ROOT, systems: PROTOTYPE_SYSTEMS, modules: ENABLED_MODULES }).packageProblem })) { out.error(`[manifest] ${problem}`); errors++; }
   }
 
   // Each system's components and tokens, for the Systems pages, and what its component pages lack
@@ -366,7 +368,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
     const { components, problems } = systemDocs(dir);
     const themeFile = path.join(ROOT, sys.theme);
     const tokens = fs.existsSync(themeFile) ? themeTokens(fs.readFileSync(themeFile, 'utf8'), sys.scope) : [];
-    systems[id] = { docs: sys.docs, origin: sys.origin, components, tokens };
+    systems[id] = { docs: sys.docs, origin: sys.origin, components, tokens, libraries: systemLibraryInventory(ROOT, id, SYSTEM_SPECS[id]) };
     if (sys.docs === 'off') continue;
     const lines = problems.map((p) => `${path.relative(ROOT, path.join(dir, p.file))}: ${p.message}`);
     if (sys.docs === 'strict') { for (const line of lines) out.error(`[manifest] ${line}`); errors += lines.length; }

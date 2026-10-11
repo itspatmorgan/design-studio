@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
-} from "recharts";
+} from "@/systems/support-operations/libraries/charts";
 import {
   ArrowDownRight,
   ArrowUpRight,

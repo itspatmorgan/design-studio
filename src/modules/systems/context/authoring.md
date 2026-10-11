@@ -10,6 +10,7 @@ Read the complete sections relevant to the change:
 | Change components or themes | [Structure](../README.md#structure), [Runtime boundaries](../README.md#runtime-boundaries), and [Theme](../README.md#theme). |
 | Document components | [Component pages](../README.md#component-pages) and [document-component](../skills/document-component/SKILL.md). |
 | Import or replace a system | [setup-design-system](../skills/setup-design-system/SKILL.md). |
+| Add external packages or expose library APIs | [System libraries and dependencies](libraries.md). |
 | Maintain the Systems application surface | [Systems interface](interface.md). |
 
 Expand these reads when a dependency or ambiguity requires it. For `systemId: null`, follow the [prototype dependency boundaries](../../prototypes/README.md#dependency-boundaries) and local CSS; registered-system conventions do not apply.

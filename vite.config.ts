@@ -90,6 +90,7 @@ export default defineConfig({
     ],
   },
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: [{ find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url)) }],
   },
   plugins: [

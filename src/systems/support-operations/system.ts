@@ -9,6 +9,15 @@ export default {
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
   docs: 'warn',
+  libraries: [{
+    id: 'charts',
+    label: 'Recharts',
+    package: 'recharts',
+    description: 'Charts and data visualization. Use the Chart component for this system’s theme, or compose additional chart types.',
+    entry: 'libraries/charts.ts',
+    docs: 'https://recharts.github.io/en-US/',
+    components: ['chart'],
+  }],
   origin: 'shadcn',
   studioId: "27cef7m64myswpan",
 } satisfies SystemSpec;

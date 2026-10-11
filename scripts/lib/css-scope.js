@@ -43,7 +43,7 @@ function expand(selector, parents) {
   return result;
 }
 
-export function cssProblems(code, { file, themeClass, mode = 'theme', seen = new Set() }) {
+export function cssProblems(code, { file, themeClass, mode = 'theme', seen = new Set(), packagePolicy }) {
   if (seen.has(file)) return [];
   seen.add(file);
   const problems = [];
@@ -69,8 +69,10 @@ export function cssProblems(code, { file, themeClass, mode = 'theme', seen = new
             const match = node.params.match(/^(?:["']([^"']+)["']|url\(\s*["']?([^"')\s]+)["']?\s*\))(?:\s+.*)?$/);
             const source = match?.[1] ?? match?.[2];
             if (!source || /^(?:https?:|\/\/|data:)/i.test(source)) { fail('Theme @import must resolve to a local stylesheet that can be checked.'); continue; }
+            const packageProblem = packagePolicy?.(source, file);
+            if (packageProblem) { fail(packageProblem); continue; }
             const target = source.startsWith('.') ? path.resolve(path.dirname(file), source) : createRequire(file).resolve(source);
-            problems.push(...cssProblems(fs.readFileSync(target, 'utf8'), { file: target, themeClass, mode, seen }));
+            problems.push(...cssProblems(fs.readFileSync(target, 'utf8'), { file: target, themeClass, mode, seen, packagePolicy }));
           } else if (name === 'font-face') {
             // Font registration does not select or restyle elements. It is intentionally shared.
             if (node.nodes?.some((n) => n.type !== 'decl' && n.type !== 'comment')) fail('Invalid @font-face block.');

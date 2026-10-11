@@ -58,7 +58,8 @@
         "scripts/build/vite-artifact-revisions-plugin.test.js",
         "src/modules/canvas/liveViews.test.ts",
         "src/modules/canvas/opening.test.ts",
-        "src/modules/systems/curation.test.js"
+        "src/modules/systems/curation.test.js",
+        "scripts/lib/system-dependencies.test.js"
       ],
       "dependencies": [
         "src/platform/**",

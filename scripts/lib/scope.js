@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { inside, realFile } from './imports.js';
 import { prototypeAssignment } from './prototype-assignment.js';
+import { packageName, systemPackage, SHARED_RUNTIME_PACKAGES, SYSTEM_RUNTIME_PACKAGES } from './system-dependencies.js';
 
 export const systemDocumentation = (file, dir) => file === path.join(dir, 'system.ts') || /^intro\.[jt]sx?$/.test(path.relative(dir, file)) || /\.(?:examples\.[jt]sx?|md)$/.test(file);
 
@@ -42,14 +43,36 @@ export function scopePolicy({ root, systems, modules, prototypeDirs = [] }) {
     const lib = libraries.find((m) => inside(file, m.dir));
     return lib ? { kind: 'Module library', ...lib } : null;
   };
+  const packageProblem = (source, importer) => {
+    const name = packageName(source);
+    if (!name) return null;
+    const scope = scopeOf(realFile(importer));
+    // Documentation examples also belong to their system's package workspace.
+    const owner = entries.find(s => inside(realFile(importer), s.dir));
+    if (owner) {
+      if (systemDocumentation(realFile(importer), owner.dir) && !/\.examples\.[jt]sx?$/.test(importer)) return null;
+      if (SYSTEM_RUNTIME_PACKAGES.includes(name)) return null;
+      let pkg;
+      try { pkg = systemPackage(owner.dir); } catch (error) { return error.message; }
+      if (Object.hasOwn(pkg.dependencies ?? {}, name)) return fs.existsSync(path.join(owner.dir, 'node_modules', name)) ? null : `Design system scope: ${name} is declared but not installed for ${path.relative(root, owner.dir)}. Run pnpm install --ignore-scripts.`;
+      return `Design system scope: ${source} is not declared in ${path.relative(root, owner.dir)}/package.json. Add it to this system's dependencies.`;
+    }
+    if (scope?.kind === 'Prototype' && /\.[cm]?[jt]sx?$/.test(importer) && !SHARED_RUNTIME_PACKAGES.includes(name)) return `Prototype scope: ${source} is not shared runtime. Use a declared library entry from the assigned system${scope.system ? ` (${scope.system})` : ''}.`;
+    if (scope?.kind === 'Shared utility' && ![...SHARED_RUNTIME_PACKAGES, 'cn'].includes(name)) return `Shared utility scope: ${source} belongs in a system, not a shared utility.`;
+    return null;
+  };
   return {
     scopeOf,
+    packageProblem,
     problem(source, importer, target) {
       importer = realFile(importer); target = realFile(target);
+      const dependencyProblem = packageProblem(source, importer);
+      if (dependencyProblem) return dependencyProblem;
       const scope = scopeOf(importer);
       if (!scope) return null;
-      if (target.split(path.sep).includes('node_modules')) return null;
+      if (target.split(path.sep).includes('node_modules')) return packageName(source) ? null : `${scope.kind} scope: import packages by their declared name, not a node_modules file path.`;
       const system = runtimeSystem(target);
+      if (scope.kind === 'Prototype' && system && inside(target, path.join(system.dir, 'libraries')) && !(systems[system.id].libraries ?? []).some(library => realFile(path.join(system.dir, library.entry)) === target)) return 'Prototype scope: use a declared public library entry from the assigned system.';
       const lib = publicLibrary(source, target);
       const own = inside(target, scope.dir) && (scope.kind !== 'Design system' || !systemDocumentation(target, scope.dir));
       const allowed = own || (scope.kind !== 'Shared utility' && inside(target, shared)) ||

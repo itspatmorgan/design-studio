@@ -1,3 +1,4 @@
+import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { writeFixtureConfig } from './fixtures/identities.js';
 import { writeProfiles, ensureTeamManagement } from './fixtures/contributors.js';
 import { test } from 'node:test';
@@ -16,6 +17,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
   const copy = (from, to) => {
     fs.cpSync(from, to, { recursive: true, filter: (file) => !['.git', 'node_modules', 'dist'].includes(path.basename(file)) });
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(to, 'node_modules'));
+    linkSystemDependencies(root, to);
   };
   const run = (cwd, file, ...args) => execFileSync(process.execPath, [file, ...args], { cwd, encoding: 'utf8', timeout: 30000, stdio: 'pipe', env: { ...process.env, MISE_TRUSTED_CONFIG_PATHS: cwd } });
   const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: 'pipe' });
@@ -39,8 +41,10 @@ test('local personal setup resumes, then a second clone joins a team without cha
     fs.mkdirSync(path.join(dir, 'src/systems/bootstrap/components'), { recursive: true });
     writeFixtureConfig(dir, { name: 'Fixture Studio', usage: 'team', admins: ['patrick'], tagline: 'Fixture', modules: Object.fromEntries(fs.readdirSync(path.join(dir, 'src/modules')).filter(id => fs.existsSync(path.join(dir, 'src/modules', id, 'module.ts'))).map(id => [id, id !== 'documentation'])), systems: ['studio', 'bootstrap'], systemMaintainers: { bootstrap: [] }, defaultSystem: 'bootstrap' });
     run(dir, 'scripts/cli/studio.js', 'create-system', 'product', '--label', 'Product', '--yes');
+    assert.match(fs.readFileSync(path.join(dir, 'pnpm-lock.yaml'), 'utf8'), /src\/systems\/product:/);
     run(dir, 'scripts/cli/studio.js', 'configure', '--system', 'product', '--yes');
     run(dir, 'scripts/cli/studio.js', 'remove', 'bootstrap', '--yes');
+    assert.doesNotMatch(fs.readFileSync(path.join(dir, 'pnpm-lock.yaml'), 'utf8'), /src\/systems\/bootstrap:/);
     const declared = () => readDeclaration(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8')).value;
     assert.deepEqual(declared().systems, ['studio', 'product']);
     const teamConfig = fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8');
@@ -132,7 +136,12 @@ test('local personal setup resumes, then a second clone joins a team without cha
     const alexId = JSON.parse(fs.readFileSync(path.join(clone, 'contributors/alex.json'))).studioId;
     assigned.systemMaintainers[acmeId] = [alexId];
     fs.writeFileSync(path.join(clone, 'studio.config.ts'), 'export default ' + JSON.stringify(assigned) + ';');
+    const packageIdentity = JSON.parse(fs.readFileSync(path.join(clone, 'src/systems/acme/package.json'))).name;
     run(clone, 'scripts/cli/studio.js', 'rename-system', 'acme', '--label', 'Partner System', '--yes');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(clone, 'src/systems/partner-system/package.json'))).name, packageIdentity);
+    const renamedLock = fs.readFileSync(path.join(clone, 'pnpm-lock.yaml'), 'utf8');
+    assert.match(renamedLock, /src\/systems\/partner-system:/);
+    assert.doesNotMatch(renamedLock, /src\/systems\/acme:/);
     assert.deepEqual(readDeclaration(fs.readFileSync(path.join(clone, 'studio.config.ts'), 'utf8')).value.systemMaintainers[acmeId], [alexId]);
     const collision = spawnSync(process.execPath, ['scripts/cli/setup-contributor.js', '--key', 'wrong', '--name', 'Wrong', '--email', 'alex@example.test', '--yes'], { cwd: clone, encoding: 'utf8' });
     assert.equal(collision.status, 1); assert.equal(fs.existsSync(path.join(clone, 'contributors/wrong.json')), false);

@@ -17,6 +17,8 @@ export default function importGuard({ root = ROOT, systems = PROTOTYPE_SYSTEMS, 
     async resolveId(source, importer, options) {
       if (!importer || importer.includes('\0')) return null;
       const file = importer.split('?')[0];
+      const dependencyProblem = policy.packageProblem(source, file);
+      if (dependencyProblem) this.error(dependencyProblem);
       // Theme imports are recursively validated by the CSS plugin before loading.
       if (/\.css$/.test(file) && !/\.module\.css$/.test(file)) return null;
       const scope = policy.scopeOf(file);
@@ -32,6 +34,10 @@ export default function importGuard({ root = ROOT, systems = PROTOTYPE_SYSTEMS, 
     },
     transform(code, id) {
       const file = id.split('?')[0];
+      if (/\.[cm]?[jt]sx?$/.test(file)) for (const { source } of importsOf(code, file)) {
+        const problem = policy.packageProblem(source, file);
+        if (problem) this.error(problem);
+      }
       const scope = policy.scopeOf(file);
       if (!scope && !path.relative(root, file).startsWith('src/modules/')) return null;
       if (scope && /\.module\.css$/.test(file)) {

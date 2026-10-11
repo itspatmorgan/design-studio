@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearch, useRouterState, lazyRouteComponent } from '@tanstack/react-router';
-import { ChevronDown, Compass, Blocks, NotebookText, WandSparkles, SwatchBook, Type, SquareRoundCorner, Layers2, Ruler, MoveRight, Sparkles, Braces, Smile, Image, Search, ChevronsDownUp, ChevronsUpDown, X, type LucideIcon } from 'lucide-react';
+import { ChevronDown, Compass, Library, Blocks, NotebookText, WandSparkles, SwatchBook, Type, SquareRoundCorner, Layers2, Ruler, MoveRight, Sparkles, Braces, Smile, Image, Search, ChevronsDownUp, ChevronsUpDown, X, type LucideIcon } from 'lucide-react';
 import { Input } from '@/systems/studio/components/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
 import { artifactLabel, findArtifact } from '@/platform/app/data/manifest';
@@ -31,6 +31,7 @@ import SystemMenu from './SystemMenu';
 import type { ComponentPageData } from '../data/loadDocs';
 import SystemOverview from './SystemOverview';
 import SystemAssets from './SystemAssets';
+import SystemLibraries from './SystemLibraries';
 import { systemAssets } from '../data/assets';
 import { navLinkClass, navLinkStyle } from '@/platform/app/shell/nav';
 
@@ -144,8 +145,9 @@ function SystemNav({ system, components, tokens, page }: { system: SystemId; com
   });
   const matchingFoundations = foundations.filter(p => matches('Theme') || matches(p.label));
   const matchingComponents = components.filter(c => matches('Components') || matches(c.title));
+  const librariesMatch = matches('Libraries') || (manifest.systems[system]?.libraries ?? []).some(library => matches(library.label) || matches(library.description));
   const assetPages = [{ id: 'fonts', label: 'Fonts', icon: Type }, { id: 'icons', label: 'Icons', icon: Smile }, { id: 'images', label: 'Images', icon: Image }].filter(item => matches('Assets') || matches(item.label) || systemAssets(system).some(asset => asset.kind === item.label && matches(asset.path)));
-  const anyMatch = matches('Overview') || assetPages.length > 0 || matchingFoundations.length > 0 || matchingComponents.length > 0 || contentSections.some(({ section, proto }) => matches(section.title) || proto.artifacts.some(a => matches(artifactLabel(a.path, proto)) || matches(a.path)));
+  const anyMatch = librariesMatch || matches('Overview') || assetPages.length > 0 || matchingFoundations.length > 0 || matchingComponents.length > 0 || contentSections.some(({ section, proto }) => matches(section.title) || proto.artifacts.some(a => matches(artifactLabel(a.path, proto)) || matches(a.path)));
   const file = (id: string | undefined, label: string, component = false) => {
     const path = sourcePath(system, id, components, component);
     return path && <FileNavItem key={id ?? 'intro'} href={systemPath(system) + (id ? '/' + (component ? 'components/' : '') + id : '')} path={path} label={label} className={id ? undefined : 'h-7'} icon={navIcon(component ? Blocks : PAGE_ICONS[id ?? 'intro'] ?? Blocks)} reveal={() => systemSourceRequest('reveal', path)} />;
@@ -179,6 +181,7 @@ function SystemNav({ system, components, tokens, page }: { system: SystemId; com
         {assetPages.length > 0 && <SystemBranch label="Assets" path={source.dir + 'assets/'} open={groupOpen('assets')} onOpenChange={open => changeGroup('assets', open)}>
           {assetPages.map(item => item.id === 'icons' && SYSTEMS[system].icons ? file('icons', 'Icons') : <Link key={item.id} to={`${systemPath(system)}/${item.id}` as never} activeOptions={{ includeSearch: false }} className={navLinkClass} style={navLinkStyle}>{navIcon(item.icon)}{item.label}</Link>)}
         </SystemBranch>}
+        {librariesMatch && <Link to={`${systemPath(system)}/libraries` as never} activeOptions={{ includeSearch: false }} className={navLinkClass} style={navLinkStyle}>{navIcon(Library)}Libraries</Link>}
         {(matchingComponents.length > 0 || matches('Components')) && <SystemBranch label="Components" path={source.components} open={groupOpen('components')} onOpenChange={open => changeGroup('components', open)}>
           {matchingComponents.map(c => file(c.slug, c.title, true))}
           {!components.length && <p className="px-3 py-1 text-[12px] text-muted-foreground">Empty folder</p>}
@@ -199,6 +202,8 @@ function SystemPage({ system, sys, components, tokens, origin, page, componentSl
       return <SystemOverview system={system} sys={sys} components={components} tokens={tokens} />;
     case 'fonts':
       return <SystemAssets system={system} sys={sys} kind="Fonts" path={assetPath} />;
+    case 'libraries':
+      return assetPath ? null : <SystemLibraries system={system} label={sys.label} />;
     case 'images':
       return <SystemAssets system={system} sys={sys} kind="Images" path={assetPath} />;
     case 'colors':
@@ -253,7 +258,7 @@ export default function SystemsPage() {
         <main className="flex min-h-0 min-w-0 flex-1 flex-col"><Suspense fallback={<p className="p-4 text-sm">Loading editor…</p>}>{editable && ComponentEditor ? <ComponentEditor key={system + '/' + editable.slug} system={system} component={editable} onDone={toggle} /> : SystemSourceEditor && <SystemSourceEditor path={path} onDone={toggle} />}</Suspense></main>
       ) : (
         <main ref={mainRef} className="min-w-0 flex-1 overflow-y-auto">
-          <ThemeScope themeClass={page && !['assets', 'fonts', 'icons', 'images'].includes(page) ? sys.scopeClass : platform.scopeClass} className="min-h-full bg-background text-foreground">
+          <ThemeScope themeClass={page && !['assets', 'fonts', 'icons', 'images', 'libraries'].includes(page) ? sys.scopeClass : platform.scopeClass} className="min-h-full bg-background text-foreground">
             <div ref={rendered} tabIndex={-1} className="mx-auto w-full max-w-3xl px-8 py-10 outline-none" data-testid={`${system}-set`}>{content}</div>
           </ThemeScope>
         </main>

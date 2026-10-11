@@ -1,3 +1,12 @@
+packages:
+  - src/systems/*
+
+# Keep resolution local; Studio checks package access as well.
+hoist: false
+autoInstallPeers: false
+strictPeerDependencies: false # Studio checks shared React compatibility in system runtime graphs.
+sharedWorkspaceLockfile: true
+
 patchedDependencies:
   # Excalidraw draws a link icon on every element with a `link`, and a canvas needs `link`
   # (it's the URL of the view it shows). The patch skips the icon, and its hover tooltip and

@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { platformSystemId, systemProblems, systemColorMode, type SystemSpec } from './spec.ts';
 
-const product: SystemSpec = { status: 'active', role: 'prototype', styling: 'tailwind', colorModes: ['light', 'dark'], label: 'Product', themeClass: 'product-theme', docs: 'warn', origin: 'shadcn' };
+const product: SystemSpec = { status: 'active', role: 'prototype', styling: 'tailwind', colorModes: ['light', 'dark'], label: 'Product', themeClass: 'product-theme', docs: 'warn', origin: 'shadcn', libraries: [] };
 
 test('a well formed system has no problems', () => {
   assert.deepEqual(systemProblems(product, 'product'), []);
@@ -57,9 +57,16 @@ test('the application system is resolved by role, not its folder name', () => {
 });
 
 test('system policy fields cannot be inferred from omission', () => {
-  for (const field of ['status', 'role', 'styling', 'colorModes', 'docs', 'origin']) {
+  for (const field of ['status', 'role', 'styling', 'colorModes', 'docs', 'origin', 'libraries']) {
     const spec = { ...product };
     delete (spec as Record<string, unknown>)[field];
     assert.ok(systemProblems(spec, 'product').some((problem) => problem.includes(field)), field);
   }
+});
+
+test('public libraries require clear metadata and bounded entry paths', () => {
+  const library = { id: 'charts', label: 'Charts', package: 'recharts', description: 'Charts', entry: 'libraries/charts.ts', docs: 'https://example.test', components: ['chart'] };
+  assert.deepEqual(systemProblems({ ...product, libraries: [library] }, 'product'), []);
+  for (const invalid of [{ entry: '../charts.ts' }, { package: 'recharts/private' }, { docs: 'javascript:alert(1)' }, { label: '' }, { id: 'Bad Name' }, { components: ['../chart'] }]) assert.ok(systemProblems({ ...product, libraries: [{ ...library, ...invalid }] }, 'product').length);
+  assert.ok(systemProblems({ ...product, libraries: [library, library] }, 'product').length);
 });

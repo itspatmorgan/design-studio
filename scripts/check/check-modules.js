@@ -91,6 +91,8 @@ for (const file of [...sourceFiles(path.join(ROOT, 'src')), ...sourceFiles(path.
   const browserModule = inside && !/\/(?:node\/|cli\.ts$|server\.ts$|check\.ts$)/.test(rel);
   if ((runtimePolicy.scopeOf(file) || browserModule) && dependencies.some((i) => i.source === null)) problems.push(`${rel}: computed imports cannot be checked; use literal import paths.`);
   for (const { source: specifier } of dependencies) {
+    const dependencyProblem = runtimePolicy.packageProblem(specifier, file);
+    if (dependencyProblem) { problems.push(dependencyProblem); continue; }
     const resolved = resolveDependency(specifier, file);
     if (!resolved) continue;
     const platformProblem = modulePlatformProblem(rel.replaceAll(path.sep, '/'), path.relative(ROOT, resolved).replaceAll(path.sep, '/'));

@@ -11,6 +11,7 @@ export default {
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
   docs: 'warn',
+  libraries: [],
   origin: 'shadcn',
   studioId: "4f3m7z08hk5a0k53",
 } satisfies SystemSpec;

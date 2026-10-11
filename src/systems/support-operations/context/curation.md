@@ -14,7 +14,7 @@ Generated with shadcn CLI **4.21.0**, preset **b3kI3264G**, Base UI Nova, neutra
 
 ## Kit and adaptations
 
-The isolated registry request was `sidebar-07 chart table badge select dialog tabs`. Its dry run produced 24 files, including 18 UI primitives and five sidebar composition files. Existing `cn` satisfied one dependency; charts added **recharts 3.8.0**. The reviewed configuration lives in this system’s `components.json`.
+The isolated registry request was `sidebar-07 chart table badge select dialog tabs`. Its dry run produced 24 files, including 18 UI primitives and five sidebar composition files. Existing `cn` satisfied one dependency; charts added **recharts 3.8.0** to this system’s package manifest. Its public Charts library entry exposes additional Recharts APIs to assigned prototypes. The reviewed configuration lives in this system’s `components.json`.
 
 The sidebar block preserves the upstream header, collapsible navigation, footer, rail, and inset layout. Its sample projects, team switcher, and user menu were replaced with functional support navigation. The implementation is `blocks/support-sidebar.tsx`.
 

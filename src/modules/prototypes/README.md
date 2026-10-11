@@ -42,7 +42,7 @@ Moving, renaming, or deleting an artifact must update its `order` entries. The a
 
 Invalid metadata skips the prototype with a local warning and fails the production build.
 
-With `systemId: null`, views start from browser colors and a system font, without registered system tokens or components. Use local components, CSS Modules, shared utilities, and installed packages. System imports remain outside this prototype's runtime boundary. Layout utilities without system tokens remain available; style colors, typography, and spacing in local CSS. This is distinct from an invalid system ID, which fails validation.
+With `systemId: null`, views start from browser colors and a system font, without registered system tokens or components. Use local components, CSS Modules, shared utilities, and the declared shared runtime packages. System imports remain outside this prototype's runtime boundary. Layout utilities without system tokens remain available; style colors, typography, and spacing in local CSS. This is distinct from an invalid system ID, which fails validation.
 
 `pnpm new "Prototype Name"` assigns the studio default. Use `--system <source-key>` to choose another installed prototype system, or `--no-system` for custom styling.
 
@@ -90,11 +90,11 @@ Remove the comment for normal appearance. A folder named `lofi` has no special b
 
 ## Dependency boundaries
 
-Prototype runtime code may depend on its own files, its assigned system's runtime components and assets, independent shared utilities, installed packages, and enabled public module libraries. System documentation adapters are outside runtime code.
+Prototype runtime code may depend on its own files, its assigned system's runtime components, assets, and declared library entries, independent shared utilities, the shared runtime packages, and enabled public module libraries. System documentation adapters are outside runtime code.
 
 Public module libraries are accessed through `@module/<id>` only. Private platform implementation, another prototype, and another system are outside this boundary. An enabled module must declare a public library before it can be reused this way.
 
-These requirements apply to indirect and type-only dependencies. Dynamic imports use literal paths so checks can resolve them. Shared utilities cannot depend on prototypes, systems, or platform code.
+These requirements apply to indirect and type-only dependencies. Dynamic imports use literal paths so checks can resolve them. Shared utilities cannot depend on prototypes, systems, or platform code. External package access follows [System libraries and dependencies](../systems/context/libraries.md); installed root packages are not automatically available.
 
 Prototype styles use Tailwind classes or CSS Modules with local selectors. Plain CSS imports, `:global`, and CSS `@import` are not supported in prototype code. Assigned system tokens follow the [system styling contract](../systems/README.md#theme).
 

@@ -40,12 +40,15 @@ A system supplies the shared foundation for multiple prototypes.
 | Theme | Colors, typography, spacing, and other visual choices. |
 | Components | Reusable interface pieces with live examples. |
 | Assets | Fonts, icons, logos, and images. |
+| Libraries | Additional tools, such as charts, available to prototypes using this system. |
 | Context | Audience, goals, research, principles, and standards. |
 | Skills | Instructions for recurring agent tasks. |
 
 Keep reusable knowledge in the system's **Context**. Keep an exploration's brief, decisions, and open questions with its prototype. Ask the agent to update existing guidance rather than duplicate it.
 
 Product and Marketing are starter examples. **Studio**, marked **Platform**, powers the application itself and is unavailable for prototypes.
+
+Open **Libraries** in a system to see its additional tools, versions, documentation, and examples. Ask your agent to add a library when needed. It can use more of that library's capabilities without importing every component first. Adding a library to one system does not make it available to another.
 
 ## How do I create a prototype?
 
