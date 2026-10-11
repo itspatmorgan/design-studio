@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
-import { Copy } from 'lucide-react';
-import { Button, buttonVariants } from '@/systems/studio/components/button';
+import { Copy, Info } from 'lucide-react';
+import { Button } from '@/systems/studio/components/button';
 import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/systems/studio/components/dialog';
+import NewSystemButton from './NewSystemDialog';
 
 export default function SystemStarterNotice({ system, label, canCustomize }: {
   system: string; label: string; canCustomize: boolean;
@@ -15,20 +16,29 @@ export default function SystemStarterNotice({ system, label, canCustomize }: {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); setError(''); }
     catch { setError('Could not copy. Select the prompt and paste it into your agent’s chat.'); }
   }
-  return <Alert variant="info" role="note" className="mb-6 p-4" aria-labelledby="system-example">
-    <AlertTitle id="system-example">Make this example system your own</AlertTitle>
-    <AlertDescription>Customize {label}’s theme, components, and guidance. Or start with a new system and delete this example from its menu.</AlertDescription>
-    {canCustomize && <>
-      <div className="mt-4 flex flex-wrap gap-3">
-        <Button onClick={() => setOpen(previous => !previous)} aria-expanded={open} aria-controls="system-customization-prompt">Customize this system</Button>
-        <Link to={'/systems' as never} className={buttonVariants({ variant: 'outline' })}>Start with a new system</Link>
-      </div>
-      {open && <div id="system-customization-prompt" className="mt-5">
-        <p className="mb-3 text-sm text-info-foreground/90">Copy this prompt into your agent’s chat and send.</p>
-        <p className="select-text whitespace-pre-wrap rounded-lg border border-border bg-background p-4 text-sm leading-6 text-foreground">{prompt}</p>
-        <Button className="mt-4" onClick={() => void copy()}><Copy className="size-4" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
-        <p role="status" className="mt-2 text-xs text-info-foreground/90">{error || (copied ? 'Paste into your agent’s chat and send to continue.' : '')}</p>
-      </div>}
-    </>}
-  </Alert>;
+  return <div className="mb-6">
+    <Alert variant="info" role="note" aria-labelledby="system-example">
+      <Info aria-hidden="true" />
+      <AlertTitle id="system-example">{label} is an example system</AlertTitle>
+      <AlertDescription>Use it to explore Studio. Start a new system for your own work, or adapt this example.</AlertDescription>
+    </Alert>
+    {canCustomize && <div className="mt-3 flex flex-wrap gap-3">
+      <NewSystemButton label="Start a new system" />
+      <Dialog open={open} onOpenChange={value => { setOpen(value); if (value) { setCopied(false); setError(''); } }}>
+        <DialogTrigger render={<Button variant="outline" />}>Customize this example</DialogTrigger>
+        <DialogContent size="lg">
+          <DialogHeader>
+            <DialogTitle>Customize {label}</DialogTitle>
+            <DialogDescription>Copy this prompt into your agent’s chat and send.</DialogDescription>
+          </DialogHeader>
+          <p className="max-h-[50vh] select-text overflow-y-auto whitespace-pre-wrap rounded-lg border border-border bg-muted/40 p-4 text-sm leading-6">{prompt}</p>
+          {(error || copied) && <p role="status" className="text-xs text-muted-foreground">{error || 'Paste into your agent’s chat and send to continue.'}</p>}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>Close</Button>
+            <Button onClick={() => void copy()}><Copy className="size-4" aria-hidden />{copied ? 'Prompt copied' : 'Copy prompt'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>}
+  </div>;
 }
