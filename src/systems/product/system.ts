@@ -16,7 +16,7 @@ export default {
       "kind": "source",
       "id": "shadcn",
       "label": "shadcn/ui",
-      "description": "The source for this system’s curated components and styles.",
+      "description": "Component source and styles",
       "docs": "https://ui.shadcn.com/docs"
     },
     {
@@ -24,7 +24,7 @@ export default {
       "id": "base-ui",
       "label": "Base UI",
       "package": "@base-ui/react",
-      "description": "Accessible behavior for this system’s interactive components.",
+      "description": "Accessible component behavior",
       "docs": "https://base-ui.com/react/overview/quick-start"
     },
     {
@@ -32,7 +32,7 @@ export default {
       "id": "lucide",
       "label": "Lucide",
       "package": "lucide-react",
-      "description": "A full catalog of interface icons.",
+      "description": "Icon catalog",
       "docs": "https://lucide.dev/icons/",
       "assets": [
         "icons"
@@ -43,7 +43,7 @@ export default {
       "id": "font",
       "label": "Space Grotesk",
       "package": "@fontsource-variable/space-grotesk",
-      "description": "The typeface used by this system.",
+      "description": "System typeface",
       "docs": "https://fontsource.org/fonts/space-grotesk",
       "assets": [
         "fonts"
