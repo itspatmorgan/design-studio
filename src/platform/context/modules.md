@@ -30,6 +30,7 @@ Artifact modules can implement the [shared revision and lifecycle contract](sour
 The explicit framework entrypoint inventory is `src/platform/core/modules/boundaries.ts`.
 It covers existing shared navigation, artifact, documentation, source, and data services.
 Module code can import those entries, but not other platform implementation files.
+Changing the inventory, or other public contract listed in the [checks](checks.md), requires a `PLATFORM_VERSION` bump and `pnpm contract --update`.
 Both `pnpm check` and the development/build import guard enforce this boundary.
 Use literal import paths in browser module code and public libraries so checks can resolve dependencies, including type-only imports.
 Node discovery tooling may load declared files by their discovered paths.

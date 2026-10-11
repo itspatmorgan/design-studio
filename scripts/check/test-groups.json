@@ -17,6 +17,7 @@
         "scripts/lib/artifact-shortcuts.test.js",
         "scripts/lib/beta.test.js",
         "scripts/lib/boundaries.test.js",
+        "scripts/lib/contract.test.js",
         "scripts/lib/guidance-titles.test.js",
         "scripts/lib/manual-pages.test.js",
         "scripts/lib/mermaid-source.test.js",

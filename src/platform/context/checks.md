@@ -25,6 +25,8 @@ Keep tests for failure-prone behavior and boundaries. Use synthetic fixtures ins
 
 See [Personal & team use](/documentation/manual/team) for how these checks fit the workflow. Configure branch protection and required checks to enforce the team's merge policy.
 
+The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records the module entrypoints, `core/api.ts` exports, `ModuleSpec`, `SystemSpec` and `SystemLibrary` fields, runtime package lists, and `PLATFORM_VERSION`. `pnpm contract` and the upstream regression suite fail if the contract changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`. A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.
+
 ## Minimum sufficient verification
 
 Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or distribution tests for ordinary authoring. Scope, ownership, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
