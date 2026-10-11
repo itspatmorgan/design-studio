@@ -80,7 +80,7 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
       </Link>
     </li>)}</ul></> : <Empty className={`${libraries.length || (kind === 'Icons' && sys.icons) ? 'min-h-[12rem]' : 'min-h-[16rem]'} border border-solid border-border/50 bg-muted/40`}>
       <EmptyHeader>
-        <EmptyMedia variant="icon" className="bg-background"><Icon aria-hidden="true" /></EmptyMedia>
+        <EmptyMedia variant="icon" className="border border-border bg-background"><Icon aria-hidden="true" /></EmptyMedia>
         <EmptyTitle>No local {kind.toLowerCase()} added</EmptyTitle>
         <EmptyDescription>{emptyDescription}</EmptyDescription>
       </EmptyHeader>
