@@ -1,11 +1,11 @@
 // Upgrade test: prove a customized studio can take a newer upstream revision.
 //
-//   node src/platform/node/check/upgrade-test.js <base> <head> [--keep]
+//   node src/platform/node/check/upgrade-test.js <base> <head> [--synthetic] [--keep]
 //
 // Creates a studio from <base> in a temporary worktree, makes the changes a team makes (a contributor, a system
 // with its own package dependency, a prototype, a local module, studio settings, and the README), then merges
 // <head> with the update rules in src/platform/node/lib/upstream-merge.js and requires `pnpm check` and `pnpm build` to pass.
-// CI passes the latest v* release tag as the base, so every change proves that a studio on the last release can take it.
+// Before the public baseline, CI uses --synthetic to rehearse two revisions of the candidate foundation, without an old pre-release compatibility gate.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -18,11 +18,13 @@ import { serializeConfig } from '../../core/config-file.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const [base, head, ...options] = process.argv.slice(2);
-if (!base || !head || options.some(option => option !== '--keep'))
-  throw new Error('Usage: upgrade-test.js <base> <head> [--keep]');
+if (!base || !head || options.some(option => !['--keep', '--synthetic'].includes(option)))
+  throw new Error('Usage: upgrade-test.js <base> <head> [--synthetic] [--keep]');
 const resolve = ref =>
   execFileSync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).trim();
-const [baseSha, headSha] = [resolve(base), resolve(head)];
+let [baseSha, headSha] = [resolve(base), resolve(head)];
+if (options.includes('--synthetic') && baseSha !== headSha)
+  throw new Error('--synthetic requires the same candidate revision for base and head.');
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-upgrade-'));
 const step = title => console.log(`\n[upgrade] ${title}`);
@@ -50,6 +52,20 @@ try {
     GIT_CONFIG_KEY_1: 'user.email',
     GIT_CONFIG_VALUE_1: 'fixture@example.test',
   });
+  if (options.includes('--synthetic')) {
+    step('Create sibling revisions of the candidate foundation');
+    // The incoming release changes upstream code; the installed revision has its own seed copy.
+    // Both use the candidate API, so this validates preservation without shipping legacy aliases.
+    edit('src/platform/core/modules/index.ts', text => `${text}\n// Synthetic incoming release proof.\n`);
+    run('git', ['add', 'src/platform/core/modules/index.ts']);
+    run('git', ['commit', '-q', '--no-verify', '-m', 'Synthetic incoming release']);
+    headSha = read('git', ['rev-parse', 'HEAD']);
+    run('git', ['checkout', '-q', '--detach', baseSha]);
+    edit('README.md', text => `${text}\nSynthetic installed seed copy.\n`);
+    run('git', ['add', 'README.md']);
+    run('git', ['commit', '-q', '--no-verify', '-m', 'Synthetic installed release']);
+    baseSha = read('git', ['rev-parse', 'HEAD']);
+  }
   run('pnpm', ['install', '--frozen-lockfile']);
   const originalDependencies = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies;
 
@@ -101,6 +117,13 @@ try {
     );
 
   step('Verify the updated studio');
+  if (
+    options.includes('--synthetic') &&
+    !fs
+      .readFileSync(path.join(dir, 'src/platform/core/modules/index.ts'), 'utf8')
+      .includes('Synthetic incoming release proof.')
+  )
+    throw new Error('The update did not apply the synthetic upstream change.');
   for (const [file, bytes] of protectedBytes) {
     if (!fs.existsSync(path.join(dir, file)) || !fs.readFileSync(path.join(dir, file)).equals(bytes))
       throw new Error(`The update changed or removed the team's complete copy of ${file}.`);

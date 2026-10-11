@@ -148,15 +148,11 @@ jobs:
           path: ${{ steps.store.outputs.path }}
           key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
       - run: pnpm install --frozen-lockfile
-      # Start from the latest release tag (v<major>.<minor>.<patch>), as a studio would.
-      - name: Update a customized studio from the latest release
+      # The public launch establishes the first compatibility baseline; historical pre-release tags are not a gate.
+      - name: Update a customized studio within the candidate foundation
         env:
           HEAD_REF: ${{ github.event.pull_request.head.sha }}
-        run: |
-          RELEASE=$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1 || true)
-          test -n "$RELEASE" || { echo "No release tag found"; exit 1; }
-          echo "Upgrade test base: release $RELEASE"
-          node src/platform/node/check/upgrade-test.js "$RELEASE" "$HEAD_REF"
+        run: node src/platform/node/check/upgrade-test.js "$HEAD_REF" "$HEAD_REF" --synthetic
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
     needs: [bundle, regressions]

@@ -9,7 +9,7 @@
 - Updates apply ownership to clean merges as well as conflicts. Existing seed and team files keep their complete studio copy or deletion, including unchanged seeds removed upstream. New seed paths take the release's copy, generated paths take the release before regeneration, and mixed dependency conflicts remain for review. The upgrade fixture verifies full protected files, file inventories, and team-added root dependencies.
 - The app reads the Manual from `manifest.contributions.documentation` and `Manifest.manual` is gone. The shell no longer knows the Manual: its palette group comes from `ModuleApp.palette`, the `/documentation` landing from `ModuleApp.landing` (stable), palette group order from `ModuleApp.paletteOrder`, and Studio settings groups from `ModuleSpec.settings`. `PLATFORM_VERSION` is `0.3.0` for these declaration fields. Nothing changes in the interface, and the studio builds and checks with Documentation disabled.
 - A module can add an optional `build.ts` (`ModuleBuild`, experimental in `#studio/module`) that contributes data to the manifest as `manifest.contributions[<id>]`, folders to watch, and editable source files. The Documentation module now scans the Manual through it; the Manual and its pages behave as before.
-- CI no longer falls back to the merge base when choosing the upgrade test base; it always starts from the latest release tag.
+- Before the first public baseline, CI rehearses upgrades between sibling candidate revisions, preserving complete team/seed copies and applying an incoming upstream change. Historical pre-release APIs are not a compatibility gate.
 
 ## 0.2.1 (2026-10-11)
 

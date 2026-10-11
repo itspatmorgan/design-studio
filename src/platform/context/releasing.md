@@ -48,7 +48,7 @@ The release commit goes to `main` directly, so the person pushing needs the righ
 
 ## After pushing
 
-The upgrade test in CI starts from the latest `v*` tag ([Checks and fixes](checks.md)), so every later pull request proves that a studio on the last release can take it.
+The public launch tag establishes the first compatibility baseline. Before that tag, CI rehearses upgrades between synthetic revisions of the candidate foundation ([Checks and fixes](checks.md)). Historical pre-release tags do not require compatibility. Subsequent release verification must also exercise updates from the preceding supported public release.
 
 If a release is wrong after it is pushed, cut a new patch release rather than moving or deleting the tag: studios may already have updated to it.
 
