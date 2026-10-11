@@ -22,7 +22,7 @@ Type pages use `/systems/<id>/fonts`, `/systems/<id>/icons`, and `/systems/<id>/
 
 ## Libraries
 
-Libraries opens `/systems/<system-id>/libraries` in Studio’s appearance. Its compact list rows show the system’s selected sources and libraries, what they contribute, and resolved package versions where applicable. They link to documentation and relevant asset pages or component examples. Transitive dependencies and implementation helpers do not appear. An empty system offers guidance to ask the agent for additional capabilities. This generated page has no source editor.
+Libraries opens `/systems/<system-id>/libraries` in Studio’s appearance. Its compact bordered entries show the system’s selected sources and libraries, what they contribute, and resolved package versions where applicable. They link to documentation and relevant asset pages or component examples. Transitive dependencies and implementation helpers do not appear. An empty system offers guidance to ask the agent for additional capabilities. This generated page has no source editor.
 
 ## Source editing
 

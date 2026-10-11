@@ -59,6 +59,6 @@ Package access checks cover static imports, re-exports, type imports, literal dy
 
 ## Review and discovery
 
-Libraries follows Overview in navigation and presents what the system is built from on one page. Compact rows show a name, contribution, resolved version when applicable, documentation, and links to the toolkit, typography, assets, or component examples. Asset pages distinguish library catalogs from local files. Fonts and icons do not need to be copied into assets/ to be available. Runtime entries remain in the declaration for agents; the human page omits import paths.
+Libraries follows Overview in navigation and presents what the system is built from on one page. Compact bordered entries show a name, contribution, resolved version when applicable, documentation, and links to typography, assets, or component examples. Asset pages distinguish library catalogs from local files. Fonts and icons do not need to be copied into assets/ to be available. Runtime entries remain in the declaration for agents; the human page omits import paths.
 
 Verify component examples and a representative assigned prototype after adding a library. Confirm another system cannot import it. A working package API does not establish theme fidelity or provider compatibility.
