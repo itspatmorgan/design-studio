@@ -30,7 +30,7 @@ export default function SystemLibraries({ system, label }: { system: string; lab
       <div className="ml-auto flex flex-wrap items-center justify-end gap-x-4 gap-y-2 text-sm">
         {library.assets?.includes('fonts') && <Link to={`${systemPath(system)}/typography` as never} className="underline underline-offset-4 hover:text-muted-foreground">Typography</Link>}
         {library.assets?.map(asset => <Link key={asset} to={`${systemPath(system)}/${asset}` as never} className="underline underline-offset-4 hover:text-muted-foreground">{asset[0].toUpperCase() + asset.slice(1)}</Link>)}
-        {inventory?.components.filter(component => library.components?.includes(component.slug)).map(component => <Link key={component.slug} to={`${systemPath(system)}/components/${component.slug}` as never} className="underline underline-offset-4 hover:text-muted-foreground">{component.title}</Link>)}
+        {library.kind === 'package' && inventory?.components.filter(component => library.components?.includes(component.slug)).map(component => <Link key={component.slug} to={`${systemPath(system)}/components/${component.slug}` as never} className="underline underline-offset-4 hover:text-muted-foreground">{component.title}</Link>)}
         <a href={library.docs} target="_blank" rel="noreferrer" aria-label={`${library.label} documentation`} className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-muted-foreground">Docs <ExternalLink aria-hidden="true" className="size-3.5" /></a>
       </div>
       </div>
