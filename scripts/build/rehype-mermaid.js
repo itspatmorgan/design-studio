@@ -3,10 +3,15 @@
 export default function rehypeMermaid() {
   return function walk(node) {
     if (!node.children) return;
-    node.children = node.children.map((child) => {
+    node.children = node.children.map(child => {
       const code = child.tagName === 'pre' && child.children?.length === 1 && child.children[0];
       if (code?.tagName === 'code' && code.properties?.className?.includes('language-mermaid')) {
-        return { type: 'element', tagName: 'mermaid-diagram', properties: { source: code.children.map((part) => part.value ?? '').join('') }, children: [] };
+        return {
+          type: 'element',
+          tagName: 'mermaid-diagram',
+          properties: { source: code.children.map(part => part.value ?? '').join('') },
+          children: [],
+        };
       }
       walk(child);
       return child;

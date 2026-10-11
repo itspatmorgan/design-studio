@@ -5,7 +5,12 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
-import { attachInstruction, extractInstruction, type Availability, type Operation } from '@atlaskit/pragmatic-drag-and-drop-hitbox/list-item';
+import {
+  attachInstruction,
+  extractInstruction,
+  type Availability,
+  type Operation,
+} from '@atlaskit/pragmatic-drag-and-drop-hitbox/list-item';
 import { cn } from '@/lib/utils';
 
 // What a dragged row carries, and what a row under it is.
@@ -14,7 +19,15 @@ export type Dragged = { kind: typeof DRAG_KIND; path: string; dir: boolean; scop
 export type Dropped = Operation;
 export type Operations = Partial<Record<Operation, Availability>>;
 
-export function DragRow({ scope, path, dir, canDrag, url, operationsFor, children }: {
+export function DragRow({
+  scope,
+  path,
+  dir,
+  canDrag,
+  url,
+  operationsFor,
+  children,
+}: {
   scope: string;
   path: string;
   dir: boolean;
@@ -40,20 +53,30 @@ export function DragRow({ scope, path, dir, canDrag, url, operationsFor, childre
         element,
         canDrag: () => canDrag,
         getInitialData: (): Dragged => ({ kind: DRAG_KIND, scope, path, dir }),
-        getInitialDataForExternal: () => latest.current.url
-          ? { 'text/plain': latest.current.url, 'text/uri-list': latest.current.url }
-          : {},
+        getInitialDataForExternal: () =>
+          latest.current.url ? { 'text/plain': latest.current.url, 'text/uri-list': latest.current.url } : {},
         onDragStart: () => setDragging(true),
         onDrop: () => setDragging(false),
       }),
       dropTargetForElements({
         element,
-        canDrop: ({ source }) => source.data.kind === DRAG_KIND && source.data.scope === scope && source.data.path !== path && !String(path).startsWith(`${source.data.path}/`),
-        getData: ({ input, element: el, source }) => attachInstruction({ path, dir, scope }, {
-          input,
-          element: el,
-          operations: latest.current.operationsFor({ path: String(source.data.path), dir: Boolean(source.data.dir) }),
-        }),
+        canDrop: ({ source }) =>
+          source.data.kind === DRAG_KIND &&
+          source.data.scope === scope &&
+          source.data.path !== path &&
+          !String(path).startsWith(`${source.data.path}/`),
+        getData: ({ input, element: el, source }) =>
+          attachInstruction(
+            { path, dir, scope },
+            {
+              input,
+              element: el,
+              operations: latest.current.operationsFor({
+                path: String(source.data.path),
+                dir: Boolean(source.data.dir),
+              }),
+            },
+          ),
         onDrag: ({ self }) => setOver(extractInstruction(self.data)?.operation ?? null),
         onDragLeave: () => setOver(null),
         onDrop: () => setOver(null),
@@ -62,10 +85,19 @@ export function DragRow({ scope, path, dir, canDrag, url, operationsFor, childre
   }, [scope, path, dir, canDrag]);
 
   return (
-    <div ref={ref} className={cn('relative rounded-md', dragging && 'opacity-50', over === 'combine' && 'bg-sidebar-foreground/10')}>
+    <div
+      ref={ref}
+      className={cn('relative rounded-md', dragging && 'opacity-50', over === 'combine' && 'bg-sidebar-foreground/10')}
+    >
       {children}
       {(over === 'reorder-before' || over === 'reorder-after') && (
-        <span aria-hidden className={cn('pointer-events-none absolute inset-x-1 z-10 h-0.5 rounded-full bg-sidebar-ring', over === 'reorder-before' ? '-top-px' : '-bottom-px')} />
+        <span
+          aria-hidden
+          className={cn(
+            'pointer-events-none absolute inset-x-1 z-10 h-0.5 rounded-full bg-sidebar-ring',
+            over === 'reorder-before' ? '-top-px' : '-bottom-px',
+          )}
+        />
       )}
     </div>
   );

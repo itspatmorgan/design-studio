@@ -9,11 +9,25 @@ import type { PrototypeInfo } from '@/platform/app/data/types';
 import { usePrototypeActions } from '@/modules/prototypes/viewer/usePrototypeActions';
 import { menuGroups } from '@/platform/app/shell/menuGroups';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/systems/studio/components/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/systems/studio/components/dropdown-menu';
 
 // `triggerClassName` adds to the button's look, for a card whose top isn't a plain surface. By default it sits in the
 // card's top right corner; `inline` leaves it where it is drawn, for a row that places it itself.
-export default function PrototypeCardMenu({ proto, triggerClassName, inline }: { proto: PrototypeInfo; triggerClassName?: string; inline?: boolean }) {
+export default function PrototypeCardMenu({
+  proto,
+  triggerClassName,
+  inline,
+}: {
+  proto: PrototypeInfo;
+  triggerClassName?: string;
+  inline?: boolean;
+}) {
   const { groups, dialogs } = usePrototypeActions(proto);
   if (!menuGroups(groups).length) return null;
   return (
@@ -21,17 +35,24 @@ export default function PrototypeCardMenu({ proto, triggerClassName, inline }: {
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label={`Actions for ${proto.title}`}
-          className={cn('inline-flex size-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity outline-none hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover/card-wrap:opacity-100 group-focus-within/card-wrap:opacity-100 data-[popup-open]:opacity-100 [@media(hover:none)]:opacity-100', triggerClassName)}
+          className={cn(
+            'inline-flex size-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity outline-none hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring group-hover/card-wrap:opacity-100 group-focus-within/card-wrap:opacity-100 data-[popup-open]:opacity-100 [@media(hover:none)]:opacity-100',
+            triggerClassName,
+          )}
         >
           <HugeiconsIcon icon={MoreHorizontalIcon} size={16} />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-44">
+        <DropdownMenuContent align='end' className='min-w-44'>
           {menuGroups(groups).map((group, g) => (
             <Fragment key={g}>
               {g > 0 && <DropdownMenuSeparator />}
               {/* Actions run after the menu has closed, so a dialog they open isn't closed by the same click. */}
-              {group.map((a) => (
-                <DropdownMenuItem key={a.label} variant={a.destructive ? 'destructive' : 'default'} onClick={() => setTimeout(a.onSelect)}>
+              {group.map(a => (
+                <DropdownMenuItem
+                  key={a.label}
+                  variant={a.destructive ? 'destructive' : 'default'}
+                  onClick={() => setTimeout(a.onSelect)}
+                >
                   <HugeiconsIcon icon={a.icon} /> {a.label}
                 </DropdownMenuItem>
               ))}

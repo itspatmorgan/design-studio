@@ -14,4 +14,7 @@ if (fs.existsSync(plugin)) {
   const { checkPackage } = await import(new URL('../plugins/design-studio/check-package.mjs', import.meta.url).href);
   checkPackage();
 }
-execFileSync(process.execPath, ['scripts/cli/studio.js', 'sync', ...(check ? ['--check'] : [])], { cwd: root, stdio: 'inherit' });
+execFileSync(process.execPath, ['scripts/cli/studio.js', 'sync', ...(check ? ['--check'] : [])], {
+  cwd: root,
+  stdio: 'inherit',
+});

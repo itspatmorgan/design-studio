@@ -17,15 +17,23 @@ const ALLOWLIST = [
 
 const [mode, before, after] = process.argv.slice(2);
 let changed;
-try { changed = changedFiles(mode, before, after, { filter: 'AM' }); } catch (e) { console.error(e.message); process.exit(2); }
-if (!changed || mode === '--push') { console.error('Usage: check-asset-size.js --staged | --ci <before> <after>'); process.exit(2); }
+try {
+  changed = changedFiles(mode, before, after, { filter: 'AM' });
+} catch (e) {
+  console.error(e.message);
+  process.exit(2);
+}
+if (!changed || mode === '--push') {
+  console.error('Usage: check-asset-size.js --staged | --ci <before> <after>');
+  process.exit(2);
+}
 
 // The size Git will store: the staged version, or the version in the pushed commit.
-const sizeKB = (file) => Number(git('cat-file', '-s', mode === '--staged' ? `:${file}` : `${after}:${file}`)) / 1024;
+const sizeKB = file => Number(git('cat-file', '-s', mode === '--staged' ? `:${file}` : `${after}:${file}`)) / 1024;
 
 const oversized = changed.files
-  .filter((f) => !ALLOWLIST.includes(f))
-  .map((f) => ({ file: f, kb: sizeKB(f) }))
+  .filter(f => !ALLOWLIST.includes(f))
+  .map(f => ({ file: f, kb: sizeKB(f) }))
   .filter(({ kb }) => kb > LIMIT_KB);
 
 if (oversized.length) {
@@ -33,6 +41,9 @@ if (oversized.length) {
   for (const { file, kb } of oversized) console.error(`  ${file}: ${Math.round(kb)} KB`);
   console.error('Make it smaller before committing: export images as WebP (or compressed JPEG),');
   console.error('at the size they are shown. A full-screen image is usually 100-300 KB as WebP.');
-  if (mode === '--staged') console.error('Then stage the new file. If it truly can\'t be smaller, add it to ALLOWLIST in scripts/check/check-asset-size.js.');
+  if (mode === '--staged')
+    console.error(
+      "Then stage the new file. If it truly can't be smaller, add it to ALLOWLIST in scripts/check/check-asset-size.js.",
+    );
   process.exit(1);
 }

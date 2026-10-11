@@ -24,7 +24,7 @@ function prune() {
   }
   for (const section of dialog.querySelectorAll<HTMLElement>('.HelpDialog__island')) {
     const rows = [...section.querySelectorAll<HTMLElement>('.HelpDialog__shortcut')];
-    if (rows.length && rows.every((row) => row.style.display === 'none')) section.style.display = 'none';
+    if (rows.length && rows.every(row => row.style.display === 'none')) section.style.display = 'none';
   }
 }
 

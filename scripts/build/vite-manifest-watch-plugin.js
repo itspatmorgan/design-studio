@@ -19,7 +19,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const PROTOS = path.join(ROOT, 'src', 'prototypes');
 const SYSTEM_CONTENT = path.join(ROOT, 'src', 'platform');
 // The Manual's pages, or null when its module is off or not installed.
-const documentationModule = ENABLED_MODULES.find((m) => m.id === 'documentation');
+const documentationModule = ENABLED_MODULES.find(m => m.id === 'documentation');
 const MANUAL = documentationModule?.section?.folder ? path.join(ROOT, documentationModule.section.folder) : null;
 const SYSTEMS = path.join(ROOT, 'src', 'systems');
 // The system content's map reads it (src/modules/systems/content/map.ts).
@@ -46,12 +46,18 @@ function relevant(file, kind) {
   if (file.endsWith('.md') && /src[\\/](?:platform[\\/]core|modules)[\\/]/.test(file)) return true;
   // A system's component docs: files coming and going, and edits to the ones that describe a component
   // and to its theme (the tokens it lists).
-  if (inside(SYSTEMS, file)) return kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$|(?:system\.ts|package\.json)$/.test(file);
-  if (![PROTOS, ...PROTOTYPE_DIRS].some((dir) => inside(dir, file))) return false;
+  if (inside(SYSTEMS, file))
+    return (
+      kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$|(?:system\.ts|package\.json)$/.test(file)
+    );
+  if (![PROTOS, ...PROTOTYPE_DIRS].some(dir => inside(dir, file))) return false;
   return kind !== 'change' || path.basename(file) === 'meta.json' || hasFidelity(file);
 }
 
-const hasFidelity = (file) => { const id = fileTypeOf(file); return Boolean(id && FILE_TYPES[id].capabilities.fidelity); };
+const hasFidelity = file => {
+  const id = fileTypeOf(file);
+  return Boolean(id && FILE_TYPES[id].capabilities.fidelity);
+};
 
 export default function manifestWatch() {
   return {
@@ -59,14 +65,25 @@ export default function manifestWatch() {
     apply: 'serve',
     configureServer(server) {
       if (!fs.existsSync(path.join(ROOT, '.studio-system-operation'))) buildManifest();
-      server.watcher.add([PROTOS, ...PROTOTYPE_DIRS, SYSTEM_CONTENT, ...(MANUAL ? [MANUAL] : []), SYSTEMS, CONTRIBUTORS_DIR, AGENTS]);
+      server.watcher.add([
+        PROTOS,
+        ...PROTOTYPE_DIRS,
+        SYSTEM_CONTENT,
+        ...(MANUAL ? [MANUAL] : []),
+        SYSTEMS,
+        CONTRIBUTORS_DIR,
+        AGENTS,
+      ]);
       let timer = null;
       // Every file that changed since the last build, even ones that don't ask for a rebuild: the next one tells the
       // build which prototypes to look at again, so an edit that waited for it is never missed.
       const touched = new Set();
       const flush = () => {
         timer = null;
-        if (fs.existsSync(path.join(ROOT, '.studio-system-operation'))) { timer = setTimeout(flush, BATCH_MS); return; }
+        if (fs.existsSync(path.join(ROOT, '.studio-system-operation'))) {
+          timer = setTimeout(flush, BATCH_MS);
+          return;
+        }
         const { manifest } = buildManifest({ touched: [...touched] });
         if ([...touched].some(file => /[\\/]skills(?:[\\/]|$)/.test(file))) {
           try {
@@ -79,7 +96,7 @@ export default function manifestWatch() {
         touched.clear();
         if (JSON.stringify(manifest) !== last) publishManifest(server, manifest);
       };
-      const onEvent = (kind) => (file) => {
+      const onEvent = kind => file => {
         touched.add(file);
         if (!relevant(file, kind)) return;
         clearTimeout(timer);

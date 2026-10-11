@@ -17,8 +17,10 @@ export const parseStatus = (value: unknown): Status | null =>
 // scripts/build/vite-globs-plugin.js.
 type Proto = { id: string; contributorKey: string; status?: Status; systemMissing?: unknown };
 export function forDeploy<P extends Proto>(prototypes: P[]) {
-  const kept = prototypes.filter((p) => p.status !== 'archived' && !p.systemMissing);
-  const archived = prototypes.filter((p) => p.status === 'archived' || !!p.systemMissing).map((p) => `/${rootOf(p.contributorKey, p.id)}/**`);
+  const kept = prototypes.filter(p => p.status !== 'archived' && !p.systemMissing);
+  const archived = prototypes
+    .filter(p => p.status === 'archived' || !!p.systemMissing)
+    .map(p => `/${rootOf(p.contributorKey, p.id)}/**`);
   return { kept, archived };
 }
 
@@ -29,7 +31,7 @@ export function forDeploy<P extends Proto>(prototypes: P[]) {
 // ones the text links to. Reads text and changes nothing.
 const slugChar = (c: string | undefined) => c !== undefined && /[A-Za-z0-9_%\-/]/.test(c);
 export function linksToArchived(text: string, prototypes: string[]): string[] {
-  return prototypes.filter((path) => {
+  return prototypes.filter(path => {
     for (let i = text.indexOf(path); i !== -1; i = text.indexOf(path, i + 1)) {
       const next = text[i + path.length];
       if (next === '/' || !slugChar(next)) return true;

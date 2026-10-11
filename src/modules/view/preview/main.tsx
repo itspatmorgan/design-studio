@@ -1,19 +1,49 @@
 import { previewLifecycle } from './lifecycle';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createMemoryHistory, createRootRoute, createRoute, createRouter, RouterProvider, Outlet } from '@tanstack/react-router';
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+  Outlet,
+} from '@tanstack/react-router';
 import { loadView } from '../load';
 import { resolveTarget, previewTarget } from './target';
-import { CHANNEL, VERSION, acceptsHost, identityOf, prototypeScopeOf, readBootstrap, routerHref, previewUrl, validHref, type Config, type PreviewMessage } from './protocol';
+import {
+  CHANNEL,
+  VERSION,
+  acceptsHost,
+  identityOf,
+  prototypeScopeOf,
+  readBootstrap,
+  routerHref,
+  previewUrl,
+  validHref,
+  type Config,
+  type PreviewMessage,
+} from './protocol';
 import PreviewSurface, { type LoadedView } from './PreviewSurface';
-import { loadManifest, setManifest, allPrototypes, withItems, findArtifactByIdentity, findArtifact } from '@/platform/app/data/manifest';
+import {
+  loadManifest,
+  setManifest,
+  allPrototypes,
+  withItems,
+  findArtifactByIdentity,
+  findArtifact,
+} from '@/platform/app/data/manifest';
 import type { Manifest } from '@/platform/app/data/types';
 import { addressOf } from '@/platform/core/roots';
 import { previewShortcut } from '@/platform/app/shell/artifactShortcuts';
 
 let lifecycleSequence = 0; // Monotonic for this child document, including renderer remounts.
 type Status = Extract<PreviewMessage, { kind: 'status' }>;
-const RuntimeContext = createContext<{ config: Config; refresh: number; status: (state: Status['state'], render: number, detail?: string) => void } | null>(null);
+const RuntimeContext = createContext<{
+  config: Config;
+  refresh: number;
+  status: (state: Status['state'], render: number, detail?: string) => void;
+} | null>(null);
 
 // Fast handoffs never show a loading label. A slow initial load or view change still
 // gets an accessible status, without replacing the outgoing screen.
@@ -23,7 +53,11 @@ function LoadingStatus({ retained }: { retained: boolean }) {
     const timer = setTimeout(() => setVisible(true), 200);
     return () => clearTimeout(timer);
   }, []);
-  return visible ? <p role="status" className="pointer-events-none absolute inset-x-0 bottom-0 bg-background p-3 text-sm">{retained ? 'Opening view' : 'Loading preview'}</p> : null;
+  return visible ? (
+    <p role='status' className='pointer-events-none absolute inset-x-0 bottom-0 bg-background p-3 text-sm'>
+      {retained ? 'Opening view' : 'Loading preview'}
+    </p>
+  ) : null;
 }
 
 function RuntimeView() {
@@ -32,18 +66,40 @@ function RuntimeView() {
   const [error, setError] = useState<{ identity: string; detail: string } | null>(null);
   const render = useRef(0);
   const identity = identityOf(config.target);
-  const selector = JSON.stringify([identity, config.target.contributor, config.target.prototype, config.target.artifact]);
+  const selector = JSON.stringify([
+    identity,
+    config.target.contributor,
+    config.target.prototype,
+    config.target.artifact,
+  ]);
   const pending = loaded?.selector !== selector;
   const lifecycle = useRef<ReturnType<typeof previewLifecycle> | null>(null);
   useEffect(() => {
     const controller = previewLifecycle(config.target, lifecycle => {
       const bootstrap = readBootstrap(location.search);
-      if (window.parent !== window) window.parent.postMessage({ channel: CHANNEL, version: VERSION, session: bootstrap.session, runtime: document.documentElement.dataset.previewRuntime, identity, kind: 'lifecycle', sequence: ++lifecycleSequence, lifecycle }, location.origin);
+      if (window.parent !== window)
+        window.parent.postMessage(
+          {
+            channel: CHANNEL,
+            version: VERSION,
+            session: bootstrap.session,
+            runtime: document.documentElement.dataset.previewRuntime,
+            identity,
+            kind: 'lifecycle',
+            sequence: ++lifecycleSequence,
+            lifecycle,
+          },
+          location.origin,
+        );
     });
     lifecycle.current = controller;
     const compileError = (event: Event) => controller.failed((event as CustomEvent<string>).detail, true);
     window.addEventListener('studio:preview-compile-error', compileError);
-    return () => { window.removeEventListener('studio:preview-compile-error', compileError); lifecycle.current = null; controller.dispose(); };
+    return () => {
+      window.removeEventListener('studio:preview-compile-error', compileError);
+      lifecycle.current = null;
+      controller.dispose();
+    };
   }, [identity, config.target.contributor, config.target.prototype, config.target.artifact]);
   useEffect(() => {
     let live = true;
@@ -51,36 +107,62 @@ function RuntimeView() {
     setError(null);
     status('loading', revision);
     lifecycle.current?.begin();
-    void resolveTarget(config.target).then(loadView).then(result => {
-      if (!live) return;
-      if (!result) throw new Error('This React view could not load.');
-      document.title = result.prototype.title + ' preview';
-      setLoaded({ identity, selector, value: result });
-    }).catch(error => {
-      if (!live) return;
-      const detail = error instanceof Error ? error.message : String(error);
-      setLoaded(null); setError({ identity, detail }); status('error', revision, detail); lifecycle.current?.failed(detail, false);
-    });
-    return () => { live = false; };
+    void resolveTarget(config.target)
+      .then(loadView)
+      .then(result => {
+        if (!live) return;
+        if (!result) throw new Error('This React view could not load.');
+        document.title = result.prototype.title + ' preview';
+        setLoaded({ identity, selector, value: result });
+      })
+      .catch(error => {
+        if (!live) return;
+        const detail = error instanceof Error ? error.message : String(error);
+        setLoaded(null);
+        setError({ identity, detail });
+        status('error', revision, detail);
+        lifecycle.current?.failed(detail, false);
+      });
+    return () => {
+      live = false;
+    };
   }, [identity, config.target.contributor, config.target.prototype, config.target.artifact, refresh, status]);
   const ready = useCallback(() => {
     if (pending) return; // Retained output cannot acknowledge the incoming artifact.
-    status('ready', render.current); lifecycle.current?.ready();
+    status('ready', render.current);
+    lifecycle.current?.ready();
   }, [status, loaded, pending]);
-  const failed = useCallback((error: unknown) => {
-    if (pending) return;
-    const detail = error instanceof Error ? error.message : String(error);
-    status('error', render.current, detail); lifecycle.current?.failed(detail, false);
-  }, [status, pending]);
+  const failed = useCallback(
+    (error: unknown) => {
+      if (pending) return;
+      const detail = error instanceof Error ? error.message : String(error);
+      status('error', render.current, detail);
+      lifecycle.current?.failed(detail, false);
+    },
+    [status, pending],
+  );
   // Prepare before replacing the visible view. Keep outgoing output inert and explicitly
   // identified until the current request succeeds; the load effect rejects late results.
-  if (error?.identity === identity) return <div role="alert" className="p-8 text-sm"><p>This page could not load. Give the error to your agent.</p><pre className="mt-4 whitespace-pre-wrap">{error.detail}</pre></div>;
-  return <div className="relative flex min-h-0 flex-1 flex-col" aria-busy={pending || undefined} data-preview-displayed-identity={loaded?.identity} data-preview-pending-identity={pending ? identity : undefined}>
-    <div className="flex min-h-0 flex-1 flex-col" inert={pending}>
-      {loaded && <PreviewSurface loaded={loaded.value} surface={config.surface} ready={ready} failed={failed} />}
+  if (error?.identity === identity)
+    return (
+      <div role='alert' className='p-8 text-sm'>
+        <p>This page could not load. Give the error to your agent.</p>
+        <pre className='mt-4 whitespace-pre-wrap'>{error.detail}</pre>
+      </div>
+    );
+  return (
+    <div
+      className='relative flex min-h-0 flex-1 flex-col'
+      aria-busy={pending || undefined}
+      data-preview-displayed-identity={loaded?.identity}
+      data-preview-pending-identity={pending ? identity : undefined}
+    >
+      <div className='flex min-h-0 flex-1 flex-col' inert={pending}>
+        {loaded && <PreviewSurface loaded={loaded.value} surface={config.surface} ready={ready} failed={failed} />}
+      </div>
+      {pending && <LoadingStatus key={selector} retained={Boolean(loaded)} />}
     </div>
-    {pending && <LoadingStatus key={selector} retained={Boolean(loaded)} />}
-  </div>;
+  );
 }
 
 async function targetFromHref(href: string): Promise<Config['target'] | null> {
@@ -122,19 +204,43 @@ function start() {
   const history = createMemoryHistory({ initialEntries: [current.href] });
   const rootRoute = createRootRoute({ component: Outlet });
   const viewRoute = createRoute({ getParentRoute: () => rootRoute, path: '$', component: RuntimeView });
-  const router = createRouter({ routeTree: rootRoute.addChildren([viewRoute]), history, basepath: import.meta.env.BASE_URL });
-  const envelope = () => ({ channel: CHANNEL, version: VERSION, session: bootstrap.session, runtime, identity: identityOf(current.target) } as const);
-  const send = (event: Omit<Extract<PreviewMessage, { kind: 'status' }>, keyof ReturnType<typeof envelope>> | { kind: 'hello' } | { kind: 'navigate'; href: string; replace: boolean } | { kind: 'shortcut'; action: 'source' | 'grid' | 'palette' | 'navigation' }) => {
+  const router = createRouter({
+    routeTree: rootRoute.addChildren([viewRoute]),
+    history,
+    basepath: import.meta.env.BASE_URL,
+  });
+  const envelope = () =>
+    ({
+      channel: CHANNEL,
+      version: VERSION,
+      session: bootstrap.session,
+      runtime,
+      identity: identityOf(current.target),
+    }) as const;
+  const send = (
+    event:
+      | Omit<Extract<PreviewMessage, { kind: 'status' }>, keyof ReturnType<typeof envelope>>
+      | { kind: 'hello' }
+      | { kind: 'navigate'; href: string; replace: boolean }
+      | { kind: 'shortcut'; action: 'source' | 'grid' | 'palette' | 'navigation' },
+  ) => {
     if (hosted) window.parent.postMessage({ ...envelope(), ...event }, location.origin);
   };
   function Runtime() {
     const [config, setConfig] = useState(current);
     const [refresh, setRefresh] = useState(0);
     const identity = identityOf(config.target);
-    const status = useCallback((state: Status['state'], render: number, detail = '') => {
-      lastRender = Math.max(lastRender, render);
-      if (hosted) window.parent.postMessage({ ...envelope(), identity, kind: 'status', state, render: lastRender, detail: detail.slice(0, 4096) }, location.origin);
-    }, [identity]);
+    const status = useCallback(
+      (state: Status['state'], render: number, detail = '') => {
+        lastRender = Math.max(lastRender, render);
+        if (hosted)
+          window.parent.postMessage(
+            { ...envelope(), identity, kind: 'status', state, render: lastRender, detail: detail.slice(0, 4096) },
+            location.origin,
+          );
+      },
+      [identity],
+    );
     useEffect(() => {
       const apply = (next: Config) => {
         current = next;
@@ -146,40 +252,84 @@ function start() {
         }
       };
       const onMessage = (event: MessageEvent) => {
-        if (!acceptsHost(event, window.parent, location.origin, bootstrap.session, runtime, bootstrap.config.surface, prototypeScopeOf(bootstrap.config.target))) return;
+        if (
+          !acceptsHost(
+            event,
+            window.parent,
+            location.origin,
+            bootstrap.session,
+            runtime,
+            bootstrap.config.surface,
+            prototypeScopeOf(bootstrap.config.target),
+          )
+        )
+          return;
         apply(event.data.config);
       };
       const navigation = async (href: string, replace: boolean) => {
         if (!validHref(href)) return;
         if (current.surface === 'embed' || href === current.href) return;
-        if (hosted) { send({ kind: 'navigate', href, replace }); return; }
+        if (hosted) {
+          send({ kind: 'navigate', href, replace });
+          return;
+        }
         const ticket = ++request;
         const target = await targetFromHref(href);
         if (ticket !== request) return;
-        if (!target) { window.location.assign(href); return; }
+        if (!target) {
+          window.location.assign(href);
+          return;
+        }
         if (prototypeScopeOf(target) !== prototypeScopeOf(current.target)) {
-          window.location.assign(previewUrl({ ...current, target, href }, crypto.randomUUID(), import.meta.env.BASE_URL));
+          window.location.assign(
+            previewUrl({ ...current, target, href }, crypto.randomUUID(), import.meta.env.BASE_URL),
+          );
           return;
         }
         apply({ ...current, target, href });
         const url = previewUrl(current, bootstrap.session, import.meta.env.BASE_URL);
-        if (replace) window.history.replaceState(null, '', url); else window.history.pushState(null, '', url);
+        if (replace) window.history.replaceState(null, '', url);
+        else window.history.pushState(null, '', url);
       };
-      const unsubscribe = history.subscribe(({ action }) => { void navigation(history.location.href, action.type === 'REPLACE'); });
+      const unsubscribe = history.subscribe(({ action }) => {
+        void navigation(history.location.href, action.type === 'REPLACE');
+      });
       const onClick = (event: MouseEvent) => {
         const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[href]') : null;
-        if (!anchor || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || anchor.download || anchor.target === '_blank') return;
+        if (
+          !anchor ||
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.altKey ||
+          event.shiftKey ||
+          anchor.download ||
+          anchor.target === '_blank'
+        )
+          return;
         const raw = anchor.getAttribute('href')!;
         const url = new URL(raw, document.baseURI);
         if (raw.startsWith('#')) {
           event.preventDefault();
           const hash = raw.slice(1);
-          try { document.getElementById(decodeURIComponent(hash))?.scrollIntoView(); } catch { /* malformed hash */ }
-          void router.navigate({ to: routerHref(history.location.pathname + history.location.search + raw, import.meta.env.BASE_URL) as never });
+          try {
+            document.getElementById(decodeURIComponent(hash))?.scrollIntoView();
+          } catch {
+            /* malformed hash */
+          }
+          void router.navigate({
+            to: routerHref(
+              history.location.pathname + history.location.search + raw,
+              import.meta.env.BASE_URL,
+            ) as never,
+          });
         } else if (url.origin === location.origin && url.pathname.startsWith(import.meta.env.BASE_URL)) {
           // Native anchors and TanStack links both stay inside the Studio navigation policy.
           event.preventDefault();
-          void router.navigate({ to: routerHref(url.pathname + url.search + url.hash, import.meta.env.BASE_URL) as never });
+          void router.navigate({
+            to: routerHref(url.pathname + url.search + url.hash, import.meta.env.BASE_URL) as never,
+          });
         } else if (url.protocol === 'https:' || url.protocol === 'http:') {
           event.preventDefault();
           window.open(url.href, '_blank', 'noopener,noreferrer');
@@ -188,27 +338,56 @@ function start() {
       const onKey = (event: KeyboardEvent) => {
         const action = previewShortcut(event);
         if (!hosted || current.surface !== 'page' || event.defaultPrevented || !action) return;
-        if (event.target instanceof HTMLElement && (event.target.isContentEditable || event.target.closest('input,textarea,select'))) return;
-        if ((action === 'source' || action === 'grid') && document.querySelector('[role="dialog"],[role="alertdialog"],[role="menu"]')) return;
-        event.preventDefault(); event.stopImmediatePropagation(); send({ kind: 'shortcut', action });
+        if (
+          event.target instanceof HTMLElement &&
+          (event.target.isContentEditable || event.target.closest('input,textarea,select'))
+        )
+          return;
+        if (
+          (action === 'source' || action === 'grid') &&
+          document.querySelector('[role="dialog"],[role="alertdialog"],[role="menu"]')
+        )
+          return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        send({ kind: 'shortcut', action });
       };
       // Preserve the shell's reserved shortcuts; search can be consumed by prototype handlers.
-      const onReservedKey = (event: KeyboardEvent) => { if (previewShortcut(event) !== 'palette') onKey(event); };
-      const onSearchKey = (event: KeyboardEvent) => { if (previewShortcut(event) === 'palette') onKey(event); };
+      const onReservedKey = (event: KeyboardEvent) => {
+        if (previewShortcut(event) !== 'palette') onKey(event);
+      };
+      const onSearchKey = (event: KeyboardEvent) => {
+        if (previewShortcut(event) === 'palette') onKey(event);
+      };
       const onPopState = () => {
         if (hosted) return;
         try {
           const next = readBootstrap(location.search);
-          if (next.session !== bootstrap.session || prototypeScopeOf(next.config.target) !== prototypeScopeOf(current.target) || next.config.surface !== current.surface) { window.location.reload(); return; }
+          if (
+            next.session !== bootstrap.session ||
+            prototypeScopeOf(next.config.target) !== prototypeScopeOf(current.target) ||
+            next.config.surface !== current.surface
+          ) {
+            window.location.reload();
+            return;
+          }
           ++request; // Cancel any pending direct navigation before restoring browser history.
           apply(next.config);
-        } catch { window.location.reload(); }
+        } catch {
+          window.location.reload();
+        }
       };
       window.addEventListener('popstate', onPopState);
       const reload = () => setRefresh(value => value + 1);
-      const manifest = ({ manifest }: { manifest: Manifest }) => { setManifest(manifest); reload(); };
+      const manifest = ({ manifest }: { manifest: Manifest }) => {
+        setManifest(manifest);
+        reload();
+      };
       let hmrTimer: ReturnType<typeof setTimeout> | undefined;
-      const hmrComplete = () => { clearTimeout(hmrTimer); hmrTimer = setTimeout(reload, 40); };
+      const hmrComplete = () => {
+        clearTimeout(hmrTimer);
+        hmrTimer = setTimeout(reload, 40);
+      };
       const reportError = (detail: string) => {
         send({ kind: 'status', state: 'error', render: lastRender, detail: detail.slice(0, 4096) });
         window.dispatchEvent(new CustomEvent('studio:preview-compile-error', { detail }));
@@ -245,7 +424,11 @@ function start() {
         import.meta.hot?.off('vite:afterUpdate', hmrComplete);
       };
     }, []);
-    return <RuntimeContext.Provider value={{ config, refresh, status }}><RouterProvider router={router} /></RuntimeContext.Provider>;
+    return (
+      <RuntimeContext.Provider value={{ config, refresh, status }}>
+        <RouterProvider router={router} />
+      </RuntimeContext.Provider>
+    );
   }
   document.documentElement.classList.toggle('dark', current.dark);
   const mount = document.getElementById('root')!;
@@ -253,11 +436,15 @@ function start() {
   if (current.surface === 'embed') mount.inert = true;
   const root = createRoot(mount);
   root.render(<Runtime />);
-  import.meta.hot?.dispose(() => { root.unmount(); addressBase.remove(); });
+  import.meta.hot?.dispose(() => {
+    root.unmount();
+    addressBase.remove();
+  });
 }
 
-try { start(); }
-catch (error) {
+try {
+  start();
+} catch (error) {
   const root = document.getElementById('root')!;
   root.setAttribute('role', 'alert');
   root.textContent = error instanceof Error ? error.message : 'This preview could not start.';

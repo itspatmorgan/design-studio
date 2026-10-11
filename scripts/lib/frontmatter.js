@@ -14,11 +14,21 @@ export function frontmatter(text) {
     if (/^[>|][+-]?$/.test(v)) {
       const folded = v[0] === '>';
       const body = [];
-      while (i + 1 < lines.length && (lines[i + 1].trim() === '' || /^\s/.test(lines[i + 1]))) body.push(lines[++i].trim());
-      data[m[1]] = body.join(folded ? ' ' : '\n').replace(/\s+$/, '').replace(/ {2,}/g, ' ');
+      while (i + 1 < lines.length && (lines[i + 1].trim() === '' || /^\s/.test(lines[i + 1])))
+        body.push(lines[++i].trim());
+      data[m[1]] = body
+        .join(folded ? ' ' : '\n')
+        .replace(/\s+$/, '')
+        .replace(/ {2,}/g, ' ');
       continue;
     }
-    if (/^".*"$/.test(v)) { try { v = JSON.parse(v); } catch { v = v.slice(1, -1); } } // "a \"quoted\" word": escapes read as YAML reads them
+    if (/^".*"$/.test(v)) {
+      try {
+        v = JSON.parse(v);
+      } catch {
+        v = v.slice(1, -1);
+      }
+    } // "a \"quoted\" word": escapes read as YAML reads them
     else if (/^'.*'$/.test(v)) v = v.slice(1, -1).replace(/''/g, "'");
     else if (v === 'true' || v === 'false') v = v === 'true';
     else if (v !== '' && !Number.isNaN(Number(v))) v = Number(v);

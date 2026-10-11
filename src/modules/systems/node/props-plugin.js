@@ -11,7 +11,8 @@ import { extractProps } from './extract-props.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 // Any file under a system's components folder can change its props.
-const inComponents = (file) => Object.values(SYSTEM_SOURCES).some((s) => file.startsWith(path.join(ROOT, s.components) + path.sep));
+const inComponents = file =>
+  Object.values(SYSTEM_SOURCES).some(s => file.startsWith(path.join(ROOT, s.components) + path.sep));
 const ID = 'virtual:system-props';
 const RESOLVED = '\0' + ID;
 
@@ -19,9 +20,13 @@ function compute() {
   const keyed = [];
   for (const [id, sys] of Object.entries(SYSTEM_SOURCES)) {
     const dir = path.join(ROOT, sys.components);
-    for (const c of systemDocs(dir).components) if (c.files.source) keyed.push([`${id}/${c.files.source}`, path.join(dir, c.files.source)]);
+    for (const c of systemDocs(dir).components)
+      if (c.files.source) keyed.push([`${id}/${c.files.source}`, path.join(dir, c.files.source)]);
   }
-  const byFile = extractProps(keyed.map(([, file]) => file), ROOT);
+  const byFile = extractProps(
+    keyed.map(([, file]) => file),
+    ROOT,
+  );
   return Object.fromEntries(keyed.map(([key, file]) => [key, byFile[file] ?? []]));
 }
 
@@ -29,20 +34,34 @@ export default function systemProps() {
   let cache = null;
   return {
     name: 'system-props',
-    resolveId: (id) => (id === ID ? RESOLVED : undefined),
+    resolveId: id => (id === ID ? RESOLVED : undefined),
     load(id) {
       if (id !== RESOLVED) return undefined;
-      try { cache ??= compute(); } catch (e) { this.warn(`Could not read component props: ${e.message}`); cache = {}; }
+      try {
+        cache ??= compute();
+      } catch (e) {
+        this.warn(`Could not read component props: ${e.message}`);
+        cache = {};
+      }
       return `export default ${JSON.stringify(cache)}`;
     },
     configureServer(server) {
       // While the app runs it asks here, so the props are always the code's current ones.
       server.middlewares.use('/__studio/system-props', (req, res) => {
-        if (req.headers['sec-fetch-site'] !== 'same-origin') { res.statusCode = 403; return res.end(); }
+        if (req.headers['sec-fetch-site'] !== 'same-origin') {
+          res.statusCode = 403;
+          return res.end();
+        }
         res.setHeader('Content-Type', 'application/json');
-        try { cache ??= compute(); res.end(JSON.stringify(cache)); } catch (e) { res.statusCode = 500; res.end(JSON.stringify({ error: e.message })); }
+        try {
+          cache ??= compute();
+          res.end(JSON.stringify(cache));
+        } catch (e) {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: e.message }));
+        }
       });
-      const stale = (file) => {
+      const stale = file => {
         if (!inComponents(file) || !/\.[jt]sx$/.test(file)) return;
         cache = null;
         const mod = server.moduleGraph.getModuleById(RESOLVED);

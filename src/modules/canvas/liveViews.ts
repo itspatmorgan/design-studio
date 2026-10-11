@@ -22,8 +22,18 @@ export function createMountGate(intervalMs = MOUNT_INTERVAL_MS) {
 
 // The ids to unmount: views no longer on the canvas, and the least recently seen ones beyond
 // MAX_LIVE. `lastSeen` maps each live view to when it was last visible.
-export function pickEvictions({ lastSeen, visible, onCanvas, now }: { lastSeen: Map<string, number>; visible: Set<string>; onCanvas: Set<string>; now: number }): string[] {
-  const gone = [...lastSeen.keys()].filter((id) => !onCanvas.has(id));
+export function pickEvictions({
+  lastSeen,
+  visible,
+  onCanvas,
+  now,
+}: {
+  lastSeen: Map<string, number>;
+  visible: Set<string>;
+  onCanvas: Set<string>;
+  now: number;
+}): string[] {
+  const gone = [...lastSeen.keys()].filter(id => !onCanvas.has(id));
   const excess = lastSeen.size - gone.length - MAX_LIVE;
   if (excess <= 0) return gone;
   const oldest = [...lastSeen.entries()]

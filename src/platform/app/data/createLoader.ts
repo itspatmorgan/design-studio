@@ -39,12 +39,20 @@ async function compileError(url: string, fallback: unknown) {
       const { message, frame } = JSON.parse(json) as { message?: string; frame?: string };
       return new Error([message, frame].filter(Boolean).join('\n\n'));
     }
-  } catch { /* use the original error */ }
+  } catch {
+    /* use the original error */
+  }
   return fallback;
 }
 
 export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
-  const state: State<M> = hot?.data.state ?? { glob, stamp: Date.now(), loaded: new Map(), waiting: [], incomplete: new Set() };
+  const state: State<M> = hot?.data.state ?? {
+    glob,
+    stamp: Date.now(),
+    loaded: new Map(),
+    waiting: [],
+    incomplete: new Set(),
+  };
   const keyOf = ({ contributor, prototype, path }: ItemFile) => `/${rootOf(contributor, prototype)}/${path}`;
 
   // The importer for a file, or undefined.
@@ -56,10 +64,11 @@ export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
   }
 
   // In dev, resolves when the list next changes (or after a timeout).
-  const nextList = (ms: number) => new Promise<void>((resolve) => {
-    state.waiting.push(resolve);
-    setTimeout(resolve, ms);
-  });
+  const nextList = (ms: number) =>
+    new Promise<void>(resolve => {
+      state.waiting.push(resolve);
+      setTimeout(resolve, ms);
+    });
 
   // One import per file, reused on every later visit. In dev, a file the app just created or
   // moved can be in the manifest a moment before Vite adds it here: pass inManifest to wait
@@ -74,12 +83,15 @@ export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
     const key = keyOf(file);
     if (!state.loaded.has(key)) {
       const url = `${key}?t=${state.stamp}`;
-      state.loaded.set(key, importer().catch(async (error) => {
-        // Try again next time, from a new URL: the browser may remember a failed one.
-        state.loaded.delete(key);
-        state.stamp = Date.now();
-        throw hot ? await compileError(url, error) : error;
-      }));
+      state.loaded.set(
+        key,
+        importer().catch(async error => {
+          // Try again next time, from a new URL: the browser may remember a failed one.
+          state.loaded.delete(key);
+          state.stamp = Date.now();
+          throw hot ? await compileError(url, error) : error;
+        }),
+      );
     }
     return state.loaded.get(key);
   }
@@ -92,7 +104,7 @@ export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
       state.stamp = Date.now();
       // Keep already-open, unchanged views stable when another file moves.
       for (const key of state.loaded.keys()) if (!(key in glob)) state.loaded.delete(key);
-      state.waiting.splice(0).forEach((resolve) => resolve());
+      state.waiting.splice(0).forEach(resolve => resolve());
       // A file that was incomplete reaches here once it's fixed: tell the router to load it
       // again (router.tsx).
       if (state.incomplete.size) {
@@ -114,7 +126,9 @@ export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
     });
     if (!hot.data.listening) {
       hot.data.listening = true;
-      window.addEventListener('studio:markdown', ((event: CustomEvent<{ key: string; mod: M; reference?: boolean }>) => {
+      window.addEventListener('studio:markdown', ((
+        event: CustomEvent<{ key: string; mod: M; reference?: boolean }>,
+      ) => {
         if (event.detail.reference || !(event.detail.key in state.glob)) return;
         state.loaded.set(event.detail.key, Promise.resolve(event.detail.mod));
         window.dispatchEvent(new CustomEvent('studio:views', { detail: { files: [event.detail.key] } }));

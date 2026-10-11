@@ -21,7 +21,7 @@ function setLofi(source: string, on: boolean) {
 }
 
 export default defineFileType({
-  capabilities: { source: true, create: true, fidelity: true, embeds: ['document','canvas'], actions: [] },
+  capabilities: { source: true, create: true, fidelity: true, embeds: ['document', 'canvas'], actions: [] },
   inPrototype: true,
   inSystemContent: false,
   fallback: false,
@@ -36,7 +36,10 @@ export default defineFileType({
     `import { emptyView } from '@/lib/emptyView';\n\n// Empty until something is built here: describe it to your agent, who replaces this export with the view.\nexport default emptyView;\n`,
 
   // The app renders a view's default export.
-  check: ({ source }) => (/export\s+default\b|export\s*\{[^}]*\bas\s+default\b/.test(source)
-    ? []
-    : ['a view needs a default export, the component the app renders (export default function MyView() { ... }). Helpers belong in a file or folder named with a leading underscore (_components/).']),
+  check: ({ source }) =>
+    /export\s+default\b|export\s*\{[^}]*\bas\s+default\b/.test(source)
+      ? []
+      : [
+          'a view needs a default export, the component the app renders (export default function MyView() { ... }). Helpers belong in a file or folder named with a leading underscore (_components/).',
+        ],
 });

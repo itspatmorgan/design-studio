@@ -17,7 +17,7 @@ import { appPathOf, isInPrototype, resolveArtifactPath } from '@/platform/app/ar
 import EmbedFrame, { EMBED_HEADER_HEIGHT as HEADER_HEIGHT } from '@/platform/app/artifacts/EmbedFrame';
 const BORDER = 2; // 1px each side
 const DEFAULT_WIDTH = 480;
-const DEFAULT_BODY_HEIGHT = Math.round(DEFAULT_WIDTH * 900 / 1440); // a 1440 x 900 screen, scaled
+const DEFAULT_BODY_HEIGHT = Math.round((DEFAULT_WIDTH * 900) / 1440); // a 1440 x 900 screen, scaled
 
 // Excalidraw's `validateEmbeddable`: only links into this app are embeds. Anything else (a
 // video, a web page) isn't, so a canvas never loads another site.
@@ -35,32 +35,52 @@ const elsewhere = (link: string | null, current: Prototype) => {
 };
 const embedOf = (manifest: Manifest, link: string | null, current: Prototype) => {
   const target = resolve(manifest, link, current);
-  return target ? embedFor(FILE_TYPES[target.item.fileType], fileTypeModules[target.item.fileType], 'canvas', 'prototype') : undefined;
+  return target
+    ? embedFor(FILE_TYPES[target.item.fileType], fileTypeModules[target.item.fileType], 'canvas', 'prototype')
+    : undefined;
 };
 
 // The size of a new embed: a preview is a screen, a card is a compact row.
 function defaultSize(manifest: Manifest, link: string | null, current: Prototype) {
-  return { width: DEFAULT_WIDTH, height: embedOf(manifest, link, current) ? HEADER_HEIGHT + BORDER + DEFAULT_BODY_HEIGHT : ITEM_CARD_HEIGHT };
+  return {
+    width: DEFAULT_WIDTH,
+    height: embedOf(manifest, link, current) ? HEADER_HEIGHT + BORDER + DEFAULT_BODY_HEIGHT : ITEM_CARD_HEIGHT,
+  };
 }
 
-const isItem = (el: ExcalidrawElement) => el.type === 'embeddable' && !el.isDeleted && el.link != null && appPathOf(el.link) !== null;
+const isItem = (el: ExcalidrawElement) =>
+  el.type === 'embeddable' && !el.isDeleted && el.link != null && appPathOf(el.link) !== null;
 
 // Rules for items on a canvas (they're `embeddable` elements, but act like frames, not shapes):
 // sized like a screen (or a card) when first inserted instead of Excalidraw's video-box default,
 // no Excalidraw outline (the shared rounded frame draws its own border), and
 // no link icon (the title bar is the link).
 // Kept out of undo history: undo must reverse only what the person did.
-export function normalizeEmbeds(api: ExcalidrawImperativeAPI, elements: readonly ExcalidrawElement[], manifest: Manifest, current: Prototype) {
-  const pending = elements.filter((el) => isItem(el) && (!el.customData?.frame || el.roundness || el.strokeColor !== 'transparent' || !el.customData?.hideLinkIcon));
+export function normalizeEmbeds(
+  api: ExcalidrawImperativeAPI,
+  elements: readonly ExcalidrawElement[],
+  manifest: Manifest,
+  current: Prototype,
+) {
+  const pending = elements.filter(
+    el =>
+      isItem(el) &&
+      (!el.customData?.frame || el.roundness || el.strokeColor !== 'transparent' || !el.customData?.hideLinkIcon),
+  );
   if (!pending.length) return;
-  const ids = new Set(pending.map((el) => el.id));
+  const ids = new Set(pending.map(el => el.id));
   api.updateScene({
-    elements: api.getSceneElementsIncludingDeleted().map((el) => {
+    elements: api.getSceneElementsIncludingDeleted().map(el => {
       if (!ids.has(el.id)) return el;
       const size = defaultSize(manifest, el.type === 'embeddable' ? el.link : null, current);
       const placed = el.customData?.frame ? {} : { ...size, x: el.x - size.width / 2, y: el.y - size.height / 2 };
       // hideLinkIcon is read by our Excalidraw patch (patches/README.md).
-      return newElementWith(el, { ...placed, roundness: null, strokeColor: 'transparent', customData: { ...el.customData, frame: true, hideLinkIcon: true } });
+      return newElementWith(el, {
+        ...placed,
+        roundness: null,
+        strokeColor: 'transparent',
+        customData: { ...el.customData, frame: true, hideLinkIcon: true },
+      });
     }),
     captureUpdate: CaptureUpdateAction.NEVER,
   });
@@ -70,8 +90,8 @@ export function normalizeEmbeds(api: ExcalidrawImperativeAPI, elements: readonly
 export function onlyItemsSelected(elements: readonly ExcalidrawElement[], appState: AppState) {
   const ids = Object.keys(appState.selectedElementIds);
   if (!ids.length) return false;
-  const byId = new Map(elements.map((el) => [el.id, el]));
-  return ids.every((id) => byId.get(id) && isItem(byId.get(id)!));
+  const byId = new Map(elements.map(el => [el.id, el]));
+  return ids.every(id => byId.get(id) && isItem(byId.get(id)!));
 }
 
 const CULL_MARGIN_PX = 400;
@@ -87,16 +107,30 @@ export function renderFlags(element: ExcalidrawElement, appState: AppState, marg
   const top = -appState.scrollY - margin;
   const right = -appState.scrollX + appState.width / zoom + margin;
   const bottom = -appState.scrollY + appState.height / zoom + margin;
-  const offscreen = element.x > right || element.x + element.width < left || element.y > bottom || element.y + element.height < top;
+  const offscreen =
+    element.x > right || element.x + element.width < left || element.y > bottom || element.y + element.height < top;
   return { offscreen, overview: zoom < OVERVIEW_ZOOM };
 }
 
 // Opening waits for the initial viewport, not the preloading margin or distant views.
-export function openingEmbedIds(elements: readonly ExcalidrawElement[], appState: AppState, manifest: Manifest, current: Prototype, overviewCards = true) {
-  return elements.filter((element) => {
-    const { offscreen, overview } = renderFlags(element, appState, 0);
-    return isItem(element) && !offscreen && !(overview && overviewCards) && Boolean(embedOf(manifest, element.type === 'embeddable' ? element.link : null, current));
-  }).map((element) => element.id);
+export function openingEmbedIds(
+  elements: readonly ExcalidrawElement[],
+  appState: AppState,
+  manifest: Manifest,
+  current: Prototype,
+  overviewCards = true,
+) {
+  return elements
+    .filter(element => {
+      const { offscreen, overview } = renderFlags(element, appState, 0);
+      return (
+        isItem(element) &&
+        !offscreen &&
+        !(overview && overviewCards) &&
+        Boolean(embedOf(manifest, element.type === 'embeddable' ? element.link : null, current))
+      );
+    })
+    .map(element => element.id);
 }
 
 type ItemProps = {
@@ -112,21 +146,43 @@ type ItemProps = {
 function CanvasItemInner({ element, manifest, current, offscreen, overview, mounted }: ItemProps) {
   const link = element.type === 'embeddable' ? element.link : null;
   const target = resolve(manifest, link, current);
-  const Embed = target && embedFor(FILE_TYPES[target.item.fileType], fileTypeModules[target.item.fileType], 'canvas', 'prototype');
+  const Embed =
+    target && embedFor(FILE_TYPES[target.item.fileType], fileTypeModules[target.item.fileType], 'canvas', 'prototype');
   // A card fills the element. A missing one is a card too, and so is one from another prototype.
-  if (!target || !Embed) return <div data-canvas-frame="" className="h-full w-full"><ArtifactCard proto={target?.proto} item={target?.item} elsewhere={elsewhere(link, current)} /></div>;
+  if (!target || !Embed)
+    return (
+      <div data-canvas-frame='' className='h-full w-full'>
+        <ArtifactCard proto={target?.proto} item={target?.item} elsewhere={elsewhere(link, current)} />
+      </div>
+    );
   const { proto, item } = target;
   const hidden = offscreen || overview;
   return (
-    <EmbedFrame proto={proto} item={item} className="h-full w-full">
+    <EmbedFrame proto={proto} item={item} className='h-full w-full'>
       {/* Hidden means mounted but skipped for layout and paint (far off screen, or too small to
           read), so the live preview never reloads or jumps. */}
-      <div inert data-canvas-embed-id={element.id} className="min-h-0 flex-1" style={hidden ? { visibility: 'hidden', contentVisibility: 'hidden' } : undefined}>
-        {mounted
-          ? <Embed proto={proto} item={item} width={element.width - BORDER} height={element.height - HEADER_HEIGHT - BORDER} />
-          : <div className="h-full bg-muted/50" />}
+      <div
+        inert
+        data-canvas-embed-id={element.id}
+        className='min-h-0 flex-1'
+        style={hidden ? { visibility: 'hidden', contentVisibility: 'hidden' } : undefined}
+      >
+        {mounted ? (
+          <Embed
+            proto={proto}
+            item={item}
+            width={element.width - BORDER}
+            height={element.height - HEADER_HEIGHT - BORDER}
+          />
+        ) : (
+          <div className='h-full bg-muted/50' />
+        )}
       </div>
-      {overview && !offscreen && <div className="canvas-overview"><span>{artifactLabel(item.path)}</span></div>}
+      {overview && !offscreen && (
+        <div className='canvas-overview'>
+          <span>{artifactLabel(item.path)}</span>
+        </div>
+      )}
     </EmbedFrame>
   );
 }
@@ -134,7 +190,14 @@ function CanvasItemInner({ element, manifest, current, offscreen, overview, moun
 // Excalidraw calls `renderEmbeddable` on every render, including each pan and zoom frame.
 // Without this, every live preview re-rendered per frame. It re-renders only when this element's
 // own data changes.
-export const CanvasItem = memo(CanvasItemInner, (a, b) => (
-  a.manifest === b.manifest && a.current === b.current && a.element.id === b.element.id && a.element.version === b.element.version
-  && a.offscreen === b.offscreen && a.overview === b.overview && a.mounted === b.mounted
-));
+export const CanvasItem = memo(
+  CanvasItemInner,
+  (a, b) =>
+    a.manifest === b.manifest &&
+    a.current === b.current &&
+    a.element.id === b.element.id &&
+    a.element.version === b.element.version &&
+    a.offscreen === b.offscreen &&
+    a.overview === b.overview &&
+    a.mounted === b.mounted,
+);

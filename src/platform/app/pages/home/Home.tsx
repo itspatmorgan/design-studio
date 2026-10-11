@@ -25,26 +25,26 @@ export default function Home() {
   const first = name?.split(' ')[0];
   const heading = name === undefined ? '\u00a0' : first ? `Welcome back, ${first}` : APP_NAME;
   return (
-    <main className="mx-auto w-full max-w-xl px-4 pt-[12vh] pb-10">
-      <header className="mb-6">
-        <h1 className="text-center text-2xl font-semibold tracking-tight text-foreground">{heading}</h1>
-        {!local && TAGLINE && <p className="mt-1.5 text-center text-sm text-muted-foreground">{TAGLINE}</p>}
+    <main className='mx-auto w-full max-w-xl px-4 pt-[12vh] pb-10'>
+      <header className='mb-6'>
+        <h1 className='text-center text-2xl font-semibold tracking-tight text-foreground'>{heading}</h1>
+        {!local && TAGLINE && <p className='mt-1.5 text-center text-sm text-muted-foreground'>{TAGLINE}</p>}
       </header>
-      <Card className="gap-0 py-0 pb-1">
+      <Card className='gap-0 py-0 pb-1'>
         {/* The panel's first row is its search: one piece of the panel, flush with its edges and divided from the sections by a line,
             not a field set inside it. It opens the ⌘K palette, the search every page has, put where a first-time visitor will see it.
             Custom on purpose: the stock Button and Kbd looked like a control placed in the panel. */}
         <button
-          type="button"
+          type='button'
           onClick={openPalette}
-          className="flex h-11 w-full items-center gap-2.5 border-b border-border px-4 text-left text-sm text-muted-foreground transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50"
+          className='flex h-11 w-full items-center gap-2.5 border-b border-border px-4 text-left text-sm text-muted-foreground transition-colors outline-none hover:bg-muted/50 focus-visible:bg-muted/50'
         >
           <HugeiconsIcon icon={Search01Icon} size={16} />
-          <span className="flex-1">Search the studio</span>
-          <kbd className="rounded border border-border px-1.5 py-0.5 font-sans text-[11px] leading-none">⌘K</kbd>
+          <span className='flex-1'>Search the studio</span>
+          <kbd className='rounded border border-border px-1.5 py-0.5 font-sans text-[11px] leading-none'>⌘K</kbd>
         </button>
         {/* A little more space under the search than between sections, so the top of the list is as far from the line as the bottom is from the edge. */}
-        <div className="pt-1.5">
+        <div className='pt-1.5'>
           {homeApps(local).map(({ spec, app }) => app.overview && <app.overview key={spec.id} manifest={manifest} />)}
         </div>
       </Card>

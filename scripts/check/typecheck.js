@@ -11,7 +11,15 @@ const files = parsed.fileNames.filter(file => !unavailable.some(dir => file.star
 const program = ts.createProgram(files, parsed.options);
 const diagnostics = [...parsed.errors, ...ts.getPreEmitDiagnostics(program)];
 if (diagnostics.length) {
-  console.error(ts.formatDiagnosticsWithColorAndContext(diagnostics, { getCanonicalFileName: file => file, getCurrentDirectory: () => root, getNewLine: () => '\n' }));
+  console.error(
+    ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+      getCanonicalFileName: file => file,
+      getCurrentDirectory: () => root,
+      getNewLine: () => '\n',
+    }),
+  );
   process.exit(1);
 }
-execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.node.json'], { stdio: 'inherit' });
+execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.node.json'], {
+  stdio: 'inherit',
+});

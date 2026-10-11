@@ -4,8 +4,8 @@ import { gunzipSync } from 'node:zlib';
 import { MAX_FILES, MAX_FILE_BYTES, MAX_TOTAL_BYTES, plainPath } from '../../src/platform/core/modules/pack.ts';
 
 const MAX_EXPANDED = MAX_TOTAL_BYTES + MAX_FILES * 2048 + 1024 * 1024;
-const field = (buffer) => buffer.toString('utf8').replace(/\0.*$/s, '').trim();
-const octal = (buffer) => {
+const field = buffer => buffer.toString('utf8').replace(/\0.*$/s, '').trim();
+const octal = buffer => {
   const value = field(buffer);
   if (!/^[0-7]*$/.test(value)) throw new Error('Unsupported archive number.');
   return parseInt(value || '0', 8);
@@ -16,10 +16,13 @@ export function archiveEntries(compressed) {
   const tar = gunzipSync(compressed, { maxOutputLength: MAX_EXPANDED });
   const entries = [];
   const seen = new Set();
-  let total = 0, files = 0, nextName = null, offset = 0;
+  let total = 0,
+    files = 0,
+    nextName = null,
+    offset = 0;
   while (offset + 512 <= tar.length) {
     const header = tar.subarray(offset, offset + 512);
-    if (header.every((byte) => byte === 0)) break;
+    if (header.every(byte => byte === 0)) break;
     const checksum = header.reduce((sum, byte, index) => sum + (index >= 148 && index < 156 ? 32 : byte), 0);
     if (checksum !== octal(header.subarray(148, 156))) throw new Error('Invalid archive checksum.');
     const size = octal(header.subarray(124, 136));
@@ -29,16 +32,21 @@ export function archiveEntries(compressed) {
     if (offset > tar.length) throw new Error('The archive is truncated.');
     const data = tar.subarray(start, start + size);
     const type = String.fromCharCode(header[156]);
-    if (type === 'L') { nextName = field(data); continue; }
+    if (type === 'L') {
+      nextName = field(data);
+      continue;
+    }
     if (type === 'x' || type === 'g') {
       let at = 0;
       while (at < data.length) {
         const space = data.indexOf(32, at);
         const length = Number(data.subarray(at, space).toString());
-        if (space < at || !Number.isInteger(length) || length <= space - at + 1 || at + length > data.length) throw new Error('Invalid archive metadata.');
+        if (space < at || !Number.isInteger(length) || length <= space - at + 1 || at + length > data.length)
+          throw new Error('Invalid archive metadata.');
         const record = data.subarray(space + 1, at + length - 1).toString('utf8');
         const equal = record.indexOf('=');
-        const key = record.slice(0, equal), value = record.slice(equal + 1);
+        const key = record.slice(0, equal),
+          value = record.slice(equal + 1);
         if (equal < 1 || /sparse|linkpath/i.test(key)) throw new Error('Unsupported archive metadata.');
         if (key === 'path') {
           if (type === 'g') throw new Error('Global archive paths are unsupported.');
@@ -49,9 +57,12 @@ export function archiveEntries(compressed) {
       }
       continue;
     }
-    if (!['0', '\0', '5'].includes(type)) throw new Error('Archives may contain only regular files and folders, never links.');
+    if (!['0', '\0', '5'].includes(type))
+      throw new Error('Archives may contain only regular files and folders, never links.');
     const prefix = field(header.subarray(345, 500));
-    const name = (nextName ?? `${prefix ? prefix + '/' : ''}${field(header.subarray(0, 100))}`).replace(/^(\.\/)+/, '').replace(/\/$/, '');
+    const name = (nextName ?? `${prefix ? prefix + '/' : ''}${field(header.subarray(0, 100))}`)
+      .replace(/^(\.\/)+/, '')
+      .replace(/\/$/, '');
     nextName = null;
     if (!name && type === '5') continue;
     if (!plainPath(name) || seen.has(name)) throw new Error(`Invalid or duplicate archive path: ${name}`);
@@ -59,14 +70,16 @@ export function archiveEntries(compressed) {
     seen.add(name);
     total += size;
     if (type !== '5') files++;
-    if (files > MAX_FILES || entries.length >= MAX_FILES * 3 || total > MAX_TOTAL_BYTES) throw new Error('The archive exceeds the pack size or file-count limits.');
+    if (files > MAX_FILES || entries.length >= MAX_FILES * 3 || total > MAX_TOTAL_BYTES)
+      throw new Error('The archive exceeds the pack size or file-count limits.');
     entries.push({ name, directory: type === '5', data });
   }
   if (nextName || offset + 512 > tar.length) throw new Error('The archive is truncated.');
-  const fileNames = new Set(entries.filter((entry) => !entry.directory).map((entry) => entry.name));
+  const fileNames = new Set(entries.filter(entry => !entry.directory).map(entry => entry.name));
   for (const entry of entries) {
     const parts = entry.name.split('/');
-    for (let i = 1; i < parts.length; i++) if (fileNames.has(parts.slice(0, i).join('/'))) throw new Error('An archive file cannot also be a folder.');
+    for (let i = 1; i < parts.length; i++)
+      if (fileNames.has(parts.slice(0, i).join('/'))) throw new Error('An archive file cannot also be a folder.');
   }
   return entries;
 }

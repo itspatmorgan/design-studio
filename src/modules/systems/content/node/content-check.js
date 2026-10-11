@@ -10,7 +10,7 @@ import { SYSTEM_CONTENT_SECTIONS } from '../../../../platform/core/roots.ts';
 import { SKILL_FILE, skillProblems } from '../skills.ts';
 import { frontmatter } from '../../../../../scripts/lib/frontmatter.js';
 
-const visible = (dir) => fs.readdirSync(dir, { withFileTypes: true }).filter((e) => !e.name.startsWith('.'));
+const visible = dir => fs.readdirSync(dir, { withFileTypes: true }).filter(e => !e.name.startsWith('.'));
 const sections = Object.keys(SYSTEM_CONTENT_SECTIONS);
 
 // Every file under a folder, as paths relative to it.
@@ -23,25 +23,41 @@ function* filesUnder(dir, base = '') {
 
 export function systemContentProblems(root, { scoped = false } = {}) {
   const problems = [];
-  const here = (p) => `${root}/${p}`;
+  const here = p => `${root}/${p}`;
   for (const e of scoped ? [] : visible(root)) {
     if (e.isDirectory() && sections.includes(e.name)) continue;
     const where = e.isDirectory() ? `${here(e.name)}/` : here(e.name);
-    problems.push(`${where} isn't part of the system content structure. Put it in ${sections.map((s) => `${s}/`).join(', ').replace(/, ([^,]*)$/, ' or $1')}.`);
+    problems.push(
+      `${where} isn't part of the system content structure. Put it in ${sections
+        .map(s => `${s}/`)
+        .join(', ')
+        .replace(/, ([^,]*)$/, ' or $1')}.`,
+    );
   }
   for (const id of ['context']) {
     const dir = path.join(root, id);
     if (!fs.existsSync(dir)) continue;
     for (const file of filesUnder(dir)) {
-      if (!file.endsWith('.md')) problems.push(`${here(`${id}/${file}`)} isn't a Markdown file. ${id}/ holds Markdown pages only.`);
+      if (!file.endsWith('.md'))
+        problems.push(`${here(`${id}/${file}`)} isn't a Markdown file. ${id}/ holds Markdown pages only.`);
     }
   }
   const skills = path.join(root, 'skills');
   if (fs.existsSync(skills)) {
     for (const e of visible(skills)) {
-      if (!e.isDirectory()) { problems.push(`${here(`skills/${e.name}`)} is loose in skills/. A skill is a folder with a ${SKILL_FILE} in it.`); continue; }
+      if (!e.isDirectory()) {
+        problems.push(
+          `${here(`skills/${e.name}`)} is loose in skills/. A skill is a folder with a ${SKILL_FILE} in it.`,
+        );
+        continue;
+      }
       const file = path.join(skills, e.name, SKILL_FILE);
-      if (!fs.existsSync(file)) { problems.push(`${here(`skills/${e.name}/`)} has no ${SKILL_FILE}, so no agent will find the skill. Add one, or move the folder out of skills/.`); continue; }
+      if (!fs.existsSync(file)) {
+        problems.push(
+          `${here(`skills/${e.name}/`)} has no ${SKILL_FILE}, so no agent will find the skill. Add one, or move the folder out of skills/.`,
+        );
+        continue;
+      }
       problems.push(...skillProblems(e.name, frontmatter(fs.readFileSync(file, 'utf8'))));
     }
   }

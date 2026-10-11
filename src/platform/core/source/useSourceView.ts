@@ -7,7 +7,12 @@ export function useSourceView(enabled: boolean, source: boolean) {
   const navigate = useNavigate();
   const rendered = useRef<HTMLDivElement>(null);
   const wasSource = useRef(source);
-  const toggle = () => { void navigate({ to: '.', search: ((previous: object) => ({ ...previous, mode: source ? undefined : 'source' })) as never }); };
+  const toggle = () => {
+    void navigate({
+      to: '.',
+      search: ((previous: object) => ({ ...previous, mode: source ? undefined : 'source' })) as never,
+    });
+  };
   useSourceShortcut(enabled, source, toggle);
   useEffect(() => {
     if (wasSource.current && !source) rendered.current?.focus();

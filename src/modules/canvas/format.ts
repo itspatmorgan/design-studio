@@ -24,10 +24,16 @@ export type ParsedCanvas = {
 };
 
 export function parseCanvas(text: string): ParsedCanvas {
-  const file = JSON.parse(text) as { elements?: unknown; appState?: { viewBackgroundColor?: string; gridSize?: number | null }; studioVersion?: unknown };
-  if (!file || typeof file !== 'object' || !Array.isArray(file.elements)) throw new Error("This isn't a canvas file: it has no list of elements.");
+  const file = JSON.parse(text) as {
+    elements?: unknown;
+    appState?: { viewBackgroundColor?: string; gridSize?: number | null };
+    studioVersion?: unknown;
+  };
+  if (!file || typeof file !== 'object' || !Array.isArray(file.elements))
+    throw new Error("This isn't a canvas file: it has no list of elements.");
   const version = file.studioVersion ?? 1;
-  if (!Number.isInteger(version) || (version as number) < 1) throw new Error(`Unknown canvas version: ${JSON.stringify(file.studioVersion)}`);
+  if (!Number.isInteger(version) || (version as number) < 1)
+    throw new Error(`Unknown canvas version: ${JSON.stringify(file.studioVersion)}`);
   return {
     studioId: canvasIdentity.read(text),
     elements: withOrigin(file.elements as Stored[]),
@@ -40,12 +46,18 @@ export function parseCanvas(text: string): ParsedCanvas {
 // Stored links are addresses in the app; Excalidraw wants whole URLs.
 function withOrigin(elements: Stored[]): Stored[] {
   const prefix = `${window.location.origin}${import.meta.env.BASE_URL.replace(/\/$/, '')}`;
-  return elements.map((el) => (
-    typeof el.link === 'string' && el.link.startsWith('/') && !el.link.startsWith('//') ? { ...el, link: `${prefix}${el.link}` } : el
-  ));
+  return elements.map(el =>
+    typeof el.link === 'string' && el.link.startsWith('/') && !el.link.startsWith('//')
+      ? { ...el, link: `${prefix}${el.link}` }
+      : el,
+  );
 }
 
-export function serializeCanvas(elements: readonly ExcalidrawElement[], appState: { viewBackgroundColor?: string; gridSize?: number | null } = {}, studioId?: ResourceId | null): string {
+export function serializeCanvas(
+  elements: readonly ExcalidrawElement[],
+  appState: { viewBackgroundColor?: string; gridSize?: number | null } = {},
+  studioId?: ResourceId | null,
+): string {
   // An item's link is its app path; any other link (there shouldn't be one) is kept as it is.
-  return stringifyScene(elements as unknown as Stored[], appState, (link) => appPathOf(link) ?? link, studioId);
+  return stringifyScene(elements as unknown as Stored[], appState, link => appPathOf(link) ?? link, studioId);
 }

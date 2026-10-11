@@ -20,7 +20,9 @@ const key = (p: PrototypeInfo) => `${p.contributorKey}/${p.id}`;
 export const TAB_ID = Math.random().toString(36).slice(2);
 
 async function fetchFiles(p: PrototypeInfo): Promise<FileNode[] | null> {
-  const res = await fetch(`/__studio/files?contributor=${encodeURIComponent(p.contributorKey)}&prototype=${encodeURIComponent(p.id)}`);
+  const res = await fetch(
+    `/__studio/files?contributor=${encodeURIComponent(p.contributorKey)}&prototype=${encodeURIComponent(p.id)}`,
+  );
   return res.ok ? ((await res.json()) as { files: FileNode[] }).files : null;
 }
 
@@ -32,24 +34,39 @@ export function useFileTree(proto: PrototypeInfo) {
   useEffect(() => {
     if (!import.meta.hot) return;
     let live = true;
-    const load = () => fetchFiles(proto).then((f) => { if (live) setFiles(f); }).catch(() => {});
+    const load = () =>
+      fetchFiles(proto)
+        .then(f => {
+          if (live) setFiles(f);
+        })
+        .catch(() => {});
     setReload(() => load);
     load();
-    const onChange = (changed: string[]) => { if (changed.includes(key(proto))) load(); };
+    const onChange = (changed: string[]) => {
+      if (changed.includes(key(proto))) load();
+    };
     import.meta.hot.on('studio:files', onChange);
-    return () => { live = false; import.meta.hot?.off('studio:files', onChange); };
+    return () => {
+      live = false;
+      import.meta.hot?.off('studio:files', onChange);
+    };
   }, [proto.contributorKey, proto.id]);
   return { files, reload };
 }
 
 // The file's path from the repo root, like src/prototypes/patrick/hello-world/meta.json (the
 // prototype's folder for an empty `file`).
-export const repoPath = (p: PrototypeInfo, file: string) => `src/${rootOf(p.contributorKey, p.id)}${file ? `/${file}` : ''}`;
+export const repoPath = (p: PrototypeInfo, file: string) =>
+  `src/${rootOf(p.contributorKey, p.id)}${file ? `/${file}` : ''}`;
 
 // Every entry point gets the same checked response and visible fallback/failure.
 export async function openRepositoryFile(path: string) {
   try {
-    const res = await fetch('/__studio/editor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
+    const res = await fetch('/__studio/editor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    });
     const body = await res.json();
     if (!res.ok) throw new Error(body.error ?? "Couldn't open this file. Use Edit source or copy its path.");
     if (!body.opened) toast.add({ title: body.message });
@@ -77,7 +94,17 @@ export async function revealInFinder(p: PrototypeInfo, file: string) {
 }
 
 // Canvas loads identity before mounting, avoiding a read-only toolbar flash.
-export const preloadIdentity = () => meRequest ??= fetch('/__studio/me').then((r) => { if (!r.ok) throw new Error('Identity unavailable'); return r.json() as Promise<Who>; }).catch(() => ({ key: null, name: null })).then(who => { resolvedWho = who; return who; });
+export const preloadIdentity = () =>
+  (meRequest ??= fetch('/__studio/me')
+    .then(r => {
+      if (!r.ok) throw new Error('Identity unavailable');
+      return r.json() as Promise<Who>;
+    })
+    .catch(() => ({ key: null, name: null }))
+    .then(who => {
+      resolvedWho = who;
+      return who;
+    }));
 
 // Who you are, from the dev server: your contributor key and name, both null on the deployed site or if
 // you're not a contributor. The name is undefined while the dev server hasn't answered yet.
@@ -86,7 +113,11 @@ let meRequest: Promise<Who> | undefined;
 let resolvedWho: Who | undefined;
 const identityListeners = new Set<() => void>();
 if (import.meta.hot) {
-  const changed = () => { meRequest = undefined; resolvedWho = undefined; identityListeners.forEach((reload) => reload()); };
+  const changed = () => {
+    meRequest = undefined;
+    resolvedWho = undefined;
+    identityListeners.forEach(reload => reload());
+  };
   import.meta.hot.on('studio:identity', changed);
   import.meta.hot.dispose(() => import.meta.hot?.off('studio:identity', changed));
 }
@@ -97,11 +128,16 @@ function useWho(): Who {
     let live = true;
     const reload = () => {
       const request = preloadIdentity();
-      void request.then((next) => { if (live && request === meRequest) setWho(next); });
+      void request.then(next => {
+        if (live && request === meRequest) setWho(next);
+      });
     };
     identityListeners.add(reload);
     reload();
-    return () => { live = false; identityListeners.delete(reload); };
+    return () => {
+      live = false;
+      identityListeners.delete(reload);
+    };
   }, []);
   return who;
 }
@@ -113,12 +149,16 @@ export const useMyName = () => useWho().name;
 
 // Whether you own a prototype (so you may archive or delete it): your own, or a section item you maintain. The
 // policy of its section decides (src/platform/core/permissions.ts); the dev server checks again on every change.
-export const canEditSource = (path: string, me: string | null) => canPerform(CONFIG, me, me ? [me] : [], pathResource(path, SYSTEM_SPECS), 'edit');
+export const canEditSource = (path: string, me: string | null) =>
+  canPerform(CONFIG, me, me ? [me] : [], pathResource(path, SYSTEM_SPECS), 'edit');
 const subject = (p: PrototypeInfo, me: string | null) => ({ me, key: p.contributorKey, maintainers: p.maintainers });
 const policyOf = (p: PrototypeInfo) => policyFor(p.contributorKey, MODULES);
-export const ownsPrototype = (p: PrototypeInfo, me: string | null) => policyOf(p) !== 'open' && (canOwn(policyOf(p), subject(p, me)) || canPerform(CONFIG, me, me ? [me] : [], { kind: 'platform' }, 'edit'));
+export const ownsPrototype = (p: PrototypeInfo, me: string | null) =>
+  policyOf(p) !== 'open' &&
+  (canOwn(policyOf(p), subject(p, me)) || canPerform(CONFIG, me, me ? [me] : [], { kind: 'platform' }, 'edit'));
 // Shared source requires resource grants in addition to artifact ownership.
-export const canChangePrototype = (p: PrototypeInfo, me: string | null) => canOwn(policyOf(p), subject(p, me)) || canEditSource('src/' + rootOf(p.contributorKey, p.id), me);
+export const canChangePrototype = (p: PrototypeInfo, me: string | null) =>
+  canOwn(policyOf(p), subject(p, me)) || canEditSource('src/' + rootOf(p.contributorKey, p.id), me);
 
 export type FileOp =
   | { op: 'create'; path: string; name: string; dir?: boolean }
@@ -138,7 +178,14 @@ export type FileOpResult = { path?: string; trashedTo?: string; relinkedFiles?: 
 // A prototype system's components folder, in the shape the file layer takes for a prototype
 // (src/platform/core/roots.ts): what the Source view and the operations above are given.
 export const systemFiles = (system: string): Prototype => ({
-  id: system, contributorKey: SYSTEMS_KEY, title: system, description: '', contributor: '', created: null, system, artifacts: [],
+  id: system,
+  contributorKey: SYSTEMS_KEY,
+  title: system,
+  description: '',
+  contributor: '',
+  created: null,
+  system,
+  artifacts: [],
 });
 
 // Changes a file in your prototype (scripts/build/vite-files-plugin.js). Throws the server's message.
@@ -165,14 +212,18 @@ export async function readSource(p: PrototypeInfo, path: string) {
 
 // Switches an item in your prototype to lofi or back, by changing the marker in its file the way its
 // type says (fidelity in its type.ts). The manifest follows from the file changing, like any edit.
-export async function setArtifactLofi(p: PrototypeInfo, path: string, on: boolean, fidelity: { setLofi(source: string, on: boolean): string }) {
+export async function setArtifactLofi(
+  p: PrototypeInfo,
+  path: string,
+  on: boolean,
+  fidelity: { setLofi(source: string, on: boolean): string },
+) {
   const { content, version } = await readSource(p, path);
   const next = fidelity.setLofi(content, on);
   if (next !== content) await writeSource(p, path, next, version);
 }
 
 // The file changed on disk since it was read (its version isn't `base` any more).
-
 
 // Saves an item file in your prototype. `base` is the version you read or last saved.
 export async function writeSource(p: PrototypeInfo, path: string, content: string, base: string) {

@@ -36,26 +36,84 @@ export default function ArtifactEmbed({ source, label = 'Artifact' }: { source: 
     let active = true;
     setStatus('Loading artifact…');
     const reference = artifactReference(source, base);
-    if (!reference) { setTarget(null); setStatus('Choose a file inside this prototype.'); return; }
-    loadPrototype(reference.contributor, reference.prototype).then((proto) => {
-      if (!active) return;
-      const item = proto && findArtifact(proto, artifactSlug(reference.path));
-      if (!proto || !item || item.path !== reference.path) {
-        setTarget(null); setStatus('File unavailable. Check its path and whether its module is enabled.');
-      } else setTarget({ proto, item });
-    }, () => { if (active) { setTarget(null); setStatus('This file could not load.'); } });
-    return () => { active = false; };
+    if (!reference) {
+      setTarget(null);
+      setStatus('Choose a file inside this prototype.');
+      return;
+    }
+    loadPrototype(reference.contributor, reference.prototype).then(
+      proto => {
+        if (!active) return;
+        const item = proto && findArtifact(proto, artifactSlug(reference.path));
+        if (!proto || !item || item.path !== reference.path) {
+          setTarget(null);
+          setStatus('File unavailable. Check its path and whether its module is enabled.');
+        } else setTarget({ proto, item });
+      },
+      () => {
+        if (active) {
+          setTarget(null);
+          setStatus('This file could not load.');
+        }
+      },
+    );
+    return () => {
+      active = false;
+    };
   }, [source, base, revision]);
   const previewType = target?.item.fileType ?? (reference ? fileTypeOf(reference.path) : null);
-  const Embed = previewType ? embedFor(FILE_TYPES[previewType], fileTypeModules[previewType], 'document', 'prototype') : undefined;
+  const Embed = previewType
+    ? embedFor(FILE_TYPES[previewType], fileTypeModules[previewType], 'document', 'prototype')
+    : undefined;
   const Pending = Embed && previewType ? fileTypeModules[previewType]?.EmbedPending : undefined;
   const pendingSurface = Pending ? <Pending loadingStartedAt={opening.current.started} /> : null;
   const height = Math.max(220, Math.min(440, width * 0.6));
-  return <figure className="not-prose my-6 min-w-0">
-    <EmbedFrame proto={target?.proto} item={target?.item} label={label}>
-    <div ref={container} className="min-w-0" style={{ height: previewType && !Embed ? 88 : height }}>
-      {target ? (Embed ? <div inert className="h-full" style={{ pointerEvents: 'none' }}><ErrorBoundary resetKeys={[source]} fallback={<p role="alert" className="p-4 text-sm">This preview could not render. Open the file to inspect it.</p>}><Suspense fallback={pendingSurface ?? <p role="status" className="p-4 text-sm">Loading preview…</p>}><Embed proto={target.proto} item={target.item} width={width} height={height} loadingStartedAt={opening.current.started} /></Suspense></ErrorBoundary></div> : <ArtifactCard proto={target.proto} item={target.item} />) : status === 'Loading artifact…' && pendingSurface ? pendingSurface : <p role="status" className="p-4 text-sm text-muted-foreground">{status}</p>}
-    </div>
-    </EmbedFrame>
-  </figure>;
+  return (
+    <figure className='not-prose my-6 min-w-0'>
+      <EmbedFrame proto={target?.proto} item={target?.item} label={label}>
+        <div ref={container} className='min-w-0' style={{ height: previewType && !Embed ? 88 : height }}>
+          {target ? (
+            Embed ? (
+              <div inert className='h-full' style={{ pointerEvents: 'none' }}>
+                <ErrorBoundary
+                  resetKeys={[source]}
+                  fallback={
+                    <p role='alert' className='p-4 text-sm'>
+                      This preview could not render. Open the file to inspect it.
+                    </p>
+                  }
+                >
+                  <Suspense
+                    fallback={
+                      pendingSurface ?? (
+                        <p role='status' className='p-4 text-sm'>
+                          Loading preview…
+                        </p>
+                      )
+                    }
+                  >
+                    <Embed
+                      proto={target.proto}
+                      item={target.item}
+                      width={width}
+                      height={height}
+                      loadingStartedAt={opening.current.started}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            ) : (
+              <ArtifactCard proto={target.proto} item={target.item} />
+            )
+          ) : status === 'Loading artifact…' && pendingSurface ? (
+            pendingSurface
+          ) : (
+            <p role='status' className='p-4 text-sm text-muted-foreground'>
+              {status}
+            </p>
+          )}
+        </div>
+      </EmbedFrame>
+    </figure>
+  );
 }

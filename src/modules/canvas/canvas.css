@@ -92,7 +92,6 @@
   /* Opacity slider: filled track (default lavender). */
   --color-slider-track: color-mix(in oklab, var(--primary) 35%, transparent);
   --color-slider-thumb: var(--primary);
-
 }
 
 /* The search field's background is hard-coded (lavender in dark mode); use the app's muted color. */
@@ -185,7 +184,7 @@
   border-radius: calc(var(--radius, 0.5rem) - 2px);
   background: var(--foreground);
   color: var(--background);
-  font: 500 12px/1.4 var(--font-sans);
+  font: 500 12px / 1.4 var(--font-sans);
   white-space: nowrap;
   pointer-events: none;
   box-shadow: 0 2px 6px rgb(0 0 0 / 0.15);
@@ -196,7 +195,7 @@
   padding: 0 0.3rem;
   border-radius: 4px;
   background: color-mix(in oklab, var(--background) 20%, transparent);
-  font: 600 11px/1.5 var(--font-sans);
+  font: 600 11px / 1.5 var(--font-sans);
   text-align: center;
 }
 
@@ -242,7 +241,7 @@
 
 .canvas .excalidraw .zoom-actions .reset-zoom-button {
   padding: 0 0.5rem;
-  font: 500 13px/1 var(--font-sans);
+  font: 500 13px / 1 var(--font-sans);
 }
 
 /* Views need select, move, and Open only: hide Excalidraw's link popover
@@ -274,7 +273,7 @@
   border-radius: 0.75rem;
   background: var(--muted);
   color: var(--muted-foreground);
-  font: 600 72px/1.2 var(--font-sans);
+  font: 600 72px / 1.2 var(--font-sans);
   text-align: center;
   overflow: hidden;
 }
@@ -413,10 +412,14 @@
 }
 
 /* Document previews expose only their outer Open link. */
-.canvas-preview .layer-ui__wrapper { display: none !important; }
+.canvas-preview .layer-ui__wrapper {
+  display: none !important;
+}
 
 /* Scene and previews keep laying out while the quiet opening surface is visible. */
-.canvas .canvas-scene { transition: opacity 160ms ease-out; }
+.canvas .canvas-scene {
+  transition: opacity 160ms ease-out;
+}
 .canvas .canvas-opening-shimmer {
   background: linear-gradient(100deg, var(--muted-foreground) 35%, var(--foreground) 50%, var(--muted-foreground) 65%);
   background-size: 250% 100%;
@@ -426,10 +429,20 @@
   animation: canvas-opening-shimmer 1800ms linear infinite;
 }
 @keyframes canvas-opening-shimmer {
-  from { background-position: 180% 0; }
-  to { background-position: -80% 0; }
+  from {
+    background-position: 180% 0;
+  }
+  to {
+    background-position: -80% 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .canvas .canvas-scene { transition: none; }
-  .canvas .canvas-opening-shimmer { animation: none; background: none; color: var(--muted-foreground); }
+  .canvas .canvas-scene {
+    transition: none;
+  }
+  .canvas .canvas-opening-shimmer {
+    animation: none;
+    background: none;
+    color: var(--muted-foreground);
+  }
 }

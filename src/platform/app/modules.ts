@@ -59,8 +59,10 @@ export type InstalledModule = { spec: ModuleSpec; app: ModuleApp };
 // The modules that are installed, on, work with this platform, and have an app, in order.
 export const moduleApps: InstalledModule[] = Object.entries(apps)
   .flatMap(([path, app]) => {
-    const spec = MODULES.find((m) => m.id === idOf(path));
-    return spec && isEnabled(spec.id) && compatible(spec) && (!app.localOnly || import.meta.env.DEV) ? [{ spec, app }] : [];
+    const spec = MODULES.find(m => m.id === idOf(path));
+    return spec && isEnabled(spec.id) && compatible(spec) && (!app.localOnly || import.meta.env.DEV)
+      ? [{ spec, app }]
+      : [];
   })
   .sort((a, b) => a.app.order - b.app.order);
 
@@ -68,7 +70,11 @@ export const moduleApps: InstalledModule[] = Object.entries(apps)
 export const homeApps = (local: boolean): InstalledModule[] =>
   moduleApps
     .filter(({ app }) => app.overview)
-    .sort((a, b) => (a.app.homeOrder?.[local ? 'local' : 'deployed'] ?? a.app.order) - (b.app.homeOrder?.[local ? 'local' : 'deployed'] ?? b.app.order));
+    .sort(
+      (a, b) =>
+        (a.app.homeOrder?.[local ? 'local' : 'deployed'] ?? a.app.order) -
+        (b.app.homeOrder?.[local ? 'local' : 'deployed'] ?? b.app.order),
+    );
 
 // The address a module's section opens at, like "/examples".
 export const sectionPath = (spec: ModuleSpec) => `/${spec.section!.key}`;

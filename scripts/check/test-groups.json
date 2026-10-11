@@ -106,9 +106,7 @@
       ]
     },
     "publishing": {
-      "tests": [
-        "scripts/lib/boundaries.integration.test.js"
-      ],
+      "tests": ["scripts/lib/boundaries.integration.test.js"],
       "dependencies": [
         "scripts/build/**",
         "src/platform/app/router.tsx",

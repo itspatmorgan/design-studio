@@ -7,7 +7,9 @@ import { frontmatter } from './frontmatter.js';
 
 test('platform context navigation carries the same declared titles as document headings', () => {
   const { manifest } = buildManifest({ write: false, quiet: true });
-  const context = manifest.systemContent.find(section => section.owner?.id === 'platform.core' && section.title === 'Context');
+  const context = manifest.systemContent.find(
+    section => section.owner?.id === 'platform.core' && section.title === 'Context',
+  );
   assert.ok(context);
   assert.ok(context.artifacts.length > 0);
   for (const item of context.artifacts) {

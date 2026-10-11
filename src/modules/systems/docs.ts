@@ -12,9 +12,10 @@
 // reads the files and calls this.
 
 export type SystemComponent = {
-  name: string;                 // as the component file spells it ("Button", "button")
-  slug: string;                 // its page in the Systems section ("icon-button")
-  files: {                      // paths inside the system's components folder; null if absent
+  name: string; // as the component file spells it ("Button", "button")
+  slug: string; // its page in the Systems section ("icon-button")
+  files: {
+    // paths inside the system's components folder; null if absent
     source: string | null;
     examples: string | null;
     doc: string | null;
@@ -23,7 +24,13 @@ export type SystemComponent = {
 
 // A component as the manifest carries it: its files, and what its markdown says about it (`docs` in
 // its frontmatter is a link to its documentation elsewhere).
-export type SystemComponentDoc = SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string };
+export type SystemComponentDoc = SystemComponent & {
+  title: string;
+  description: string;
+  category: string | null;
+  docsUrl: string | null;
+  sourceNote?: string;
+};
 
 // A description from a component's comments, made short enough to read at a glance: its first
 // sentence, without Markdown backticks, cut at a word if it's still longer than `max`.
@@ -43,7 +50,11 @@ export type ComponentPropsDoc = { name: string; props: PropDoc[]; native: boolea
 type Kind = keyof SystemComponent['files'];
 
 // "IconButton" → "icon-button": the component's page in the Systems section.
-const kebab = (name: string) => name.replace(/([a-z\d])([A-Z])/g, '$1-$2').replace(/[^A-Za-z\d]+/g, '-').toLowerCase();
+const kebab = (name: string) =>
+  name
+    .replace(/([a-z\d])([A-Z])/g, '$1-$2')
+    .replace(/[^A-Za-z\d]+/g, '-')
+    .toLowerCase();
 
 // The part of a path after its last "/".
 const baseName = (file: string) => file.slice(file.lastIndexOf('/') + 1);
@@ -80,7 +91,10 @@ export function discoverComponents(files: string[]): SystemComponent[] {
     }
     if (!component.files[c.kind]) component.files[c.kind] = file;
     // The component file names it best (Button over button), whichever was seen first.
-    if (c.kind === 'source') { component.name = c.name; component.slug = kebab(c.name); }
+    if (c.kind === 'source') {
+      component.name = c.name;
+      component.slug = kebab(c.name);
+    }
   }
   return [...found.values()].sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -106,19 +120,24 @@ export function componentProblems(
   const { files } = component;
   const problems: string[] = [];
   const stem = files.source ? baseName(files.source).replace(/\.[jt]sx$/, '') : component.name;
-  if (!files.doc && !files.examples) return [`has no examples or description yet. Add ${stem}.examples.tsx and ${stem}.md`];
+  if (!files.doc && !files.examples)
+    return [`has no examples or description yet. Add ${stem}.examples.tsx and ${stem}.md`];
   if (!files.doc) problems.push(`has no ${stem}.md yet (a title, a description, and a "When to use" section)`);
   else if (text.doc) {
     const file = baseName(files.doc);
     const fm = text.doc.frontmatter ?? {};
     for (const field of ['title', 'description']) {
-      if (typeof fm[field] !== 'string' || !(fm[field] as string).trim()) problems.push(`${file} needs a "${field}" in its front matter`);
+      if (typeof fm[field] !== 'string' || !(fm[field] as string).trim())
+        problems.push(`${file} needs a "${field}" in its front matter`);
     }
-    if (!/^#{2,3}[ \t]+when to use[ \t]*$/im.test(prose(text.doc.body))) problems.push(`${file} needs a "When to use" section (a ## heading)`);
+    if (!/^#{2,3}[ \t]+when to use[ \t]*$/im.test(prose(text.doc.body)))
+      problems.push(`${file} needs a "When to use" section (a ## heading)`);
   }
   if (!files.examples) problems.push(`has no ${stem}.examples.tsx yet (at least one example)`);
   else if (text.examples !== null && exampleNames(text.examples).length === 0) {
-    problems.push(`${baseName(files.examples)} has no examples: export a React component whose name starts with a capital letter`);
+    problems.push(
+      `${baseName(files.examples)} has no examples: export a React component whose name starts with a capital letter`,
+    );
   }
   return problems;
 }
@@ -129,7 +148,11 @@ export function duplicateProblems(components: SystemComponent[]): { component: S
   const problems: { component: SystemComponent; problem: string }[] = [];
   for (const component of components) {
     const first = seen.get(component.slug);
-    if (first) problems.push({ component, problem: `has the same name as ${first.files.source ?? first.files.doc ?? first.files.examples}, so they'd share a page. Rename one` });
+    if (first)
+      problems.push({
+        component,
+        problem: `has the same name as ${first.files.source ?? first.files.doc ?? first.files.examples}, so they'd share a page. Rename one`,
+      });
     else seen.set(component.slug, component);
   }
   return problems;

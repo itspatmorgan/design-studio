@@ -7,16 +7,22 @@ import type { Artifact, Prototype } from '@/platform/app/data/types';
 import { rootOf } from '@/platform/core/roots';
 import { textFiles } from './loader';
 
-const ArtifactSource = import.meta.env.DEV ? lazyRouteComponent(() => import('@/platform/app/source/ArtifactSource')) : null;
+const ArtifactSource = import.meta.env.DEV
+  ? lazyRouteComponent(() => import('@/platform/app/source/ArtifactSource'))
+  : null;
 
 type Props = { proto: Prototype; item: Artifact; text: string | null };
 
 function TextPage({ proto, item, text }: Props) {
   if (text === null) return ArtifactSource && <ArtifactSource proto={proto} item={item} />;
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground">
-      <div className="flex h-[57px] shrink-0 items-center border-b border-border px-4 font-mono text-[12px] text-muted-foreground">{item.path}</div>
-      <pre className="min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[13px] leading-relaxed"><code>{text}</code></pre>
+    <div className='flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground'>
+      <div className='flex h-[57px] shrink-0 items-center border-b border-border px-4 font-mono text-[12px] text-muted-foreground'>
+        {item.path}
+      </div>
+      <pre className='min-h-0 flex-1 overflow-auto px-4 py-3 font-mono text-[13px] leading-relaxed'>
+        <code>{text}</code>
+      </pre>
     </div>
   );
 }

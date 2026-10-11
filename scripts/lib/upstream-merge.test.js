@@ -10,16 +10,41 @@ import { mergeUpstream } from './upstream-merge.js';
 function studio(changes) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'upstream-merge-'));
   const git = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8' }).trim();
-  const write = files => { for (const [file, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); fs.writeFileSync(path.join(dir, file), text); } };
+  const write = files => {
+    for (const [file, text] of Object.entries(files)) {
+      fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+      fs.writeFileSync(path.join(dir, file), text);
+    }
+  };
   git('init', '-q', '-b', 'upstream');
-  git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.test'); git('config', 'commit.gpgsign', 'false');
-  const map = { schema: 1, rules: [{ tier: 'upstream', paths: ['src/platform/**', '.studio/ownership.json'] }, { tier: 'generated', paths: ['pnpm-lock.yaml'] }, { tier: 'seed', paths: ['README.md', 'src/prototypes/sam/**'] }] };
-  write({ '.studio/ownership.json': JSON.stringify(map), 'pnpm-lock.yaml': 'base\n', 'README.md': 'base\n', 'src/platform/a.ts': 'base\n', 'src/prototypes/sam/p/view.tsx': 'base\n' });
-  git('add', '-A'); git('commit', '-q', '-m', 'base');
+  git('config', 'user.name', 'Test');
+  git('config', 'user.email', 'test@example.test');
+  git('config', 'commit.gpgsign', 'false');
+  const map = {
+    schema: 1,
+    rules: [
+      { tier: 'upstream', paths: ['src/platform/**', '.studio/ownership.json'] },
+      { tier: 'generated', paths: ['pnpm-lock.yaml'] },
+      { tier: 'seed', paths: ['README.md', 'src/prototypes/sam/**'] },
+    ],
+  };
+  write({
+    '.studio/ownership.json': JSON.stringify(map),
+    'pnpm-lock.yaml': 'base\n',
+    'README.md': 'base\n',
+    'src/platform/a.ts': 'base\n',
+    'src/prototypes/sam/p/view.tsx': 'base\n',
+  });
+  git('add', '-A');
+  git('commit', '-q', '-m', 'base');
   git('checkout', '-q', '-b', 'studio');
-  write(changes.studio); git('add', '-A'); git('commit', '-q', '-m', 'team');
+  write(changes.studio);
+  git('add', '-A');
+  git('commit', '-q', '-m', 'team');
   git('checkout', '-q', 'upstream');
-  write(changes.upstream); git('add', '-A'); git('commit', '-q', '-m', 'release');
+  write(changes.upstream);
+  git('add', '-A');
+  git('commit', '-q', '-m', 'release');
   git('checkout', '-q', 'studio');
   return { dir, git, read: file => fs.readFileSync(path.join(dir, file), 'utf8') };
 }
@@ -27,7 +52,10 @@ const commands = [];
 const run = (command, args) => commands.push([command, ...args].join(' '));
 
 test('generated files take upstream, seed files keep the team copy, and the result is regenerated', () => {
-  const { dir, git, read } = studio({ studio: { 'pnpm-lock.yaml': 'team\n', 'README.md': 'team\n' }, upstream: { 'pnpm-lock.yaml': 'release\n', 'README.md': 'release\n', 'src/platform/a.ts': 'release\n' } });
+  const { dir, git, read } = studio({
+    studio: { 'pnpm-lock.yaml': 'team\n', 'README.md': 'team\n' },
+    upstream: { 'pnpm-lock.yaml': 'release\n', 'README.md': 'release\n', 'src/platform/a.ts': 'release\n' },
+  });
   commands.length = 0;
   assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: true, changed: true });
   assert.equal(read('pnpm-lock.yaml'), 'release\n');
@@ -45,7 +73,10 @@ test('a conflicting upstream edit to a team-changed platform file is reported, n
 });
 
 test('a team deletion of a seed file survives an upstream edit', () => {
-  const { dir, read } = studio({ studio: { 'src/prototypes/sam/p/view.tsx': 'team\n' }, upstream: { 'src/platform/a.ts': 'release\n' } });
+  const { dir, read } = studio({
+    studio: { 'src/prototypes/sam/p/view.tsx': 'team\n' },
+    upstream: { 'src/platform/a.ts': 'release\n' },
+  });
   fs.rmSync(path.join(dir, 'README.md'));
   execFileSync('git', ['commit', '-q', '-am', 'drop readme'], { cwd: dir });
   execFileSync('git', ['checkout', '-q', 'upstream'], { cwd: dir });

@@ -7,7 +7,14 @@ import { setManifest } from '@/platform/app/data/manifest';
 import type { PrototypeInfo } from '@/platform/app/data/types';
 import { toast } from '@/systems/studio/components/toast';
 import { Button } from '@/systems/studio/components/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/systems/studio/components/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/systems/studio/components/dialog';
 
 type Props = { proto: PrototypeInfo; open: boolean; onOpenChange: (open: boolean) => void };
 
@@ -36,7 +43,13 @@ export default function DeletePrototypeDialog({ proto, open, onOpenChange }: Pro
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { setError(null); onOpenChange(o); }}>
+    <Dialog
+      open={open}
+      onOpenChange={o => {
+        setError(null);
+        onOpenChange(o);
+      }}
+    >
       <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Delete “{proto.title}”?</DialogTitle>
@@ -44,10 +57,18 @@ export default function DeletePrototypeDialog({ proto, open, onOpenChange }: Pro
             Everything in it moves to the Trash, where you can restore it. Its link stops working until you do.
           </DialogDescription>
         </DialogHeader>
-        {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+        {error && (
+          <p role='alert' className='text-sm text-destructive'>
+            {error}
+          </p>
+        )}
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button variant="destructive" disabled={deleting} onClick={remove}>{deleting ? 'Deleting' : 'Delete prototype'}</Button>
+          <Button variant='outline' onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button variant='destructive' disabled={deleting} onClick={remove}>
+            {deleting ? 'Deleting' : 'Delete prototype'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

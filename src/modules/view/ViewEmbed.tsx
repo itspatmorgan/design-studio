@@ -9,9 +9,20 @@ export default function ViewEmbed({ proto, item, width, height }: EmbedProps) {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
   const scale = width / EMBED_VIEWPORT_WIDTH;
   const preview = loadPreview({ proto, item });
-  return <div aria-hidden inert className="relative overflow-hidden bg-background" style={{ width, height }}>
-    <div className="absolute left-0 top-0 flex origin-top-left" style={{ width: EMBED_VIEWPORT_WIDTH, height: height / scale, transform: 'scale(' + scale + ')' }}>
-      <PreviewHost key={prototypeScopeOf(preview.target)} {...preview} surface="embed" width={EMBED_VIEWPORT_WIDTH} height={height / scale} />
+  return (
+    <div aria-hidden inert className='relative overflow-hidden bg-background' style={{ width, height }}>
+      <div
+        className='absolute left-0 top-0 flex origin-top-left'
+        style={{ width: EMBED_VIEWPORT_WIDTH, height: height / scale, transform: 'scale(' + scale + ')' }}
+      >
+        <PreviewHost
+          key={prototypeScopeOf(preview.target)}
+          {...preview}
+          surface='embed'
+          width={EMBED_VIEWPORT_WIDTH}
+          height={height / scale}
+        />
+      </div>
     </div>
-  </div>;
+  );
 }

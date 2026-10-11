@@ -15,7 +15,9 @@ export function resourceId(value: unknown): ResourceId {
 // No timestamp, mutable field, shortened UUID, or central counter is involved.
 export function createResourceId(): ResourceId {
   const bytes = crypto.getRandomValues(new Uint8Array(10));
-  let pending = 0, bits = 0, result = '';
+  let pending = 0,
+    bits = 0,
+    result = '';
   for (const byte of bytes) {
     pending = (pending << 8) | byte;
     bits += 8;
@@ -44,7 +46,10 @@ export function systemAddress(id: ResourceId): string {
 
 // This pre-release cutover recognizes permanent addresses exclusively.
 export function parsePrototypeAddress(path: string): { prototypeId: ResourceId; artifactId?: ResourceId } | null {
-  const match = /^\/prototypes\/([0-9abcdefghjkmnpqrstvwxyz]{16})(?:\/artifacts\/([0-9abcdefghjkmnpqrstvwxyz]{16}))?\/?$/.exec(path);
+  const match =
+    /^\/prototypes\/([0-9abcdefghjkmnpqrstvwxyz]{16})(?:\/artifacts\/([0-9abcdefghjkmnpqrstvwxyz]{16}))?\/?$/.exec(
+      path,
+    );
   return match ? { prototypeId: resourceId(match[1]), ...(match[2] && { artifactId: resourceId(match[2]) }) } : null;
 }
 
@@ -57,8 +62,8 @@ const checked = (values: string[]): ResourceId | null => {
   if (values.length > 1) throw new Error('An artifact must declare its resource identity only once.');
   return values.length ? resourceId(values[0]) : null;
 };
-const bomOf = (source: string) => source.startsWith('\uFEFF') ? '\uFEFF' : '';
-const newlineOf = (source: string) => source.includes('\r\n') ? '\r\n' : '\n';
+const bomOf = (source: string) => (source.startsWith('\uFEFF') ? '\uFEFF' : '');
+const newlineOf = (source: string) => (source.includes('\r\n') ? '\r\n' : '\n');
 
 // Identity is recognized only in the leading comment region, never in code strings.
 export const viewIdentity: IdentityMetadata = {
@@ -80,7 +85,9 @@ export const viewIdentity: IdentityMetadata = {
 export const diagramIdentity: IdentityMetadata = {
   read(source) {
     const header = /^\uFEFF?(?:\s|%%[^\r\n]*)*/.exec(source)?.[0] ?? '';
-    return checked([...header.replace(/^\uFEFF/, '').matchAll(/^[ \t]*%%\s*@studio-id\b([^\r\n]*)/gm)].map(match => match[1].trim()));
+    return checked(
+      [...header.replace(/^\uFEFF/, '').matchAll(/^[ \t]*%%\s*@studio-id\b([^\r\n]*)/gm)].map(match => match[1].trim()),
+    );
   },
   write(source, id) {
     resourceId(id);
@@ -105,8 +112,9 @@ export const markdownIdentity: IdentityMetadata = {
   read(source) {
     const region = frontmatterRegion(source);
     if (!region) return null;
-    const values = [...source.slice(region.start, region.end).matchAll(/^studioId:[ \t]*([^\r\n]*)/gm)]
-      .map(match => match[1].trim().replace(/^(['"])(.*)\1$/, '$2'));
+    const values = [...source.slice(region.start, region.end).matchAll(/^studioId:[ \t]*([^\r\n]*)/gm)].map(match =>
+      match[1].trim().replace(/^(['"])(.*)\1$/, '$2'),
+    );
     return checked(values);
   },
   write(source, id) {
@@ -116,10 +124,13 @@ export const markdownIdentity: IdentityMetadata = {
     const region = frontmatterRegion(source);
     if (region) {
       const original = source.slice(region.start, region.end);
-      const updated = current ? original.replace(/^studioId:[^\r\n]*/m, `studioId: ${id}`) : `studioId: ${id}${newlineOf(source)}${original}`;
+      const updated = current
+        ? original.replace(/^studioId:[^\r\n]*/m, `studioId: ${id}`)
+        : `studioId: ${id}${newlineOf(source)}${original}`;
       return source.slice(0, region.start) + updated + source.slice(region.end);
     }
-    const bom = bomOf(source), nl = newlineOf(source);
+    const bom = bomOf(source),
+      nl = newlineOf(source);
     return `${bom}---${nl}studioId: ${id}${nl}---${nl}${source.slice(bom.length)}`;
   },
 };
@@ -128,7 +139,8 @@ export const markdownIdentity: IdentityMetadata = {
 // last-wins behavior for identity, ownership, or other top-level declarations.
 export function jsonIdentity(source: string): ResourceId | null {
   const value: unknown = JSON.parse(source);
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Resource metadata must be a JSON object.');
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('Resource metadata must be a JSON object.');
   let depth = 0;
   const declarations = new Set<string>();
   for (const token of source.matchAll(/"(?:\\[\s\S]|[^"\\])*"|[{}\[\]]/g)) {

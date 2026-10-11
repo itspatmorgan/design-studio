@@ -14,8 +14,16 @@ test('a prototype opens under /prototypes, a section item under its section', ()
 });
 
 test('an address reads back in the new and the older form', () => {
-  assert.deepEqual(parseAddress('/prototypes/patrick/hello-world/lofi/main'), { contributor: 'patrick', id: 'hello-world', rest: ['lofi', 'main'] });
-  assert.deepEqual(parseAddress('/patrick/hello-world/lofi/main'), { contributor: 'patrick', id: 'hello-world', rest: ['lofi', 'main'] });
+  assert.deepEqual(parseAddress('/prototypes/patrick/hello-world/lofi/main'), {
+    contributor: 'patrick',
+    id: 'hello-world',
+    rest: ['lofi', 'main'],
+  });
+  assert.deepEqual(parseAddress('/patrick/hello-world/lofi/main'), {
+    contributor: 'patrick',
+    id: 'hello-world',
+    rest: ['lofi', 'main'],
+  });
   assert.deepEqual(parseAddress('/examples/sample'), { contributor: 'examples', id: 'sample', rest: [] });
   assert.equal(parseAddress('/prototypes'), null);
   assert.equal(parseAddress('/prototypes/patrick'), null);
@@ -28,13 +36,25 @@ test('files are still found by contributor and id', () => {
 
 test('SystemContent Context addresses resolve to the docs folder', () => {
   assert.equal(addressOf('system-content', 'product:context'), '/systems/product/context');
-  assert.deepEqual(parseAddress('/systems/product/context/personas'), { contributor: 'system-content', id: 'product:context', rest: ['personas'] });
+  assert.deepEqual(parseAddress('/systems/product/context/personas'), {
+    contributor: 'system-content',
+    id: 'product:context',
+    rest: ['personas'],
+  });
   assert.equal(rootOf('system-content', 'product:context'), 'systems/product/context');
 });
 
 test('owner browser addresses round-trip while overviews remain outside prototype routing', () => {
-  assert.deepEqual(parseAddress('/documentation/context/platform.core/context/config'), {contributor:'system-content',id:'platform.core:context',rest:['config']});
-  assert.deepEqual(parseAddress('/knowledge/module.prototypes/skills/build-prototype/SKILL'), {contributor:'system-content',id:'module.prototypes:skills',rest:['build-prototype','SKILL']});
-  assert.equal(parseAddress('/documentation/context/platform.core'),null);
-  assert.equal(parseAddress('/knowledge/platform.core'),null);
+  assert.deepEqual(parseAddress('/documentation/context/platform.core/context/config'), {
+    contributor: 'system-content',
+    id: 'platform.core:context',
+    rest: ['config'],
+  });
+  assert.deepEqual(parseAddress('/knowledge/module.prototypes/skills/build-prototype/SKILL'), {
+    contributor: 'system-content',
+    id: 'module.prototypes:skills',
+    rest: ['build-prototype', 'SKILL'],
+  });
+  assert.equal(parseAddress('/documentation/context/platform.core'), null);
+  assert.equal(parseAddress('/knowledge/platform.core'), null);
 });

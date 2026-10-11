@@ -5,20 +5,22 @@ import { Button } from '@/systems/studio/components/button';
 export const Variants = () => (
   <>
     <Button>Primary</Button>
-    <Button variant="secondary">Secondary</Button>
-    <Button variant="outline">Outline</Button>
-    <Button variant="ghost">Ghost</Button>
-    <Button variant="destructive">Destructive</Button>
-    <Button variant="link">Link</Button>
+    <Button variant='secondary'>Secondary</Button>
+    <Button variant='outline'>Outline</Button>
+    <Button variant='ghost'>Ghost</Button>
+    <Button variant='destructive'>Destructive</Button>
+    <Button variant='link'>Link</Button>
   </>
 );
 
 export const Sizes = () => (
   <>
-    <Button size="sm">Small</Button>
+    <Button size='sm'>Small</Button>
     <Button>Default</Button>
-    <Button size="lg">Large</Button>
-    <Button size="icon" aria-label="Add"><HugeiconsIcon icon={Add01Icon} size={16} /></Button>
+    <Button size='lg'>Large</Button>
+    <Button size='icon' aria-label='Add'>
+      <HugeiconsIcon icon={Add01Icon} size={16} />
+    </Button>
   </>
 );
 

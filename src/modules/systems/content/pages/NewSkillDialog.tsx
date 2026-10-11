@@ -10,7 +10,11 @@ import { Input } from '@/systems/studio/components/input';
 import { Textarea } from '@/systems/studio/components/textarea';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/systems/studio/components/dialog';
 
-type Props = { open: boolean; onOpenChange: (open: boolean) => void; onCreate: (name: string, description: string) => Promise<void> };
+type Props = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onCreate: (name: string, description: string) => Promise<void>;
+};
 
 export default function NewSkillDialog({ open, onOpenChange, onCreate }: Props) {
   return (
@@ -46,40 +50,58 @@ function Form({ onCreate, onCancel }: { onCreate: Props['onCreate']; onCancel: (
   }
 
   return (
-    <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="grid gap-4">
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        submit();
+      }}
+      className='grid gap-4'
+    >
       <DialogHeader>
         <DialogTitle>New skill</DialogTitle>
       </DialogHeader>
-      <label className="grid gap-1.5 text-sm font-medium">
+      <label className='grid gap-1.5 text-sm font-medium'>
         Name
         <Input
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={e => setName(e.target.value)}
           autoFocus
-          placeholder="review-design"
+          placeholder='review-design'
           maxLength={NAME_MAX + 8}
           aria-invalid={Boolean(nameError)}
-          className="font-mono"
+          className='font-mono'
         />
-        {nameError && <span className="text-xs font-normal text-destructive">A skill's name {nameError}</span>}
+        {nameError && <span className='text-xs font-normal text-destructive'>A skill's name {nameError}</span>}
       </label>
-      <label className="grid gap-1.5 text-sm font-medium">
+      <label className='grid gap-1.5 text-sm font-medium'>
         Description
         <Textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={e => setDescription(e.target.value)}
           rows={3}
           placeholder="Reviews a design against the team's principles. Use when someone asks for a critique."
           aria-invalid={Boolean(descriptionError)}
         />
-        <span className={descriptionError ? 'text-xs font-normal text-destructive' : 'text-xs font-normal text-muted-foreground'}>
+        <span
+          className={
+            descriptionError ? 'text-xs font-normal text-destructive' : 'text-xs font-normal text-muted-foreground'
+          }
+        >
           {descriptionError ? `The description ${descriptionError}` : 'What it does, and when to use it.'}
         </span>
       </label>
-      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p role='alert' className='text-sm text-destructive'>
+          {error}
+        </p>
+      )}
       <DialogFooter>
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" disabled={!ready || saving}>{saving ? 'Creating' : 'Create skill'}</Button>
+        <Button type='button' variant='outline' onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button type='submit' disabled={!ready || saving}>
+          {saving ? 'Creating' : 'Create skill'}
+        </Button>
       </DialogFooter>
     </form>
   );

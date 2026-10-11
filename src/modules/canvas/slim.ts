@@ -49,7 +49,11 @@ const round = (n: number) => (Number.isFinite(n) && !Number.isInteger(n) ? Math.
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
   if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.keys(value).sort().map((key) => [key, stable((value as Stored)[key])]));
+    return Object.fromEntries(
+      Object.keys(value)
+        .sort()
+        .map(key => [key, stable((value as Stored)[key])]),
+    );
   }
   return typeof value === 'number' ? round(value) : value;
 }
@@ -61,7 +65,7 @@ const isDefault = (key: string, value: unknown) => {
 };
 
 // One element in stored form. `mapLink` turns a link into its stored form (an app path).
-export function slimElement(element: Stored, mapLink: (link: string) => string = (link) => link): Stored {
+export function slimElement(element: Stored, mapLink: (link: string) => string = link => link): Stored {
   const out: Stored = {};
   for (const [key, raw] of Object.entries(element)) {
     const value = key === 'link' && typeof raw === 'string' ? mapLink(raw) : raw;
@@ -84,7 +88,7 @@ export function stringifyScene(
     version: EXCALIDRAW_FILE_VERSION,
     studioVersion: FORMAT_VERSION,
     ...(studioId != null ? { studioId: resourceId(studioId) } : {}),
-    elements: elements.filter((el) => !el.isDeleted && el.type !== 'image').map((el) => slimElement(el, mapLink)),
+    elements: elements.filter(el => !el.isDeleted && el.type !== 'image').map(el => slimElement(el, mapLink)),
     appState: {
       viewBackgroundColor: appState.viewBackgroundColor || DEFAULT_BACKGROUND,
       ...(appState.gridSize != null ? { gridSize: appState.gridSize } : {}),

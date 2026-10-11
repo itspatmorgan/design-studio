@@ -4,5 +4,9 @@ import { Kbd, KbdGroup } from '@/systems/studio/components/kbd';
 export const Default = () => <Kbd>⌘K</Kbd>;
 
 export const Group = () => (
-  <KbdGroup><Kbd>⌘</Kbd><Kbd>⇧</Kbd><Kbd>P</Kbd></KbdGroup>
+  <KbdGroup>
+    <Kbd>⌘</Kbd>
+    <Kbd>⇧</Kbd>
+    <Kbd>P</Kbd>
+  </KbdGroup>
 );

@@ -8,7 +8,7 @@ import FileTree from '@/modules/prototypes/viewer/FileTree';
 
 export default function PrototypeNav({ proto, current }: { proto: Prototype; current: Artifact | undefined }) {
   return (
-    <SectionNav label="Prototype navigation">
+    <SectionNav label='Prototype navigation'>
       <PrototypeHeader proto={proto} />
       <FileTree proto={proto} current={current} />
     </SectionNav>

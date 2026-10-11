@@ -5,7 +5,5 @@
 //   menuGroups([[create], [view], [open, reveal, copy], [rename], [delete]])
 // Has no imports, so it can be tested on its own.
 export function menuGroups<T>(groups: (T | false | null | undefined)[][]): T[][] {
-  return groups
-    .map((group) => group.filter((item): item is T => Boolean(item)))
-    .filter((group) => group.length > 0);
+  return groups.map(group => group.filter((item): item is T => Boolean(item))).filter(group => group.length > 0);
 }

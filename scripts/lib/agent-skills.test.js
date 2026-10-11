@@ -8,10 +8,16 @@ import { knowledgeOwners, skillCatalog, syncSkillAdapters } from './agent-skills
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-skills-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const write = (file, text) => { fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true }); fs.writeFileSync(path.join(root, file), text); };
+  const write = (file, text) => {
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), text);
+  };
   const owners = knowledgeOwners([{ id: 'canvas', label: 'Canvas' }], { marketing: { label: 'Marketing' } });
   for (const owner of owners) {
-    write(`${owner.root}/skills/review/SKILL.md`, '---\nname: review\ndescription: Review relevant work.\n---\nRead [details](references/details.md).');
+    write(
+      `${owner.root}/skills/review/SKILL.md`,
+      '---\nname: review\ndescription: Review relevant work.\n---\nRead [details](references/details.md).',
+    );
     write(`${owner.root}/skills/review/references/details.md`, '# Canonical details');
   }
   return { root, write, owners, catalog: skillCatalog(root, owners) };
@@ -27,11 +33,17 @@ test('project exposure keeps canonical resources, unique owner names, and workin
     const entry = path.join(root, '.agents/skills', s.name, 'SKILL.md');
     const text = fs.readFileSync(entry, 'utf8');
     const target = text.match(/\[canonical [^\]]+\]\(([^)]+)\)/)[1];
-    assert.equal(fs.readFileSync(path.resolve(path.dirname(entry), target), 'utf8'), fs.readFileSync(path.join(root, s.source), 'utf8'));
+    assert.equal(
+      fs.readFileSync(path.resolve(path.dirname(entry), target), 'utf8'),
+      fs.readFileSync(path.join(root, s.source), 'utf8'),
+    );
     assert.equal(fs.realpathSync(path.join(root, '.claude/skills', s.name, 'SKILL.md')), fs.realpathSync(entry));
     assert.ok(!fs.existsSync(path.join(path.dirname(entry), 'references')), 'references stay canonical');
   }
-  assert.match(fs.readFileSync(path.join(root, '.agents/skills/studio-system-marketing-review/SKILL.md'), 'utf8'), /assigned to system marketing/);
+  assert.match(
+    fs.readFileSync(path.join(root, '.agents/skills/studio-system-marketing-review/SKILL.md'), 'utf8'),
+    /assigned to system marketing/,
+  );
 });
 
 test('disabled and removed capability exposure is removed while user entries and modifications survive', t => {
@@ -42,7 +54,10 @@ test('disabled and removed capability exposure is removed while user entries and
   const edited = '.agents/skills/studio-system-marketing-review/SKILL.md';
   write(edited, 'User edited this entry');
   write('.agents/skills/personal/SKILL.md', 'Personal skill');
-  const result = syncSkillAdapters(root, catalog.filter(s => s.owner.kind === 'platform'));
+  const result = syncSkillAdapters(
+    root,
+    catalog.filter(s => s.owner.kind === 'platform'),
+  );
   assert.equal(fs.readFileSync(path.join(root, edited), 'utf8'), 'User edited this entry');
   assert.match(result.warnings.join('\n'), /Preserved modified obsolete/);
   assert.ok(!fs.existsSync(path.join(root, '.agents/skills/studio-module-canvas-review')));
@@ -55,8 +70,14 @@ test('collision does not overwrite a user skill and unsafe directory links are r
   write('.agents/skills/studio-platform-review/SKILL.md', 'User skill');
   const result = syncSkillAdapters(root, catalog);
   assert.match(result.warnings.join('\n'), /user-owned/);
-  assert.equal(fs.readFileSync(path.join(root, '.agents/skills/studio-platform-review/SKILL.md'), 'utf8'), 'User skill');
-  assert.ok(!fs.existsSync(path.join(root, '.claude/skills/studio-platform-review')), 'a collision is not exposed to another host');
+  assert.equal(
+    fs.readFileSync(path.join(root, '.agents/skills/studio-platform-review/SKILL.md'), 'utf8'),
+    'User skill',
+  );
+  assert.ok(
+    !fs.existsSync(path.join(root, '.claude/skills/studio-platform-review')),
+    'a collision is not exposed to another host',
+  );
   fs.rmSync(path.join(root, '.agents/skills'), { recursive: true });
   fs.symlinkSync(os.tmpdir(), path.join(root, '.agents/skills'), 'dir');
   assert.throws(() => syncSkillAdapters(root, catalog), /unsafe|cannot leave/);

@@ -10,7 +10,7 @@ export const parentOf = (p: string) => (p.includes('/') ? p.slice(0, p.lastIndex
 
 // meta.json "order" if it's a list of paths, else null.
 export const parseOrder = (value: unknown): string[] | null =>
-  Array.isArray(value) && value.every((p) => typeof p === 'string' && p.length > 0) ? (value as string[]) : null;
+  Array.isArray(value) && value.every(p => typeof p === 'string' && p.length > 0) ? (value as string[]) : null;
 
 // Entries of one folder in display order.
 export function byOrder<T extends Entry>(entries: T[], order: readonly string[] = []): T[] {
@@ -27,13 +27,15 @@ export function byOrder<T extends Entry>(entries: T[], order: readonly string[] 
 }
 
 // The list after one folder's children are set to `paths`, in that sequence. Other folders' entries stay.
-export const withFolderOrder = (order: readonly string[], folder: string, paths: readonly string[]): string[] =>
-  [...order.filter((p) => parentOf(p) !== folder), ...paths];
+export const withFolderOrder = (order: readonly string[], folder: string, paths: readonly string[]): string[] => [
+  ...order.filter(p => parentOf(p) !== folder),
+  ...paths,
+];
 
 // `siblings` (a folder's children in display order) with `moving` put before `before`, or last when
 // `before` is empty. Returns the new sequence.
 export function place(siblings: readonly string[], moving: string, before: string): string[] {
-  const rest = siblings.filter((p) => p !== moving);
+  const rest = siblings.filter(p => p !== moving);
   const at = before ? rest.indexOf(before) : -1;
   if (at < 0) return [...rest, moving];
   return [...rest.slice(0, at), moving, ...rest.slice(at)];
@@ -42,7 +44,7 @@ export function place(siblings: readonly string[], moving: string, before: strin
 // The list after `from` is renamed to `to` (a folder takes the paths inside it along), or dropped
 // from the list when `to` is null (it was deleted).
 export function afterChange(order: readonly string[], from: string, to: string | null): string[] {
-  return order.flatMap((p) => {
+  return order.flatMap(p => {
     if (p === from) return to ? [to] : [];
     if (p.startsWith(`${from}/`)) return to ? [`${to}${p.slice(from.length)}`] : [];
     return [p];

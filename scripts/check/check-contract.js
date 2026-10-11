@@ -3,7 +3,9 @@
 import { fileURLToPath } from 'node:url';
 import { SNAPSHOT_FILE, computeContract, contractProblems, readSnapshot, writeSnapshot } from '../lib/contract.js';
 
-export function checkContract() { return contractProblems(computeContract(), readSnapshot()); }
+export function checkContract() {
+  return contractProblems(computeContract(), readSnapshot());
+}
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (process.argv.includes('--update')) {
@@ -11,7 +13,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     console.log(`[contract] Wrote ${SNAPSHOT_FILE}`);
   } else {
     const problems = checkContract();
-    if (problems.length) { console.error(problems.map((p) => `[contract] ${p}`).join('\n')); process.exit(1); }
+    if (problems.length) {
+      console.error(problems.map(p => `[contract] ${p}`).join('\n'));
+      process.exit(1);
+    }
     console.log('[contract] platform contract matches its snapshot');
   }
 }

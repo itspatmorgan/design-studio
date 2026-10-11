@@ -16,25 +16,34 @@ const { config: CONFIG } = readPersistedStudioConfig(ROOT);
 const DIR = path.join(ROOT, 'src', 'modules');
 
 // The modules studio.config.ts explicitly enables and that work with this platform (`requires`). A module that is off keeps its files but is skipped everywhere.
-export const ENABLED_MODULES = Object.values(MODULES).filter((m) => m && isEnabled(CONFIG, m.id) && compatible(m));
+export const ENABLED_MODULES = Object.values(MODULES).filter(m => m && isEnabled(CONFIG, m.id) && compatible(m));
 export { CONFIG, isEnabled };
 
 // App page addresses (/examples, /documentation, ...), so they can't be a contributor's folder.
 
-
 // Absolute folders of the modules that hold prototype-shaped folders, one per id (src/examples/), and the
 // system content's. src/prototypes/, where the folders are grouped by person, is the Prototypes module's own and isn't listed.
-const oneFolderPerId = (m) => m.section?.items === 'prototypes' && !m.section.byPerson;
-export const PROTOTYPE_DIRS = ENABLED_MODULES.filter(oneFolderPerId).map((m) => path.join(ROOT, m.section.folder));
+const oneFolderPerId = m => m.section?.items === 'prototypes' && !m.section.byPerson;
+export const PROTOTYPE_DIRS = ENABLED_MODULES.filter(oneFolderPerId).map(m => path.join(ROOT, m.section.folder));
 
 // Sections of prototype-shaped folders (custom sections), registered so rootOf can find their folders. Installed ones
 // count even when off, so their files are still found.
-setSections(Object.values(MODULES).filter((m) => m && oneFolderPerId(m)).map((m) => m.section.key));
+setSections(
+  Object.values(MODULES)
+    .filter(m => m && oneFolderPerId(m))
+    .map(m => m.section.key),
+);
 // Their keys and folders, for the code that scans or watches them.
-export const PROTOTYPE_SECTIONS = ENABLED_MODULES.filter(oneFolderPerId).map((m) => ({ key: m.section.key, dir: path.join(ROOT, m.section.folder), policy: m.section.policy, standalone: m.section.standalone === true }));
+export const PROTOTYPE_SECTIONS = ENABLED_MODULES.filter(oneFolderPerId).map(m => ({
+  key: m.section.key,
+  dir: path.join(ROOT, m.section.folder),
+  policy: m.section.policy,
+  standalone: m.section.standalone === true,
+}));
 
 // The server.ts files of the enabled modules (routes they add to the dev server), as [id, file]. The dev
 // server loads them itself, since they use the build scripts that use this file.
-export const SERVER_FILES = ENABLED_MODULES
-  .filter((m) => fs.existsSync(path.join(DIR, m.id, 'server.ts')))
-  .map((m) => [m.id, path.join(DIR, m.id, 'server.ts')]);
+export const SERVER_FILES = ENABLED_MODULES.filter(m => fs.existsSync(path.join(DIR, m.id, 'server.ts'))).map(m => [
+  m.id,
+  path.join(DIR, m.id, 'server.ts'),
+]);

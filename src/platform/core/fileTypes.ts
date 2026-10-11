@@ -12,7 +12,18 @@
 
 import { markdownIdentity } from './resourceIdentity.ts';
 import type { IdentityMetadata } from './resourceIdentity.ts';
-export { canvasIdentity, createResourceId, diagramIdentity, markdownIdentity, resourceId, viewIdentity, parsePrototypeAddress, prototypeAddress, artifactAddress, systemAddress } from './resourceIdentity.ts';
+export {
+  canvasIdentity,
+  createResourceId,
+  diagramIdentity,
+  markdownIdentity,
+  resourceId,
+  viewIdentity,
+  parsePrototypeAddress,
+  prototypeAddress,
+  artifactAddress,
+  systemAddress,
+} from './resourceIdentity.ts';
 export type { IdentityMetadata, ResourceId } from './resourceIdentity.ts';
 
 export type EmbedSurface = 'document' | 'canvas';
@@ -40,8 +51,12 @@ export type ArtifactAvailabilityContext = {
   scope: 'prototype' | 'systemContent';
 };
 
-export function capabilityAvailability(supported: boolean, ...restrictions: (string | false | undefined)[]): CapabilityAvailability {
-  if (!supported) return { supported: false, available: false, reason: 'This artifact type does not support this operation.' };
+export function capabilityAvailability(
+  supported: boolean,
+  ...restrictions: (string | false | undefined)[]
+): CapabilityAvailability {
+  if (!supported)
+    return { supported: false, available: false, reason: 'This artifact type does not support this operation.' };
   const reason = restrictions.find((value): value is string => typeof value === 'string');
   return reason ? { supported: true, available: false, reason } : { supported: true, available: true };
 }
@@ -53,23 +68,37 @@ export function artifactAvailability(spec: FileTypeSpec | undefined, context: Ar
   const local = !context.local && 'This operation is available only in a local studio.';
   const readonly = !context.editable && 'You do not have permission to change this artifact.';
   const renderer = !context.renderer && 'The artifact renderer is unavailable.';
-  const scope = Boolean(spec && !(context.scope === 'prototype' ? spec.inPrototype : spec.inSystemContent)) && 'This artifact type is unavailable in this scope.';
+  const scope =
+    Boolean(spec && !(context.scope === 'prototype' ? spec.inPrototype : spec.inSystemContent)) &&
+    'This artifact type is unavailable in this scope.';
   return {
     view: capabilityAvailability(Boolean(spec), scope, missing, renderer),
     source: capabilityAvailability(caps?.source === true, scope, missing, local),
     editSource: capabilityAvailability(caps?.source === true, scope, missing, local, readonly),
     create: capabilityAvailability(caps?.create === true, scope, local, readonly, renderer),
-    fidelity: capabilityAvailability(caps?.fidelity === true, scope, missing, local, readonly, context.scope !== 'prototype' && 'Fidelity changes apply only to prototype artifacts.'),
-    embeds: Object.fromEntries((['document', 'canvas'] as const).map(surface => [surface, capabilityAvailability(caps?.embeds.includes(surface) === true, scope, missing, renderer)])) as Record<EmbedSurface, CapabilityAvailability>,
+    fidelity: capabilityAvailability(
+      caps?.fidelity === true,
+      scope,
+      missing,
+      local,
+      readonly,
+      context.scope !== 'prototype' && 'Fidelity changes apply only to prototype artifacts.',
+    ),
+    embeds: Object.fromEntries(
+      (['document', 'canvas'] as const).map(surface => [
+        surface,
+        capabilityAvailability(caps?.embeds.includes(surface) === true, scope, missing, renderer),
+      ]),
+    ) as Record<EmbedSurface, CapabilityAvailability>,
   };
 }
 
 export type FileTypeSpec = {
-  label: string;                        // "View", "Document"
+  label: string; // "View", "Document"
   // Prototype source identity travels with the file. System content retains paths.
   // No generation during discovery: creation/migration assigns it explicitly.
   identity?: IdentityMetadata;
-  extensions: readonly string[];        // ".tsx", ".md"
+  extensions: readonly string[]; // ".tsx", ".md"
   // The syntax the Source view highlights (src/platform/app/source/ArtifactSource.tsx). Leave it
   // out for a type with no source to show.
   language?: 'tsx' | 'markdown' | 'json' | 'mermaid' | 'text';
@@ -97,33 +126,63 @@ export type FileTypeSpec = {
   // Problems in a file, each a sentence that says what to fix. `frontmatter` is the leading
   // --- block as simple key: value pairs, or null when there isn't one. `prototype` is where the file is,
   // for a rule that depends on it (a canvas can't link to another prototype), and is left out in the system content.
-  check?: (file: { source: string; frontmatter: Record<string, unknown> | null; prototype?: { contributor: string; id: string; studioId?: string } }) => string[];
+  check?: (file: {
+    source: string;
+    frontmatter: Record<string, unknown> | null;
+    prototype?: { contributor: string; id: string; studioId?: string };
+  }) => string[];
 };
 
 export const defineFileType = (spec: FileTypeSpec) => {
-  if (!spec || typeof spec !== 'object' || Array.isArray(spec)) throw new Error('File type: provide a declaration object in type.ts.');
+  if (!spec || typeof spec !== 'object' || Array.isArray(spec))
+    throw new Error('File type: provide a declaration object in type.ts.');
   for (const key of ['inSystemContent', 'inPrototype', 'fallback'] as const) {
     if (typeof spec[key] !== 'boolean') throw new Error(`File type ${spec.label}: declare ${key} as true or false.`);
   }
-  if ('preview' in spec) throw new Error(`File type ${spec.label}: replace preview with capabilities.embeds in type.ts.`);
+  if ('preview' in spec)
+    throw new Error(`File type ${spec.label}: replace preview with capabilities.embeds in type.ts.`);
   const caps = spec.capabilities;
-  if (!caps || typeof caps !== 'object' || Array.isArray(caps)) throw new Error(`File type ${spec.label}: declare capabilities.`);
-  for (const key of Object.keys(caps)) if (!['source', 'create', 'fidelity', 'embeds', 'actions'].includes(key)) throw new Error(`File type ${spec.label}: unknown capability ${key}. Use capabilities.actions for module-owned operations.`);
+  if (!caps || typeof caps !== 'object' || Array.isArray(caps))
+    throw new Error(`File type ${spec.label}: declare capabilities.`);
+  for (const key of Object.keys(caps))
+    if (!['source', 'create', 'fidelity', 'embeds', 'actions'].includes(key))
+      throw new Error(
+        `File type ${spec.label}: unknown capability ${key}. Use capabilities.actions for module-owned operations.`,
+      );
   for (const key of ['source', 'create', 'fidelity'] as const) {
-    if (typeof caps[key] !== 'boolean') throw new Error(`File type ${spec.label}: declare capabilities.${key} as true or false.`);
+    if (typeof caps[key] !== 'boolean')
+      throw new Error(`File type ${spec.label}: declare capabilities.${key} as true or false.`);
   }
-  if (!Array.isArray(caps.embeds) || caps.embeds.some(surface => !['document', 'canvas'].includes(surface)) || new Set(caps.embeds).size !== caps.embeds.length) throw new Error(`File type ${spec.label}: capabilities.embeds must list unique document/canvas surfaces, or [].`);
-  if (!Array.isArray(caps.actions) || caps.actions.some(id => typeof id !== 'string' || !/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(id)) || new Set(caps.actions).size !== caps.actions.length) throw new Error(`File type ${spec.label}: capabilities.actions must list unique namespaced action IDs (module.action), or [].`);
-  if (caps.source && !['tsx', 'markdown', 'json', 'mermaid', 'text'].includes(spec.language ?? '')) throw new Error(`File type ${spec.label}: source capability requires a supported language.`);
-  if (caps.create !== (typeof spec.template === 'function')) throw new Error(`File type ${spec.label}: create capability must match its template implementation.`);
-  if (caps.fidelity !== (spec.fidelity !== undefined) || (caps.fidelity && (typeof spec.fidelity?.isLofi !== 'function' || typeof spec.fidelity?.setLofi !== 'function'))) throw new Error(`File type ${spec.label}: fidelity capability must match its fidelity implementation.`);
+  if (
+    !Array.isArray(caps.embeds) ||
+    caps.embeds.some(surface => !['document', 'canvas'].includes(surface)) ||
+    new Set(caps.embeds).size !== caps.embeds.length
+  )
+    throw new Error(`File type ${spec.label}: capabilities.embeds must list unique document/canvas surfaces, or [].`);
+  if (
+    !Array.isArray(caps.actions) ||
+    caps.actions.some(id => typeof id !== 'string' || !/^[a-z][a-z0-9-]*\.[a-z][a-z0-9-]*$/.test(id)) ||
+    new Set(caps.actions).size !== caps.actions.length
+  )
+    throw new Error(
+      `File type ${spec.label}: capabilities.actions must list unique namespaced action IDs (module.action), or [].`,
+    );
+  if (caps.source && !['tsx', 'markdown', 'json', 'mermaid', 'text'].includes(spec.language ?? ''))
+    throw new Error(`File type ${spec.label}: source capability requires a supported language.`);
+  if (caps.create !== (typeof spec.template === 'function'))
+    throw new Error(`File type ${spec.label}: create capability must match its template implementation.`);
+  if (
+    caps.fidelity !== (spec.fidelity !== undefined) ||
+    (caps.fidelity && (typeof spec.fidelity?.isLofi !== 'function' || typeof spec.fidelity?.setLofi !== 'function'))
+  )
+    throw new Error(`File type ${spec.label}: fidelity capability must match its fidelity implementation.`);
   return spec;
 };
 
 // The id of the type that owns a file, by its extension, or null for a plain file.
 export function matchFileType(specs: Record<string, FileTypeSpec>, file: string): string | null {
   for (const [id, { extensions, inPrototype }] of Object.entries(specs)) {
-    if (inPrototype === true && extensions.some((ext) => file.endsWith(ext))) return id;
+    if (inPrototype === true && extensions.some(ext => file.endsWith(ext))) return id;
   }
   return null;
 }
@@ -136,22 +195,34 @@ export function fallbackType(specs: Record<string, FileTypeSpec>): string | null
 // The id of the type that opens a file in the system content: its own type if that type opens there,
 // otherwise the fallback (plain text), otherwise null.
 export function systemContentType(specs: Record<string, FileTypeSpec>, file: string): string | null {
-  return Object.entries(specs).find(([, spec]) => spec.inSystemContent && spec.extensions.some((ext) => file.endsWith(ext)))?.[0] ?? fallbackType(specs);
+  return (
+    Object.entries(specs).find(
+      ([, spec]) => spec.inSystemContent && spec.extensions.some(ext => file.endsWith(ext)),
+    )?.[0] ?? fallbackType(specs)
+  );
 }
 
 // Two types cannot own the same extension within the same content scope.
 export function assertUniqueExtensions(specs: Record<string, FileTypeSpec>) {
   for (const spec of Object.values(specs)) defineFileType(spec);
   const owners = new Map<string, string>();
-  const fallbacks = Object.entries(specs).filter(([, spec]) => spec.fallback).map(([id]) => id);
-  if (fallbacks.length > 1) throw new Error(`File types ${fallbacks.map((id) => `"${id}"`).join(' and ')} are both the fallback. Only one type can open the files no other type claims.`);
+  const fallbacks = Object.entries(specs)
+    .filter(([, spec]) => spec.fallback)
+    .map(([id]) => id);
+  if (fallbacks.length > 1)
+    throw new Error(
+      `File types ${fallbacks.map(id => `"${id}"`).join(' and ')} are both the fallback. Only one type can open the files no other type claims.`,
+    );
   for (const [id, spec] of Object.entries(specs)) {
     for (const scope of ['prototype', 'systemContent'] as const) {
       if (scope === 'prototype' ? spec.inPrototype !== true : !spec.inSystemContent) continue;
       for (const ext of spec.extensions) {
         const key = `${scope}:${ext}`;
         const other = owners.get(key);
-        if (other) throw new Error(`File types "${other}" and "${id}" both use ${ext} in ${scope}. Each extension can belong to only one type in a scope.`);
+        if (other)
+          throw new Error(
+            `File types "${other}" and "${id}" both use ${ext} in ${scope}. Each extension can belong to only one type in a scope.`,
+          );
         owners.set(key, id);
       }
     }
@@ -168,7 +239,13 @@ export const isHelper = (name: string) => name.startsWith('_');
 
 // Markdown presentation is shared by prototype Documents and the system content.
 // "problem-framing.md" → "Problem Framing"
-const titleOf = (name: string) => name.replace(/\.md$/, '').split(/[-_]/).filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ');
+const titleOf = (name: string) =>
+  name
+    .replace(/\.md$/, '')
+    .split(/[-_]/)
+    .filter(Boolean)
+    .map(w => w[0].toUpperCase() + w.slice(1))
+    .join(' ');
 
 export const markdownFileType: FileTypeSpec = {
   label: 'Document',
@@ -180,13 +257,17 @@ export const markdownFileType: FileTypeSpec = {
   extensions: ['.md'],
   language: 'markdown',
 
-  template: (name) =>
+  template: name =>
     `---\ntitle: ${titleOf(name) || 'Untitled'}\n---\n\nThis document is empty. Ask your agent to write it: describe what it's for and who will read it.\n`,
 
   check: ({ source, frontmatter }) => {
     const problems: string[] = [];
-    if (/^---\r?\n/.test(source) && !frontmatter) problems.push('its frontmatter (the block at the top between --- lines) is never closed. End it with a second --- line.');
-    if (frontmatter && 'toc' in frontmatter && typeof frontmatter.toc !== 'boolean') problems.push('"toc" in the frontmatter must be true or false.');
+    if (/^---\r?\n/.test(source) && !frontmatter)
+      problems.push(
+        'its frontmatter (the block at the top between --- lines) is never closed. End it with a second --- line.',
+      );
+    if (frontmatter && 'toc' in frontmatter && typeof frontmatter.toc !== 'boolean')
+      problems.push('"toc" in the frontmatter must be true or false.');
     return problems;
   },
 };

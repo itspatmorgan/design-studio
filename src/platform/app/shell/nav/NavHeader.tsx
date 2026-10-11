@@ -16,20 +16,25 @@ export function NavHeader({ className, children }: { className?: string; childre
 export function NavTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
     <div className={cn('flex min-h-8 items-center px-3', actions && '-mr-2 gap-0.5')}>
-      <h2 className="min-w-0 flex-1 truncate text-sm font-semibold leading-tight">{children}</h2>
+      <h2 className='min-w-0 flex-1 truncate text-sm font-semibold leading-tight'>{children}</h2>
       {actions}
     </div>
   );
 }
 
 export function NavTabs({ label, children, wrap = false }: { label: string; children: ReactNode; wrap?: boolean }) {
-  return <nav aria-label={label} className={cn("mt-1 flex gap-1 px-1", wrap && "flex-wrap [&>a]:shrink-0")}>{children}</nav>;
+  return (
+    <nav aria-label={label} className={cn('mt-1 flex gap-1 px-1', wrap && 'flex-wrap [&>a]:shrink-0')}>
+      {children}
+    </nav>
+  );
 }
 
 // How a tab looks: small text, the open one raised.
-export const navTabClass = (active: boolean) => cn(
-  'rounded-md px-2 py-1 text-xs',
-  active
-    ? 'bg-sidebar-foreground/10 font-medium text-sidebar-accent-foreground'
-    : 'text-sidebar-foreground/80 hover:bg-sidebar-foreground/5 hover:text-sidebar-accent-foreground',
-);
+export const navTabClass = (active: boolean) =>
+  cn(
+    'rounded-md px-2 py-1 text-xs',
+    active
+      ? 'bg-sidebar-foreground/10 font-medium text-sidebar-accent-foreground'
+      : 'text-sidebar-foreground/80 hover:bg-sidebar-foreground/5 hover:text-sidebar-accent-foreground',
+  );

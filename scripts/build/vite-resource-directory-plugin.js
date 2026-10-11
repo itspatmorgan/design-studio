@@ -24,10 +24,12 @@ export default function resourceDirectoryPlugin(root = ROOT) {
   };
   return {
     name: 'studio-resource-directory',
-    resolveId(source) { return source === RESOURCE_DIRECTORY_MODULE ? internal : null; },
+    resolveId(source) {
+      return source === RESOURCE_DIRECTORY_MODULE ? internal : null;
+    },
     load(id) {
       if (id !== internal) return null;
-      return lastSource = directoryModuleSource(readResourceDirectory(root));
+      return (lastSource = directoryModuleSource(readResourceDirectory(root)));
     },
     configureServer(server) {
       server.watcher.add([path.join(root, 'contributors'), path.join(root, 'src/systems')]);
@@ -37,8 +39,11 @@ export default function resourceDirectoryPlugin(root = ROOT) {
         const module = graph.getModuleById(internal);
         if (!module) return;
         let nextSource;
-        try { nextSource = directoryModuleSource(readResourceDirectory(root)); }
-        catch { /* Invalidate so Vite's next load reports the declaration error. */ }
+        try {
+          nextSource = directoryModuleSource(readResourceDirectory(root));
+        } catch {
+          /* Invalidate so Vite's next load reports the declaration error. */
+        }
         if (nextSource !== undefined && nextSource === lastSource) return;
         lastSource = nextSource;
         graph.invalidateModule(module);

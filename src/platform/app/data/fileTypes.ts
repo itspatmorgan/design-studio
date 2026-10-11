@@ -14,10 +14,18 @@ const specs = import.meta.glob<FileTypeSpec>('/__studio_modules__/type.ts', { ea
 const modules = import.meta.glob<FileTypeModule>('/__studio_modules__/open.tsx', { eager: true, import: 'default' });
 
 // A type is on when its module is installed and studio.config.ts leaves it on (the same rule the build uses).
-const on = (path: string) => MODULES.some((m) => m.id === idOf(path) && compatible(m)) && isEnabled(idOf(path));
+const on = (path: string) => MODULES.some(m => m.id === idOf(path) && compatible(m)) && isEnabled(idOf(path));
 
-export const FILE_TYPES: Record<string, FileTypeSpec> = Object.fromEntries(Object.entries(specs).filter(([path]) => on(path)).map(([path, spec]) => [idOf(path), spec]));
-export const fileTypeModules: Record<string, FileTypeModule> = Object.fromEntries(Object.entries(modules).filter(([path]) => on(path)).map(([path, module]) => [idOf(path), module]));
+export const FILE_TYPES: Record<string, FileTypeSpec> = Object.fromEntries(
+  Object.entries(specs)
+    .filter(([path]) => on(path))
+    .map(([path, spec]) => [idOf(path), spec]),
+);
+export const fileTypeModules: Record<string, FileTypeModule> = Object.fromEntries(
+  Object.entries(modules)
+    .filter(([path]) => on(path))
+    .map(([path, module]) => [idOf(path), module]),
+);
 assertUniqueExtensions(FILE_TYPES);
 for (const [id, spec] of Object.entries(FILE_TYPES)) assertFileTypeModule(id, spec, fileTypeModules[id]);
 

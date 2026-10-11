@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useBlocker } from '@tanstack/react-router';
 import { EditorState, type Extension } from '@codemirror/state';
-import { EditorView, drawSelection, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers } from '@codemirror/view';
+import {
+  EditorView,
+  drawSelection,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  keymap,
+  lineNumbers,
+} from '@codemirror/view';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language';
@@ -11,10 +18,20 @@ import { Button } from '@/systems/studio/components/button';
 import { toast } from '@/systems/studio/components/toast';
 import { shortcutLabel } from '@/platform/app/shell/artifactShortcuts';
 import { sourceTheme } from '@/platform/core/source/sourceTheme';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/systems/studio/components/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/systems/studio/components/dialog';
 
 // The file type's syntax, loaded when it's needed.
-async function languageExtension(language: 'tsx' | 'markdown' | 'json' | 'mermaid' | 'text', path: string): Promise<Extension> {
+async function languageExtension(
+  language: 'tsx' | 'markdown' | 'json' | 'mermaid' | 'text',
+  path: string,
+): Promise<Extension> {
   // A text file's syntax comes from its extension; one we don't have is shown plainly.
   if (language === 'text') {
     const ext = path.split('.').at(-1)?.toLowerCase() ?? '';
@@ -32,7 +49,13 @@ async function languageExtension(language: 'tsx' | 'markdown' | 'json' | 'mermai
 
 type Disk = { content: string; version: string };
 export type SourceLanguage = 'tsx' | 'markdown' | 'json' | 'mermaid' | 'text';
-type SourceEditorProps = { source: SourceAccess; language: SourceLanguage; label?: ReactNode; actions?: ReactNode; onDirty?: (dirty: boolean) => void };
+type SourceEditorProps = {
+  source: SourceAccess;
+  language: SourceLanguage;
+  label?: ReactNode;
+  actions?: ReactNode;
+  onDirty?: (dirty: boolean) => void;
+};
 
 export default function SourceEditor({ label, actions, onDirty, source, language: syntax }: SourceEditorProps) {
   const editable = import.meta.env.DEV && source.editable;
@@ -52,7 +75,9 @@ export default function SourceEditor({ label, actions, onDirty, source, language
   const refreshVersion = useRef(0);
   const refreshSource = useRef<() => void>(() => {});
 
-  useEffect(() => { onDirty?.(isDirty); }, [isDirty]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    onDirty?.(isDirty);
+  }, [isDirty]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Leaving with unsaved edits (another item, Preview, a reload) asks first.
   const blocker = useBlocker({
@@ -75,10 +100,10 @@ export default function SourceEditor({ label, actions, onDirty, source, language
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const loaded = await Promise.all([
-        read(),
-        languageExtension(syntax, path),
-      ]).catch((e: Error) => { if (!cancelled) setError(e.message); return null; });
+      const loaded = await Promise.all([read(), languageExtension(syntax, path)]).catch((e: Error) => {
+        if (!cancelled) setError(e.message);
+        return null;
+      });
       if (cancelled || !loaded || !host.current) return;
       const [first, language] = loaded;
       disk.current = first;
@@ -87,27 +112,61 @@ export default function SourceEditor({ label, actions, onDirty, source, language
         state: EditorState.create({
           doc: first.content,
           extensions: [
-            lineNumbers(), highlightActiveLine(), highlightActiveLineGutter(), drawSelection(),
-            history(), bracketMatching(), closeBrackets(), indentOnInput(), foldGutter(), highlightSelectionMatches(), search({ top: true }),
-            sourceTheme, language,
+            lineNumbers(),
+            highlightActiveLine(),
+            highlightActiveLineGutter(),
+            drawSelection(),
+            history(),
+            bracketMatching(),
+            closeBrackets(),
+            indentOnInput(),
+            foldGutter(),
+            highlightSelectionMatches(),
+            search({ top: true }),
+            sourceTheme,
+            language,
             ...(syntax === 'markdown' ? [EditorView.lineWrapping] : []),
             EditorState.readOnly.of(!editable),
             EditorView.editable.of(editable),
             // Named for screen readers. A read-only editor isn't focusable by default, which would leave
             // it without ⌘F, go to line, and keyboard selection, so it gets a tab stop.
-            EditorView.contentAttributes.of({ 'aria-label': `Source of ${path}`, ...(editable ? {} : { tabindex: '0' }) }),
-            keymap.of([{ key: 'Mod-s', preventDefault: true, run: () => { save.current(); return true; } }, ...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, ...foldKeymap, ...searchKeymap]),
-            EditorView.updateListener.of((update) => {
+            EditorView.contentAttributes.of({
+              'aria-label': `Source of ${path}`,
+              ...(editable ? {} : { tabindex: '0' }),
+            }),
+            keymap.of([
+              {
+                key: 'Mod-s',
+                preventDefault: true,
+                run: () => {
+                  save.current();
+                  return true;
+                },
+              },
+              ...closeBracketsKeymap,
+              ...defaultKeymap,
+              ...historyKeymap,
+              ...foldKeymap,
+              ...searchKeymap,
+            ]),
+            EditorView.updateListener.of(update => {
               if (!update.docChanged) return;
               const now = update.state.doc.toString() !== disk.current?.content;
-              if (now !== dirty.current) { dirty.current = now; setIsDirty(now); }
+              if (now !== dirty.current) {
+                dirty.current = now;
+                setIsDirty(now);
+              }
             }),
           ],
         }),
       });
       view.current.focus();
     })();
-    return () => { cancelled = true; view.current?.destroy(); view.current = null; };
+    return () => {
+      cancelled = true;
+      view.current?.destroy();
+      view.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, syntax, editable, source]);
 
@@ -120,13 +179,30 @@ export default function SourceEditor({ label, actions, onDirty, source, language
       if (savingNow.current) return; // The save acknowledgement is followed by a fresh read.
       const ticket = ++refreshVersion.current;
       const next = await read().catch(() => null);
-      if (!active || ticket !== refreshVersion.current || !next || !disk.current || next.version === disk.current.version) return;
-      if (dirty.current) setConflict(next); else takeDisk(next);
+      if (
+        !active ||
+        ticket !== refreshVersion.current ||
+        !next ||
+        !disk.current ||
+        next.version === disk.current.version
+      )
+        return;
+      if (dirty.current) setConflict(next);
+      else takeDisk(next);
     };
-    refreshSource.current = () => { void refresh(); };
-    const onSource = (change: { path: string }) => { if (change.path === path) void refresh(); };
+    refreshSource.current = () => {
+      void refresh();
+    };
+    const onSource = (change: { path: string }) => {
+      if (change.path === path) void refresh();
+    };
     hot.on('studio:source', onSource);
-    return () => { active = false; ++refreshVersion.current; refreshSource.current = () => {}; hot.off?.('studio:source', onSource); };
+    return () => {
+      active = false;
+      ++refreshVersion.current;
+      refreshSource.current = () => {};
+      hot.off?.('studio:source', onSource);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, source]);
 
@@ -159,37 +235,79 @@ export default function SourceEditor({ label, actions, onDirty, source, language
   };
 
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground">
+    <div className='flex min-h-0 min-w-0 flex-1 flex-col bg-background text-foreground'>
       {/* 56px of content plus the 1px border puts the text and Save at the same height as the
           navigation's title row and its buttons */}
-      <div className="flex h-[57px] shrink-0 items-center gap-3 border-b border-border px-4 text-[12px]">
-        {label ?? <span className="min-w-0 truncate font-mono text-muted-foreground" title={path}>{path}</span>}
-        <span className="ml-auto shrink-0 text-muted-foreground">{!editable ? 'Read-only' : isDirty ? 'Unsaved changes' : ''}</span>
+      <div className='flex h-[57px] shrink-0 items-center gap-3 border-b border-border px-4 text-[12px]'>
+        {label ?? (
+          <span className='min-w-0 truncate font-mono text-muted-foreground' title={path}>
+            {path}
+          </span>
+        )}
+        <span className='ml-auto shrink-0 text-muted-foreground'>
+          {!editable ? 'Read-only' : isDirty ? 'Unsaved changes' : ''}
+        </span>
         {/* Save and the buttons after it sit closer together than the header's other items. */}
-        <div className="flex shrink-0 items-center gap-1.5">
-          {editable && <Button size="sm" disabled={!isDirty || saving} onClick={() => save.current()} title={`Save (${shortcutLabel('save')})`}>{saving ? 'Saving' : 'Save'}</Button>}
+        <div className='flex shrink-0 items-center gap-1.5'>
+          {editable && (
+            <Button
+              size='sm'
+              disabled={!isDirty || saving}
+              onClick={() => save.current()}
+              title={`Save (${shortcutLabel('save')})`}
+            >
+              {saving ? 'Saving' : 'Save'}
+            </Button>
+          )}
           {actions}
         </div>
       </div>
       {conflict && (
-        <div role="alert" className="flex shrink-0 items-center gap-3 border-b border-border bg-muted px-4 py-2 text-[12px]">
-          <span className="min-w-0 flex-1">This file changed on disk while you were editing it.</span>
-          <Button size="sm" variant="outline" onClick={() => takeDisk(conflict)}>Load the new version</Button>
-          <Button size="sm" variant="outline" onClick={() => { disk.current = conflict; setConflict(null); }}>Keep mine</Button>
+        <div
+          role='alert'
+          className='flex shrink-0 items-center gap-3 border-b border-border bg-muted px-4 py-2 text-[12px]'
+        >
+          <span className='min-w-0 flex-1'>This file changed on disk while you were editing it.</span>
+          <Button size='sm' variant='outline' onClick={() => takeDisk(conflict)}>
+            Load the new version
+          </Button>
+          <Button
+            size='sm'
+            variant='outline'
+            onClick={() => {
+              disk.current = conflict;
+              setConflict(null);
+            }}
+          >
+            Keep mine
+          </Button>
         </div>
       )}
-      {error && <p role="alert" className="shrink-0 border-b border-border px-4 py-2 text-[12px] text-destructive">{error}</p>}
-      <div ref={host} className="min-h-0 flex-1 overflow-hidden" />
+      {error && (
+        <p role='alert' className='shrink-0 border-b border-border px-4 py-2 text-[12px] text-destructive'>
+          {error}
+        </p>
+      )}
+      <div ref={host} className='min-h-0 flex-1 overflow-hidden' />
 
-      <Dialog open={blocker.status === 'blocked'} onOpenChange={(o) => { if (!o) blocker.reset?.(); }}>
+      <Dialog
+        open={blocker.status === 'blocked'}
+        onOpenChange={o => {
+          if (!o) blocker.reset?.();
+        }}
+      >
         <DialogContent showCloseButton={false}>
           <DialogHeader>
             <DialogTitle>Discard your changes?</DialogTitle>
             <DialogDescription>You have unsaved changes to {path}. They'll be lost if you leave.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => blocker.reset?.()}>Keep editing</Button>
-            <Button variant="destructive" onClick={() => blocker.proceed?.()}>Discard</Button>
+            <Button variant='outline' onClick={() => blocker.reset?.()}>
+              Keep editing
+            </Button>
+            <Button variant='destructive' onClick={() => blocker.proceed?.()}>
+              Discard
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

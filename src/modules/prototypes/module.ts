@@ -6,7 +6,13 @@ import type { ModuleSpec } from '../../platform/core/api.ts';
 export default {
   optional: false,
   lib: true,
-  instructions: [{ path: 'skills/build-prototype/', when: 'asks to create or edit interactive prototype views' }, { path: 'skills/organize-prototype/', when: 'asks to rename, move, duplicate, archive, restore, or remove a prototype' }],
+  instructions: [
+    { path: 'skills/build-prototype/', when: 'asks to create or edit interactive prototype views' },
+    {
+      path: 'skills/organize-prototype/',
+      when: 'asks to rename, move, duplicate, archive, restore, or remove a prototype',
+    },
+  ],
   id: 'prototypes',
   label: 'Prototypes',
   version: '0.1.0',

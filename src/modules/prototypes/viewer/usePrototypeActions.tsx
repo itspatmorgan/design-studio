@@ -7,7 +7,14 @@
 import { useState, type ReactNode } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import {
-  Archive02Icon, ArchiveRestoreIcon, Copy01Icon, Delete02Icon, FileEditIcon, Folder01Icon, Link01Icon, PencilEdit02Icon,
+  Archive02Icon,
+  ArchiveRestoreIcon,
+  Copy01Icon,
+  Delete02Icon,
+  FileEditIcon,
+  Folder01Icon,
+  Link01Icon,
+  PencilEdit02Icon,
 } from '@hugeicons/core-free-icons';
 import { fileOp, openInEditor, ownsPrototype, repoPath, revealInFinder, useMe } from '@/platform/app/data/files';
 import { prototypeLink, setManifest } from '@/platform/app/data/manifest';
@@ -29,7 +36,9 @@ export function usePrototypeActions(proto: PrototypeInfo) {
   const editable = local && ownsPrototype(proto, me);
   const archived = proto.status === 'archived';
   // What the modules add. Their hooks run in a fixed order, because the modules that are on never change while the app runs.
-  const contributed = moduleApps.flatMap(({ app }) => app.useActions?.(proto, { editable: editable && !archived }) ?? []);
+  const contributed = moduleApps.flatMap(
+    ({ app }) => app.useActions?.(proto, { editable: editable && !archived }) ?? [],
+  );
   const [renaming, setRenaming] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -53,31 +62,50 @@ export function usePrototypeActions(proto: PrototypeInfo) {
   };
 
   // The groups of a menu, in the order they appear (see menuGroups.ts): reach it; change it; delete it, last and alone.
-  const groups: (Action | false)[][] = archived ? [
-    [],
-    [editable && { label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => setArchived(false) }],
-    [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
-  ] : [
-    [
-      local && { label: 'Open in editor', icon: FileEditIcon, onSelect: () => openInEditor(proto, '') },
-      local && { label: 'Reveal in Finder', icon: Folder01Icon, onSelect: () => revealInFinder(proto, '') },
-      { label: 'Copy link', icon: Link01Icon, onSelect: copyLink },
-      local && { label: 'Copy path', icon: Copy01Icon, onSelect: () => { navigator.clipboard.writeText(repoPath(proto, '')); toast.add({ title: 'Path copied' }); } },
-    ],
-    [
-      editable && { label: 'Rename', icon: PencilEdit02Icon, onSelect: () => setRenaming(true) },
-      editable && proto.contributorKey === me && { label: 'Duplicate', icon: Copy01Icon, onSelect: () => setDuplicating(true) },
-      editable && { label: 'Archive', icon: Archive02Icon, onSelect: () => setArchived(true) },
-      ...contributed,
-    ],
-    [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
-  ];
+  const groups: (Action | false)[][] = archived
+    ? [
+        [],
+        [editable && { label: 'Restore', icon: ArchiveRestoreIcon, onSelect: () => setArchived(false) }],
+        [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
+      ]
+    : [
+        [
+          local && { label: 'Open in editor', icon: FileEditIcon, onSelect: () => openInEditor(proto, '') },
+          local && { label: 'Reveal in Finder', icon: Folder01Icon, onSelect: () => revealInFinder(proto, '') },
+          { label: 'Copy link', icon: Link01Icon, onSelect: copyLink },
+          local && {
+            label: 'Copy path',
+            icon: Copy01Icon,
+            onSelect: () => {
+              navigator.clipboard.writeText(repoPath(proto, ''));
+              toast.add({ title: 'Path copied' });
+            },
+          },
+        ],
+        [
+          editable && { label: 'Rename', icon: PencilEdit02Icon, onSelect: () => setRenaming(true) },
+          editable &&
+            proto.contributorKey === me && {
+              label: 'Duplicate',
+              icon: Copy01Icon,
+              onSelect: () => setDuplicating(true),
+            },
+          editable && { label: 'Archive', icon: Archive02Icon, onSelect: () => setArchived(true) },
+          ...contributed,
+        ],
+        [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
+      ];
 
   // The dialogs those actions open. Render them anywhere under the menu.
   const dialogs: ReactNode = editable ? (
     <>
       <RenamePrototypeDialog proto={proto} open={renaming} onOpenChange={setRenaming} />
-      <DuplicatePrototypeDialog key={String(duplicating)} proto={proto} open={duplicating} onOpenChange={setDuplicating} />
+      <DuplicatePrototypeDialog
+        key={String(duplicating)}
+        proto={proto}
+        open={duplicating}
+        onOpenChange={setDuplicating}
+      />
       <DeletePrototypeDialog proto={proto} open={deleting} onOpenChange={setDeleting} />
     </>
   ) : null;

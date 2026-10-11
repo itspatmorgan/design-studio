@@ -31,9 +31,16 @@ const RETRY_MAX_MS = 30000;
 type Disk = { content: string; version: string; ids: Set<string> };
 type Snapshot = { elements: readonly ExcalidrawElement[]; appState: AppState };
 
-const idsOf = (elements: readonly { id: string; isDeleted?: boolean }[]) => new Set(elements.filter((el) => !el.isDeleted).map((el) => el.id));
+const idsOf = (elements: readonly { id: string; isDeleted?: boolean }[]) =>
+  new Set(elements.filter(el => !el.isDeleted).map(el => el.id));
 
-export function useCanvasFile({ proto, item, api, initial, editable }: {
+export function useCanvasFile({
+  proto,
+  item,
+  api,
+  initial,
+  editable,
+}: {
   proto: Prototype;
   item: Artifact;
   api: ExcalidrawImperativeAPI | null;
@@ -66,33 +73,62 @@ export function useCanvasFile({ proto, item, api, initial, editable }: {
 
   // Takes a newer version of the file into the scene. With unsaved edits it's merged with them;
   // without, the file just replaces the scene.
-  const takeFile = useCallback((next: { content: string; version: string }) => {
-    const a = apiRef.current;
-    if (!a) return false;
-    let parsed;
-    try { parsed = parseCanvas(next.content); } catch { return false; } // half written, or not a canvas: wait for the next change
-    const remote = restoreElements(parsed.elements as never, null, { refreshDimensions: true }) as ExcalidrawElement[];
-    let elements = remote;
-    let needsWriteBack = false;
-    if (dirty.current || saving.current) ({ elements, needsWriteBack } = mergeRemote(a.getSceneElementsIncludingDeleted() as ExcalidrawElement[], remote, disk.current.ids, a.getAppState()));
-    disk.current = { content: next.content, version: next.version, ids: idsOf(remote) };
-    try {
-      a.updateScene({ elements, appState: { viewBackgroundColor: parsed.background }, captureUpdate: CaptureUpdateAction.NEVER });
-      known.current = getSceneVersion(a.getSceneElementsIncludingDeleted());
-    } catch { return false; } // the canvas was closed meanwhile
-    if (needsWriteBack) {
-      dirty.current = true;
-      if (!paused.current) { setSaveState('unsaved'); schedule(); }
-    }
-    return true;
-  }, [schedule]);
+  const takeFile = useCallback(
+    (next: { content: string; version: string }) => {
+      const a = apiRef.current;
+      if (!a) return false;
+      let parsed;
+      try {
+        parsed = parseCanvas(next.content);
+      } catch {
+        return false;
+      } // half written, or not a canvas: wait for the next change
+      const remote = restoreElements(parsed.elements as never, null, {
+        refreshDimensions: true,
+      }) as ExcalidrawElement[];
+      let elements = remote;
+      let needsWriteBack = false;
+      if (dirty.current || saving.current)
+        ({ elements, needsWriteBack } = mergeRemote(
+          a.getSceneElementsIncludingDeleted() as ExcalidrawElement[],
+          remote,
+          disk.current.ids,
+          a.getAppState(),
+        ));
+      disk.current = { content: next.content, version: next.version, ids: idsOf(remote) };
+      try {
+        a.updateScene({
+          elements,
+          appState: { viewBackgroundColor: parsed.background },
+          captureUpdate: CaptureUpdateAction.NEVER,
+        });
+        known.current = getSceneVersion(a.getSceneElementsIncludingDeleted());
+      } catch {
+        return false;
+      } // the canvas was closed meanwhile
+      if (needsWriteBack) {
+        dirty.current = true;
+        if (!paused.current) {
+          setSaveState('unsaved');
+          schedule();
+        }
+      }
+      return true;
+    },
+    [schedule],
+  );
 
   const save = async () => {
     window.clearTimeout(timer.current);
     const snap = latest.current;
     if (saving.current || !dirty.current || !editableRef.current || !snap) return;
     const content = serializeCanvas(snap.elements, snap.appState, parseCanvas(disk.current.content).studioId);
-    if (content === disk.current.content) { dirty.current = false; burst.current = 0; setSaveState('saved'); return; }
+    if (content === disk.current.content) {
+      dirty.current = false;
+      burst.current = 0;
+      setSaveState('saved');
+      return;
+    }
     saving.current = true;
     dirty.current = false; // an edit during the save sets it again
     burst.current = 0;
@@ -135,17 +171,20 @@ export function useCanvasFile({ proto, item, api, initial, editable }: {
 
   // Excalidraw's onChange, which also reports selection and camera changes: only a change in the
   // elements is an edit.
-  const onChange = useCallback((elements: readonly ExcalidrawElement[], appState: AppState) => {
-    latest.current = { elements, appState };
-    if (!editableRef.current) return;
-    const version = getSceneVersion(elements);
-    if (version === known.current) return;
-    known.current = version;
-    dirty.current = true;
-    setSaveState('unsaved');
-    if (!burst.current) burst.current = Date.now();
-    if (!paused.current) schedule();
-  }, [schedule]);
+  const onChange = useCallback(
+    (elements: readonly ExcalidrawElement[], appState: AppState) => {
+      latest.current = { elements, appState };
+      if (!editableRef.current) return;
+      const version = getSceneVersion(elements);
+      if (version === known.current) return;
+      known.current = version;
+      dirty.current = true;
+      setSaveState('unsaved');
+      if (!burst.current) burst.current = Date.now();
+      if (!paused.current) schedule();
+    },
+    [schedule],
+  );
 
   // Writes what's unsaved now, and resolves whether nothing is left (for the agent's `persist`).
   const persist = useCallback(async () => {
@@ -156,8 +195,7 @@ export function useCanvasFile({ proto, item, api, initial, editable }: {
       if (editableRef.current && !saving.current) {
         await saveRef.current();
         if (dirty.current) return false;
-      }
-      else await new Promise((resolve) => setTimeout(resolve, 100));
+      } else await new Promise(resolve => setTimeout(resolve, 100));
     }
     return false;
   }, []);
@@ -186,7 +224,8 @@ export function useCanvasFile({ proto, item, api, initial, editable }: {
     const hot = import.meta.hot;
     if (!hot) return undefined;
     const onFile = async (change: { contributor: string; prototype: string; path: string }) => {
-      if (change.contributor !== proto.contributorKey || change.prototype !== proto.id || change.path !== item.path) return;
+      if (change.contributor !== proto.contributorKey || change.prototype !== proto.id || change.path !== item.path)
+        return;
       const next = await readSource(proto, item.path).catch(() => null);
       if (!next || next.version === disk.current.version || next.content === inflight.current) return;
       takeFile(next);
@@ -197,10 +236,18 @@ export function useCanvasFile({ proto, item, api, initial, editable }: {
 
   // Leaving, or hiding the tab, saves what's unsaved right away.
   useEffect(() => {
-    const flush = () => { if (dirty.current && !saving.current && !paused.current) void saveRef.current(); };
-    const onVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    const flush = () => {
+      if (dirty.current && !saving.current && !paused.current) void saveRef.current();
+    };
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => { document.removeEventListener('visibilitychange', onVisibility); window.clearTimeout(timer.current); flush(); };
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.clearTimeout(timer.current);
+      flush();
+    };
   }, []);
 
   return { onChange, persist, saveState, blocker, retry, discard };

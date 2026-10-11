@@ -4,7 +4,12 @@
 // toggle (or ⌘;) hides navigation, for every section alike. What goes inside is up to the
 // section: a NavHeader (NavHeader.tsx) on top, then a list or tree (NavList.tsx, FileTree.tsx).
 import { useContext, useEffect, type ReactNode } from 'react';
-import { NAV_WIDTH, SectionNavPresenceContext, useSectionNavOpen, useSectionNavWidth } from '@/platform/app/shell/appPrefs';
+import {
+  NAV_WIDTH,
+  SectionNavPresenceContext,
+  useSectionNavOpen,
+  useSectionNavWidth,
+} from '@/platform/app/shell/appPrefs';
 import { cn } from '@/lib/utils';
 
 export function SectionNav({ label, children }: { label: string; children: ReactNode }) {
@@ -12,20 +17,27 @@ export function SectionNav({ label, children }: { label: string; children: React
   const open = useSectionNavOpen();
   // Present on the page even while hidden, so the rail can offer to show it again.
   const register = useContext(SectionNavPresenceContext);
-  useEffect(() => { register(true); return () => register(false); }, [register]);
+  useEffect(() => {
+    register(true);
+    return () => register(false);
+  }, [register]);
   if (!open) return null;
   return (
-    <aside aria-label={label} style={{ width }} className="relative flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside
+      aria-label={label}
+      style={{ width }}
+      className='relative flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground'
+    >
       {children}
       {/* The resize handle: a thin strip over the right border that highlights on hover. */}
       <div
-        role="separator"
-        aria-orientation="vertical"
+        role='separator'
+        aria-orientation='vertical'
         aria-label={`Resize ${label.toLowerCase()}`}
         aria-valuenow={width}
         aria-valuemin={NAV_WIDTH.min}
         aria-valuemax={NAV_WIDTH.max}
-        title="Drag to resize. Double-click to reset."
+        title='Drag to resize. Double-click to reset.'
         tabIndex={0}
         {...handleProps}
         className={cn(

@@ -14,7 +14,7 @@ test('a stalled or unsupported embed cannot extend the opening deadline', () => 
 });
 
 test('renderer commits and errors settle independently of source freshness', () => {
-  const embeds = ['ready', 'error', 'loading', 'placeholder'].map((state) => ({
+  const embeds = ['ready', 'error', 'loading', 'placeholder'].map(state => ({
     dataset: { canvasEmbedId: state },
     querySelector(selector: string) {
       // Published previews may have unknown source freshness. Their render status still works.

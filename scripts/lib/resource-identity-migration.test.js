@@ -6,13 +6,23 @@ import { test } from 'node:test';
 import { viewIdentity, markdownIdentity, resourceId } from '../../src/platform/core/resourceIdentity.ts';
 import { planSourceIdentityMigration, applySourceIdentityMigration } from './resource-identity-migration.js';
 
-const types = { view: { inPrototype: true, extensions: ['.tsx'], identity: viewIdentity }, document: { inPrototype: true, extensions: ['.md'], identity: markdownIdentity } };
+const types = {
+  view: { inPrototype: true, extensions: ['.tsx'], identity: viewIdentity },
+  document: { inPrototype: true, extensions: ['.md'], identity: markdownIdentity },
+};
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-identity-migration-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const write = (file, text) => { const absolute = path.join(root, file); fs.mkdirSync(path.dirname(absolute), { recursive: true }); fs.writeFileSync(absolute, text); };
+  const write = (file, text) => {
+    const absolute = path.join(root, file);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, text);
+  };
   write('contributors/pat.json', '{"name":"Pat","welcomeDismissed":true}\n');
-  write('src/systems/product/system.ts', '// Product\nexport default { label: "Product", status: "active" } satisfies SystemSpec;\n');
+  write(
+    'src/systems/product/system.ts',
+    '// Product\nexport default { label: "Product", status: "active" } satisfies SystemSpec;\n',
+  );
   write('src/prototypes/pat/example/meta.json', '{"title":"Example","system":null,"status":"archived"}');
   write('src/prototypes/pat/example/main.tsx', '/** @lofi */\nexport default () => null;\n');
   write('src/prototypes/pat/example/notes.md', '# Notes\n\n[View](./main.tsx)\n');
@@ -27,8 +37,16 @@ test('migration preview is read-only, applies reviewed IDs, preserves relationsh
   assert.equal(new Set(plan.resources.map(resource => resource.studioId)).size, 5);
   const migrated = applySourceIdentityMigration(root, types, JSON.parse(JSON.stringify(plan)));
   assert.equal(migrated.missing.length, 0);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'src/prototypes/pat/example/meta.json'), 'utf8')), { title: 'Example', system: null, status: 'archived', studioId: migrated.resources.find(resource => resource.kind === 'prototype').studioId });
-  assert.match(fs.readFileSync(path.join(root, 'src/prototypes/pat/example/notes.md'), 'utf8'), /\[View\]\(\.\/main\.tsx\)/);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'src/prototypes/pat/example/meta.json'), 'utf8')), {
+    title: 'Example',
+    system: null,
+    status: 'archived',
+    studioId: migrated.resources.find(resource => resource.kind === 'prototype').studioId,
+  });
+  assert.match(
+    fs.readFileSync(path.join(root, 'src/prototypes/pat/example/notes.md'), 'utf8'),
+    /\[View\]\(\.\/main\.tsx\)/,
+  );
   assert.match(fs.readFileSync(path.join(root, 'src/systems/product/system.ts'), 'utf8'), /^\/\/ Product/);
   assert.equal(planSourceIdentityMigration(root, types).changes.length, 0);
 });
@@ -56,7 +74,16 @@ test('migration retries generated collisions, refuses exhausted allocation and n
   const first = resourceId('0123456789abcdef');
   write('contributors/pat.json', JSON.stringify({ name: 'Pat', studioId: first }));
   let attempts = 0;
-  assert.throws(() => planSourceIdentityMigration(root, types, { generate: () => { attempts++; return first; } }), /could not allocate/);
+  assert.throws(
+    () =>
+      planSourceIdentityMigration(root, types, {
+        generate: () => {
+          attempts++;
+          return first;
+        },
+      }),
+    /could not allocate/,
+  );
   assert.equal(attempts, 32);
   const second = resourceId('abcdefghjkmnpqrs');
   const third = resourceId('23456789abcdefgh');
@@ -76,9 +103,13 @@ test('a write failure rolls the metadata stage back without changing unrelated f
   const plan = planSourceIdentityMigration(root, types);
   const rename = fs.renameSync;
   let calls = 0;
-  t.mock.method(fs, 'renameSync', (...args) => { if (++calls === 3) throw new Error('Injected write failure'); return rename(...args); });
+  t.mock.method(fs, 'renameSync', (...args) => {
+    if (++calls === 3) throw new Error('Injected write failure');
+    return rename(...args);
+  });
   assert.throws(() => applySourceIdentityMigration(root, types, plan), /Injected write failure/);
-  for (const snapshot of plan.snapshot) assert.equal(fs.readFileSync(path.join(root, snapshot.path), 'utf8'), snapshot.before);
+  for (const snapshot of plan.snapshot)
+    assert.equal(fs.readFileSync(path.join(root, snapshot.path), 'utf8'), snapshot.before);
   assert.equal(fs.readFileSync(path.join(root, 'unrelated.txt'), 'utf8'), 'Keep me');
   assert.ok(!fs.readdirSync(path.join(root, 'contributors')).some(name => name.endsWith('.tmp')));
 });
@@ -97,7 +128,8 @@ test('an edit during migration stops later writes and remains intact through rol
   assert.throws(() => applySourceIdentityMigration(root, types, plan), /changed/);
   assert.equal(fs.readFileSync(editedFile, 'utf8'), '// Concurrent editor change\n');
   assert.equal(fs.readFileSync(path.join(root, plan.changes[0].path), 'utf8'), plan.changes[0].before);
-  for (const change of plan.changes.slice(2)) assert.equal(fs.readFileSync(path.join(root, change.path), 'utf8'), change.before);
+  for (const change of plan.changes.slice(2))
+    assert.equal(fs.readFileSync(path.join(root, change.path), 'utf8'), change.before);
 });
 
 test('rollback refuses to overwrite a concurrent edit to an already migrated file', t => {

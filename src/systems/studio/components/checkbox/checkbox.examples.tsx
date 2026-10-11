@@ -1,4 +1,9 @@
 import { Checkbox } from '@/systems/studio/components/checkbox';
 import { Label } from '@/systems/studio/components/label';
-export const Default = () => <div className="flex items-center gap-2"><Checkbox id="checkbox-admin" /><Label htmlFor="checkbox-admin">Admin</Label></div>;
-export const Disabled = () => <Checkbox aria-label="Unavailable Admin assignment" defaultChecked disabled />;
+export const Default = () => (
+  <div className='flex items-center gap-2'>
+    <Checkbox id='checkbox-admin' />
+    <Label htmlFor='checkbox-admin'>Admin</Label>
+  </div>
+);
+export const Disabled = () => <Checkbox aria-label='Unavailable Admin assignment' defaultChecked disabled />;

@@ -8,16 +8,21 @@
 import { skillTitle, SKILL_FILE } from '../../src/modules/systems/content/skills.ts';
 import { frontmatter } from '../lib/frontmatter.js';
 
-const textOf = (node) => (typeof node.value === 'string' ? node.value : (node.children ?? []).map(textOf).join(''));
+const textOf = node => (typeof node.value === 'string' ? node.value : (node.children ?? []).map(textOf).join(''));
 
 export default function remarkTitleFromHeading() {
   return (tree, file) => {
-    const yaml = tree.children.find((n) => n.type === 'yaml');
-    const heading = tree.children.find((n) => n.type !== 'yaml');
+    const yaml = tree.children.find(n => n.type === 'yaml');
+    const heading = tree.children.find(n => n.type !== 'yaml');
     if (yaml && /^title\s*:/m.test(yaml.value)) {
       const declared = frontmatter(`---\n${yaml.value}\n---`)?.title;
       // Remove only a duplicate opening title. Differing headings and later sections remain content.
-      if (typeof declared === 'string' && heading?.type === 'heading' && heading.depth === 1 && textOf(heading).trim() === declared.trim()) {
+      if (
+        typeof declared === 'string' &&
+        heading?.type === 'heading' &&
+        heading.depth === 1 &&
+        textOf(heading).trim() === declared.trim()
+      ) {
         tree.children.splice(tree.children.indexOf(heading), 1);
       }
       return;

@@ -1,6 +1,12 @@
 import type { ComponentType } from 'react';
 import type { CodeIcon } from '@hugeicons/core-free-icons';
-import { artifactAvailability, capabilityAvailability, type ArtifactAvailabilityContext, type FileTypeSpec, type EmbedSurface } from '../../core/fileTypes.ts';
+import {
+  artifactAvailability,
+  capabilityAvailability,
+  type ArtifactAvailabilityContext,
+  type FileTypeSpec,
+  type EmbedSurface,
+} from '../../core/fileTypes.ts';
 export type { EmbedSurface } from '../../core/fileTypes.ts';
 import type { Artifact, Prototype } from '@/platform/app/data/types';
 
@@ -12,7 +18,8 @@ export type ArtifactContext = { proto: Prototype; item: Artifact };
 // this size. A type without one is shown as a card.
 export type EmbedProps = { proto: Prototype; item: Artifact; width: number; height: number; loadingStartedAt?: number };
 
-export type FileTypeModule<Props extends object = any> = { // eslint-disable-line @typescript-eslint/no-explicit-any
+export type FileTypeModule<Props extends object = any> = {
+  // eslint-disable-line @typescript-eslint/no-explicit-any
   icon: typeof CodeIcon;
   // Loads the item's file before its page renders, so the open item stays on screen until the
   // next is ready. Returns the props for Page, or undefined if the file isn't there (the
@@ -38,41 +45,78 @@ export type ArtifactAction = {
 };
 
 export function assertFileTypeModule(id: string, spec: FileTypeSpec, module: FileTypeModule | undefined) {
-  const fail = (message: string): never => { throw new Error(`File type ${id}: ${message}`); };
+  const fail = (message: string): never => {
+    throw new Error(`File type ${id}: ${message}`);
+  };
   if (module && 'embedSurfaces' in module) fail('move embedSurfaces to capabilities.embeds in type.ts.');
   if (!module || !module.Page || typeof module.load !== 'function') fail('provide Page and load in open.tsx.');
-  if (Boolean(module!.Embed) !== Boolean(spec.capabilities.embeds.length)) fail('capabilities.embeds must match the Embed implementation.');
-  if (module!.actions !== undefined && !Array.isArray(module!.actions)) fail('actions in open.tsx must be an array, or omitted.');
+  if (Boolean(module!.Embed) !== Boolean(spec.capabilities.embeds.length))
+    fail('capabilities.embeds must match the Embed implementation.');
+  if (module!.actions !== undefined && !Array.isArray(module!.actions))
+    fail('actions in open.tsx must be an array, or omitted.');
   const actions = module!.actions ?? [];
   for (const action of actions) {
-    if (!action || typeof action !== 'object' || typeof action.id !== 'string' || !action.id.startsWith(id + '.') || typeof action.label !== 'string' || !action.label.trim() || typeof action.run !== 'function' || typeof action.localOnly !== 'boolean' || typeof action.mutates !== 'boolean' || (action.unavailable !== undefined && typeof action.unavailable !== 'function')) fail('actions need an owner-prefixed ID, label, run, localOnly and mutates declarations.');
+    if (
+      !action ||
+      typeof action !== 'object' ||
+      typeof action.id !== 'string' ||
+      !action.id.startsWith(id + '.') ||
+      typeof action.label !== 'string' ||
+      !action.label.trim() ||
+      typeof action.run !== 'function' ||
+      typeof action.localOnly !== 'boolean' ||
+      typeof action.mutates !== 'boolean' ||
+      (action.unavailable !== undefined && typeof action.unavailable !== 'function')
+    )
+      fail('actions need an owner-prefixed ID, label, run, localOnly and mutates declarations.');
   }
   const ids = actions.map(action => action.id);
   if (new Set(ids).size !== ids.length) fail('action implementations must have unique IDs.');
-  if (ids.length !== spec.capabilities.actions.length || ids.some(id => !spec.capabilities.actions.includes(id))) fail('capabilities.actions must match action implementations.');
+  if (ids.length !== spec.capabilities.actions.length || ids.some(id => !spec.capabilities.actions.includes(id)))
+    fail('capabilities.actions must match action implementations.');
 }
 
-export function artifactActions(spec: FileTypeSpec | undefined, module: FileTypeModule | undefined, context: ArtifactActionContext) {
+export function artifactActions(
+  spec: FileTypeSpec | undefined,
+  module: FileTypeModule | undefined,
+  context: ArtifactActionContext,
+) {
   const env = context.environment;
-  return (module?.actions ?? []).filter(action => spec?.capabilities.actions.includes(action.id)).map(action => {
-    const base = capabilityAvailability(true,
-      !env.present && 'This artifact is unavailable.',
-      !env.renderer && 'The artifact renderer is unavailable.',
-      Boolean(spec && !(env.scope === 'prototype' ? spec.inPrototype : spec.inSystemContent)) && 'This artifact type is unavailable in this scope.',
-      action.localOnly && !env.local && 'This operation is available only in a local studio.',
-      action.mutates && (!env.local || !env.editable) && 'You do not have permission to change this artifact.');
-    if (!base.available) return { action, availability: base };
-    try {
-      const reason = action.unavailable ? action.unavailable(context) : null;
-      if (reason !== null && (typeof reason !== 'string' || !reason.trim())) throw new Error('Return a nonempty reason or null.');
-      return { action, availability: capabilityAvailability(true, reason ?? undefined) };
-    } catch {
-      return { action, availability: capabilityAvailability(true, 'This action could not determine availability. Check its module availability callback.') };
-    }
-  });
+  return (module?.actions ?? [])
+    .filter(action => spec?.capabilities.actions.includes(action.id))
+    .map(action => {
+      const base = capabilityAvailability(
+        true,
+        !env.present && 'This artifact is unavailable.',
+        !env.renderer && 'The artifact renderer is unavailable.',
+        Boolean(spec && !(env.scope === 'prototype' ? spec.inPrototype : spec.inSystemContent)) &&
+          'This artifact type is unavailable in this scope.',
+        action.localOnly && !env.local && 'This operation is available only in a local studio.',
+        action.mutates && (!env.local || !env.editable) && 'You do not have permission to change this artifact.',
+      );
+      if (!base.available) return { action, availability: base };
+      try {
+        const reason = action.unavailable ? action.unavailable(context) : null;
+        if (reason !== null && (typeof reason !== 'string' || !reason.trim()))
+          throw new Error('Return a nonempty reason or null.');
+        return { action, availability: capabilityAvailability(true, reason ?? undefined) };
+      } catch {
+        return {
+          action,
+          availability: capabilityAvailability(
+            true,
+            'This action could not determine availability. Check its module availability callback.',
+          ),
+        };
+      }
+    });
 }
 
-export type ArtifactActionTarget = { spec: FileTypeSpec | undefined; module: FileTypeModule | undefined; context: ArtifactActionContext };
+export type ArtifactActionTarget = {
+  spec: FileTypeSpec | undefined;
+  module: FileTypeModule | undefined;
+  context: ArtifactActionContext;
+};
 
 // Resolve current state after the menu closes; handlers still need server-authorized writes.
 export async function runArtifactAction(id: string, resolve: () => ArtifactActionTarget | undefined) {
@@ -85,13 +129,27 @@ export async function runArtifactAction(id: string, resolve: () => ArtifactActio
 }
 
 // Only explicitly declared surfaces receive a preview.
-export function embedFor(spec: FileTypeSpec | undefined, module: FileTypeModule | undefined, surface: EmbedSurface, scope: ArtifactAvailabilityContext['scope']) {
-  const state = artifactAvailability(spec, { local: false, editable: false, present: true, renderer: Boolean(module?.Embed), scope });
+export function embedFor(
+  spec: FileTypeSpec | undefined,
+  module: FileTypeModule | undefined,
+  surface: EmbedSurface,
+  scope: ArtifactAvailabilityContext['scope'],
+) {
+  const state = artifactAvailability(spec, {
+    local: false,
+    editable: false,
+    present: true,
+    renderer: Boolean(module?.Embed),
+    scope,
+  });
   return state.embeds[surface].available ? module?.Embed : undefined;
 }
 
 // Every route reader uses the same handoff: data and renderer must both be prepared.
-export async function prepareFile<Props extends object>(module: FileTypeModule<Props>, context: ArtifactContext): Promise<Props | undefined> {
+export async function prepareFile<Props extends object>(
+  module: FileTypeModule<Props>,
+  context: ArtifactContext,
+): Promise<Props | undefined> {
   const [props] = await Promise.all([module.load(context), module.Page.preload?.()]);
   return props;
 }

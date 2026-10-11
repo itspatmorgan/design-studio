@@ -9,10 +9,17 @@ import { resolveStudioReferences } from '../../src/platform/core/resourceReferen
 // writers retain `persisted`; existing filesystem APIs consume `config` instead.
 export function readPersistedStudioConfig(root) {
   const file = path.join(root, 'studio.config.ts');
-  if (!canonicalDirectory(root, root) || fs.lstatSync(file).isSymbolicLink() || !fs.lstatSync(file).isFile()) throw new Error('Studio configuration must be an ordinary source declaration.');
+  if (!canonicalDirectory(root, root) || fs.lstatSync(file).isSymbolicLink() || !fs.lstatSync(file).isFile())
+    throw new Error('Studio configuration must be an ordinary source declaration.');
   const source = fs.readFileSync(file, 'utf8');
   const declaration = readDeclaration(source);
   if ('error' in declaration) throw new Error(`studio.config.ts: ${declaration.error}`);
   const directory = readResourceDirectory(root);
-  return { file, source, persisted: declaration.value, config: resolveStudioReferences(declaration.value, directory), directory };
+  return {
+    file,
+    source,
+    persisted: declaration.value,
+    config: resolveStudioReferences(declaration.value, directory),
+    directory,
+  };
 }

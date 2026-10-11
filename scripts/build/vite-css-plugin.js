@@ -18,16 +18,33 @@ import { PROTOTYPE_SYSTEMS } from '../../src/modules/systems/node/systems.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const STYLESHEET = path.join(ROOT, 'src', 'platform', 'app', 'styles.css');
 export function inventories(deploy = false) {
-  return Object.entries(SYSTEM_SPECS).filter(([id, spec]) => CONFIG.systems.includes(id) && (!deploy || spec.status !== 'archived')).map(([id, spec]) => ({ ...spec, inventory: themeInventory(fs.readFileSync(path.join(ROOT, 'src/systems', id, 'styles/theme.css'), 'utf8'), spec.themeClass) }));
+  return Object.entries(SYSTEM_SPECS)
+    .filter(([id, spec]) => CONFIG.systems.includes(id) && (!deploy || spec.status !== 'archived'))
+    .map(([id, spec]) => ({
+      ...spec,
+      inventory: themeInventory(
+        fs.readFileSync(path.join(ROOT, 'src/systems', id, 'styles/theme.css'), 'utf8'),
+        spec.themeClass,
+      ),
+    }));
 }
 
-const rel = (target) => path.relative(path.dirname(STYLESHEET), target).split(path.sep).join('/');
+const rel = target => path.relative(path.dirname(STYLESHEET), target).split(path.sep).join('/');
 
 function validateThemes() {
-  const problems = Object.keys(SYSTEM_SPECS).flatMap((id) => {
+  const problems = Object.keys(SYSTEM_SPECS).flatMap(id => {
     const file = path.join(ROOT, 'src/systems', id, 'styles/theme.css');
     const code = fs.readFileSync(file, 'utf8');
-    return [...(SYSTEM_SPECS[id].role === 'platform' ? [] : cssProblems(code, { file, themeClass: SYSTEM_SPECS[id].themeClass, packagePolicy: scopePolicy({ root: ROOT, systems: PROTOTYPE_SYSTEMS, modules: [] }).packageProblem })), ...tailwindThemeProblems(code, { file, ...SYSTEM_SPECS[id] })];
+    return [
+      ...(SYSTEM_SPECS[id].role === 'platform'
+        ? []
+        : cssProblems(code, {
+            file,
+            themeClass: SYSTEM_SPECS[id].themeClass,
+            packagePolicy: scopePolicy({ root: ROOT, systems: PROTOTYPE_SYSTEMS, modules: [] }).packageProblem,
+          })),
+      ...tailwindThemeProblems(code, { file, ...SYSTEM_SPECS[id] }),
+    ];
   });
   if (problems.length) return problems.join('\n');
 }
@@ -37,7 +54,10 @@ export default function css() {
   return {
     name: 'studio-css',
     enforce: 'pre',
-    configResolved(config) { refreshSystems(); deploy = config.command === 'build'; },
+    configResolved(config) {
+      refreshSystems();
+      deploy = config.command === 'build';
+    },
     handleHotUpdate(ctx) {
       if (ctx.file.endsWith('.css')) {
         const problem = validateThemes();
@@ -48,22 +68,40 @@ export default function css() {
       if (path.resolve(id.split('?')[0]) !== STYLESHEET) return null;
       const problem = validateThemes();
       if (problem) this.error(problem);
-      for (const system of Object.values(SYSTEM_SPECS)) this.addWatchFile(path.join(ROOT, system.dir, 'styles/theme.css'));
-      const themes = Object.keys(PROTOTYPE_SYSTEMS).filter(id => !deploy || PROTOTYPE_SYSTEMS[id].status !== 'archived').map((id) => `@import "${rel(path.join(ROOT, 'src', 'systems', id, 'styles', 'theme.css'))}";`).join('\n');
-      const sources = ['prototypes', ...PROTOTYPE_DIRS.map((dir) => path.basename(dir))]
-        .map((name) => `@source not "${rel(path.join(ROOT, 'src', name))}/**/meta.json";`).join('\n');
-      return { code: code.replace('/* @studio:tailwind-theme */', themeAdapter(inventories(deploy))).replace('/* @studio:system-themes */', themes).replace('/* @studio:data-files */', sources), map: null };
+      for (const system of Object.values(SYSTEM_SPECS))
+        this.addWatchFile(path.join(ROOT, system.dir, 'styles/theme.css'));
+      const themes = Object.keys(PROTOTYPE_SYSTEMS)
+        .filter(id => !deploy || PROTOTYPE_SYSTEMS[id].status !== 'archived')
+        .map(id => `@import "${rel(path.join(ROOT, 'src', 'systems', id, 'styles', 'theme.css'))}";`)
+        .join('\n');
+      const sources = ['prototypes', ...PROTOTYPE_DIRS.map(dir => path.basename(dir))]
+        .map(name => `@source not "${rel(path.join(ROOT, 'src', name))}/**/meta.json";`)
+        .join('\n');
+      return {
+        code: code
+          .replace('/* @studio:tailwind-theme */', themeAdapter(inventories(deploy)))
+          .replace('/* @studio:system-themes */', themes)
+          .replace('/* @studio:data-files */', sources),
+        map: null,
+      };
     },
   };
 }
 
 export function scopedUtilities() {
-  return { postcssPlugin: 'studio-system-utilities', Once(root) {
-    let utilities = false;
-    root.walkAtRules('layer', layer => { if (layer.params === 'utilities' && layer.nodes) utilities = true; });
-    if (!utilities) return;
-    const scoped = postcss.parse(scopeThemeUtilities(root.toString(), inventories(deploy)), { from: root.source?.input.file });
-    root.removeAll();
-    root.append(scoped.nodes);
-  } };
+  return {
+    postcssPlugin: 'studio-system-utilities',
+    Once(root) {
+      let utilities = false;
+      root.walkAtRules('layer', layer => {
+        if (layer.params === 'utilities' && layer.nodes) utilities = true;
+      });
+      if (!utilities) return;
+      const scoped = postcss.parse(scopeThemeUtilities(root.toString(), inventories(deploy)), {
+        from: root.source?.input.file,
+      });
+      root.removeAll();
+      root.append(scoped.nodes);
+    },
+  };
 }

@@ -16,9 +16,13 @@ const STYLES = path.join(SRC, 'platform/app/styles.css');
 const local = file => file.startsWith(SRC + path.sep);
 const supported = file => local(file) && /\.(?:[cm]?[jt]sx?|md|css|json)$/.test(file);
 const keyOf = file => '/' + path.relative(SRC, file).split(path.sep).join('/');
-const themeFiles = () => [...new Set([PLATFORM_ID, ...Object.keys(PROTOTYPE_SYSTEMS)])].map(id => path.join(SRC, 'systems', id, 'styles/theme.css'));
+const themeFiles = () =>
+  [...new Set([PLATFORM_ID, ...Object.keys(PROTOTYPE_SYSTEMS)])].map(id =>
+    path.join(SRC, 'systems', id, 'styles/theme.css'),
+  );
 function pairOf(file) {
-  if (!local(file) || !canonicalDirectory(path.dirname(file), ROOT) || fs.lstatSync(file).isSymbolicLink()) throw new Error('Preview dependency is unavailable.');
+  if (!local(file) || !canonicalDirectory(path.dirname(file), ROOT) || fs.lstatSync(file).isSymbolicLink())
+    throw new Error('Preview dependency is unavailable.');
   const stat = fs.statSync(file);
   if (!stat.isFile() || stat.size > 2 * 1024 * 1024) throw new Error('Preview dependency is too large to verify.');
   return [keyOf(file), digest(fs.readFileSync(file))];
@@ -50,55 +54,79 @@ export function sourceInputs(graph, entry) {
     for (const child of module.importedModules ?? []) visit(child);
   };
   for (const module of graph.getModulesByFile(entry) ?? []) visit(module);
-  for (const file of files) if (file.endsWith('.css')) {
-    pairOf(file);
-    for (const input of cssInputs(file, fs.readFileSync(file, 'utf8'))) files.add(input);
-  }
+  for (const file of files)
+    if (file.endsWith('.css')) {
+      pairOf(file);
+      for (const input of cssInputs(file, fs.readFileSync(file, 'utf8'))) files.add(input);
+    }
   if (files.size > 512) throw new Error('Preview dependency graph is too large to verify.');
   return [...files].sort().map(pairOf);
 }
 export default function artifactRevisions() {
   const inputs = new Map();
-  return [{
-    name: 'studio-capture-artifact-input', enforce: 'pre', apply: 'serve',
-    transform: { order: 'pre', handler(code, id) {
-      const file = id.split('?')[0];
-      if (!supported(file) || /[?&](?:raw|url)(?:&|$)/.test(id)) return null;
-      const extra = file.endsWith('.css') ? [...cssInputs(file, code)].filter(input => input !== file) : [];
-      if (file === STYLES) for (const theme of themeFiles()) {
-        pairOf(theme);
-        extra.push(...cssInputs(theme, fs.readFileSync(theme, 'utf8')));
-      }
-      inputs.set(id, [[keyOf(file), digest(code)], ...[...new Set(extra)].map(pairOf)]);
-      return null;
-    } },
-  }, {
-    name: 'studio-record-artifact-input', enforce: 'post', apply: 'serve',
-    transform: { order: 'post', handler(code, id) {
-      const versions = inputs.get(id);
-      if (!versions) return null;
-      inputs.delete(id);
-      return {
-        code: code + `\n;{const records=globalThis[Symbol.for('studio.compiled-inputs')]??=new Map();for(const [path,hash] of ${JSON.stringify(versions)})records.set(path,hash); }\n`,
-        map: null,
-      };
-    } },
-    configureServer(server) {
-      server.middlewares.use('/__studio/revision', (req, res) => {
-        if (req.method !== 'GET' || !sameOrigin(req)) return send(res, 403, { error: 'Only the app can read preview revisions.' });
-        res.setHeader('Cache-Control', 'no-store');
-        try {
-          const url = new URL(req.url ?? '/', 'http://localhost');
-          const contributor = url.searchParams.get('contributor');
-          const dir = prototypeDir(contributor, url.searchParams.get('prototype'));
-          const entry = dir && itemFile(dir, url.searchParams.get('path'), contributor);
-          if (!entry) return send(res, 404, { error: 'This artifact is unavailable.' });
-          const sources = sourceInputs(server.environments.client.moduleGraph, entry);
-          return send(res, 200, { source: sources.find(([file]) => file === keyOf(entry))[1], inputs: inputDigest(sources), sources });
-        } catch {
-          return send(res, 409, { error: 'Preview inputs could not be verified. Try again after repairing the files.' });
-        }
-      });
+  return [
+    {
+      name: 'studio-capture-artifact-input',
+      enforce: 'pre',
+      apply: 'serve',
+      transform: {
+        order: 'pre',
+        handler(code, id) {
+          const file = id.split('?')[0];
+          if (!supported(file) || /[?&](?:raw|url)(?:&|$)/.test(id)) return null;
+          const extra = file.endsWith('.css') ? [...cssInputs(file, code)].filter(input => input !== file) : [];
+          if (file === STYLES)
+            for (const theme of themeFiles()) {
+              pairOf(theme);
+              extra.push(...cssInputs(theme, fs.readFileSync(theme, 'utf8')));
+            }
+          inputs.set(id, [[keyOf(file), digest(code)], ...[...new Set(extra)].map(pairOf)]);
+          return null;
+        },
+      },
     },
-  }];
+    {
+      name: 'studio-record-artifact-input',
+      enforce: 'post',
+      apply: 'serve',
+      transform: {
+        order: 'post',
+        handler(code, id) {
+          const versions = inputs.get(id);
+          if (!versions) return null;
+          inputs.delete(id);
+          return {
+            code:
+              code +
+              `\n;{const records=globalThis[Symbol.for('studio.compiled-inputs')]??=new Map();for(const [path,hash] of ${JSON.stringify(versions)})records.set(path,hash); }\n`,
+            map: null,
+          };
+        },
+      },
+      configureServer(server) {
+        server.middlewares.use('/__studio/revision', (req, res) => {
+          if (req.method !== 'GET' || !sameOrigin(req))
+            return send(res, 403, { error: 'Only the app can read preview revisions.' });
+          res.setHeader('Cache-Control', 'no-store');
+          try {
+            const url = new URL(req.url ?? '/', 'http://localhost');
+            const contributor = url.searchParams.get('contributor');
+            const dir = prototypeDir(contributor, url.searchParams.get('prototype'));
+            const entry = dir && itemFile(dir, url.searchParams.get('path'), contributor);
+            if (!entry) return send(res, 404, { error: 'This artifact is unavailable.' });
+            const sources = sourceInputs(server.environments.client.moduleGraph, entry);
+            return send(res, 200, {
+              source: sources.find(([file]) => file === keyOf(entry))[1],
+              inputs: inputDigest(sources),
+              sources,
+            });
+          } catch {
+            return send(res, 409, {
+              error: 'Preview inputs could not be verified. Try again after repairing the files.',
+            });
+          }
+        });
+      },
+    },
+  ];
 }

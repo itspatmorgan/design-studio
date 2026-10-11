@@ -19,7 +19,10 @@ export function createCompiledTracker(
   let failure: { detail: string; retained: boolean } | null = null;
   let paths = new Set<string>();
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const clearDeadline = () => { clearTimeout(timer); timer = undefined; };
+  const clearDeadline = () => {
+    clearTimeout(timer);
+    timer = undefined;
+  };
   const check = async () => {
     if (!live) return;
     const request = ++serial;
@@ -39,7 +42,8 @@ export function createCompiledTracker(
         if (lifecycle.state.phase !== 'preparing' || !lifecycle.state.preparing) lifecycle.prepare(revision);
         timer ??= setTimeout(() => {
           timer = undefined;
-          if (live) lifecycle.unknown('The latest preview could not be verified. Repair the files or reload this view.');
+          if (live)
+            lifecycle.unknown('The latest preview could not be verified. Repair the files or reload this view.');
         }, timeout);
         return;
       }
@@ -56,14 +60,40 @@ export function createCompiledTracker(
     }
   };
   return {
-    get state() { return lifecycle.state; },
-    includes(path: string) { return paths.has(path); },
-    invalidate() { committed = false; lifecycle.unknown(); return check(); },
-    begin() { committed = false; return check(); },
-    ready() { committed = true; return check(); },
-    compilationFailed(detail: string) { failure = { detail, retained: true }; return check(); },
-    failed(detail: string, retained: boolean) { failure = { detail, retained }; committed = false; return check(); },
-    dispose() { live = false; ++serial; clearDeadline(); lifecycle.dispose(); },
+    get state() {
+      return lifecycle.state;
+    },
+    includes(path: string) {
+      return paths.has(path);
+    },
+    invalidate() {
+      committed = false;
+      lifecycle.unknown();
+      return check();
+    },
+    begin() {
+      committed = false;
+      return check();
+    },
+    ready() {
+      committed = true;
+      return check();
+    },
+    compilationFailed(detail: string) {
+      failure = { detail, retained: true };
+      return check();
+    },
+    failed(detail: string, retained: boolean) {
+      failure = { detail, retained };
+      committed = false;
+      return check();
+    },
+    dispose() {
+      live = false;
+      ++serial;
+      clearDeadline();
+      lifecycle.dispose();
+    },
   };
 }
 
@@ -72,7 +102,12 @@ export function compiledLifecycle(file: ArtifactFile, publish: (state: ArtifactL
     // Published bundles have no changing repository or live compilation evidence.
     const lifecycle = createArtifactLifecycle(publish);
     const unknown = () => lifecycle.unknown();
-    return { begin: unknown, ready: unknown, failed: (detail: string, retained: boolean) => lifecycle.error(detail, retained), dispose: () => lifecycle.dispose() };
+    return {
+      begin: unknown,
+      ready: unknown,
+      failed: (detail: string, retained: boolean) => lifecycle.error(detail, retained),
+      dispose: () => lifecycle.dispose(),
+    };
   }
   const entry = '/' + rootOf(file.contributor, file.prototype) + '/' + file.path;
   const tracker = createCompiledTracker(() => readRevision(file), publish);
@@ -84,16 +119,27 @@ export function compiledLifecycle(file: ArtifactFile, publish: (state: ArtifactL
     const id = err.id?.split('?')[0];
     const marker = id?.lastIndexOf('/src/');
     const path = id && marker !== undefined && marker >= 0 ? id.slice(marker + 4) : id;
-    if (path && (path === entry || tracker.includes(path))) void tracker.compilationFailed(err.message ?? 'The latest code could not compile.');
+    if (path && (path === entry || tracker.includes(path)))
+      void tracker.compilationFailed(err.message ?? 'The latest code could not compile.');
   };
   import.meta.hot?.on('vite:error', compileError);
   // A compiled-module notification does not prove a React commit. Only renderer ready()
   // does, so Vite updates trigger checks in the renderer after it commits.
   import.meta.hot?.on('studio:source', source);
   return {
-    begin: () => { void tracker.begin(); },
-    ready: () => { void tracker.ready(); },
-    failed: (detail: string, retained: boolean) => { void tracker.failed(detail, retained); },
-    dispose: () => { import.meta.hot?.off('studio:source', source); import.meta.hot?.off('vite:error', compileError); tracker.dispose(); },
+    begin: () => {
+      void tracker.begin();
+    },
+    ready: () => {
+      void tracker.ready();
+    },
+    failed: (detail: string, retained: boolean) => {
+      void tracker.failed(detail, retained);
+    },
+    dispose: () => {
+      import.meta.hot?.off('studio:source', source);
+      import.meta.hot?.off('vite:error', compileError);
+      tracker.dispose();
+    },
   };
 }

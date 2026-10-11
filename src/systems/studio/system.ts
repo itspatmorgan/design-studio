@@ -11,5 +11,5 @@ export default {
   docs: 'off',
   libraries: [],
   origin: 'shadcn',
-  studioId: "5e3btfmmmys5b0h7",
+  studioId: '5e3btfmmmys5b0h7',
 } satisfies SystemSpec;

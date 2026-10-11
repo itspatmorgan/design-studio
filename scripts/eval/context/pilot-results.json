@@ -39,10 +39,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": "",
-        "changed": [
-          "src/prototypes/eval/checkout/_checkout.module.css",
-          "src/prototypes/eval/checkout/prototype.tsx"
-        ]
+        "changed": ["src/prototypes/eval/checkout/_checkout.module.css", "src/prototypes/eval/checkout/prototype.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -91,10 +88,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": "",
-        "changed": [
-          "src/prototypes/eval/checkout/_checkout.module.css",
-          "src/prototypes/eval/checkout/prototype.tsx"
-        ]
+        "changed": ["src/prototypes/eval/checkout/_checkout.module.css", "src/prototypes/eval/checkout/prototype.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -143,9 +137,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": " M src/prototypes/eval/launch/prototype.tsx\n",
-        "changed": [
-          "src/prototypes/eval/launch/prototype.tsx"
-        ]
+        "changed": ["src/prototypes/eval/launch/prototype.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -197,10 +189,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": " M src/prototypes/eval/launch/prototype.tsx\n?? src/prototypes/eval/launch/_launch.module.css\n",
-        "changed": [
-          "src/prototypes/eval/launch/prototype.tsx",
-          "src/prototypes/eval/launch/_launch.module.css"
-        ]
+        "changed": ["src/prototypes/eval/launch/prototype.tsx", "src/prototypes/eval/launch/_launch.module.css"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -252,9 +241,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": "",
-        "changed": [
-          "src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"
-        ]
+        "changed": ["src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -303,9 +290,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": " M src/modules/prototypes/viewer/RenamePrototypeDialog.tsx\n",
-        "changed": [
-          "src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"
-        ]
+        "changed": ["src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",

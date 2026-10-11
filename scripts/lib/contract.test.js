@@ -4,7 +4,7 @@ import ts from 'typescript';
 import { computeContract, contractProblems, exportNames, readSnapshot, serialize, typeFields } from './contract.js';
 
 const base = () => structuredClone(computeContract());
-const source = (code) => ts.createSourceFile('x.ts', code, ts.ScriptTarget.Latest, true);
+const source = code => ts.createSourceFile('x.ts', code, ts.ScriptTarget.Latest, true);
 
 // Upstream regression: the committed snapshot matches the source. A studio's own build does not run this,
 // so a team that edits platform code is not asked to change the platform version.
@@ -17,9 +17,10 @@ test('an unchanged contract passes', () => {
 });
 
 test('a change without a version bump fails and says what to do', () => {
-  const now = base(), snapshot = base();
+  const now = base(),
+    snapshot = base();
   now.moduleEntries.push('src/platform/app/fake/Thing');
-  now.types.ModuleSpec = now.types.ModuleSpec.filter((f) => f !== 'lib');
+  now.types.ModuleSpec = now.types.ModuleSpec.filter(f => f !== 'lib');
   const [problem, ...rest] = contractProblems(now, snapshot);
   assert.equal(rest.length, 0);
   assert.match(problem, /without a PLATFORM_VERSION change/);
@@ -29,7 +30,8 @@ test('a change without a version bump fails and says what to do', () => {
 });
 
 test('a change with a version bump asks for a snapshot update', () => {
-  const now = base(), snapshot = base();
+  const now = base(),
+    snapshot = base();
   now.platformVersion = '9.9.9';
   now.runtimePackages.system.push('extra');
   const [problem] = contractProblems(now, snapshot);
@@ -45,7 +47,14 @@ test('a missing snapshot asks for an update', () => {
 
 test('type fields keep optionality and exports split values from types', () => {
   assert.deepEqual(typeFields(source('type T = { a: string; b?: number; c(): void }'), 'T'), ['a', 'b?', 'c']);
-  assert.deepEqual(exportNames(source("export type { A } from './a'; export { B, type C } from './b'; export const D = 1, E = 2; export function f() {} export * from './z'")), { values: ['* from ./z', 'B', 'D', 'E', 'f'], types: ['A', 'C'] });
+  assert.deepEqual(
+    exportNames(
+      source(
+        "export type { A } from './a'; export { B, type C } from './b'; export const D = 1, E = 2; export function f() {} export * from './z'",
+      ),
+    ),
+    { values: ['* from ./z', 'B', 'D', 'E', 'f'], types: ['A', 'C'] },
+  );
   assert.throws(() => typeFields(source('type U = string'), 'U'));
 });
 

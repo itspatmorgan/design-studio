@@ -17,8 +17,10 @@ export function prototypeArtifactHref(prototype: PrototypeNavigationScope, path:
   const matches = prototype.artifacts.filter(item => item.path === file || item.path.replace(/\.[^./]+$/, '') === file);
   if (matches.length > 1) throw new Error(`Prototype path "${file}" is ambiguous.`);
   const artifact = matches[0];
-  if (!prototype.studioId || !artifact?.studioId) throw new Error(`No identified artifact exists at prototype path "${file}".`);
-  if (![prototype.studioId, artifact.studioId].every(id => /^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(id))) throw new Error('Invalid prototype navigation identity.');
+  if (!prototype.studioId || !artifact?.studioId)
+    throw new Error(`No identified artifact exists at prototype path "${file}".`);
+  if (![prototype.studioId, artifact.studioId].every(id => /^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(id)))
+    throw new Error('Invalid prototype navigation identity.');
   return `/prototypes/${prototype.studioId}/artifacts/${artifact.studioId}${suffix}`;
 }
 
@@ -34,5 +36,8 @@ export function useIsPrototypeArtifact(path: string): boolean {
   const prototype = useContext(scope);
   if (!prototype) throw new Error('Prototype navigation requires a rendered prototype view.');
   const href = prototypeArtifactHref(prototype, path).split(/[?#]/)[0];
-  return Boolean(prototype.currentArtifactId && href === `/prototypes/${prototype.studioId}/artifacts/${prototype.currentArtifactId}`);
+  return Boolean(
+    prototype.currentArtifactId &&
+      href === `/prototypes/${prototype.studioId}/artifacts/${prototype.currentArtifactId}`,
+  );
 }

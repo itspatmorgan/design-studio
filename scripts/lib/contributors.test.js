@@ -24,7 +24,10 @@ test('profiles use filename keys and retain each person’s preferences independ
 
 test('profile validation catches missing declarations and ambiguous identities', t => {
   const root = fixture(t);
-  writeProfiles(root, { sam: { name: 'Sam', email: 'sam@example.test', github: 'sam' }, alex: { name: 'Alex', email: 'SAM@example.test', github: 'SAM' } });
+  writeProfiles(root, {
+    sam: { name: 'Sam', email: 'sam@example.test', github: 'sam' },
+    alex: { name: 'Alex', email: 'SAM@example.test', github: 'SAM' },
+  });
   assert.equal(readContributors(root).problems.length, 2);
   fs.writeFileSync(path.join(root, 'contributors/alex.json'), JSON.stringify({ name: '', welcomeDismissed: 'yes' }));
   const { problems } = readContributors(root);
@@ -44,12 +47,24 @@ test('linked profiles, invalid keys, and non-object profiles are rejected', t =>
 
 test('profile identities reject malformed, duplicated and ambiguously declared permanent IDs', t => {
   const root = fixture(t);
-  writeProfiles(root, { pat: { name: 'Pat', studioId: '0123456789abcdef' }, alex: { name: 'Alex', studioId: '0123456789abcdef' } });
+  writeProfiles(root, {
+    pat: { name: 'Pat', studioId: '0123456789abcdef' },
+    alex: { name: 'Alex', studioId: '0123456789abcdef' },
+  });
   assert.ok(readContributors(root).problems.some(problem => problem.includes('studioId is also registered')));
-  fs.writeFileSync(path.join(root, 'contributors/alex.json'), '{"name":"Alex","email":"","github":"","studioId":"bad"}');
+  fs.writeFileSync(
+    path.join(root, 'contributors/alex.json'),
+    '{"name":"Alex","email":"","github":"","studioId":"bad"}',
+  );
   assert.ok(readContributors(root).problems.some(problem => problem.includes('exactly 16')));
-  fs.writeFileSync(path.join(root, 'contributors/alex.json'), '{"name":"Alex","email":"","github":"","studioId":"0123456789abcdef","studioId":"abcdefghjkmnpqrs"}');
+  fs.writeFileSync(
+    path.join(root, 'contributors/alex.json'),
+    '{"name":"Alex","email":"","github":"","studioId":"0123456789abcdef","studioId":"abcdefghjkmnpqrs"}',
+  );
   assert.ok(readContributors(root).problems.some(problem => problem.includes('studioId only once')));
-  fs.writeFileSync(path.join(root, 'contributors/alex.json'), '{"name":"Alex","email":"","github":"","github":"pat","studioId":"abcdefghjkmnpqrs"}');
+  fs.writeFileSync(
+    path.join(root, 'contributors/alex.json'),
+    '{"name":"Alex","email":"","github":"","github":"pat","studioId":"abcdefghjkmnpqrs"}',
+  );
   assert.ok(readContributors(root).problems.some(problem => problem.includes('github only once')));
 });

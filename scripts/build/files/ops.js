@@ -26,10 +26,13 @@ export const templateFor = (name, systemContent = false) => {
 // The system content's files are platform files: anyone can change their copy here, and the changes go
 // through review before they reach everyone. So it's open to whoever runs the app; what it does
 // enforce is the system content's shape (src/modules/systems/content/rules.ts).
-export const SYSTEM_CONTENT_NOTE = 'Knowledge sections (Context, Skills) can\'t be renamed or deleted.';
+export const SYSTEM_CONTENT_NOTE = "Knowledge sections (Context, Skills) can't be renamed or deleted.";
 
 // "code-review" → "Code review"
-export const titleOf = (name) => { const t = name.replace(/-/g, ' '); return t.charAt(0).toUpperCase() + t.slice(1); };
+export const titleOf = name => {
+  const t = name.replace(/-/g, ' ');
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
 
 // A skill's new SKILL.md: the frontmatter the Agent Skills format needs, and a start for the body.
 // A description that isn't plain text goes in a block, which any YAML reader takes literally.
@@ -39,12 +42,16 @@ export function skillTemplate(name, description) {
   return `---\nname: ${name}\n${line}\n---\n\nSay what to do, step by step, and when it applies.\n`;
 }
 
-
 // Moves a file or folder to the Trash with macOS's built-in trash command, or, where
 // there isn't one, into .trash/ at the repo root (ignored by Git).
 export function trash(file) {
   if (fs.existsSync('/usr/bin/trash')) {
-    try { execFileSync('/usr/bin/trash', [file]); return 'the Trash'; } catch { /* fall back */ }
+    try {
+      execFileSync('/usr/bin/trash', [file]);
+      return 'the Trash';
+    } catch {
+      /* fall back */
+    }
   }
   fs.mkdirSync(TRASH, { recursive: true });
   fs.renameSync(file, path.join(TRASH, `${Date.now()}-${path.basename(file)}`));
@@ -56,12 +63,17 @@ export function trash(file) {
 export function fixOrder(dir, fromRel, toRel) {
   const metaFile = path.join(dir, 'meta.json');
   let meta;
-  try { meta = JSON.parse(fs.readFileSync(metaFile, 'utf8')); } catch { return; }
+  try {
+    meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+  } catch {
+    return;
+  }
   const order = parseOrder(meta.order);
   if (!order) return;
   const next = afterChange(order, fromRel, toRel);
   if (next.length === order.length && next.every((p, i) => p === order[i])) return;
-  if (next.length) meta.order = next; else delete meta.order;
+  if (next.length) meta.order = next;
+  else delete meta.order;
   fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2) + '\n');
 }
 
@@ -72,23 +84,32 @@ export function renameSkillInFile(file, name) {
   const block = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!block) return;
   const lines = block[1].split(/\r?\n/);
-  const at = lines.findIndex((l) => /^name:/.test(l));
-  if (at >= 0) lines[at] = `name: ${name}`; else lines.unshift(`name: ${name}`);
+  const at = lines.findIndex(l => /^name:/.test(l));
+  if (at >= 0) lines[at] = `name: ${name}`;
+  else lines.unshift(`name: ${name}`);
   fs.writeFileSync(file, text.replace(block[1], lines.join('\n')));
 }
 
 // One file operation. Returns { path } (the new path, for create, rename, and move) or throws a message.
 // `section` is the system content section the folder is (context, skills), or null for a prototype.
-export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, title, description, status }, section = null) {
-  const inside = (r) => resolveInside(dir, r);
-  const relOf = (abs) => path.relative(fs.realpathSync(dir), abs).split(path.sep).join('/');
+export function runOp(
+  dir,
+  { op, path: rel = '', name, dir: isDir, to, before, title, description, status },
+  section = null,
+) {
+  const inside = r => resolveInside(dir, r);
+  const relOf = abs => path.relative(fs.realpathSync(dir), abs).split(path.sep).join('/');
   // The system content has a fixed shape: check the change against it first (src/modules/systems/content/rules.ts).
   if (section) {
     if (op === 'create-skill') {
       if (section !== 'skills') throw new Error('Skills are made in the Skills tab.');
-      const bad = nameProblem(name) ? `A skill's name ${nameProblem(name)}` : descriptionProblem(description) ? `The description ${descriptionProblem(description)}` : null;
+      const bad = nameProblem(name)
+        ? `A skill's name ${nameProblem(name)}`
+        : descriptionProblem(description)
+          ? `The description ${descriptionProblem(description)}`
+          : null;
       if (bad) throw new Error(bad);
-      if (/[\r\n]/.test(name)) throw new Error('A skill\'s name is one word or several joined by hyphens.');
+      if (/[\r\n]/.test(name)) throw new Error("A skill's name is one word or several joined by hyphens.");
       const folder = path.join(dir, name);
       if (fs.existsSync(folder)) throw new Error(`A skill named “${name}” already exists.`);
       fs.mkdirSync(folder);
@@ -97,14 +118,26 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
     }
     const target = op === 'create' ? null : inside(rel);
     // A Markdown file keeps its .md: rename to "notes" and it's "notes.md", like a new file.
-    if (op === 'rename' && section === 'context' && target && fs.statSync(target).isFile() && typeof name === 'string' && !name.endsWith('.md')) name += '.md';
-    const problem = opProblem(section, { op, path: rel, name, to, dir: isDir }, Boolean(target && fs.statSync(target).isDirectory()));
+    if (
+      op === 'rename' &&
+      section === 'context' &&
+      target &&
+      fs.statSync(target).isFile() &&
+      typeof name === 'string' &&
+      !name.endsWith('.md')
+    )
+      name += '.md';
+    const problem = opProblem(
+      section,
+      { op, path: rel, name, to, dir: isDir },
+      Boolean(target && fs.statSync(target).isDirectory()),
+    );
     if (problem) throw new Error(problem);
   }
   if (op === 'create') {
     const parent = inside(rel);
     if (!parent || !fs.statSync(parent).isDirectory()) throw new Error('That folder was moved or deleted.');
-    if (!validName(name)) throw new Error('Names can\'t contain slashes or start with a dot.');
+    if (!validName(name)) throw new Error("Names can't contain slashes or start with a dot.");
     const target = path.join(parent, name);
     if (fs.existsSync(target)) throw new Error(`Something named “${name}” already exists here.`);
     if (isDir) fs.mkdirSync(target);
@@ -133,10 +166,15 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
       if (!next) throw new Error(`A status is one of: ${STATUSES.join(', ')}.`);
       if (next === 'active') {
         const assignment = prototypeAssignment(meta, PROTOTYPE_SYSTEMS);
-        if (assignment.problems.length || meta.systemMissing) throw new Error('Rebuild this prototype with an available system before restoring it.');
-        if (assignment.system !== null && PROTOTYPE_SYSTEMS[assignment.system]?.status === 'archived') throw new Error('Restore this prototype’s system before restoring the prototype.');
+        if (assignment.problems.length || meta.systemMissing)
+          throw new Error('Rebuild this prototype with an available system before restoring it.');
+        if (assignment.system !== null && PROTOTYPE_SYSTEMS[assignment.system]?.status === 'archived')
+          throw new Error('Restore this prototype’s system before restoring the prototype.');
       }
-      if (next === 'active') { delete meta.status; delete meta.archivedBySystemId; } else meta.status = next;
+      if (next === 'active') {
+        delete meta.status;
+        delete meta.archivedBySystemId;
+      } else meta.status = next;
     }
     fs.writeFileSync(metaFile, JSON.stringify(meta, null, 2) + '\n');
     return {};
@@ -145,7 +183,8 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
     // Arranging is for prototypes: the system content has a fixed shape (src/modules/systems/content/rules.ts).
     if (section) throw new Error('System sections keep their own order.');
     const from = inside(rel);
-    if (!from || from === fs.realpathSync(dir) || rel === 'meta.json') throw new Error('That file was moved or deleted.');
+    if (!from || from === fs.realpathSync(dir) || rel === 'meta.json')
+      throw new Error('That file was moved or deleted.');
     let current = rel;
     let movedPaths = [];
     let relinkedFiles = [];
@@ -158,7 +197,7 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
     const folder = parentOf(current);
     const where = inside(folder);
     if (!where || !fs.statSync(where).isDirectory()) throw new Error('That folder was moved or deleted.');
-    const siblings = readTree(where, folder ? `${folder}/` : '', readOrder(dir)).map((n) => n.path);
+    const siblings = readTree(where, folder ? `${folder}/` : '', readOrder(dir)).map(n => n.path);
     if (!siblings.includes(current)) throw new Error('That file was moved or deleted.');
     if (before && !siblings.includes(before)) throw new Error('That place was moved or deleted.');
     const metaFile = path.join(dir, 'meta.json');
@@ -169,16 +208,18 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
   }
   const source = inside(rel);
   if (!source || source === fs.realpathSync(dir)) throw new Error('That file was moved or deleted.');
-  if (rel === 'meta.json') throw new Error('meta.json holds the prototype\'s info, so it stays put. To change the title, choose Edit.');
+  if (rel === 'meta.json')
+    throw new Error("meta.json holds the prototype's info, so it stays put. To change the title, choose Edit.");
   if (op === 'rename' || op === 'move') {
     let target;
     if (op === 'rename') {
-      if (!validName(name)) throw new Error('Names can\'t contain slashes or start with a dot.');
+      if (!validName(name)) throw new Error("Names can't contain slashes or start with a dot.");
       target = path.join(path.dirname(source), name);
     } else {
       const folder = inside(to ?? '');
       if (!folder || !fs.statSync(folder).isDirectory()) throw new Error('That folder was moved or deleted.');
-      if (folder === source || folder.startsWith(source + path.sep)) throw new Error('A folder can\'t move inside itself.');
+      if (folder === source || folder.startsWith(source + path.sep))
+        throw new Error("A folder can't move inside itself.");
       target = path.join(folder, path.basename(source));
     }
     if (target === source) return { path: rel };
@@ -194,9 +235,13 @@ export function runOp(dir, { op, path: rel = '', name, dir: isDir, to, before, t
         movedPaths = [...repaired.moves];
         relinkedFiles = repaired.changes.map(change => relOf(change.file));
       }
-    } catch (error) { fs.renameSync(target, source); throw error; }
+    } catch (error) {
+      fs.renameSync(target, source);
+      throw error;
+    }
     // A skill's name is its folder's name: keep the two together.
-    if (section === 'skills' && op === 'rename' && !rel.includes('/')) renameSkillInFile(path.join(target, SKILL_FILE), path.basename(target));
+    if (section === 'skills' && op === 'rename' && !rel.includes('/'))
+      renameSkillInFile(path.join(target, SKILL_FILE), path.basename(target));
     fixOrder(dir, rel, op === 'rename' ? next : null);
     return { path: next, movedPaths, relinkedFiles };
   }

@@ -9,14 +9,20 @@ export function createRefreshQueue(refresh: () => Promise<unknown>, schedule: (c
     if (running || !dirty) return;
     dirty = false;
     running = true;
-    try { await refresh(); }
-    finally { running = false; if (dirty) request(); }
+    try {
+      await refresh();
+    } finally {
+      running = false;
+      if (dirty) request();
+    }
   };
   const request = () => {
     dirty = true;
     if (scheduled || running) return;
     scheduled = true;
-    schedule(() => { void flush(); });
+    schedule(() => {
+      void flush();
+    });
   };
   return request;
 }

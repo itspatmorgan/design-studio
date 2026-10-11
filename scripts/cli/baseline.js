@@ -21,7 +21,10 @@ const MODULES = {
   contributors: { paths: ['src/modules/contributors'], pattern: 'modules/contributors' },
   onboarding: { paths: ['src/modules/onboarding'], pattern: "modules/onboarding|'onboarding'" },
   documentation: { paths: ['src/modules/documentation'], pattern: "modules/documentation|'documentation'" },
-  systems: { paths: ['src/systems', 'src/modules/systems/pages', 'src/modules/systems/data/loadDocs.ts'], pattern: 'systems' },
+  systems: {
+    paths: ['src/systems', 'src/modules/systems/pages', 'src/modules/systems/data/loadDocs.ts'],
+    pattern: 'systems',
+  },
   canvas: { paths: ['src/modules/canvas'], pattern: 'excalidraw|canvas' },
   diagrams: { paths: ['src/modules/diagrams'], pattern: 'modules/diagrams' },
   document: { paths: ['src/modules/document'], pattern: 'modules/document' },
@@ -31,18 +34,26 @@ const MODULES = {
 
 // Tools run straight from node_modules: pnpm would stop to re-check dependencies in a scratch copy.
 const VITE = ['node_modules/vite/bin/vite.js', 'build'];
-const TESTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')).scripts.test.replace(/^node /, '').split(' ');
+const TESTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
+  .scripts.test.replace(/^node /, '')
+  .split(' ');
 
 const SKIP_COPY = new Set(['node_modules', 'dist', '.git']);
-const tmp = (name) => fs.mkdtempSync(path.join(os.tmpdir(), `studio-${name}-`));
-const kb = (n) => `${(n / 1024).toFixed(0)} KB`;
+const tmp = name => fs.mkdtempSync(path.join(os.tmpdir(), `studio-${name}-`));
+const kb = n => `${(n / 1024).toFixed(0)} KB`;
 
 function run(cwd, cmd, args) {
   const start = performance.now();
   try {
     // The scratch copy's mise.toml is new to mise, so trust it for these commands only.
     const env = { ...process.env, MISE_TRUSTED_CONFIG_PATHS: cwd };
-    execFileSync(cmd, args, { cwd, env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 });
+    execFileSync(cmd, args, {
+      cwd,
+      env,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 64 * 1024 * 1024,
+    });
     return { ok: true, seconds: (performance.now() - start) / 1000 };
   } catch (e) {
     const text = `${e.stdout || ''}${e.stderr || ''}`.trim().split('\n');
@@ -55,7 +66,7 @@ function run(cwd, cmd, args) {
 function scratchCopy(name) {
   const dest = tmp(name);
   if (process.argv.includes('--working')) {
-    fs.cpSync(ROOT, dest, { recursive: true, filter: (src) => !SKIP_COPY.has(path.basename(src)) });
+    fs.cpSync(ROOT, dest, { recursive: true, filter: src => !SKIP_COPY.has(path.basename(src)) });
   } else {
     const archive = path.join(dest, '.head.tar');
     execFileSync('git', ['archive', '--format=tar', '-o', archive, 'HEAD'], { cwd: ROOT });
@@ -67,17 +78,23 @@ function scratchCopy(name) {
 }
 
 // Scratch copies are deleted when done unless --keep is given. The linked node_modules is only unlinked.
-const discard = (dir) => { if (!process.argv.includes('--keep')) fs.rmSync(dir, { recursive: true, force: true }); };
+const discard = dir => {
+  if (!process.argv.includes('--keep')) fs.rmSync(dir, { recursive: true, force: true });
+};
 
 function sizeOf(dir, keep = () => true) {
-  let raw = 0, gz = 0, files = 0;
-  const walk = (d) => {
+  let raw = 0,
+    gz = 0,
+    files = 0;
+  const walk = d => {
     for (const e of fs.existsSync(d) ? fs.readdirSync(d, { withFileTypes: true }) : []) {
       const full = path.join(d, e.name);
       if (e.isDirectory()) walk(full);
       else if (keep(full)) {
         const buf = fs.readFileSync(full);
-        raw += buf.length; gz += zlib.gzipSync(buf).length; files++;
+        raw += buf.length;
+        gz += zlib.gzipSync(buf).length;
+        files++;
       }
     }
   };
@@ -90,25 +107,59 @@ function coupling() {
   for (const [id, m] of Object.entries(MODULES)) {
     let out = '';
     try {
-      out = execFileSync('git', ['grep', '-lEi', m.pattern, '--', 'src', 'scripts', 'vite.config.ts', 'package.json', 'tsconfig.app.json', 'tsconfig.node.json',
-        ':!*.md', ':!*.mdx', ':!*.excalidraw', ':!src/prototypes', ':!src/platform', ':!*.test.ts', ':!src/modules', ...m.paths.map((p) => `:!${p}`)],
-      { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+      out = execFileSync(
+        'git',
+        [
+          'grep',
+          '-lEi',
+          m.pattern,
+          '--',
+          'src',
+          'scripts',
+          'vite.config.ts',
+          'package.json',
+          'tsconfig.app.json',
+          'tsconfig.node.json',
+          ':!*.md',
+          ':!*.mdx',
+          ':!*.excalidraw',
+          ':!src/prototypes',
+          ':!src/platform',
+          ':!*.test.ts',
+          ':!src/modules',
+          ...m.paths.map(p => `:!${p}`),
+        ],
+        { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+      );
     } catch (e) {
       if (e.status !== 1) throw e; // git grep exits 1 when nothing matches
     }
     rows.push({ module: id, files: out.split('\n').filter(Boolean).length });
   }
-  console.log('Source files outside a module that name it, not counting the module declarations (fewer is better; 0 means removable):');
+  console.log(
+    'Source files outside a module that name it, not counting the module declarations (fewer is better; 0 means removable):',
+  );
   console.table(rows);
 }
 
 function build(dir) {
   const manifest = run(dir, 'node', ['scripts/build/build-manifest.js', '--deploy']);
   const bundle = manifest.ok ? run(dir, 'node', VITE) : { ok: false, seconds: 0, tail: manifest.tail };
-  if (!bundle.ok) { console.error(`build failed:\n${bundle.tail}`); return null; }
+  if (!bundle.ok) {
+    console.error(`build failed:\n${bundle.tail}`);
+    return null;
+  }
   const m = sizeOf(path.join(dir, 'public', 'prototypes'));
-  const assets = sizeOf(path.join(dir, 'dist'), (f) => /\.(js|css)$/.test(f));
-  const result = { manifestSeconds: +manifest.seconds.toFixed(1), bundleSeconds: +bundle.seconds.toFixed(1), manifestFiles: m.files, manifestSize: kb(m.raw), bundleFiles: assets.files, bundleSize: kb(assets.raw), bundleGzip: kb(assets.gz) };
+  const assets = sizeOf(path.join(dir, 'dist'), f => /\.(js|css)$/.test(f));
+  const result = {
+    manifestSeconds: +manifest.seconds.toFixed(1),
+    bundleSeconds: +bundle.seconds.toFixed(1),
+    manifestFiles: m.files,
+    manifestSize: kb(m.raw),
+    bundleFiles: assets.files,
+    bundleSize: kb(assets.raw),
+    bundleGzip: kb(assets.gz),
+  };
   console.table([result]);
   return result;
 }
@@ -124,22 +175,41 @@ const STEPS = [
 
 function removal(id) {
   const m = id === 'none' ? { paths: [] } : MODULES[id]; // "none" removes nothing: the app must pass as it is
-  if (!m) { console.error(`Unknown module "${id}". Modules: ${Object.keys(MODULES).join(', ')}.`); process.exit(2); }
+  if (!m) {
+    console.error(`Unknown module "${id}". Modules: ${Object.keys(MODULES).join(', ')}.`);
+    process.exit(2);
+  }
   const dir = scratchCopy(`remove-${id}`);
   try {
     if (id === 'contributors') {
-      const personal = run(dir, 'node', ['scripts/cli/studio.js', 'configure', '--usage', 'personal', '--recovery', '--yes']);
-      if (!personal.ok) { console.log(`${id}: FAILS at personal configuration\n${personal.tail}`); return false; }
+      const personal = run(dir, 'node', [
+        'scripts/cli/studio.js',
+        'configure',
+        '--usage',
+        'personal',
+        '--recovery',
+        '--yes',
+      ]);
+      if (!personal.ok) {
+        console.log(`${id}: FAILS at personal configuration\n${personal.tail}`);
+        return false;
+      }
       console.log('Checking Contributors & Permissions availability in personal use. Team use requires it.');
     }
     if (id !== 'none') {
       const args = process.argv.includes('--off') ? ['disable', id] : ['remove', id, '--yes'];
       const operation = run(dir, 'node', ['scripts/cli/studio.js', ...args]);
-      if (!operation.ok) { console.log(`${id}: FAILS at capability change\n${operation.tail}`); return false; }
+      if (!operation.ok) {
+        console.log(`${id}: FAILS at capability change\n${operation.tail}`);
+        return false;
+      }
     }
     for (const [name, cmd, args] of STEPS) {
       const r = run(dir, cmd, args);
-      if (!r.ok) { console.log(`${id}: FAILS at ${name}\n${r.tail}`); return false; }
+      if (!r.ok) {
+        console.log(`${id}: FAILS at ${name}\n${r.tail}`);
+        return false;
+      }
     }
     console.log(`${id}: removable (manifest, modules, typecheck, tests and bundle all pass)`);
     return true;
@@ -153,29 +223,46 @@ function fixture(count) {
   const dir = scratchCopy(`fixture-${count}`);
   const people = Math.max(1, Math.round(Math.sqrt(count) / 2));
   fs.mkdirSync(path.join(dir, 'contributors'), { recursive: true });
-  for (let p = 0; p < people; p++) fs.writeFileSync(path.join(dir, 'contributors', `person${p}.json`), JSON.stringify({ name: `Person ${p}`, github: `person${p}`, email: '', welcomeDismissed: false }));
+  for (let p = 0; p < people; p++)
+    fs.writeFileSync(
+      path.join(dir, 'contributors', `person${p}.json`),
+      JSON.stringify({ name: `Person ${p}`, github: `person${p}`, email: '', welcomeDismissed: false }),
+    );
   for (let i = 0; i < count; i++) {
     const who = `person${i % people}`;
     const proto = path.join(dir, 'src', 'prototypes', who, `proto-${i}`);
     fs.mkdirSync(proto, { recursive: true });
     fs.writeFileSync(path.join(proto, 'meta.json'), JSON.stringify({ title: `Prototype ${i}`, created: '2026-01-01' }));
-    fs.writeFileSync(path.join(proto, 'screen.tsx'), `export default function Screen() {\n  return <div className="p-4">Prototype ${i}</div>;\n}\n`);
+    fs.writeFileSync(
+      path.join(proto, 'screen.tsx'),
+      `export default function Screen() {\n  return <div className="p-4">Prototype ${i}</div>;\n}\n`,
+    );
     fs.writeFileSync(path.join(proto, 'notes.md'), `# Notes ${i}\n\nSynthetic.\n`);
   }
   console.log(`fixture: ${count} prototypes`);
-  try { return build(dir); } finally { discard(dir); }
+  try {
+    return build(dir);
+  } finally {
+    discard(dir);
+  }
 }
 
 const [cmd, arg] = process.argv.slice(2);
 if (cmd === 'coupling') coupling();
 else if (cmd === 'build') {
   const dir = arg && !arg.startsWith('--') ? path.resolve(arg) : scratchCopy('build');
-  try { build(dir); } finally { if (dir.startsWith(os.tmpdir()) || dir.startsWith(fs.realpathSync(os.tmpdir()))) discard(dir); }
-}
-else if (cmd === 'removal') process.exit(removal(arg) ? 0 : 1);
+  try {
+    build(dir);
+  } finally {
+    if (dir.startsWith(os.tmpdir()) || dir.startsWith(fs.realpathSync(os.tmpdir()))) discard(dir);
+  }
+} else if (cmd === 'removal') process.exit(removal(arg) ? 0 : 1);
 else if (cmd === 'fixture') {
   const n = Number(arg);
-  if (!Number.isInteger(n) || n < 1 || n > 20000) { console.error('Give a count from 1 to 20000.'); process.exit(2); }
+  if (!Number.isInteger(n) || n < 1 || n > 20000) {
+    console.error('Give a count from 1 to 20000.');
+    process.exit(2);
+  }
   fixture(n);
 } else {
   console.error('Usage: node scripts/cli/baseline.js coupling | build [dir] | removal <module> | fixture <count>');

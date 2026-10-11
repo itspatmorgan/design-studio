@@ -7,6 +7,7 @@ export function linkSystemDependencies(from, to) {
   for (const id of fs.readdirSync(systems)) {
     const source = path.join(systems, id, 'node_modules');
     const destination = path.join(to, 'src/systems', id, 'node_modules');
-    if (fs.existsSync(source) && fs.existsSync(path.dirname(destination)) && !fs.existsSync(destination)) fs.symlinkSync(source, destination);
+    if (fs.existsSync(source) && fs.existsSync(path.dirname(destination)) && !fs.existsSync(destination))
+      fs.symlinkSync(source, destination);
   }
 }

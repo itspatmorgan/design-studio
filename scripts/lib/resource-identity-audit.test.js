@@ -6,11 +6,18 @@ import { test } from 'node:test';
 import { auditResourceIdentities } from './resource-identity-audit.js';
 import { markdownIdentity, viewIdentity } from '../../src/platform/core/resourceIdentity.ts';
 
-const types = { view: { inPrototype: true, extensions: ['.tsx'], identity: viewIdentity }, document: { inPrototype: true, extensions: ['.md'], identity: markdownIdentity } };
+const types = {
+  view: { inPrototype: true, extensions: ['.tsx'], identity: viewIdentity },
+  document: { inPrototype: true, extensions: ['.md'], identity: markdownIdentity },
+};
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-identity-audit-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const write = (file, text) => { const absolute = path.join(root, file); fs.mkdirSync(path.dirname(absolute), { recursive: true }); fs.writeFileSync(absolute, text); };
+  const write = (file, text) => {
+    const absolute = path.join(root, file);
+    fs.mkdirSync(path.dirname(absolute), { recursive: true });
+    fs.writeFileSync(absolute, text);
+  };
   write('contributors/pat.json', '{"name":"Pat"}');
   write('src/systems/product/system.ts', 'export default { role: "prototype", label: "Product" };');
   write('src/prototypes/pat/example/meta.json', '{"title":"Example","status":"archived"}');

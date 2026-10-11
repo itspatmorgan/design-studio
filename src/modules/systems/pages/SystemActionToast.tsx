@@ -7,7 +7,11 @@ export default function SystemActionToast() {
     // Wait until the shell's toast provider has subscribed after a full refresh.
     const timer = setTimeout(() => {
       sessionStorage.removeItem('studio:system-action');
-      try { toast.add({ title: JSON.parse(message).title }); } catch { /* Ignore stale local state. */ }
+      try {
+        toast.add({ title: JSON.parse(message).title });
+      } catch {
+        /* Ignore stale local state. */
+      }
     });
     return () => clearTimeout(timer);
   }, []);

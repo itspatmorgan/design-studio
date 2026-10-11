@@ -6,12 +6,29 @@ function fixture(search, { saved = null, systemDark = false, blockedStorage = fa
   const classes = new Set();
   const nodes = [];
   return {
-    classes, nodes,
+    classes,
+    nodes,
     location: { search },
-    localStorage: { getItem(key) { assert.equal(key, 'design-studio:color-mode'); if (blockedStorage) throw Error('blocked'); return saved; } },
-    matchMedia(query) { assert.equal(query, '(prefers-color-scheme: dark)'); return { matches: systemDark }; },
+    localStorage: {
+      getItem(key) {
+        assert.equal(key, 'design-studio:color-mode');
+        if (blockedStorage) throw Error('blocked');
+        return saved;
+      },
+    },
+    matchMedia(query) {
+      assert.equal(query, '(prefers-color-scheme: dark)');
+      return { matches: systemDark };
+    },
     document: {
-      documentElement: { classList: { toggle(name, enabled) { if (enabled) classes.add(name); else classes.delete(name); } } },
+      documentElement: {
+        classList: {
+          toggle(name, enabled) {
+            if (enabled) classes.add(name);
+            else classes.delete(name);
+          },
+        },
+      },
       createElement: tag => ({ tag }),
       head: { append: (...values) => nodes.push(...values) },
     },
@@ -31,7 +48,12 @@ test('preview mode is applied before modules or theme tokens exist', () => {
 });
 
 test('malformed preview addresses are left to runtime validation', () => {
-  for (const search of ['?studio-preview=1&config=broken', '?studio-preview=1&config=null', address('dark'), '?studio-preview=1&config=' + 'x'.repeat(8192)]) {
+  for (const search of [
+    '?studio-preview=1&config=broken',
+    '?studio-preview=1&config=null',
+    address('dark'),
+    '?studio-preview=1&config=' + 'x'.repeat(8192),
+  ]) {
     const win = fixture(search);
     assert.doesNotThrow(() => installPreviewTheme(win));
     assert.equal(win.nodes.length, 0);

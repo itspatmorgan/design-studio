@@ -5,7 +5,7 @@ import { afterChange, byOrder, parseOrder, place, withFolderOrder } from './orde
 
 const f = (path: string) => ({ path, name: path.split('/').pop()!, dir: false });
 const d = (path: string) => ({ path, name: path.split('/').pop()!, dir: true });
-const paths = (list: { path: string }[]) => list.map((e) => e.path);
+const paths = (list: { path: string }[]) => list.map(e => e.path);
 
 test('without an order, files come first, then folders, each alphabetical', () => {
   assert.deepEqual(paths(byOrder([d('b'), f('z.md'), d('a'), f('m.tsx')])), ['m.tsx', 'z.md', 'a', 'b']);
@@ -34,12 +34,12 @@ test('place puts a path before another, or last', () => {
   assert.deepEqual(place(['a', 'b'], 'x', 'b'), ['a', 'x', 'b']);
 });
 
-test('setting a folder\'s order leaves other folders\' entries alone', () => {
+test("setting a folder's order leaves other folders' entries alone", () => {
   assert.deepEqual(withFolderOrder(['a', 'f/x', 'f/y'], 'f', ['f/y', 'f/x']), ['a', 'f/y', 'f/x']);
   assert.deepEqual(withFolderOrder(['a', 'f/x'], '', ['b', 'a']), ['f/x', 'b', 'a']);
 });
 
-test('renaming, moving, or deleting updates the list, taking a folder\'s contents along', () => {
+test("renaming, moving, or deleting updates the list, taking a folder's contents along", () => {
   assert.deepEqual(afterChange(['a', 'f', 'f/x'], 'f', 'g'), ['a', 'g', 'g/x']);
   assert.deepEqual(afterChange(['a', 'f', 'f/x'], 'f', null), ['a']);
   assert.deepEqual(afterChange(['f', 'fx'], 'f', 'g'), ['g', 'fx']);

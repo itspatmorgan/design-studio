@@ -3,7 +3,7 @@
 import { MAX_SOURCE_BYTES } from './paths.js';
 
 // Only the app's own page may call these: browsers mark same-origin requests.
-export const sameOrigin = (req) => req.headers['sec-fetch-site'] === 'same-origin';
+export const sameOrigin = req => req.headers['sec-fetch-site'] === 'same-origin';
 
 export function send(res, status, body) {
   res.statusCode = status;
@@ -17,5 +17,9 @@ export async function readJson(req) {
     raw += chunk;
     if (raw.length > 2 * MAX_SOURCE_BYTES) return {}; // far more than any file we save
   }
-  try { return JSON.parse(raw || '{}'); } catch { return {}; }
+  try {
+    return JSON.parse(raw || '{}');
+  } catch {
+    return {};
+  }
 }

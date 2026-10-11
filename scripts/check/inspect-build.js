@@ -7,10 +7,12 @@ export function inspectBuild(directory) {
   const manifest = JSON.parse(fs.readFileSync(path.join(directory, '.vite/manifest.json'), 'utf8'));
   const entry = Object.keys(manifest).find(key => manifest[key].isEntry && key.endsWith('index.html'));
   if (!entry) throw new Error('The production manifest has no HTML entry.');
-  const initial = new Set(); const visited = new Set();
+  const initial = new Set();
+  const visited = new Set();
   const read = file => {
     const absolute = path.resolve(directory, file);
-    if (!absolute.startsWith(path.resolve(directory) + path.sep)) throw new Error(`Build asset escapes output: ${file}`);
+    if (!absolute.startsWith(path.resolve(directory) + path.sep))
+      throw new Error(`Build asset escapes output: ${file}`);
     return fs.readFileSync(absolute);
   };
   // Validate every emitted reference, including lazy chunks, without loading them at startup.
@@ -40,5 +42,7 @@ export function inspectBuild(directory) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === import.meta.filename) {
   const result = inspectBuild(path.resolve(process.argv[2] || 'dist'));
-  console.log(`Initial JavaScript/CSS: ${result.requests} files, ${(result.bytes / 1024).toFixed(1)} KiB raw, ${(result.gzipBytes / 1024).toFixed(1)} KiB gzip. All manifest references exist.`);
+  console.log(
+    `Initial JavaScript/CSS: ${result.requests} files, ${(result.bytes / 1024).toFixed(1)} KiB raw, ${(result.gzipBytes / 1024).toFixed(1)} KiB gzip. All manifest references exist.`,
+  );
 }

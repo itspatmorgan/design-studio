@@ -1,8 +1,18 @@
 // App UI preferences, saved in localStorage so they survive a reload.
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useState, useSyncExternalStore, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useSyncExternalStore,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { flushSync } from 'react-dom';
 
-const COLOR_MODE_KEY = 'design-studio:color-mode';   // "light" | "dark"; unset = follow the system
+const COLOR_MODE_KEY = 'design-studio:color-mode'; // "light" | "dark"; unset = follow the system
 const SECTION_NAV_KEY = 'design-studio:section-nav'; // "open" | "closed"
 const SECTION_NAV_WIDTH_KEY = 'design-studio:section-nav-width'; // pixels
 const SHOW_ALL_FILES_KEY = 'design-studio:show-all-files'; // "shown" | "hidden"
@@ -20,17 +30,22 @@ export function useColorMode() {
 
   useEffect(() => {
     const query = matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => { if (!localStorage.getItem(COLOR_MODE_KEY)) setColorMode(systemMode()); };
+    const onChange = () => {
+      if (!localStorage.getItem(COLOR_MODE_KEY)) setColorMode(systemMode());
+    };
     query.addEventListener('change', onChange);
     return () => query.removeEventListener('change', onChange);
   }, []);
 
   const toggleColorMode = useCallback(() => {
-    const flip = () => flushSync(() => setColorMode((mode) => {
-      const next = mode === 'dark' ? 'light' : 'dark';
-      localStorage.setItem(COLOR_MODE_KEY, next);
-      return next;
-    }));
+    const flip = () =>
+      flushSync(() =>
+        setColorMode(mode => {
+          const next = mode === 'dark' ? 'light' : 'dark';
+          localStorage.setItem(COLOR_MODE_KEY, next);
+          return next;
+        }),
+      );
     // Cross-fade when the browser supports it and motion is welcome.
     if (document.startViewTransition && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
       document.startViewTransition(flip);
@@ -42,7 +57,8 @@ export function useColorMode() {
 
 // True when focus is in a text field, so shortcuts don't steal keystrokes.
 export const isTyping = (target: EventTarget | null) =>
-  target instanceof HTMLElement && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+  target instanceof HTMLElement &&
+  (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
 
 // The section navigation's open/closed state, shared by every section (Prototypes, the system content,
 // Systems, the Manual). ⌘; (Ctrl+; on Windows) and the rail's toggle change it.
@@ -53,12 +69,21 @@ export function useSectionNav() {
     localStorage.setItem(SECTION_NAV_KEY, open ? 'open' : 'closed');
   }, [open]);
 
-  const toggle = useCallback(() => setOpen((o) => !o), []);
+  const toggle = useCallback(() => setOpen(o => !o), []);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const inSourceEditor = e.target instanceof HTMLElement && Boolean(e.target.closest('.cm-editor'));
-      if (e.key !== ';' || !(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || e.repeat || e.isComposing || (isTyping(e.target) && !inSourceEditor)) return;
+      if (
+        e.key !== ';' ||
+        !(e.metaKey || e.ctrlKey) ||
+        e.altKey ||
+        e.shiftKey ||
+        e.repeat ||
+        e.isComposing ||
+        (isTyping(e.target) && !inSourceEditor)
+      )
+        return;
       e.preventDefault();
       e.stopPropagation();
       toggle();
@@ -76,12 +101,17 @@ export function useSectionNav() {
 const showAllListeners = new Set<() => void>();
 export function useShowAllFiles() {
   const showAll = useSyncExternalStore(
-    (listener) => { showAllListeners.add(listener); return () => { showAllListeners.delete(listener); }; },
+    listener => {
+      showAllListeners.add(listener);
+      return () => {
+        showAllListeners.delete(listener);
+      };
+    },
     () => localStorage.getItem(SHOW_ALL_FILES_KEY) === 'shown',
   );
   const toggle = useCallback(() => {
     localStorage.setItem(SHOW_ALL_FILES_KEY, localStorage.getItem(SHOW_ALL_FILES_KEY) === 'shown' ? 'hidden' : 'shown');
-    showAllListeners.forEach((listener) => listener());
+    showAllListeners.forEach(listener => listener());
   }, []);
   return [showAll, toggle] as const;
 }
@@ -115,7 +145,10 @@ export function useSectionNavWidth() {
     if (!resizing) return;
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
-    return () => { document.body.style.cursor = ''; document.body.style.userSelect = ''; };
+    return () => {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
   }, [resizing]);
 
   const handleProps = {
@@ -139,7 +172,13 @@ export function useSectionNavWidth() {
     onDoubleClick: () => setWidth(NAV_WIDTH.default),
     onKeyDown: (e: ReactKeyboardEvent<HTMLElement>) => {
       const step = e.shiftKey ? 24 : 8;
-      const next = { ArrowLeft: width - step, ArrowRight: width + step, Home: NAV_WIDTH.min, End: NAV_WIDTH.max, Enter: NAV_WIDTH.default }[e.key];
+      const next = {
+        ArrowLeft: width - step,
+        ArrowRight: width + step,
+        Home: NAV_WIDTH.min,
+        End: NAV_WIDTH.max,
+        Enter: NAV_WIDTH.default,
+      }[e.key];
       if (next === undefined) return;
       e.preventDefault();
       setWidth(clampWidth(next));
@@ -148,4 +187,3 @@ export function useSectionNavWidth() {
 
   return { width, resizing, handleProps };
 }
-

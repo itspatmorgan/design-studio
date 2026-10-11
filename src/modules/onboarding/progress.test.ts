@@ -11,7 +11,10 @@ import { claimIntroduction, recordIntroduction } from './progress.ts';
 
 test('onboarding completion persists and does not cross base paths', () => {
   const data = new Map<string, string>();
-  const storage = () => ({ getItem: (key: string) => data.get(key) ?? null, setItem: (key: string, value: string) => data.set(key, value) });
+  const storage = () => ({
+    getItem: (key: string) => data.get(key) ?? null,
+    setItem: (key: string, value: string) => data.set(key, value),
+  });
   const key = progressKey('/studio-test/');
   assert.equal(isComplete(key, storage), false);
   assert.equal(complete(key, storage), true);
@@ -20,11 +23,16 @@ test('onboarding completion persists and does not cross base paths', () => {
 });
 
 test('persisted completion is recognized without completing again', () => {
-  assert.equal(isComplete(progressKey('/returning/'), () => ({ getItem: () => 'complete', setItem: () => assert.fail() })), true);
+  assert.equal(
+    isComplete(progressKey('/returning/'), () => ({ getItem: () => 'complete', setItem: () => assert.fail() })),
+    true,
+  );
 });
 
 test('blocked storage still allows the person to leave Welcome for this session', () => {
-  const unavailable = () => { throw new Error('Storage blocked'); };
+  const unavailable = () => {
+    throw new Error('Storage blocked');
+  };
   const key = progressKey('/blocked/');
   assert.equal(isComplete(key, unavailable), false);
   assert.equal(complete(key, unavailable), false);
@@ -35,8 +43,14 @@ const fixture = (t: { after: (fn: () => void) => void }) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-welcome-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.mkdirSync(path.join(root, 'contributors'));
-  fs.writeFileSync(path.join(root, 'contributors/owner.json'), JSON.stringify({ name: 'Owner', extra: 'keep', welcomeDismissed: false }));
-  fs.writeFileSync(path.join(root, 'contributors/newcomer.json'), JSON.stringify({ name: 'Newcomer', email: 'new@example.test', custom: { keep: true }, welcomeDismissed: false }));
+  fs.writeFileSync(
+    path.join(root, 'contributors/owner.json'),
+    JSON.stringify({ name: 'Owner', extra: 'keep', welcomeDismissed: false }),
+  );
+  fs.writeFileSync(
+    path.join(root, 'contributors/newcomer.json'),
+    JSON.stringify({ name: 'Newcomer', email: 'new@example.test', custom: { keep: true }, welcomeDismissed: false }),
+  );
   return root;
 };
 
@@ -46,7 +60,12 @@ test('each contributor gets Welcome once and keeps their own progress across res
   assert.equal(claimWelcome(root, 'owner'), false);
   assert.equal(claimWelcome(root, 'newcomer'), true);
   assert.equal(claimWelcome(root, 'newcomer'), false);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'contributors/newcomer.json'), 'utf8')), { name: 'Newcomer', email: 'new@example.test', custom: { keep: true }, welcomeDismissed: true });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'contributors/newcomer.json'), 'utf8')), {
+    name: 'Newcomer',
+    email: 'new@example.test',
+    custom: { keep: true },
+    welcomeDismissed: true,
+  });
   const owner = JSON.parse(fs.readFileSync(path.join(root, 'contributors/owner.json'), 'utf8'));
   assert.deepEqual(owner, { name: 'Owner', extra: 'keep', welcomeDismissed: true });
   const other = fixture(t);
@@ -61,7 +80,10 @@ test('unregistered exploration and legacy studio state cannot dismiss a new cont
   assert.equal(claimWelcome(root, null), null);
   assert.equal(fs.readFileSync(path.join(root, 'contributors/newcomer.json'), 'utf8'), before);
   assert.equal(claimWelcome(root, 'newcomer'), true);
-  assert.equal(fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8'), 'export default { welcomeDismissed: true };');
+  assert.equal(
+    fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8'),
+    'export default { welcomeDismissed: true };',
+  );
 });
 
 test('progress preserves other roster entries and honors explicit false', t => {
@@ -94,14 +116,23 @@ test('browser fallback progress does not cross contributor identities', () => {
 });
 
 test('Welcome route rejects arbitrary paths and unsupported actions', async () => {
-  for (const body of [null, [], { action: 'delete' }, { action: 'claim', path: '/tmp/elsewhere' }, { action: 'claim', contributor: 'owner' }]) {
+  for (const body of [
+    null,
+    [],
+    { action: 'delete' },
+    { action: 'claim', path: '/tmp/elsewhere' },
+    { action: 'claim', contributor: 'owner' },
+  ]) {
     assert.equal((await server.progress({ me: null, body })).status, 400);
   }
 });
 
 test('effect replay shares one claim and returning after display cannot reopen it', async t => {
   let calls = 0;
-  t.mock.method(globalThis, 'fetch', async () => { calls += 1; return new Response(JSON.stringify({ show: true })); });
+  t.mock.method(globalThis, 'fetch', async () => {
+    calls += 1;
+    return new Response(JSON.stringify({ show: true }));
+  });
   const key = progressKey('/effect-replay/');
   const first = claimIntroduction(key);
   assert.equal(claimIntroduction(key), first);
@@ -137,6 +168,10 @@ test('missing declarations fail validation and runtime without changing the prof
 });
 
 test('a missing profile declaration cannot activate browser fallback', async t => {
-  t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ error: 'Declare welcomeDismissed.' }), { status: 422 }));
+  t.mock.method(
+    globalThis,
+    'fetch',
+    async () => new Response(JSON.stringify({ error: 'Declare welcomeDismissed.' }), { status: 422 }),
+  );
   assert.equal(await claimIntroduction(progressKey('/invalid-declaration/', 'newcomer')), false);
 });

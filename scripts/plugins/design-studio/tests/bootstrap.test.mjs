@@ -4,7 +4,20 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { test } from 'node:test';
-import { createStudio, chooseStudioLocation, studioFolderName, destinationPath, inspectStudio, checkInitialConfiguration, ensureClaudeEntry, auditStudio, planStudio, prepareStudio, SOURCE, RECEIPT } from '../../../../plugins/design-studio/scripts/bootstrap.mjs';
+import {
+  createStudio,
+  chooseStudioLocation,
+  studioFolderName,
+  destinationPath,
+  inspectStudio,
+  checkInitialConfiguration,
+  ensureClaudeEntry,
+  auditStudio,
+  planStudio,
+  prepareStudio,
+  SOURCE,
+  RECEIPT,
+} from '../../../../plugins/design-studio/scripts/bootstrap.mjs';
 import { inspectEnvironment, validateSetupPlan } from '../../../../plugins/design-studio/scripts/setup-environment.mjs';
 
 function fixture(t) {
@@ -12,31 +25,61 @@ function fixture(t) {
   t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
   const source = path.join(temp, 'source');
   fs.mkdirSync(path.join(source, 'src/systems/studio'), { recursive: true });
-  for (const file of ['AGENTS.md', 'pnpm-lock.yaml', 'mise.toml', 'studio.config.ts', 'src/systems/studio/AGENTS.md']) fs.writeFileSync(path.join(source, file), 'fixture');
-  fs.writeFileSync(path.join(source, 'package.json'), JSON.stringify({ name: 'design-studio-starter', scripts: { dev: 'vite' } }));
-  const git = (...args) => execFileSync('git', args, { cwd: source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  for (const file of ['AGENTS.md', 'pnpm-lock.yaml', 'mise.toml', 'studio.config.ts', 'src/systems/studio/AGENTS.md'])
+    fs.writeFileSync(path.join(source, file), 'fixture');
+  fs.writeFileSync(
+    path.join(source, 'package.json'),
+    JSON.stringify({ name: 'design-studio-starter', scripts: { dev: 'vite' } }),
+  );
+  const git = (...args) =>
+    execFileSync('git', args, { cwd: source, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   git('init', '--initial-branch=main');
   git('add', '.');
-  git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.test', '-c', 'core.hooksPath=/dev/null', 'commit', '-m', 'Fixture');
+  git(
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.test',
+    '-c',
+    'core.hooksPath=/dev/null',
+    'commit',
+    '-m',
+    'Fixture',
+  );
   return { temp, source, revision: git('rev-parse', 'HEAD'), destination: path.join(temp, 'My studio; literal $name') };
 }
 
-test('creates packaged visible source from pinned commit without an upstream remote', (t) => {
+test('creates packaged visible source from pinned commit without an upstream remote', t => {
   const options = fixture(t);
   const result = createStudio({ ...options, name: 'My studio' });
   assert.equal(result.existing, false);
   assert.equal(result.revision, options.revision);
-  assert.match(execFileSync('git', ['log', '-1', '--format=%s'], { cwd: options.destination, encoding: 'utf8' }), new RegExp(options.revision));
-  assert.equal(execFileSync('git', ['status', '--porcelain'], { cwd: options.destination, encoding: 'utf8' }).trim(), '');
+  assert.match(
+    execFileSync('git', ['log', '-1', '--format=%s'], { cwd: options.destination, encoding: 'utf8' }),
+    new RegExp(options.revision),
+  );
+  assert.equal(
+    execFileSync('git', ['status', '--porcelain'], { cwd: options.destination, encoding: 'utf8' }).trim(),
+    '',
+  );
   assert.equal(execFileSync('git', ['remote'], { cwd: options.destination, encoding: 'utf8' }).trim(), '');
   assert.ok(fs.existsSync(path.join(options.destination, 'src/systems/studio/AGENTS.md')));
   assert.equal(inspectStudio(options.destination).name, 'My studio');
 });
 
 function observedEnvironment(overrides = {}) {
-  return inspectEnvironment({ env: {}, platform: 'darwin', architecture: 'arm64',
-    home: '/Users/designer', hostname: 'personal-computer', username: 'designer',
-    exists: () => false, read: () => '', access: () => {}, ...overrides });
+  return inspectEnvironment({
+    env: {},
+    platform: 'darwin',
+    architecture: 'arm64',
+    home: '/Users/designer',
+    hostname: 'personal-computer',
+    username: 'designer',
+    exists: () => false,
+    read: () => '',
+    access: () => {},
+    ...overrides,
+  });
 }
 
 function accessOptions() {
@@ -72,7 +115,11 @@ test('CLI audit is read-only and plan automatically saves the confirmed destinat
   assert.equal(JSON.parse(audit.stdout).recommendation.destination, destination);
   assert.equal(JSON.parse(audit.stdout).destinationCheck.available, true);
   assert.equal(fs.existsSync(path.dirname(destination)), false);
-  const result = spawnSync(process.execPath, [helper, 'plan', '--destination', destination, '--confirmation', 'Use the folder you showed.'], { encoding: 'utf8' });
+  const result = spawnSync(
+    process.execPath,
+    [helper, 'plan', '--destination', destination, '--confirmation', 'Use the folder you showed.'],
+    { encoding: 'utf8' },
+  );
   assert.equal(result.status, 0, result.stderr);
   const saved = JSON.parse(result.stdout);
   t.after(() => fs.rmSync(path.dirname(saved.planFile), { recursive: true, force: true }));
@@ -86,10 +133,17 @@ test('preflight reports observations without inferring locality or leaking envir
   assert.equal(mac.filesystemLocation, 'requires user confirmation');
   assert.equal(mac.suggestedParent, '/Users/designer/Developer');
   assert.deepEqual(mac.homeAccess, { writable: true });
-  const managed = observedEnvironment({ access: () => { throw Object.assign(new Error('Denied'), { code: 'EACCES' }); } });
+  const managed = observedEnvironment({
+    access: () => {
+      throw Object.assign(new Error('Denied'), { code: 'EACCES' });
+    },
+  });
   assert.deepEqual(managed.homeAccess, { writable: false, reason: 'EACCES' });
-  const remote = observedEnvironment({ platform: 'linux', home: '/home/ubuntu',
-    env: { SSH_CONNECTION: 'private connection data', CODESPACES: 'true' } });
+  const remote = observedEnvironment({
+    platform: 'linux',
+    home: '/home/ubuntu',
+    env: { SSH_CONNECTION: 'private connection data', CODESPACES: 'true' },
+  });
   assert.deepEqual(remote.signals, ['codespaces', 'ssh']);
   assert.equal(remote.suggestedParent, '/home/ubuntu/Projects');
   const windows = observedEnvironment({ platform: 'win32', home: 'C:\\Users\\designer' });
@@ -125,7 +179,10 @@ test('folder suggestions use the audited home on each OS and preserve explicit l
   const next = chooseStudioLocation({ parent: mac.suggestedParent });
   assert.equal(next.name, 'Design Studio 2');
   const linux = observedEnvironment({ platform: 'linux', home: temp });
-  assert.equal(chooseStudioLocation({ parent: linux.suggestedParent }).destination, path.join(temp, 'Projects', 'design-studio'));
+  assert.equal(
+    chooseStudioLocation({ parent: linux.suggestedParent }).destination,
+    path.join(temp, 'Projects', 'design-studio'),
+  );
   const explicit = planStudio({ ...accessOptions(), name: 'My Studio', destination: path.join(temp, 'chosen') }, linux);
   assert.equal(explicit.destination, path.join(temp, 'chosen'));
 });
@@ -143,7 +200,10 @@ test('plan rechecks environment identity and newly introduced remote signals', t
 
 test('destination validation preserves unrelated folders and rejects linked ancestors before mkdir', t => {
   const { temp, source } = fixture(t);
-  assert.throws(() => planStudio({ ...accessOptions(), destination: source }, observedEnvironment()), /occupied.*preserved/);
+  assert.throws(
+    () => planStudio({ ...accessOptions(), destination: source }, observedEnvironment()),
+    /occupied.*preserved/,
+  );
   const linked = path.join(temp, 'linked');
   fs.symlinkSync(source, linked);
   const destination = path.join(linked, 'missing-parent', 'studio');
@@ -169,7 +229,10 @@ test('CLI requires a plan and rejects old setup flags before any creation', t =>
 test('saved plan creation, reuse, and destination mismatch checks preserve work', t => {
   const options = fixture(t);
   const environment = inspectEnvironment();
-  const plan = planStudio({ ...accessOptions(), destination: options.destination, name: ' Design Studio ' }, environment);
+  const plan = planStudio(
+    { ...accessOptions(), destination: options.destination, name: ' Design Studio ' },
+    environment,
+  );
   assert.equal(plan.name, 'Design Studio');
   // A local source fixture exercises the same plan validation without a network download.
   const first = createStudio({ ...options, plan });
@@ -192,24 +255,37 @@ test('CLI plan file is exclusive, bound to the environment, and kept outside the
   const helper = path.resolve('plugins/design-studio/scripts/bootstrap.mjs');
   const destination = path.join(temp, 'studio');
   const output = path.join(temp, 'setup-plan.json');
-  const args = [helper, 'plan', '--confirmation', 'Use the folder you recommended after the audit.',
-    '--destination', destination, '--output', output];
+  const args = [
+    helper,
+    'plan',
+    '--confirmation',
+    'Use the folder you recommended after the audit.',
+    '--destination',
+    destination,
+    '--output',
+    output,
+  ];
   const planned = spawnSync(process.execPath, args, { encoding: 'utf8' });
   assert.equal(planned.status, 0, planned.stderr);
   assert.equal(fs.existsSync(destination), false);
   const original = fs.readFileSync(output, 'utf8');
   assert.equal(spawnSync(process.execPath, args, { encoding: 'utf8' }).status, 1);
   assert.equal(fs.readFileSync(output, 'utf8'), original);
-  const invalid = spawnSync(process.execPath, [helper, 'create', '--plan', output, '--destination', destination], { encoding: 'utf8' });
+  const invalid = spawnSync(process.execPath, [helper, 'create', '--plan', output, '--destination', destination], {
+    encoding: 'utf8',
+  });
   assert.equal(invalid.status, 1);
   assert.match(invalid.stderr, /--plan alone/);
-  const remote = spawnSync(process.execPath, [helper, 'setup', '--plan', output], { encoding: 'utf8', env: { ...process.env, SSH_CONNECTION: 'test' } });
+  const remote = spawnSync(process.execPath, [helper, 'setup', '--plan', output], {
+    encoding: 'utf8',
+    env: { ...process.env, SSH_CONNECTION: 'test' },
+  });
   assert.equal(remote.status, 1);
   assert.match(remote.stderr, /environment changed/);
   assert.equal(fs.existsSync(destination), false);
 });
 
-test('repeat setup preserves source and configuration edits', (t) => {
+test('repeat setup preserves source and configuration edits', t => {
   const options = fixture(t);
   createStudio(options);
   const file = path.join(options.destination, 'studio.config.ts');
@@ -219,7 +295,7 @@ test('repeat setup preserves source and configuration edits', (t) => {
   assert.equal(inspectStudio(options.destination).name, 'Design Studio');
 });
 
-test('additional studios are numbered while existing names and edits survive', (t) => {
+test('additional studios are numbered while existing names and edits survive', t => {
   const options = fixture(t);
   const parent = path.join(options.temp, 'Developer');
   for (const name of ['Design Studio', 'Design Studio 2', 'Design Studio 3']) {
@@ -238,7 +314,7 @@ test('additional studios are numbered while existing names and edits survive', (
   assert.equal(chooseStudioLocation({ parent }).name, 'Design Studio 4');
 });
 
-test('selection skips unrelated folders and dangling links without writing', (t) => {
+test('selection skips unrelated folders and dangling links without writing', t => {
   const options = fixture(t);
   const parent = path.join(options.temp, 'Developer');
   assert.equal(chooseStudioLocation({ parent }).name, 'Design Studio');
@@ -246,14 +322,18 @@ test('selection skips unrelated folders and dangling links without writing', (t)
   fs.mkdirSync(path.join(parent, 'design-studio'), { recursive: true });
   fs.writeFileSync(path.join(parent, 'design-studio', 'important.txt'), 'keep');
   fs.symlinkSync(path.join(options.temp, 'missing'), path.join(parent, 'design-studio-2'));
-  const output = execFileSync(process.execPath, [path.resolve('plugins/design-studio/scripts/bootstrap.mjs'), 'choose', '--parent', parent], { encoding: 'utf8' });
+  const output = execFileSync(
+    process.execPath,
+    [path.resolve('plugins/design-studio/scripts/bootstrap.mjs'), 'choose', '--parent', parent],
+    { encoding: 'utf8' },
+  );
   assert.deepEqual(JSON.parse(output), { name: 'Design Studio 3', destination: path.join(parent, 'design-studio-3') });
   assert.deepEqual(fs.readdirSync(parent), ['design-studio', 'design-studio-2']);
   assert.equal(fs.readFileSync(path.join(parent, 'design-studio', 'important.txt'), 'utf8'), 'keep');
   assert.throws(() => chooseStudioLocation({ parent: 'relative' }), /absolute/);
 });
 
-test('refuses unrelated existing folders and preserves their files', (t) => {
+test('refuses unrelated existing folders and preserves their files', t => {
   const options = fixture(t);
   fs.mkdirSync(options.destination);
   fs.writeFileSync(path.join(options.destination, 'important.txt'), 'keep');
@@ -261,7 +341,7 @@ test('refuses unrelated existing folders and preserves their files', (t) => {
   assert.equal(fs.readFileSync(path.join(options.destination, 'important.txt'), 'utf8'), 'keep');
 });
 
-test('refuses cache paths, relative paths, linked destinations and parents', (t) => {
+test('refuses cache paths, relative paths, linked destinations and parents', t => {
   const options = fixture(t);
   assert.throws(() => destinationPath('relative/studio'));
   assert.throws(() => destinationPath('/Users/designer/.codex/plugins/studio'));
@@ -273,13 +353,16 @@ test('refuses cache paths, relative paths, linked destinations and parents', (t)
   assert.throws(() => createStudio({ ...options, destination: path.join(linked, 'new-studio') }));
 });
 
-test('Claude entry imports shared instructions and preserves custom entries', (t) => {
+test('Claude entry imports shared instructions and preserves custom entries', t => {
   const options = fixture(t);
   createStudio(options);
   ensureClaudeEntry(options.destination);
   const entry = path.join(options.destination, 'CLAUDE.md');
   assert.equal(fs.readFileSync(entry, 'utf8'), '@AGENTS.md\n');
-  fs.writeFileSync(entry, '# Design Studio\n\nRead and follow [repository instructions](AGENTS.md) before work. Project skills route to their canonical sources.\n');
+  fs.writeFileSync(
+    entry,
+    '# Design Studio\n\nRead and follow [repository instructions](AGENTS.md) before work. Project skills route to their canonical sources.\n',
+  );
   ensureClaudeEntry(options.destination);
   assert.equal(fs.readFileSync(entry, 'utf8'), '@AGENTS.md\n');
   fs.writeFileSync(entry, 'Personal instructions\n@AGENTS.md\n');
@@ -287,14 +370,14 @@ test('Claude entry imports shared instructions and preserves custom entries', (t
   assert.equal(fs.readFileSync(entry, 'utf8'), 'Personal instructions\n@AGENTS.md\n');
 });
 
-test('failed fetch leaves no destination or staging folder', (t) => {
+test('failed fetch leaves no destination or staging folder', t => {
   const options = fixture(t);
   assert.throws(() => createStudio({ ...options, revision: 'f'.repeat(40) }));
   assert.equal(fs.existsSync(options.destination), false);
   assert.deepEqual(fs.readdirSync(options.temp), ['source']);
 });
 
-test('invalid or linked receipt cannot resume setup', (t) => {
+test('invalid or linked receipt cannot resume setup', t => {
   const options = fixture(t);
   createStudio(options);
   const receipt = path.join(options.destination, RECEIPT);
@@ -305,7 +388,7 @@ test('invalid or linked receipt cannot resume setup', (t) => {
   assert.throws(() => inspectStudio(options.destination));
 });
 
-test('interrupted setup preserves user settings before applying defaults', (t) => {
+test('interrupted setup preserves user settings before applying defaults', t => {
   const options = fixture(t);
   createStudio(options);
   const studio = inspectStudio(options.destination);
@@ -316,7 +399,7 @@ test('interrupted setup preserves user settings before applying defaults', (t) =
   checkInitialConfiguration({ ...studio, prepared: true });
 });
 
-test('refuses linked Git metadata when reopening a studio', (t) => {
+test('refuses linked Git metadata when reopening a studio', t => {
   const options = fixture(t);
   createStudio(options);
   const metadata = path.join(options.destination, '.git');
@@ -325,12 +408,18 @@ test('refuses linked Git metadata when reopening a studio', (t) => {
   assert.throws(() => inspectStudio(options.destination), /ordinary local Git/);
 });
 
- test('custom display names choose kebab-case folders without changing supplied destinations', t => {
+test('custom display names choose kebab-case folders without changing supplied destinations', t => {
   const { temp } = fixture(t);
   const parent = path.join(temp, 'Developer');
-  assert.deepEqual(chooseStudioLocation({ parent, name: 'Acme Design Lab' }), { name: 'Acme Design Lab', destination: path.join(parent, 'acme-design-lab') });
+  assert.deepEqual(chooseStudioLocation({ parent, name: 'Acme Design Lab' }), {
+    name: 'Acme Design Lab',
+    destination: path.join(parent, 'acme-design-lab'),
+  });
   fs.mkdirSync(path.join(parent, 'acme-design-lab'), { recursive: true });
-  assert.deepEqual(chooseStudioLocation({ parent, name: 'Acme Design Lab' }), { name: 'Acme Design Lab 2', destination: path.join(parent, 'acme-design-lab-2') });
+  assert.deepEqual(chooseStudioLocation({ parent, name: 'Acme Design Lab' }), {
+    name: 'Acme Design Lab 2',
+    destination: path.join(parent, 'acme-design-lab-2'),
+  });
   assert.equal(studioFolderName('  Café / Design__Lab  '), 'cafe-design-lab');
   assert.equal(studioFolderName('工作室'), 'design-studio');
   assert.throws(() => studioFolderName('   '), /studio name/);

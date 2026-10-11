@@ -23,16 +23,36 @@ function MarkdownLink({ href = '', ...props }: ComponentProps<'a'>) {
   const manifest = useManifest();
   if (href.startsWith('/') && !href.startsWith('//')) {
     const url = new URL(href, 'http://doc');
-    return <Link to={(sourceArtifactPath(manifest, url.pathname) ?? markdownPath(url.pathname, systemIdentities)) as never} search={Object.fromEntries(url.searchParams) as never} hash={url.hash.slice(1) || undefined} {...props} />;
+    return (
+      <Link
+        to={(sourceArtifactPath(manifest, url.pathname) ?? markdownPath(url.pathname, systemIdentities)) as never}
+        search={Object.fromEntries(url.searchParams) as never}
+        hash={url.hash.slice(1) || undefined}
+        {...props}
+      />
+    );
   }
   if (href.startsWith('#')) return <a href={href} {...props} />;
   if (base !== null && !href.startsWith('?') && !/^([a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) {
     const url = new URL(href, `http://doc${base}/`);
     const path = markdownPath(url.pathname, systemIdentities);
-    const to = sourceArtifactPath(manifest, url.pathname) ?? (path.startsWith('/documentation/reference/') ? path : fileTypeOf(path) ? artifactSlug(path) : path);
-    return <Link to={to as never} search={Object.fromEntries(url.searchParams) as never} hash={url.hash.slice(1) || undefined} {...props} />;
+    const to =
+      sourceArtifactPath(manifest, url.pathname) ??
+      (path.startsWith('/documentation/reference/') ? path : fileTypeOf(path) ? artifactSlug(path) : path);
+    return (
+      <Link
+        to={to as never}
+        search={Object.fromEntries(url.searchParams) as never}
+        hash={url.hash.slice(1) || undefined}
+        {...props}
+      />
+    );
   }
-  return <a href={href} target="_blank" rel="noopener noreferrer" {...props} />;
+  return <a href={href} target='_blank' rel='noopener noreferrer' {...props} />;
 }
 
-export const markdownComponents: MDXComponents = { a: MarkdownLink, 'mermaid-diagram': MermaidDiagram, 'prototype-artifact': ArtifactEmbed };
+export const markdownComponents: MDXComponents = {
+  a: MarkdownLink,
+  'mermaid-diagram': MermaidDiagram,
+  'prototype-artifact': ArtifactEmbed,
+};

@@ -15,12 +15,22 @@ const [mode, before, after, policy] = process.argv.slice(2);
 const review = mode === '--ci' && policy === '--review';
 const platformMaintainer = mode === '--ci' && ['admin', 'maintain'].includes(process.env.STUDIO_PLATFORM_ROLE);
 let changed;
-try { changed = changedFiles(mode, before, after); } catch (e) { console.error(e.message); process.exit(2); }
-if (!changed) { console.error('Usage: check-scope.js --staged | --push | --ci <before> <after>'); process.exit(2); }
+try {
+  changed = changedFiles(mode, before, after);
+} catch (e) {
+  console.error(e.message);
+  process.exit(2);
+}
+if (!changed) {
+  console.error('Usage: check-scope.js --staged | --push | --ci <before> <after>');
+  process.exit(2);
+}
 const { files, baseRef } = changed;
 let baselineInventory;
 try {
-  const baseline = baselineInventory = gitResourceIdentities(baseRef ?? 'HEAD', INSTALLED_FILE_TYPES, { legacyOwnership: true });
+  const baseline = (baselineInventory = gitResourceIdentities(baseRef ?? 'HEAD', INSTALLED_FILE_TYPES, {
+    legacyOwnership: true,
+  }));
   const proposed = gitResourceIdentities(after ?? 'HEAD', INSTALLED_FILE_TYPES, { staged: mode === '--staged' });
   const identityProblems = resourceIdentityChangeProblems(baseline, proposed);
   if (identityProblems.length) {
@@ -31,7 +41,14 @@ try {
   console.error(`Resource identity inventory could not be verified: ${error.message}`);
   if (mode === '--ci') process.exit(2);
 }
-let baseConfig = (() => { try { const result = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:studio.config.ts`)); return 'error' in result ? {} : result.value; } catch { return {}; } })();
+let baseConfig = (() => {
+  try {
+    const result = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:studio.config.ts`));
+    return 'error' in result ? {} : result.value;
+  } catch {
+    return {};
+  }
+})();
 // Use the before-side mode: changing to personal in a proposal cannot bypass team review.
 if (baseConfig.usage === 'personal') {
   console.log('Personal studio: team ownership checks are skipped. Dependency and asset checks still apply.');
@@ -45,13 +62,19 @@ try {
     const match = /^contributors\/([a-z0-9][a-z0-9-]*)\.json$/.exec(file);
     if (match) baseProfiles[match[1]] = JSON.parse(git('show', `${baseRef ?? 'HEAD'}:${file}`));
   }
-} catch { /* Missing base identity is unregistered, never privileged. */ }
+} catch {
+  /* Missing base identity is unregistered, never privileged. */
+}
 // Historical Git baselines can predate the source cutover. Once their default
 // is a permanent ID, every grant is resolved strictly through that SAME tree.
 // Proposed declarations and the checkout never supply its identity directory.
 if (/^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(baseConfig.defaultSystem ?? '')) {
   try {
-    const systems = Object.fromEntries(baselineInventory.resources.filter(resource => resource.kind === 'system').map(resource => [resource.key, { studioId: resource.studioId }]));
+    const systems = Object.fromEntries(
+      baselineInventory.resources
+        .filter(resource => resource.kind === 'system')
+        .map(resource => [resource.key, { studioId: resource.studioId }]),
+    );
     baseConfig = resolveStudioReferences(baseConfig, resourceDirectory(baseProfiles, systems));
   } catch (error) {
     console.error(`Before-side authority could not be resolved: ${error.message}`);
@@ -68,24 +91,39 @@ const prefix = key ? `src/prototypes/${key}/` : null;
 // has no earlier list, so its own is used.
 const beforeModules = [];
 try {
-  for (const file of git('ls-tree', '-r', '--name-only', baseRef ?? 'HEAD', '--', 'src/modules').split('\n').filter(file => /^src\/modules\/[^/]+\/module\.ts$/.test(file))) {
+  for (const file of git('ls-tree', '-r', '--name-only', baseRef ?? 'HEAD', '--', 'src/modules')
+    .split('\n')
+    .filter(file => /^src\/modules\/[^/]+\/module\.ts$/.test(file))) {
     const declaration = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:${file}`));
     if (!('error' in declaration)) beforeModules.push(declaration.value);
   }
-} catch { /* No trusted declarations grant no section authority. */ }
-const MAINTAINED = beforeModules.filter((m) => m?.section?.policy === 'maintainers' && m.section.items === 'prototypes' && m.section.folder).map((m) => m.section.folder);
+} catch {
+  /* No trusted declarations grant no section authority. */
+}
+const MAINTAINED = beforeModules
+  .filter(m => m?.section?.policy === 'maintainers' && m.section.items === 'prototypes' && m.section.folder)
+  .map(m => m.section.folder);
 function toolMeta(ref, folder, id) {
   const file = `${folder}/${id}/meta.json`;
   try {
-    const text = ref === null && mode === '--staged' ? git('show', `:${file}`) : git('show', `${ref ?? (mode === '--ci' ? after : 'HEAD')}:${file}`);
+    const text =
+      ref === null && mode === '--staged'
+        ? git('show', `:${file}`)
+        : git('show', `${ref ?? (mode === '--ci' ? after : 'HEAD')}:${file}`);
     return parseMaintainers(JSON.parse(text).maintainers);
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 const maintained = new Map();
 function maintains(folder, id) {
   if (!key) return false;
   const name = `${folder}/${id}`;
-  if (!maintained.has(name)) maintained.set(name, (((baseRef && toolMeta(baseRef, folder, id)) || toolMeta(null, folder, id)) ?? []).includes(key));
+  if (!maintained.has(name))
+    maintained.set(
+      name,
+      (((baseRef && toolMeta(baseRef, folder, id)) || toolMeta(null, folder, id)) ?? []).includes(key),
+    );
   return maintained.get(name);
 }
 // The maintained section and item a file is in, like ["src/examples", "sample"], or null.
@@ -104,24 +142,46 @@ const systemScope = f => {
   try {
     const declarationFile = 'src/systems/' + match[1] + '/system.ts';
     const spec = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:${declarationFile}`));
-    if ('error' in spec || !canPerform(baseConfig, key, Object.keys(baseProfiles), { kind: 'system', id: match[1], role: spec.value.role, status: spec.value.status }, 'edit')) return false;
+    if (
+      'error' in spec ||
+      !canPerform(
+        baseConfig,
+        key,
+        Object.keys(baseProfiles),
+        { kind: 'system', id: match[1], role: spec.value.role, status: spec.value.status },
+        'edit',
+      )
+    )
+      return false;
     if (f === declarationFile) {
       const next = readDeclaration(mode === '--staged' ? git('show', ':' + f) : git('show', `${after ?? 'HEAD'}:${f}`));
       return !('error' in next) && sameSystemIdentity(spec.value, next.value);
     }
     return true;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 };
-const isInScope = (f) => studioAdmin || systemScope(f) || (prefix && f.startsWith(prefix)) || (key && f === `contributors/${key}.json`) || ((m) => Boolean(m) && maintains(...m))(maintainedItem(f));
+const isInScope = f =>
+  studioAdmin ||
+  systemScope(f) ||
+  (prefix && f.startsWith(prefix)) ||
+  (key && f === `contributors/${key}.json`) ||
+  (m => Boolean(m) && maintains(...m))(maintainedItem(f));
 const inScope = files.filter(isInScope);
-const platform = files.filter((f) => !isInScope(f));
+const platform = files.filter(f => !isInScope(f));
 
 const who = key ?? (mode === '--ci' ? `unknown actor "${actor ?? ''}"` : 'unknown contributor');
 console.log(`Scope check (${who}): ${inScope.length} in scope, ${platform.length} outside assigned scope.`);
 if (!key) console.log('  Not registered in contributors/, so every file counts as out of scope.');
-for (const f of platform) console.log(`  ${f.startsWith('src/systems/') ? 'system' : f.startsWith('src/modules/') ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`);
+for (const f of platform)
+  console.log(
+    `  ${f.startsWith('src/systems/') ? 'system' : f.startsWith('src/modules/') ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`,
+  );
 
-if (platform.length && review) console.log('  Platform changes require maintainer review before merging. Configure required reviews on main.');
-if (platform.length && platformMaintainer) console.log('  Platform changes accepted from a repository admin or maintainer.');
+if (platform.length && review)
+  console.log('  Platform changes require maintainer review before merging. Configure required reviews on main.');
+if (platform.length && platformMaintainer)
+  console.log('  Platform changes accepted from a repository admin or maintainer.');
 if (mode === '--ci' && platform.length && !review && !platformMaintainer) process.exit(1);
 process.exit(0);

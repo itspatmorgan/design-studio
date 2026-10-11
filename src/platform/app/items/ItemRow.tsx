@@ -8,23 +8,37 @@ import { cn } from '@/lib/utils';
 // the design system's Item, rendered as a link, with a neutral tile holding the module's rail icon, so all of a section's
 // rows look alike. `link` is a link from manifest.ts (prototypeLink, artifactLink). `menu` is drawn beside the link
 // (PrototypeCardMenu, inline), so the row sits in a "card-wrap" group.
-export function ItemRow({ link, icon, title, meta, archived, menu }: { link: object; icon: IconSvgElement; title: string; meta?: ReactNode; archived?: boolean; menu?: ReactNode }) {
+export function ItemRow({
+  link,
+  icon,
+  title,
+  meta,
+  archived,
+  menu,
+}: {
+  link: object;
+  icon: IconSvgElement;
+  title: string;
+  meta?: ReactNode;
+  archived?: boolean;
+  menu?: ReactNode;
+}) {
   return (
     <li className={cn('group/card-wrap relative', archived && 'opacity-60')}>
-      <Item size="xs" className="pr-10 pl-[7px]" render={<Link {...(link as { to: never })} />}>
-        <ItemMedia variant="icon" className="size-7 rounded-md bg-muted text-foreground/70">
+      <Item size='xs' className='pr-10 pl-[7px]' render={<Link {...(link as { to: never })} />}>
+        <ItemMedia variant='icon' className='size-7 rounded-md bg-muted text-foreground/70'>
           <HugeiconsIcon icon={icon} size={15} strokeWidth={1.75} />
         </ItemMedia>
         <ItemContent>
-          <ItemTitle className="min-w-0">
-            <span className="truncate">{title}</span>
-            {meta && <span className="shrink-0 text-xs font-normal text-muted-foreground">{meta}</span>}
+          <ItemTitle className='min-w-0'>
+            <span className='truncate'>{title}</span>
+            {meta && <span className='shrink-0 text-xs font-normal text-muted-foreground'>{meta}</span>}
           </ItemTitle>
         </ItemContent>
       </Item>
       {/* Centred on the row's height, and as far from the row's edge as the tile is on the other side. The tile's left edge is
           also the left edge of the section headings and the search above: the section's 8px, the Item's 1px border, then 7px. */}
-      {menu && <div className="absolute top-1/2 right-2 -translate-y-1/2">{menu}</div>}
+      {menu && <div className='absolute top-1/2 right-2 -translate-y-1/2'>{menu}</div>}
     </li>
   );
 }

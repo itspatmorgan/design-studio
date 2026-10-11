@@ -18,7 +18,9 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   }, []);
   // Mounted from the first time it opens, and kept, so closing can animate.
   const [opened, setOpened] = useState(false);
-  useEffect(() => { if (open) setOpened(true); }, [open]);
+  useEffect(() => {
+    if (open) setOpened(true);
+  }, [open]);
   useEffect(() => {
     const id = setTimeout(loadDialog, 1500);
     return () => clearTimeout(id);
@@ -40,7 +42,11 @@ export function CommandPaletteProvider({ children }: { children: ReactNode }) {
   return (
     <PaletteContext.Provider value={openPalette}>
       {children}
-      {opened && <Suspense fallback={null}><CommandPaletteDialog open={open} setOpen={setOpen} returnFocus={returnFocus} /></Suspense>}
+      {opened && (
+        <Suspense fallback={null}>
+          <CommandPaletteDialog open={open} setOpen={setOpen} returnFocus={returnFocus} />
+        </Suspense>
+      )}
     </PaletteContext.Provider>
   );
 }

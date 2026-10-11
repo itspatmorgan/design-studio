@@ -9,6 +9,29 @@ import { systemSourceRequest } from './systemSource';
 export default function SystemSourceEditor({ path, onDone }: { path: string; onDone: () => void }) {
   const me = useMe();
   const editable = canEditSource(path, me);
-  const source = useMemo<SourceAccess>(() => ({ path, editable, read: () => systemSourceRequest('read', path), write: (content, base) => systemSourceRequest('write', path, { content, base }) }), [path, editable]);
-  return <SourceEditor source={source} language="text" actions={<Button size="sm" variant="outline" onClick={onDone} title={`Return to rendered view (${shortcutLabel('source')})`}>Done</Button>} />;
+  const source = useMemo<SourceAccess>(
+    () => ({
+      path,
+      editable,
+      read: () => systemSourceRequest('read', path),
+      write: (content, base) => systemSourceRequest('write', path, { content, base }),
+    }),
+    [path, editable],
+  );
+  return (
+    <SourceEditor
+      source={source}
+      language='text'
+      actions={
+        <Button
+          size='sm'
+          variant='outline'
+          onClick={onDone}
+          title={`Return to rendered view (${shortcutLabel('source')})`}
+        >
+          Done
+        </Button>
+      }
+    />
+  );
 }

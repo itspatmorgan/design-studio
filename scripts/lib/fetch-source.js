@@ -23,10 +23,16 @@ export function walk(dir) {
       const childAbs = path.join(abs, e.name);
       const stat = fs.lstatSync(childAbs);
       if (stat.isSymbolicLink()) throw new Error(`${childRel} is a link. Links aren't allowed in a module.`);
-      if (stat.isDirectory()) { visit(childAbs, childRel); continue; }
+      if (stat.isDirectory()) {
+        visit(childAbs, childRel);
+        continue;
+      }
       if (!stat.isFile()) throw new Error(`${childRel} isn't a regular file.`);
       if (!plainPath(childRel)) throw new Error(`${childRel} isn't a plain path.`);
-      if (stat.size > MAX_FILE_BYTES) throw new Error(`${childRel} is ${(stat.size / 1048576).toFixed(1)} MB, and the limit for one file is ${MAX_FILE_BYTES / 1048576} MB.`);
+      if (stat.size > MAX_FILE_BYTES)
+        throw new Error(
+          `${childRel} is ${(stat.size / 1048576).toFixed(1)} MB, and the limit for one file is ${MAX_FILE_BYTES / 1048576} MB.`,
+        );
       total += stat.size;
       files.push({ rel: childRel, size: stat.size });
       if (files.length > MAX_FILES) throw new Error(`It has more than ${MAX_FILES} files.`);
@@ -44,12 +50,21 @@ function enter(dir, sub) {
     if (!plainPath(sub)) throw new Error(`"${sub}" isn't a plain folder path inside the source.`);
     at = path.join(dir, ...sub.split('/'));
     const real = fs.realpathSync(at);
-    if (real !== fs.realpathSync(dir) && !real.startsWith(fs.realpathSync(dir) + path.sep)) throw new Error('That folder is outside the source.');
+    if (real !== fs.realpathSync(dir) && !real.startsWith(fs.realpathSync(dir) + path.sep))
+      throw new Error('That folder is outside the source.');
   } else {
-    const entries = fs.readdirSync(dir, { withFileTypes: true }).filter((e) => e.name !== '.git' && e.name !== '.DS_Store');
-    if (entries.length === 1 && entries[0].isDirectory() && !fs.existsSync(path.join(dir, 'module.ts')) && !fs.existsSync(path.join(dir, 'system.ts'))) at = path.join(dir, entries[0].name);
+    const entries = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter(e => e.name !== '.git' && e.name !== '.DS_Store');
+    if (
+      entries.length === 1 &&
+      entries[0].isDirectory() &&
+      !fs.existsSync(path.join(dir, 'module.ts')) &&
+      !fs.existsSync(path.join(dir, 'system.ts'))
+    )
+      at = path.join(dir, entries[0].name);
   }
-  if (!fs.statSync(at).isDirectory()) throw new Error('That isn\'t a folder.');
+  if (!fs.statSync(at).isDirectory()) throw new Error("That isn't a folder.");
   return at;
 }
 
@@ -64,13 +79,44 @@ export async function fetchSource(source, sub) {
   try {
     if (source.kind === 'git') {
       const repo = path.join(tmp, 'repo');
-      const clone = (extra) => execFileSync('git', ['-c', 'protocol.allow=never', '-c', 'protocol.https.allow=always', '-c', 'protocol.ssh.allow=always', 'clone', '--depth', '1', '--no-tags', ...extra, '--', source.url, repo], { env: GIT_ENV, stdio: ['ignore', 'pipe', 'pipe'] });
-      try { clone(source.ref ? ['--branch', source.ref] : []); } catch (e) {
+      const clone = extra =>
+        execFileSync(
+          'git',
+          [
+            '-c',
+            'protocol.allow=never',
+            '-c',
+            'protocol.https.allow=always',
+            '-c',
+            'protocol.ssh.allow=always',
+            'clone',
+            '--depth',
+            '1',
+            '--no-tags',
+            ...extra,
+            '--',
+            source.url,
+            repo,
+          ],
+          { env: GIT_ENV, stdio: ['ignore', 'pipe', 'pipe'] },
+        );
+      try {
+        clone(source.ref ? ['--branch', source.ref] : []);
+      } catch (e) {
         // A commit can't be cloned by name: fetch it.
-        if (!source.ref || !/^[0-9a-f]{7,40}$/i.test(source.ref)) throw new Error(`Couldn't get ${source.url}${source.ref ? ` at ${source.ref}` : ''}: ${String(e.stderr ?? e.message).trim().split('\n').pop()}`);
+        if (!source.ref || !/^[0-9a-f]{7,40}$/i.test(source.ref))
+          throw new Error(
+            `Couldn't get ${source.url}${source.ref ? ` at ${source.ref}` : ''}: ${String(e.stderr ?? e.message)
+              .trim()
+              .split('\n')
+              .pop()}`,
+          );
         fs.rmSync(repo, { recursive: true, force: true });
         execFileSync('git', ['init', '-q', repo], { env: GIT_ENV });
-        execFileSync('git', ['-C', repo, 'fetch', '--depth', '1', '--', source.url, source.ref], { env: GIT_ENV, stdio: ['ignore', 'pipe', 'pipe'] });
+        execFileSync('git', ['-C', repo, 'fetch', '--depth', '1', '--', source.url, source.ref], {
+          env: GIT_ENV,
+          stdio: ['ignore', 'pipe', 'pipe'],
+        });
         execFileSync('git', ['-C', repo, 'checkout', '-q', 'FETCH_HEAD'], { env: GIT_ENV });
       }
       const commit = execFileSync('git', ['-C', repo, 'rev-parse', 'HEAD'], { env: GIT_ENV, encoding: 'utf8' }).trim();

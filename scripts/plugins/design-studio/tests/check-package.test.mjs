@@ -17,7 +17,13 @@ function fixture(t) {
 test('delivery package is self-contained in an isolated folder', t => {
   const root = fixture(t);
   assert.ok(checkPackage(root).files > 0);
-  const result = JSON.parse(execFileSync(process.execPath, [path.join(root, 'scripts/bootstrap.mjs'), 'audit', '--parent', fs.realpathSync(path.dirname(root))], { cwd: root, encoding: 'utf8' }));
+  const result = JSON.parse(
+    execFileSync(
+      process.execPath,
+      [path.join(root, 'scripts/bootstrap.mjs'), 'audit', '--parent', fs.realpathSync(path.dirname(root))],
+      { cwd: root, encoding: 'utf8' },
+    ),
+  );
   assert.equal(result.destinationCheck.available, true);
   assert.ok(path.isAbsolute(result.recommendation.destination));
 });

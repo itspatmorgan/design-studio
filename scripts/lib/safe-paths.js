@@ -14,5 +14,7 @@ export function canonicalDirectory(dir, anchor) {
       if (stat.isSymbolicLink() || !stat.isDirectory()) return null;
     }
     return fs.realpathSync(dir);
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }

@@ -19,22 +19,33 @@ export function resourceDirectory(contributors: Declarations, systems: Declarati
     for (const [key, declaration] of Object.entries(declarations)) {
       if (!/^[a-z0-9][a-z0-9-]*$/.test(key)) throw new Error(`Invalid ${kind} source key "${key}".`);
       let id: ResourceId;
-      try { id = resourceId(declaration?.studioId); }
-      catch { throw new Error(`${kind} ${key}: declare a valid permanent studioId before resolving references.`); }
+      try {
+        id = resourceId(declaration?.studioId);
+      } catch {
+        throw new Error(`${kind} ${key}: declare a valid permanent studioId before resolving references.`);
+      }
       const previous = seen.get(id);
       if (previous) throw new Error(`${kind} ${key}: identity ${id} is already declared by ${previous}.`);
       seen.set(id, `${kind} ${key}`);
-      ids[key] = id; keys[id] = key;
+      ids[key] = id;
+      keys[id] = key;
     }
     return { ids: Object.freeze(ids), keys: Object.freeze(keys) };
   };
-  const people = index(contributors, 'Contributor'), installed = index(systems, 'System');
-  return Object.freeze({ contributorIds: people.ids, contributorKeys: people.keys, systemIds: installed.ids, systemKeys: installed.keys });
+  const people = index(contributors, 'Contributor'),
+    installed = index(systems, 'System');
+  return Object.freeze({
+    contributorIds: people.ids,
+    contributorKeys: people.keys,
+    systemIds: installed.ids,
+    systemKeys: installed.keys,
+  });
 }
 
 function resolve(reference: unknown, mapping: Readonly<Record<string, string>>, kind: string): string {
   const id = resourceId(reference);
-  if (!Object.hasOwn(mapping, id)) throw new Error(`Unknown ${kind} identity "${id}". Check the persisted reference and installed inventory.`);
+  if (!Object.hasOwn(mapping, id))
+    throw new Error(`Unknown ${kind} identity "${id}". Check the persisted reference and installed inventory.`);
   return mapping[id];
 }
 function identify(key: string, mapping: Readonly<Record<string, ResourceId>>, kind: string): ResourceId {
@@ -43,11 +54,17 @@ function identify(key: string, mapping: Readonly<Record<string, ResourceId>>, ki
 }
 
 function members(value: unknown, kind: string): readonly string[] {
-  if (!Array.isArray(value) || value.some(member => typeof member !== 'string') || new Set(value).size !== value.length) throw new Error(`${kind}: declare an array of unique references.`);
+  if (!Array.isArray(value) || value.some(member => typeof member !== 'string') || new Set(value).size !== value.length)
+    throw new Error(`${kind}: declare an array of unique references.`);
   return value;
 }
 function grants(source: StudioConfig): Record<string, readonly string[]> {
-  if (!source.systemMaintainers || typeof source.systemMaintainers !== 'object' || Array.isArray(source.systemMaintainers)) throw new Error('Declare systemMaintainers as an explicit object of identity grants.');
+  if (
+    !source.systemMaintainers ||
+    typeof source.systemMaintainers !== 'object' ||
+    Array.isArray(source.systemMaintainers)
+  )
+    throw new Error('Declare systemMaintainers as an explicit object of identity grants.');
   return source.systemMaintainers;
 }
 
@@ -57,10 +74,17 @@ export function resolveStudioReferences(source: StudioConfig, directory: Resourc
   return {
     ...source,
     defaultSystem: resolve(source.defaultSystem, directory.systemKeys, 'default system'),
-    ...(source.admins !== undefined && { admins: members(source.admins, 'Admins').map(id => resolve(id, directory.contributorKeys, 'Admin contributor')) }),
-    systemMaintainers: Object.fromEntries(Object.entries(grants(source)).map(([id, people]) => [
-      resolve(id, directory.systemKeys, 'maintained system'), members(people, 'System maintainers').map(member => resolve(member, directory.contributorKeys, 'system maintainer')),
-    ])),
+    ...(source.admins !== undefined && {
+      admins: members(source.admins, 'Admins').map(id => resolve(id, directory.contributorKeys, 'Admin contributor')),
+    }),
+    systemMaintainers: Object.fromEntries(
+      Object.entries(grants(source)).map(([id, people]) => [
+        resolve(id, directory.systemKeys, 'maintained system'),
+        members(people, 'System maintainers').map(member =>
+          resolve(member, directory.contributorKeys, 'system maintainer'),
+        ),
+      ]),
+    ),
   };
 }
 
@@ -70,16 +94,28 @@ export function persistStudioReferences(runtime: StudioConfig, directory: Resour
   return {
     ...runtime,
     defaultSystem: identify(runtime.defaultSystem, directory.systemIds, 'default system'),
-    ...(runtime.admins !== undefined && { admins: members(runtime.admins, 'Admins').map(key => identify(key, directory.contributorIds, 'Admin contributor')) }),
-    systemMaintainers: Object.fromEntries(Object.entries(grants(runtime)).map(([key, people]) => [
-      identify(key, directory.systemIds, 'maintained system'), members(people, 'System maintainers').map(member => identify(member, directory.contributorIds, 'system maintainer')),
-    ])),
+    ...(runtime.admins !== undefined && {
+      admins: members(runtime.admins, 'Admins').map(key =>
+        identify(key, directory.contributorIds, 'Admin contributor'),
+      ),
+    }),
+    systemMaintainers: Object.fromEntries(
+      Object.entries(grants(runtime)).map(([key, people]) => [
+        identify(key, directory.systemIds, 'maintained system'),
+        members(people, 'System maintainers').map(member =>
+          identify(member, directory.contributorIds, 'system maintainer'),
+        ),
+      ]),
+    ),
   };
 }
 
-export const systemKeyForIdentity = (id: unknown, directory: ResourceDirectory) => resolve(id, directory.systemKeys, 'system');
-export const contributorKeyForIdentity = (id: unknown, directory: ResourceDirectory) => resolve(id, directory.contributorKeys, 'contributor');
-export const systemIdentityForKey = (key: string, directory: ResourceDirectory) => identify(key, directory.systemIds, 'system');
+export const systemKeyForIdentity = (id: unknown, directory: ResourceDirectory) =>
+  resolve(id, directory.systemKeys, 'system');
+export const contributorKeyForIdentity = (id: unknown, directory: ResourceDirectory) =>
+  resolve(id, directory.contributorKeys, 'contributor');
+export const systemIdentityForKey = (key: string, directory: ResourceDirectory) =>
+  identify(key, directory.systemIds, 'system');
 
 export function systemKeyFromDeclarations(reference: unknown, systems: Declarations): string {
   const id = resourceId(reference);

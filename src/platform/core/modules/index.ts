@@ -11,10 +11,10 @@ export const PLATFORM_VERSION = '0.1.0';
 export const CORE_PAGE_KEYS = ['settings'] as const;
 
 export type ModuleSpec = {
-  id: string;        // the folder's name
-  label: string;     // "Examples"
-  version: string;   // this module's own version, like "0.1.0"
-  description?: string;   // one sentence on what it adds, shown when you list or add modules
+  id: string; // the folder's name
+  label: string; // "Examples"
+  version: string; // this module's own version, like "0.1.0"
+  description?: string; // one sentence on what it adds, shown when you list or add modules
   // The oldest platform version the module works with, like "0.1.0". A module that needs a newer one than
   // this copy has is turned off, and `pnpm check` says why, so an old copy never breaks on a new module.
   requires?: string;
@@ -32,7 +32,14 @@ export type ModuleSpec = {
   // window with no rail or navigation, on the deployed site (a standalone section item is an app).
   // `byPerson` is for the one section whose folders are grouped by the person who owns them
   // (src/prototypes/<person>/<id>/, opening at /prototypes/<person>/<id>), where the others have one folder per id.
-  section?: { key: string; folder?: string; items?: 'prototypes'; policy?: 'maintainers' | 'open'; standalone?: boolean; byPerson?: boolean };
+  section?: {
+    key: string;
+    folder?: string;
+    items?: 'prototypes';
+    policy?: 'maintainers' | 'open';
+    standalone?: boolean;
+    byPerson?: boolean;
+  };
   // Prototypes may import the module's lib/index.ts as `@module/<id>`, the one way a prototype can reach into a
   // module when lib is true (the import guard allows exactly that). Removing an imported module is refused.
   lib: boolean;
@@ -51,7 +58,12 @@ export type ModuleSpec = {
 // scripts/build/vite-files-plugin.js at POST /__studio/<id>/<route>). A handler gets who is asking (their
 // contributor key, or null) and the request's JSON, and returns what to send back; a manifest it returns
 // is sent to the open app. It throws an Error to answer with that message. Dev only: the deployed site has no server.
-export type ServerRoute = (request: { me: string | null; body: unknown }) => { status?: number; body: object; manifest?: unknown } | Promise<{ status?: number; body: object; manifest?: unknown }>;
+export type ServerRoute = (request: {
+  me: string | null;
+  body: unknown;
+}) =>
+  | { status?: number; body: object; manifest?: unknown }
+  | Promise<{ status?: number; body: object; manifest?: unknown }>;
 export type ModuleServer = Record<string, ServerRoute>;
 
 // A module can add its own check to `pnpm check` (src/modules/<id>/check.ts, default export): it gets the repo's
@@ -73,48 +85,79 @@ export function moduleProblems(spec: unknown, folder: string): string[] {
   const m = spec as Partial<ModuleSpec>;
   const problems: string[] = [];
   if (m.id !== folder) problems.push(`${where}: id is "${m.id}", but it must match the folder name, "${folder}".`);
-  else if (!ID.test(folder)) problems.push(`${where}: the id should be lowercase letters, numbers, and dashes, starting with a letter.`);
+  else if (!ID.test(folder))
+    problems.push(`${where}: the id should be lowercase letters, numbers, and dashes, starting with a letter.`);
   if (typeof m.label !== 'string' || !m.label.trim()) problems.push(`${where}: add a label, the name people see.`);
-  if (typeof m.version !== 'string' || !VERSION.test(m.version)) problems.push(`${where}: version should look like 0.1.0.`);
-  if (m.requires !== undefined && (typeof m.requires !== 'string' || !VERSION.test(m.requires))) problems.push(`${where}: requires should look like 0.1.0, the oldest platform version it works with.`);
-  if (m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 200)) problems.push(`${where}: description should be one short sentence.`);
+  if (typeof m.version !== 'string' || !VERSION.test(m.version))
+    problems.push(`${where}: version should look like 0.1.0.`);
+  if (m.requires !== undefined && (typeof m.requires !== 'string' || !VERSION.test(m.requires)))
+    problems.push(`${where}: requires should look like 0.1.0, the oldest platform version it works with.`);
+  if (m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 200))
+    problems.push(`${where}: description should be one short sentence.`);
   if (typeof m.lib !== 'boolean') problems.push(`${where}: declare lib as true or false.`);
   if (typeof m.optional !== 'boolean') problems.push(`${where}: declare optional as true or false.`);
   if (m.instructions !== undefined) {
     if (!Array.isArray(m.instructions)) problems.push(`${where}: instructions should be a list of { path, when }.`);
-    else for (const h of m.instructions) {
-      const path = (h as { path?: unknown })?.path;
-      if (typeof path !== 'string' || !SYSTEM_CONTENT_PATH.test(path) || path.split('/').includes('..')) problems.push(`${where}: instructions path "${String(path)}" should be inside context/ or skills/, like "skills/use-${folder}/".`);
-      else if ((h as { when?: unknown }).when !== undefined && typeof (h as { when?: unknown }).when !== 'string') problems.push(`${where}: instructions "when" for ${path} should be text.`);
-    }
+    else
+      for (const h of m.instructions) {
+        const path = (h as { path?: unknown })?.path;
+        if (typeof path !== 'string' || !SYSTEM_CONTENT_PATH.test(path) || path.split('/').includes('..'))
+          problems.push(
+            `${where}: instructions path "${String(path)}" should be inside context/ or skills/, like "skills/use-${folder}/".`,
+          );
+        else if ((h as { when?: unknown }).when !== undefined && typeof (h as { when?: unknown }).when !== 'string')
+          problems.push(`${where}: instructions "when" for ${path} should be text.`);
+      }
   }
   if (m.dependencies !== undefined) {
     const d = m.dependencies;
-    if (!d || typeof d !== 'object' || Array.isArray(d)) problems.push(`${where}: dependencies should be { "package": "^1.0.0" }.`);
-    else for (const [name, version] of Object.entries(d)) {
-      if (!NPM_NAME.test(name)) problems.push(`${where}: dependency "${name}" isn't a valid package name.`);
-      else if (typeof version !== 'string' || !NPM_VERSION.test(version)) problems.push(`${where}: dependency ${name} should have a version like "^1.2.3" or "1.2.3".`);
-    }
+    if (!d || typeof d !== 'object' || Array.isArray(d))
+      problems.push(`${where}: dependencies should be { "package": "^1.0.0" }.`);
+    else
+      for (const [name, version] of Object.entries(d)) {
+        if (!NPM_NAME.test(name)) problems.push(`${where}: dependency "${name}" isn't a valid package name.`);
+        else if (typeof version !== 'string' || !NPM_VERSION.test(version))
+          problems.push(`${where}: dependency ${name} should have a version like "^1.2.3" or "1.2.3".`);
+      }
   }
   if (m.upstream !== undefined) {
     const u = m.upstream as Partial<NonNullable<ModuleSpec['upstream']>>;
-    if (!u || typeof u.repo !== 'string' || typeof u.version !== 'string' || typeof u.license !== 'string' || !u.repo || !u.version || !u.license) problems.push(`${where}: upstream needs repo, version and license, as text.`);
+    if (
+      !u ||
+      typeof u.repo !== 'string' ||
+      typeof u.version !== 'string' ||
+      typeof u.license !== 'string' ||
+      !u.repo ||
+      !u.version ||
+      !u.license
+    )
+      problems.push(`${where}: upstream needs repo, version and license, as text.`);
   }
   if (m.section !== undefined) {
     const { key, folder: dir } = m.section as Partial<NonNullable<ModuleSpec['section']>>;
-    if (typeof key !== 'string' || !KEY.test(key)) problems.push(`${where}: section.key should be lowercase letters, numbers, and dashes.`);
-    if (dir !== undefined && (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.split('/').includes('..'))) problems.push(`${where}: section.folder should be a folder inside the repo, like src/examples.`);
+    if (typeof key !== 'string' || !KEY.test(key))
+      problems.push(`${where}: section.key should be lowercase letters, numbers, and dashes.`);
+    if (dir !== undefined && (typeof dir !== 'string' || !dir || dir.startsWith('/') || dir.split('/').includes('..')))
+      problems.push(`${where}: section.folder should be a folder inside the repo, like src/examples.`);
     const policy = (m.section as { policy?: unknown }).policy;
-    if (policy !== undefined && policy !== 'maintainers' && policy !== 'open') problems.push(`${where}: section.policy should be "maintainers" or "open", or left out.`);
+    if (policy !== undefined && policy !== 'maintainers' && policy !== 'open')
+      problems.push(`${where}: section.policy should be "maintainers" or "open", or left out.`);
     const items = (m.section as { items?: unknown }).items;
     if (items !== undefined && items !== 'prototypes') problems.push(`${where}: section.items should be "prototypes".`);
-    else if (items !== undefined && dir === undefined) problems.push(`${where}: a section with items needs a folder to keep them in, like src/examples.`);
-    else if (items !== undefined && !(typeof dir === 'string' && /^src\/[a-z0-9][a-z0-9-]*$/.test(dir))) problems.push(`${where}: a section with items keeps them in a folder directly under src/, like src/examples.`);
-    else if (items === 'prototypes' && dir !== `src/${(m.section as { key?: string }).key}`) problems.push(`${where}: a section of prototype-shaped folders keeps them in src/ under its own key, like src/examples for "examples".`);
+    else if (items !== undefined && dir === undefined)
+      problems.push(`${where}: a section with items needs a folder to keep them in, like src/examples.`);
+    else if (items !== undefined && !(typeof dir === 'string' && /^src\/[a-z0-9][a-z0-9-]*$/.test(dir)))
+      problems.push(`${where}: a section with items keeps them in a folder directly under src/, like src/examples.`);
+    else if (items === 'prototypes' && dir !== `src/${(m.section as { key?: string }).key}`)
+      problems.push(
+        `${where}: a section of prototype-shaped folders keeps them in src/ under its own key, like src/examples for "examples".`,
+      );
     const byPerson = (m.section as { byPerson?: unknown }).byPerson;
-    if (byPerson !== undefined && (byPerson !== true || items !== 'prototypes')) problems.push(`${where}: section.byPerson is true, and only for a section with items: "prototypes".`);
+    if (byPerson !== undefined && (byPerson !== true || items !== 'prototypes'))
+      problems.push(`${where}: section.byPerson is true, and only for a section with items: "prototypes".`);
     const standalone = (m.section as { standalone?: unknown }).standalone;
-    if (standalone !== undefined && (standalone !== true || items !== 'prototypes')) problems.push(`${where}: section.standalone is true, and only for a section with items: "prototypes".`);
+    if (standalone !== undefined && (standalone !== true || items !== 'prototypes'))
+      problems.push(`${where}: section.standalone is true, and only for a section with items: "prototypes".`);
   }
   return problems;
 }
@@ -126,13 +169,22 @@ export function listProblems(specs: readonly ModuleSpec[]): string[] {
   const dirs = new Map<string, string>();
   for (const m of specs) {
     if (!m.section) continue;
-    if ((CORE_PAGE_KEYS as readonly string[]).includes(m.section.key)) problems.push(`The ${m.id} module uses the reserved core page key "${m.section.key}". Give it another section key.`);
+    if ((CORE_PAGE_KEYS as readonly string[]).includes(m.section.key))
+      problems.push(
+        `The ${m.id} module uses the reserved core page key "${m.section.key}". Give it another section key.`,
+      );
     const byKey = keys.get(m.section.key);
-    if (byKey) problems.push(`The ${byKey} and ${m.id} modules both use the section key "${m.section.key}". Give one of them another.`);
+    if (byKey)
+      problems.push(
+        `The ${byKey} and ${m.id} modules both use the section key "${m.section.key}". Give one of them another.`,
+      );
     else keys.set(m.section.key, m.id);
     if (m.section.folder === undefined) continue;
     const byDir = dirs.get(m.section.folder);
-    if (byDir) problems.push(`The ${byDir} and ${m.id} modules both keep their files in ${m.section.folder}. Give one of them another folder.`);
+    if (byDir)
+      problems.push(
+        `The ${byDir} and ${m.id} modules both keep their files in ${m.section.folder}. Give one of them another folder.`,
+      );
     else dirs.set(m.section.folder, m.id);
   }
   return problems;
@@ -140,11 +192,11 @@ export function listProblems(specs: readonly ModuleSpec[]): string[] {
 
 // The section keys of a list of modules: addresses that no contributor's folder can use.
 export const sectionKeys = (specs: readonly ModuleSpec[]): string[] =>
-  specs.flatMap((m) => (m.section ? [m.section.key] : []));
+  specs.flatMap(m => (m.section ? [m.section.key] : []));
 
 // The folders (relative to the repo) of the modules whose sections hold items of this kind.
 export const itemFolders = (specs: readonly ModuleSpec[], items: 'prototypes'): string[] =>
-  specs.flatMap((m) => (m.section?.items === items && m.section.folder ? [m.section.folder] : []));
+  specs.flatMap(m => (m.section?.items === items && m.section.folder ? [m.section.folder] : []));
 
 const parts = (v: string) => v.split('.').map(Number);
 // Whether a module works with this platform: it asks for no newer a version than the platform's.

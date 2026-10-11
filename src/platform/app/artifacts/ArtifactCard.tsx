@@ -11,26 +11,57 @@ import { cn } from '@/lib/utils';
 
 export const ITEM_CARD_HEIGHT = 88;
 
-export default function ArtifactCard({ proto, item, elsewhere = false, className }: { proto?: Prototype; item?: Artifact; elsewhere?: boolean; className?: string }) {
+export default function ArtifactCard({
+  proto,
+  item,
+  elsewhere = false,
+  className,
+}: {
+  proto?: Prototype;
+  item?: Artifact;
+  elsewhere?: boolean;
+  className?: string;
+}) {
   const icon = item && fileTypeModules[item.fileType]?.icon;
   const found = proto && item;
   return (
-    <div className={cn('flex h-full w-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-background px-4 text-left', className)}>
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+    <div
+      className={cn(
+        'flex h-full w-full items-center gap-3 overflow-hidden rounded-xl border border-border bg-background px-4 text-left',
+        className,
+      )}
+    >
+      <span className='flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground'>
         <HugeiconsIcon icon={found && icon ? icon : FileNotFoundIcon} size={20} />
       </span>
-      <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-semibold text-foreground">{found ? artifactLabel(item.path) : elsewhere ? 'Another prototype' : 'Not found'}</div>
-        <div className="truncate text-xs text-muted-foreground" title={elsewhere ? 'A canvas shows only its own prototype. Copy the view into this prototype, then link that.' : undefined}>
+      <div className='min-w-0 flex-1'>
+        <div className='truncate text-sm font-semibold text-foreground'>
+          {found ? artifactLabel(item.path) : elsewhere ? 'Another prototype' : 'Not found'}
+        </div>
+        <div
+          className='truncate text-xs text-muted-foreground'
+          title={
+            elsewhere
+              ? 'A canvas shows only its own prototype. Copy the view into this prototype, then link that.'
+              : undefined
+          }
+        >
           {found
-            ? FILE_TYPES[item.fileType]?.label ?? 'File'
-            : elsewhere ? 'A canvas shows only its own prototype. Copy the view here.'
-            // On the deployed site a missing file may be archived work, which it leaves out (src/platform/core/archive.ts).
-            : import.meta.env.DEV ? 'This file was moved or deleted. Ask your agent to fix the link.' : 'Not on this site. It may be archived. Run the sandbox locally to see it.'}
+            ? (FILE_TYPES[item.fileType]?.label ?? 'File')
+            : elsewhere
+              ? 'A canvas shows only its own prototype. Copy the view here.'
+              : // On the deployed site a missing file may be archived work, which it leaves out (src/platform/core/archive.ts).
+                import.meta.env.DEV
+                ? 'This file was moved or deleted. Ask your agent to fix the link.'
+                : 'Not on this site. It may be archived. Run the sandbox locally to see it.'}
         </div>
       </div>
       {found && (
-        <Link {...artifactLink(proto, item)} data-open className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-foreground hover:bg-muted">
+        <Link
+          {...artifactLink(proto, item)}
+          data-open
+          className='shrink-0 rounded-md px-2 py-1 text-xs font-medium text-foreground hover:bg-muted'
+        >
           Open
         </Link>
       )}

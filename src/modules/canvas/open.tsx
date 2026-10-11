@@ -21,7 +21,9 @@ export default {
     const key = `/${rootOf(proto.contributorKey, proto.id)}/${item.path}`;
     // Dev reads the file itself, so an agent's changes show; the deployed site has it bundled.
     const [file] = await Promise.all([
-      import.meta.env.DEV ? readSource(proto, item.path) : canvasFiles[key]?.().then((content) => ({ content, version: '' })),
+      import.meta.env.DEV
+        ? readSource(proto, item.path)
+        : canvasFiles[key]?.().then(content => ({ content, version: '' })),
       import.meta.env.DEV ? preloadIdentity() : undefined,
     ]);
     return file && { proto, item, text: file.content, version: file.version };

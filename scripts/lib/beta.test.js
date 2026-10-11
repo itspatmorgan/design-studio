@@ -20,27 +20,40 @@ function tar(name, type = '0', data = Buffer.from('hello')) {
   header.write('ustar\0', 257);
   const sum = header.reduce((a, b) => a + b, 0);
   header.write(sum.toString(8).padStart(6, '0') + '\0 ', 148);
-  return gzipSync(Buffer.concat([header, data, Buffer.alloc((512 - data.length % 512) % 512), Buffer.alloc(1024)]));
+  return gzipSync(Buffer.concat([header, data, Buffer.alloc((512 - (data.length % 512)) % 512), Buffer.alloc(1024)]));
 }
 
 test('rename migrates canonical and legacy links without changing external URLs or longer slugs', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-links-'));
   try {
-    const from = path.join(dir, 'old'), to = path.join(dir, 'new');
+    const from = path.join(dir, 'old'),
+      to = path.join(dir, 'new');
     fs.mkdirSync(from);
     fs.writeFileSync(path.join(from, 'meta.json'), '{"title":"Old"}');
-    fs.writeFileSync(path.join(from, 'flow.excalidraw'), JSON.stringify({ elements: [{ link: '/prototypes/sam/old/view' }] }));
-    fs.writeFileSync(path.join(from, 'notes.md'), '[/sam/old/view](/sam/old/view) https://other.test/sam/old/view /sam/older/view');
+    fs.writeFileSync(
+      path.join(from, 'flow.excalidraw'),
+      JSON.stringify({ elements: [{ link: '/prototypes/sam/old/view' }] }),
+    );
+    fs.writeFileSync(
+      path.join(from, 'notes.md'),
+      '[/sam/old/view](/sam/old/view) https://other.test/sam/old/view /sam/older/view',
+    );
     moveWithLinks(from, to, { title: 'New' }, personAddress('sam', 'old'), '/prototypes/sam/new');
     assert.equal(fs.existsSync(from), false);
     assert.match(fs.readFileSync(path.join(to, 'flow.excalidraw'), 'utf8'), /\/prototypes\/sam\/new\/view/);
-    assert.equal(fs.readFileSync(path.join(to, 'notes.md'), 'utf8'), '[/prototypes/sam/new/view](/prototypes/sam/new/view) https://other.test/sam/old/view /sam/older/view');
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+    assert.equal(
+      fs.readFileSync(path.join(to, 'notes.md'), 'utf8'),
+      '[/prototypes/sam/new/view](/prototypes/sam/new/view) https://other.test/sam/old/view /sam/older/view',
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('archives are validated before extraction and reject traversal, links, truncation and oversized entries', () => {
   assert.equal(archiveEntries(tar('pack/module.ts'))[0].data.toString(), 'hello');
-  for (const name of ['../escape', '/escape', 'pack/../../escape']) assert.throws(() => archiveEntries(tar(name)), /path/);
+  for (const name of ['../escape', '/escape', 'pack/../../escape'])
+    assert.throws(() => archiveEntries(tar(name)), /path/);
   for (const type of ['1', '2', 'S']) assert.throws(() => archiveEntries(tar('link', type)), /regular files/);
   assert.throws(() => archiveEntries(tar('large', '0', Buffer.alloc(2 * 1024 * 1024 + 1))), /larger/);
   assert.throws(() => archiveEntries(gzipSync(Buffer.alloc(100))), /truncated/);
@@ -50,7 +63,9 @@ test('archives are validated before extraction and reject traversal, links, trun
     assert.deepEqual(fs.readdirSync(dir), []);
     extractArchive(tar('pack/module.ts'), dir);
     assert.equal(fs.readFileSync(path.join(dir, 'pack/module.ts'), 'utf8'), 'hello');
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('download enforces its limit while streaming', async () => {
@@ -64,14 +79,37 @@ test('prototype import allowlist includes its system and rejects unrelated local
     const root = path.join(fixture, 'src/prototypes/patrick/import-fixture');
     fs.mkdirSync(root, { recursive: true });
     fs.writeFileSync(path.join(root, 'meta.json'), JSON.stringify({ systemId: '1111111111111111' }));
-    const guard = importGuard({ root: fixture, systems: { product: { studioId: '1111111111111111', role: 'prototype', dir: path.join(fixture, 'src/systems/product') } }, defaultSystem: 'product', modules: [], prototypeDirs: [] });
+    const guard = importGuard({
+      root: fixture,
+      systems: {
+        product: { studioId: '1111111111111111', role: 'prototype', dir: path.join(fixture, 'src/systems/product') },
+      },
+      defaultSystem: 'product',
+      modules: [],
+      prototypeDirs: [],
+    });
     guard.configResolved({ command: 'build' });
-    for (const [target, allowed] of [['src/systems/product/components/button/index.ts', true], ['src/lib/store.ts', true], ['src/prototypes/patrick/import-fixture/_components/text.ts', true], ['scripts/lib/random.js', false], ['src/platform/app/router.tsx', false], ['src/prototypes/patrick/feedback-inbox/main.tsx', false]]) {
-      const context = { resolve: async () => ({ id: path.join(fixture, target) }), error: (message) => { throw new Error(message); } };
+    for (const [target, allowed] of [
+      ['src/systems/product/components/button/index.ts', true],
+      ['src/lib/store.ts', true],
+      ['src/prototypes/patrick/import-fixture/_components/text.ts', true],
+      ['scripts/lib/random.js', false],
+      ['src/platform/app/router.tsx', false],
+      ['src/prototypes/patrick/feedback-inbox/main.tsx', false],
+    ]) {
+      const context = {
+        resolve: async () => ({ id: path.join(fixture, target) }),
+        error: message => {
+          throw new Error(message);
+        },
+      };
       const request = guard.resolveId.call(context, './thing', path.join(root, 'main.tsx'), {});
-      if (allowed) await request; else await assert.rejects(request, /Prototype scope/);
+      if (allowed) await request;
+      else await assert.rejects(request, /Prototype scope/);
     }
-  } finally { fs.rmSync(fixture, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
 });
 
 test('create and rename preserve addresses, file errors recover, and system removal protects prototypes', async () => {
@@ -79,7 +117,10 @@ test('create and rename preserve addresses, file errors recover, and system remo
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-journey-'));
   const root = path.resolve('.');
   try {
-    fs.cpSync(root, dir, { recursive: true, filter: (file) => !['node_modules', 'dist', '.git'].includes(path.basename(file)) });
+    fs.cpSync(root, dir, {
+      recursive: true,
+      filter: file => !['node_modules', 'dist', '.git'].includes(path.basename(file)),
+    });
     ensureTeamManagement(dir);
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
     linkSystemDependencies(root, dir);
@@ -90,10 +131,18 @@ test('create and rename preserve addresses, file errors recover, and system remo
       fs.writeFileSync(declaration, editStudioConfig(fs.readFileSync(declaration, 'utf8'), { status: 'active' }));
     }
     // CLI operations need a registered identity independent of the host's Git config.
-    const ownerContributorId = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/patrick.json'), 'utf8')).studioId;
+    const ownerContributorId = JSON.parse(
+      fs.readFileSync(path.join(dir, 'contributors/patrick.json'), 'utf8'),
+    ).studioId;
     fs.rmSync(path.join(dir, 'contributors'), { recursive: true, force: true });
     writeProfiles(dir, {
-      patrick: { studioId: ownerContributorId, name: 'Test Maintainer', email: 'maintainer@example.test', github: '', welcomeDismissed: false },
+      patrick: {
+        studioId: ownerContributorId,
+        name: 'Test Maintainer',
+        email: 'maintainer@example.test',
+        github: '',
+        welcomeDismissed: false,
+      },
     });
     const script = `
       import fs from 'node:fs';
@@ -245,15 +294,23 @@ test('create and rename preserve addresses, file errors recover, and system remo
 
     `;
     execFileSync(process.execPath, ['--input-type=module', '--eval', script], {
-      cwd: dir, timeout: 30000, encoding: 'utf8', stdio: 'pipe',
+      cwd: dir,
+      timeout: 30000,
+      encoding: 'utf8',
+      stdio: 'pipe',
       env: {
-        ...process.env, MISE_TRUSTED_CONFIG_PATHS: dir,
+        ...process.env,
+        MISE_TRUSTED_CONFIG_PATHS: dir,
         GIT_CONFIG_COUNT: '2',
-        GIT_CONFIG_KEY_0: 'user.name', GIT_CONFIG_VALUE_0: 'Test Maintainer',
-        GIT_CONFIG_KEY_1: 'user.email', GIT_CONFIG_VALUE_1: 'maintainer@example.test',
+        GIT_CONFIG_KEY_0: 'user.name',
+        GIT_CONFIG_VALUE_0: 'Test Maintainer',
+        GIT_CONFIG_KEY_1: 'user.email',
+        GIT_CONFIG_VALUE_1: 'maintainer@example.test',
       },
     });
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('CI accepts reviewed platform proposals and maintainer pushes, rejecting other platform pushes', async () => {
@@ -261,7 +318,10 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-ci-'));
   try {
     const root = path.resolve('.');
-    fs.cpSync(root, dir, { recursive: true, filter: (file) => !['node_modules', 'dist', '.git'].includes(path.basename(file)) });
+    fs.cpSync(root, dir, {
+      recursive: true,
+      filter: file => !['node_modules', 'dist', '.git'].includes(path.basename(file)),
+    });
     const runGit = (...args) => execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim();
     runGit('init', '-q');
     runGit('config', 'user.name', 'Test Maintainer');
@@ -271,11 +331,30 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
     runGit('commit', '-qm', 'Initial fixture');
     const base = runGit('rev-parse', 'HEAD');
     fs.appendFileSync(path.join(dir, 'README.md'), '\nPlatform fixture\n');
-    runGit('add', 'README.md'); runGit('commit', '-qm', 'Platform fixture');
+    runGit('add', 'README.md');
+    runGit('commit', '-qm', 'Platform fixture');
     const head = runGit('rev-parse', 'HEAD');
     const github = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/patrick.json'))).github;
-    for (const [role, review, expected] of [['write', false, 1], ['maintain', false, 0], ['admin', false, 0], ['write', true, 0]]) {
-      const result = spawnSync(process.execPath, ['scripts/check/check-scope.js', '--ci', base, head, ...(review ? ['--review'] : [])], { cwd: dir, encoding: 'utf8', env: { ...process.env, STUDIO_SCOPE_ACTOR: github, STUDIO_PLATFORM_ROLE: role, MISE_TRUSTED_CONFIG_PATHS: dir } });
+    for (const [role, review, expected] of [
+      ['write', false, 1],
+      ['maintain', false, 0],
+      ['admin', false, 0],
+      ['write', true, 0],
+    ]) {
+      const result = spawnSync(
+        process.execPath,
+        ['scripts/check/check-scope.js', '--ci', base, head, ...(review ? ['--review'] : [])],
+        {
+          cwd: dir,
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            STUDIO_SCOPE_ACTOR: github,
+            STUDIO_PLATFORM_ROLE: role,
+            MISE_TRUSTED_CONFIG_PATHS: dir,
+          },
+        },
+      );
       assert.equal(result.status, expected, result.stderr + result.stdout);
     }
     const { readDeclaration } = await import('../../src/platform/core/modules/pack.ts');
@@ -284,43 +363,88 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
     writeProfiles(dir, { sam: { name: 'Sam', github: 'sam-fixture' } });
     const patrickId = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/patrick.json'))).studioId;
     const samId = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/sam.json'))).studioId;
-    const productId = readDeclaration(fs.readFileSync(path.join(dir, 'src/systems/product/system.ts'), 'utf8')).value.studioId;
-    config.usage = 'team'; config.admins = [patrickId]; config.systemMaintainers[productId] = [samId];
+    const productId = readDeclaration(fs.readFileSync(path.join(dir, 'src/systems/product/system.ts'), 'utf8')).value
+      .studioId;
+    config.usage = 'team';
+    config.admins = [patrickId];
+    config.systemMaintainers[productId] = [samId];
     fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
     const systemFile = path.join(dir, 'src/systems/product/system.ts');
     const { editStudioConfig } = await import('./studio-setup.js');
     fs.writeFileSync(systemFile, editStudioConfig(fs.readFileSync(systemFile, 'utf8'), { status: 'active' }));
-    runGit('add', 'studio.config.ts', 'contributors/sam.json', ...config.systems.map((key) => `src/systems/${key}/system.ts`)); runGit('commit', '-qm', 'Trusted grants');
+    runGit(
+      'add',
+      'studio.config.ts',
+      'contributors/sam.json',
+      ...config.systems.map(key => `src/systems/${key}/system.ts`),
+    );
+    runGit('commit', '-qm', 'Trusted grants');
     const granted = runGit('rev-parse', 'HEAD');
     fs.writeFileSync(path.join(dir, 'src/systems/product/scope-fixture.md'), '# Assigned system');
-    runGit('add', 'src/systems/product/scope-fixture.md'); runGit('commit', '-qm', 'Assigned system work');
-    const check = (before, actor = 'sam-fixture', review = false) => spawnSync(process.execPath, ['scripts/check/check-scope.js', '--ci', before, runGit('rev-parse', 'HEAD'), ...(review ? ['--review'] : [])], { cwd: dir, encoding: 'utf8', env: { ...process.env, STUDIO_SCOPE_ACTOR: actor, STUDIO_PLATFORM_ROLE: 'write', MISE_TRUSTED_CONFIG_PATHS: dir } });
+    runGit('add', 'src/systems/product/scope-fixture.md');
+    runGit('commit', '-qm', 'Assigned system work');
+    const check = (before, actor = 'sam-fixture', review = false) =>
+      spawnSync(
+        process.execPath,
+        ['scripts/check/check-scope.js', '--ci', before, runGit('rev-parse', 'HEAD'), ...(review ? ['--review'] : [])],
+        {
+          cwd: dir,
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            STUDIO_SCOPE_ACTOR: actor,
+            STUDIO_PLATFORM_ROLE: 'write',
+            MISE_TRUSTED_CONFIG_PATHS: dir,
+          },
+        },
+      );
     const maintainerCheck = check(granted);
-    assert.equal(maintainerCheck.status, 0, 'Assigned maintainer can push system work\n' + maintainerCheck.stderr + maintainerCheck.stdout);
+    assert.equal(
+      maintainerCheck.status,
+      0,
+      'Assigned maintainer can push system work\n' + maintainerCheck.stderr + maintainerCheck.stdout,
+    );
     const beforeImpersonation = runGit('rev-parse', 'HEAD');
     const profileFile = path.join(dir, 'contributors/patrick.json');
     const profile = JSON.parse(fs.readFileSync(profileFile));
     fs.writeFileSync(profileFile, JSON.stringify({ ...profile, github: 'sam-fixture' }));
-    runGit('add', 'contributors/patrick.json'); runGit('commit', '-qm', 'Proposed identity change');
+    runGit('add', 'contributors/patrick.json');
+    runGit('commit', '-qm', 'Proposed identity change');
     assert.equal(check(beforeImpersonation).status, 1, 'Proposed profile cannot impersonate an Admin');
-    assert.equal(check(beforeImpersonation, 'sam-fixture', true).status, 0, 'Out of scope proposals are allowed through review');
+    assert.equal(
+      check(beforeImpersonation, 'sam-fixture', true).status,
+      0,
+      'Out of scope proposals are allowed through review',
+    );
     fs.writeFileSync(profileFile, JSON.stringify(profile));
-    runGit('add', 'contributors/patrick.json'); runGit('commit', '-qm', 'Restore profile');
+    runGit('add', 'contributors/patrick.json');
+    runGit('commit', '-qm', 'Restore profile');
     const beforeElevation = runGit('rev-parse', 'HEAD');
-    config.admins.push(samId); fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
-    runGit('add', 'studio.config.ts'); runGit('commit', '-qm', 'Proposed Admin assignment');
+    config.admins.push(samId);
+    fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
+    runGit('add', 'studio.config.ts');
+    runGit('commit', '-qm', 'Proposed Admin assignment');
     assert.equal(check(beforeElevation).status, 1, 'Proposed grants do not authorize themselves');
     const beforeMode = runGit('rev-parse', 'HEAD');
-    config.usage = 'personal'; fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
-    runGit('add', 'studio.config.ts'); runGit('commit', '-qm', 'Proposed personal mode');
-    assert.equal(check(beforeMode, 'unregistered-fixture').status, 1, 'Proposed personal mode cannot bypass team scope');
+    config.usage = 'personal';
+    fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
+    runGit('add', 'studio.config.ts');
+    runGit('commit', '-qm', 'Proposed personal mode');
+    assert.equal(
+      check(beforeMode, 'unregistered-fixture').status,
+      1,
+      'Proposed personal mode cannot bypass team scope',
+    );
     const personalBase = runGit('rev-parse', 'HEAD');
     fs.appendFileSync(path.join(dir, 'README.md'), '\nPersonal work\n');
-    runGit('add', 'README.md'); runGit('commit', '-qm', 'Personal work');
+    runGit('add', 'README.md');
+    runGit('commit', '-qm', 'Personal work');
     const personalResult = check(personalBase, 'unregistered-fixture');
     assert.equal(personalResult.status, 0, personalResult.stderr + personalResult.stdout);
     assert.match(personalResult.stdout, /team ownership checks are skipped/);
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('shared documentation catalog covers Manual and Reference and keeps damaged chapters repairable', async () => {
@@ -333,21 +457,36 @@ test('shared documentation catalog covers Manual and Reference and keeps damaged
       fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
       fs.writeFileSync(path.join(root, file), '# Source');
     }
-    const manifest = { manual: [{ slug: 'index', source: '/modules/documentation/pages/index.md' }], platformReferences: [{ id: 'documentation', enabled: true, references: [] }, { id: 'prototypes', enabled: true, references: [{ source: '/modules/prototypes/README.md' }] }] };
+    const manifest = {
+      manual: [{ slug: 'index', source: '/modules/documentation/pages/index.md' }],
+      platformReferences: [
+        { id: 'documentation', enabled: true, references: [] },
+        { id: 'prototypes', enabled: true, references: [{ source: '/modules/prototypes/README.md' }] },
+      ],
+    };
     const allowed = documentationSources(root, manifest);
     assert.ok(allowed.includes(chapter));
-    assert.equal(allowed.filter((file) => file === readme).length, 1);
+    assert.equal(allowed.filter(file => file === readme).length, 1);
     for (const file of [chapter, readme]) {
       const before = sourceFile(root, allowed, { action: 'read', path: file });
-      assert.equal(sourceFile(root, allowed, { action: 'write', path: file, content: '# Edited', base: before.body.version }).status, undefined);
+      assert.equal(
+        sourceFile(root, allowed, { action: 'write', path: file, content: '# Edited', base: before.body.version })
+          .status,
+        undefined,
+      );
     }
     fs.writeFileSync(path.join(root, chapter), '---\ntitle: broken');
-    assert.equal(sourceFile(root, documentationSources(root, manifest), { action: 'read', path: chapter }).body.content, '---\ntitle: broken');
+    assert.equal(
+      sourceFile(root, documentationSources(root, manifest), { action: 'read', path: chapter }).body.content,
+      '---\ntitle: broken',
+    );
     manifest.platformReferences[0].enabled = false;
     manifest.manual = [];
     assert.ok(!documentationSources(root, manifest).includes(chapter));
     assert.equal(sourceFile(root, allowed, { action: 'read', path: '../../README.md' }).status, 404);
-  } finally { fs.rmSync(root, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test('shared source operations allow cataloged Markdown and system code with stale-write and symlink protection', async () => {
@@ -366,10 +505,16 @@ test('shared source operations allow cataloged Markdown and system code with sta
     assert.equal(call({ action: 'delete', path: relative }).status, 400);
     assert.equal(call({ action: 'reveal', path: relative }).reveal, file);
     fs.writeFileSync(file, '# External edit');
-    assert.equal(call({ action: 'write', path: relative, content: '# Overwrite', base: before.body.version }).status, 409);
+    assert.equal(
+      call({ action: 'write', path: relative, content: '# Overwrite', base: before.body.version }).status,
+      409,
+    );
     assert.equal(fs.readFileSync(file, 'utf8'), '# External edit');
     const current = call({ action: 'read', path: relative });
-    assert.equal(call({ action: 'write', path: relative, content: '# Accepted', base: current.body.version }).status, undefined);
+    assert.equal(
+      call({ action: 'write', path: relative, content: '# Accepted', base: current.body.version }).status,
+      undefined,
+    );
     assert.equal(fs.readFileSync(file, 'utf8'), '# Accepted');
     assert.equal(call({ action: 'write', path: relative, content: 'x'.repeat(750 * 1024 + 1) }).status, 413);
     const theme = 'src/systems/product/styles/theme.css';
@@ -378,24 +523,52 @@ test('shared source operations allow cataloged Markdown and system code with sta
     assert.equal(call({ action: 'read', path: theme }).status, 404);
     const themeSource = call({ action: 'read', path: theme }, [theme]);
     assert.equal(themeSource.body.content, '.product-theme { --background: white; }');
-    assert.equal(call({ action: 'write', path: theme, content: '.product-theme { --background: black; }', base: themeSource.body.version }, [theme]).status, undefined);
-    fs.unlinkSync(file); fs.symlinkSync(path.join(dir, 'other.md'), file);
+    assert.equal(
+      call(
+        {
+          action: 'write',
+          path: theme,
+          content: '.product-theme { --background: black; }',
+          base: themeSource.body.version,
+        },
+        [theme],
+      ).status,
+      undefined,
+    );
+    fs.unlinkSync(file);
+    fs.symlinkSync(path.join(dir, 'other.md'), file);
     assert.equal(call({ action: 'read', path: relative }).status, 404);
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
-test('standalone diagrams are discovered by both extensions and disabling preserves Markdown', { skip: !fs.existsSync('src/modules/diagrams/type.ts') }, async () => {
+test('standalone diagrams are discovered by both extensions and disabling preserves Markdown', {
+  skip: !fs.existsSync('src/modules/diagrams/type.ts'),
+}, async () => {
   const { execFileSync } = await import('node:child_process');
   const root = path.resolve('.');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-diagrams-'));
   try {
-    fs.cpSync(root, dir, { recursive: true, filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)) });
+    fs.cpSync(root, dir, {
+      recursive: true,
+      filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)),
+    });
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
     linkSystemDependencies(root, dir);
     // Availability is a metadata contract, independent of the Manual's editorial structure.
     const pages = path.join(dir, 'src/modules/documentation/pages');
-    if (fs.existsSync(pages)) fs.writeFileSync(path.join(pages, 'diagrams.md'), '---\ntitle: Diagrams fixture\norder: 99\nmodule: diagrams\n---\nFixture chapter.\n');
-    execFileSync(process.execPath, ['--input-type=module', '--eval', `
+    if (fs.existsSync(pages))
+      fs.writeFileSync(
+        path.join(pages, 'diagrams.md'),
+        '---\ntitle: Diagrams fixture\norder: 99\nmodule: diagrams\n---\nFixture chapter.\n',
+      );
+    execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `
       import fs from 'node:fs'; import assert from 'node:assert/strict';
       import { editModulesFlag } from './src/platform/core/modules/pack.ts';
       const config='studio.config.ts';
@@ -431,9 +604,17 @@ test('standalone diagrams are discovered by both extensions and disabling preser
         assert.ok(manifest.manual.every(p=>p.source?.startsWith('/modules/documentation/pages/')));
       }
       fs.writeFileSync(config,editModulesFlag(fs.readFileSync(config,'utf8'),'diagrams',false));
-    `], { cwd: dir, encoding: 'utf8', stdio: 'pipe' });
+    `,
+      ],
+      { cwd: dir, encoding: 'utf8', stdio: 'pipe' },
+    );
     // A fresh process observes the changed module configuration.
-    execFileSync(process.execPath, ['--input-type=module', '--eval', `
+    execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `
       import fs from 'node:fs'; import assert from 'node:assert/strict';
       import {buildManifest} from './scripts/build/build-manifest.js';
       const {manifest,errors}=buildManifest({write:false,quiet:true}); assert.equal(errors,0);
@@ -446,6 +627,11 @@ test('standalone diagrams are discovered by both extensions and disabling preser
       assert.ok(fs.existsSync('src/prototypes/patrick/feedback-inbox/test-flow.mermaid'));
       assert.equal(manifest.platformReferences.find(g=>g.id==='diagrams')?.references.length,0);
       assert.equal(manifest.manual.some(p=>p.slug==='diagrams'),false);
-    `], { cwd: dir, encoding: 'utf8', stdio: 'pipe' });
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+    `,
+      ],
+      { cwd: dir, encoding: 'utf8', stdio: 'pipe' },
+    );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

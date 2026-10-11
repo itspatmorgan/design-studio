@@ -22,7 +22,17 @@ function SystemsLayout() {
   return <Suspense fallback={null}>{system ? <SystemsPage /> : <Outlet />}</Suspense>;
 }
 const systemsTitle = (...parts: (string | undefined)[]) =>
-  [...parts.filter(Boolean).map((p, index, names) => index === names.length - 1 && SYSTEM_SPECS[systemKeyFromIdentity(p) ?? ''] ? SYSTEM_SPECS[systemKeyFromIdentity(p)!].label : artifactLabel(p!)), 'Systems', APP_NAME].join(' — ');
+  [
+    ...parts
+      .filter(Boolean)
+      .map((p, index, names) =>
+        index === names.length - 1 && SYSTEM_SPECS[systemKeyFromIdentity(p) ?? '']
+          ? SYSTEM_SPECS[systemKeyFromIdentity(p)!].label
+          : artifactLabel(p!),
+      ),
+    'Systems',
+    APP_NAME,
+  ].join(' — ');
 
 async function loadSystemPage(params: { system: string; page?: string; _splat?: string }, mode?: 'source') {
   const system = systemKeyFromIdentity(params.system);
@@ -47,14 +57,21 @@ async function loadSystemPage(params: { system: string; page?: string; _splat?: 
 }
 
 function SystemsPlaces({ go }: PaletteContext) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const pathname = useRouterState({ select: s => s.location.pathname });
   const on = (system: string) => pathname === systemPath(system) || pathname.startsWith(systemPath(system) + '/');
   // The team's own design systems, one entry each. The platform's own system is how the app itself is built, so the
   // palette, which searches the team's content, leaves it out.
   return (
     <>
       {Object.entries(PROTOTYPE_SYSTEMS).map(([id, system]) => (
-        <CommandItem key={id} value={`${system.label} system components`} disabled={on(id)} onSelect={() => go({ to: systemPath(id) } as never)}>{system.label} system</CommandItem>
+        <CommandItem
+          key={id}
+          value={`${system.label} system components`}
+          disabled={on(id)}
+          onSelect={() => go({ to: systemPath(id) } as never)}
+        >
+          {system.label} system
+        </CommandItem>
       ))}
     </>
   );
@@ -62,7 +79,14 @@ function SystemsPlaces({ go }: PaletteContext) {
 
 function SystemsPalette(context: PaletteContext) {
   if (!Object.keys(PROTOTYPE_SYSTEMS).length) return null;
-  return <><CommandSeparator /><CommandGroup heading="Systems"><SystemsPlaces {...context} /></CommandGroup></>;
+  return (
+    <>
+      <CommandSeparator />
+      <CommandGroup heading='Systems'>
+        <SystemsPlaces {...context} />
+      </CommandGroup>
+    </>
+  );
 }
 
 // On the front page: a link to the team's design systems, three at most. The platform's own is how the app itself is
@@ -71,8 +95,12 @@ function Overview() {
   const systems = Object.entries(PROTOTYPE_SYSTEMS).slice(0, 3);
   if (!systems.length) return null;
   return (
-    <HomeSection title="Systems" to="/systems">
-      <ul>{systems.map(([id, s]) => <ItemRow key={id} link={{ to: systemPath(id) }} icon={Shapes01Icon} title={s.label} />)}</ul>
+    <HomeSection title='Systems' to='/systems'>
+      <ul>
+        {systems.map(([id, s]) => (
+          <ItemRow key={id} link={{ to: systemPath(id) }} icon={Shapes01Icon} title={s.label} />
+        ))}
+      </ul>
     </HomeSection>
   );
 }
@@ -81,38 +109,54 @@ export default {
   icon: Shapes01Icon,
   rail: 'top',
   order: 20,
-  routes: (root) => {
-    const systemsRoute = createRoute({ getParentRoute: () => root, path: 'systems', component: SystemsLayout, validateSearch: (search: Record<string, unknown>): { mode?: 'source'; q?: string } => ({ mode: search.mode === 'source' ? 'source' : undefined, q: typeof search.q === 'string' && search.q ? search.q : undefined }) });
-    return [systemsRoute.addChildren([
-      createRoute({
-        getParentRoute: () => systemsRoute,
-        path: '/',
-        head: () => ({ meta: [{ title: `Systems — ${APP_NAME}` }] }),
-        loader: () => SystemsIndex.preload?.(),
-        component: () => <Suspense fallback={null}><SystemsIndex /></Suspense>,
+  routes: root => {
+    const systemsRoute = createRoute({
+      getParentRoute: () => root,
+      path: 'systems',
+      component: SystemsLayout,
+      validateSearch: (search: Record<string, unknown>): { mode?: 'source'; q?: string } => ({
+        mode: search.mode === 'source' ? 'source' : undefined,
+        q: typeof search.q === 'string' && search.q ? search.q : undefined,
       }),
-      createRoute({
-        getParentRoute: () => systemsRoute,
-        path: '$system',
-        head: ({ params }) => ({ meta: [{ title: systemsTitle(params.system) }] }),
-        loaderDeps: ({ search }) => ({ mode: search.mode }),
-        loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
-      }),
-      createRoute({
-        getParentRoute: () => systemsRoute,
-        path: '$system/$page',
-        head: ({ params }) => ({ meta: [{ title: systemsTitle(params.page, params.system) }] }),
-        loaderDeps: ({ search }) => ({ mode: search.mode }),
-        loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
-      }),
-      createRoute({
-        getParentRoute: () => systemsRoute,
-        path: '$system/$page/$',
-        head: ({ params }) => ({ meta: [{ title: systemsTitle(params._splat?.split('/').pop(), params.page, params.system) }] }),
-        loaderDeps: ({ search }) => ({ mode: search.mode }),
-        loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
-      }),
-    ])];
+    });
+    return [
+      systemsRoute.addChildren([
+        createRoute({
+          getParentRoute: () => systemsRoute,
+          path: '/',
+          head: () => ({ meta: [{ title: `Systems — ${APP_NAME}` }] }),
+          loader: () => SystemsIndex.preload?.(),
+          component: () => (
+            <Suspense fallback={null}>
+              <SystemsIndex />
+            </Suspense>
+          ),
+        }),
+        createRoute({
+          getParentRoute: () => systemsRoute,
+          path: '$system',
+          head: ({ params }) => ({ meta: [{ title: systemsTitle(params.system) }] }),
+          loaderDeps: ({ search }) => ({ mode: search.mode }),
+          loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
+        }),
+        createRoute({
+          getParentRoute: () => systemsRoute,
+          path: '$system/$page',
+          head: ({ params }) => ({ meta: [{ title: systemsTitle(params.page, params.system) }] }),
+          loaderDeps: ({ search }) => ({ mode: search.mode }),
+          loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
+        }),
+        createRoute({
+          getParentRoute: () => systemsRoute,
+          path: '$system/$page/$',
+          head: ({ params }) => ({
+            meta: [{ title: systemsTitle(params._splat?.split('/').pop(), params.page, params.system) }],
+          }),
+          loaderDeps: ({ search }) => ({ mode: search.mode }),
+          loader: ({ params, deps }) => loadSystemPage(params, deps.mode),
+        }),
+      ]),
+    ];
   },
   overview: Overview,
   palette: SystemsPalette,

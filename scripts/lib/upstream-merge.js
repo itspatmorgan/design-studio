@@ -8,12 +8,26 @@ const resolution = (map, file) => ({ generated: '--theirs', seed: '--ours', team
 
 // Returns { merged: true, changed } or { merged: false, conflicts: [paths] }, leaving the merge in progress when it fails.
 // `run(command, args)` runs a command in the studio; regeneration needs pnpm.
-export function mergeUpstream(cwd, ref, { message = `Update from ${ref}`, map, run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }) } = {}) {
+export function mergeUpstream(
+  cwd,
+  ref,
+  {
+    message = `Update from ${ref}`,
+    map,
+    run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }),
+  } = {},
+) {
   const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
   let failure = null;
-  try { git('merge', '--no-ff', '--no-commit', ref); } catch (error) { failure = error; }
+  try {
+    git('merge', '--no-ff', '--no-commit', ref);
+  } catch (error) {
+    failure = error;
+  }
   // No merge in progress: either the ref was already merged, or git refused before merging (a dirty tree).
-  try { git('rev-parse', '-q', '--verify', 'MERGE_HEAD'); } catch {
+  try {
+    git('rev-parse', '-q', '--verify', 'MERGE_HEAD');
+  } catch {
     if (failure) throw failure;
     return { merged: true, changed: false };
   }
@@ -23,7 +37,12 @@ export function mergeUpstream(cwd, ref, { message = `Update from ${ref}`, map, r
     const side = resolution(tiers, file);
     if (!side) continue;
     // A side that deleted the file has no stage to check out; keep the surviving side.
-    try { git('checkout', side, '--', file); } catch { git('rm', '-q', '--', file); continue; }
+    try {
+      git('checkout', side, '--', file);
+    } catch {
+      git('rm', '-q', '--', file);
+      continue;
+    }
     git('add', '--', file);
   }
   const unresolved = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);

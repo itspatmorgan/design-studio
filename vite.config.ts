@@ -36,7 +36,15 @@ function markdown(reference = false) {
     format: 'md',
     providerImportSource: '@mdx-js/react',
     remarkPlugins: [remarkFrontmatter, remarkTitleFromHeading, remarkMdxFrontmatter, remarkGfm, remarkHtmlAsText],
-    rehypePlugins: [rehypeSlug, rehypeMermaid, rehypeFileEmbeds, [rehypePrettyCode, { theme: { light: documentCodeTheme('light'), dark: documentCodeTheme('dark') }, keepBackground: false }]],
+    rehypePlugins: [
+      rehypeSlug,
+      rehypeMermaid,
+      rehypeFileEmbeds,
+      [
+        rehypePrettyCode,
+        { theme: { light: documentCodeTheme('light'), dark: documentCodeTheme('dark') }, keepBackground: false },
+      ],
+    ],
   });
   const transform = plugin.transform;
   return {
@@ -52,7 +60,8 @@ function markdown(reference = false) {
 
 // A module with `lib: true` gives prototypes one door in: `import ... from '@module/<id>'` is its lib/index.
 const moduleLibs = ENABLED_MODULES.filter((m: { lib?: boolean }) => m.lib).map((m: { id: string }) => ({
-  find: `@module/${m.id}`, replacement: fileURLToPath(new URL(`./src/modules/${m.id}/lib/index`, import.meta.url)),
+  find: `@module/${m.id}`,
+  replacement: fileURLToPath(new URL(`./src/modules/${m.id}/lib/index`, import.meta.url)),
 }));
 
 export default defineConfig({
@@ -62,14 +71,20 @@ export default defineConfig({
   publicDir: '../public',
   css: { postcss: { plugins: [scopedUtilities()] } },
   build: {
-    outDir: '../dist', emptyOutDir: true, manifest: true,
+    outDir: '../dist',
+    emptyOutDir: true,
+    manifest: true,
     rolldownOptions: {
       output: {
         // Keep heavy feature libraries lazy while consolidating shared shell code.
-        codeSplitting: { groups: [{
-          name: 'studio-ui',
-          test: /[\\/]node_modules[\\/](?:@base-ui[\\/]react|@tanstack[\\/](?:react-router|router-core|history)|react(?:-dom)?|use-sync-external-store|scheduler|cmdk)[\\/]/,
-        }] },
+        codeSplitting: {
+          groups: [
+            {
+              name: 'studio-ui',
+              test: /[\\/]node_modules[\\/](?:@base-ui[\\/]react|@tanstack[\\/](?:react-router|router-core|history)|react(?:-dom)?|use-sync-external-store|scheduler|cmdk)[\\/]/,
+            },
+          ],
+        },
       },
     },
   },
@@ -84,9 +99,18 @@ export default defineConfig({
       ...(ENABLED_MODULES.some((module: { id: string }) => module.id === 'canvas') ? ['@excalidraw/excalidraw'] : []),
       // Embedded prototype views discover these deep imports after the canvas first paints.
       '@base-ui/react/**',
-      '@codemirror/state', '@codemirror/view', '@codemirror/commands', '@codemirror/autocomplete', '@codemirror/language',
-      '@codemirror/search', '@codemirror/lang-javascript', '@codemirror/lang-markdown', '@codemirror/lang-yaml',
-      '@lezer/common', '@lezer/highlight', '@lezer/markdown',
+      '@codemirror/state',
+      '@codemirror/view',
+      '@codemirror/commands',
+      '@codemirror/autocomplete',
+      '@codemirror/language',
+      '@codemirror/search',
+      '@codemirror/lang-javascript',
+      '@codemirror/lang-markdown',
+      '@codemirror/lang-yaml',
+      '@lezer/common',
+      '@lezer/highlight',
+      '@lezer/markdown',
     ],
   },
   resolve: {
@@ -105,10 +129,17 @@ export default defineConfig({
     importGuard(),
     // Resolve public libraries after the guard sees the original @module import.
     // Vite aliases run earlier and would hide that explicit public entrypoint.
-    { name: 'studio-module-library', resolveId(source) {
-      const library = moduleLibs.find(entry => entry.find === source);
-      return library ? ['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs'].map(extension => library.replacement + extension).find(existsSync) ?? null : null;
-    } },
+    {
+      name: 'studio-module-library',
+      resolveId(source) {
+        const library = moduleLibs.find(entry => entry.find === source);
+        return library
+          ? (['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts', '.mjs', '.cjs']
+              .map(extension => library.replacement + extension)
+              .find(existsSync) ?? null)
+          : null;
+      },
+    },
     css(),
     tailwindcss(),
     globs(),

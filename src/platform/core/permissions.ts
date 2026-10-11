@@ -14,7 +14,7 @@ export type Subject = { me: string | null; key: string; maintainers?: readonly s
 // meta.json "maintainers" if it's a list of at least one key, else null. Keys repeat nothing.
 export const parseMaintainers = (value: unknown): string[] | null => {
   if (!Array.isArray(value) || !value.length) return null;
-  if (!value.every((k) => typeof k === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(k))) return null;
+  if (!value.every(k => typeof k === 'string' && /^[a-z0-9][a-z0-9-]*$/.test(k))) return null;
   return [...new Set(value as string[])];
 };
 
@@ -25,8 +25,8 @@ export const canMaintain = (maintainers: readonly string[] | undefined, key: str
 // The policy of the section a key opens: a module's, else "owner" (a contributor's folder).
 export function policyFor(key: string, modules: readonly ModuleSpec[]): Policy {
   if (key === SYSTEM_CONTENT_KEY) return 'open';
-  const section = modules.find((m) => m.section?.key === key)?.section;
-  return section ? section.policy ?? 'none' : 'owner';
+  const section = modules.find(m => m.section?.key === key)?.section;
+  return section ? (section.policy ?? 'none') : 'owner';
 }
 
 // Whether you own it: its contributor, or one of its maintainers. Owning is what lets you archive,
@@ -57,7 +57,13 @@ export type Resource =
 export type ResourceAction = 'read' | 'edit' | 'rename' | 'manage';
 
 // Runtime import boundaries remain separate from human write authority.
-export function canPerform(config: Partial<StudioConfig>, actor: string | null, contributors: readonly string[], resource: Resource, action: ResourceAction): boolean {
+export function canPerform(
+  config: Partial<StudioConfig>,
+  actor: string | null,
+  contributors: readonly string[],
+  resource: Resource,
+  action: ResourceAction,
+): boolean {
   if (action === 'read') return true;
   const role = roleOf(config, actor, contributors);
   if (!role) return false;
@@ -70,12 +76,17 @@ export function canPerform(config: Partial<StudioConfig>, actor: string | null, 
   return role === 'admin' || Boolean(actor && config.systemMaintainers?.[resource.id]?.includes(actor));
 }
 
-export function pathResource(file: string, systems: Record<string, { role: 'platform' | 'prototype'; status: 'active' | 'archived' }>): Resource {
+export function pathResource(
+  file: string,
+  systems: Record<string, { role: 'platform' | 'prototype'; status: 'active' | 'archived' }>,
+): Resource {
   const parts = file.replace(/^\/?src\//, '').split('/');
   if (parts[0] === 'prototypes' && parts[1]) return { kind: 'prototype', owner: parts[1] };
-  if (parts[0] === 'systems' && parts[1] && systems[parts[1]]) return { kind: 'system', id: parts[1], ...systems[parts[1]] };
+  if (parts[0] === 'systems' && parts[1] && systems[parts[1]])
+    return { kind: 'system', id: parts[1], ...systems[parts[1]] };
   return { kind: parts[0] === 'modules' ? 'module' : 'platform' };
 }
 
 // Availability and identity changes must go through managed lifecycle operations.
-export const sameSystemIdentity = (before: Record<string, unknown>, after: Record<string, unknown>) => ['studioId', 'role', 'status', 'label'].every(key => before[key] === after[key]);
+export const sameSystemIdentity = (before: Record<string, unknown>, after: Record<string, unknown>) =>
+  ['studioId', 'role', 'status', 'label'].every(key => before[key] === after[key]);

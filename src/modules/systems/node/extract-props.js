@@ -33,7 +33,8 @@ function defaultsOf(checker, exported) {
   const pattern = fn?.parameters[0]?.name;
   const defaults = {};
   if (pattern && ts.isObjectBindingPattern(pattern)) {
-    for (const el of pattern.elements) if (el.initializer) defaults[(el.propertyName ?? el.name).getText()] = el.initializer.getText();
+    for (const el of pattern.elements)
+      if (el.initializer) defaults[(el.propertyName ?? el.name).getText()] = el.initializer.getText();
   }
   return defaults;
 }
@@ -54,14 +55,20 @@ export function extractProps(files, root) {
       if (!signature) continue;
       const param = signature.getParameters()[0];
       const all = param ? checker.getPropertiesOfType(checker.getTypeOfSymbolAtLocation(param, source)) : [];
-      const own = all.filter((p) => !(p.declarations ?? []).length || !p.declarations.every((d) => NATIVE.test(d.getSourceFile().fileName)));
+      const own = all.filter(
+        p => !(p.declarations ?? []).length || !p.declarations.every(d => NATIVE.test(d.getSourceFile().fileName)),
+      );
       const defaults = defaultsOf(checker, exported);
       result[file].push({
         name: exported.name,
         native: own.length < all.length,
-        props: own.map((p) => ({
+        props: own.map(p => ({
           name: p.name,
-          type: checker.typeToString(checker.getNonNullableType(checker.getTypeOfSymbolAtLocation(p, source)), undefined, ts.TypeFormatFlags.NoTruncation),
+          type: checker.typeToString(
+            checker.getNonNullableType(checker.getTypeOfSymbolAtLocation(p, source)),
+            undefined,
+            ts.TypeFormatFlags.NoTruncation,
+          ),
           required: !(p.flags & ts.SymbolFlags.Optional),
           default: defaults[p.name] ?? null,
           description: conciseDescription(ts.displayPartsToString(p.getDocumentationComment(checker))),

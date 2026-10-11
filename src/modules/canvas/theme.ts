@@ -5,12 +5,15 @@ let observer: MutationObserver | undefined;
 function subscribe(listener: () => void) {
   listeners.add(listener);
   if (!observer) {
-    observer = new MutationObserver(() => listeners.forEach((notify) => notify()));
+    observer = new MutationObserver(() => listeners.forEach(notify => notify()));
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
   }
   return () => {
     listeners.delete(listener);
-    if (!listeners.size) { observer?.disconnect(); observer = undefined; }
+    if (!listeners.size) {
+      observer?.disconnect();
+      observer = undefined;
+    }
   };
 }
 const snapshot = () => document.documentElement.classList.contains('dark');

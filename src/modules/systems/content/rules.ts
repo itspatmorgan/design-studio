@@ -20,9 +20,11 @@ export function creatableIn(section: string, folder: string): NewKind[] {
 }
 
 // The SKILL.md of a skill: it can't be renamed, moved, or deleted alone, or the skill disappears.
-export const isSkillFile = (section: string, path: string) => section === 'skills' && depth(path) === 2 && base(path) === SKILL_FILE;
+export const isSkillFile = (section: string, path: string) =>
+  section === 'skills' && depth(path) === 2 && base(path) === SKILL_FILE;
 // A skill's folder: a direct child of skills/.
-export const isSkillFolder = (section: string, path: string, isDir: boolean) => section === 'skills' && isDir && depth(path) === 1;
+export const isSkillFolder = (section: string, path: string, isDir: boolean) =>
+  section === 'skills' && isDir && depth(path) === 1;
 
 // A change to a file or folder, as the file layer receives it. `path` is the file or folder it is about.
 export type SystemContentOp = { op: string; path?: string; name?: string; to?: string; dir?: boolean };
@@ -34,14 +36,19 @@ export function opProblem(section: string, c: SystemContentOp, isDir: boolean): 
   if (c.op === 'meta') return 'System sections do not use prototype metadata.';
   if (c.op === 'create') {
     if (!creatableIn(section, path).includes(c.dir ? 'folder' : isMarkdown(section) ? 'document' : 'file')) {
-      return section === 'skills' && path === '' ? 'A skill is made with New skill. It has to be a folder with a SKILL.md.' : 'That can\'t be made here.';
+      return section === 'skills' && path === ''
+        ? 'A skill is made with New skill. It has to be a folder with a SKILL.md.'
+        : "That can't be made here.";
     }
-    if (isMarkdown(section) && !c.dir && !(c.name ?? '').endsWith('.md')) return 'Context documents are Markdown files, and end in .md.';
+    if (isMarkdown(section) && !c.dir && !(c.name ?? '').endsWith('.md'))
+      return 'Context documents are Markdown files, and end in .md.';
     return null;
   }
   if (isSkillFile(section, path)) {
-    return c.op === 'rename' ? `${SKILL_FILE} has to keep its name: it's how agents find the skill.`
-      : c.op === 'move' ? `${SKILL_FILE} has to stay in its skill's folder.`
+    return c.op === 'rename'
+      ? `${SKILL_FILE} has to keep its name: it's how agents find the skill.`
+      : c.op === 'move'
+        ? `${SKILL_FILE} has to stay in its skill's folder.`
         : `A skill needs its ${SKILL_FILE}. To remove the skill, delete its folder.`;
   }
   if (c.op === 'rename') {
@@ -49,12 +56,13 @@ export function opProblem(section: string, c: SystemContentOp, isDir: boolean): 
       const problem = nameProblem(c.name);
       return problem ? `A skill's name ${problem}` : null;
     }
-    if (isMarkdown(section) && !isDir && !(c.name ?? '').endsWith('.md')) return 'Context documents are Markdown files, and end in .md.';
+    if (isMarkdown(section) && !isDir && !(c.name ?? '').endsWith('.md'))
+      return 'Context documents are Markdown files, and end in .md.';
     return null;
   }
   if (c.op === 'move') {
-    if (isSkillFolder(section, path, isDir)) return 'A skill\'s folder stays in skills/. Rename it, or delete it.';
-    if (section === 'skills' && (c.to ?? '') === '') return 'Files in skills/ live inside a skill\'s folder.';
+    if (isSkillFolder(section, path, isDir)) return "A skill's folder stays in skills/. Rename it, or delete it.";
+    if (section === 'skills' && (c.to ?? '') === '') return "Files in skills/ live inside a skill's folder.";
     return null;
   }
   return null;

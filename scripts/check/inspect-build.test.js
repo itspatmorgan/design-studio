@@ -15,10 +15,12 @@ test('startup measurement follows static dependencies once and validates lazy re
     cycle: { file: 'cycle.js', imports: ['shared'] },
     lazy: { file: 'lazy.js' },
   };
-  for (const file of ['app.js', 'app.css', 'shared.js', 'cycle.js', 'lazy.js']) fs.writeFileSync(path.join(root, file), '12345');
+  for (const file of ['app.js', 'app.css', 'shared.js', 'cycle.js', 'lazy.js'])
+    fs.writeFileSync(path.join(root, file), '12345');
   fs.writeFileSync(path.join(root, '.vite/manifest.json'), JSON.stringify(manifest));
   const result = inspectBuild(root);
-  assert.equal(result.requests, 4); assert.equal(result.bytes, 20);
+  assert.equal(result.requests, 4);
+  assert.equal(result.bytes, 20);
   assert.ok(!result.assets.some(asset => asset.file === 'lazy.js'));
   fs.rmSync(path.join(root, 'lazy.js'));
   assert.throws(() => inspectBuild(root), /ENOENT/);

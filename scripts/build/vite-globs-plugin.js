@@ -20,7 +20,7 @@ import { globsFor } from '../../src/platform/core/modules/globs.ts';
 // A path as a literal glob: characters that mean something to a glob are escaped. A trailing /**
 // (a whole prototype) is kept.
 function literal(glob) {
-  const escape = (s) => s.replace(/[\\()[\]{}*?!+@|]/g, '\\$&');
+  const escape = s => s.replace(/[\\()[\]{}*?!+@|]/g, '\\$&');
   return glob.endsWith('/**') ? `${escape(glob.slice(0, -3))}/**` : escape(glob);
 }
 
@@ -36,39 +36,57 @@ export default function globs() {
   return {
     name: 'studio-globs',
     enforce: 'pre',
-    configResolved(c) { isBuild = c.command === 'build'; },
+    configResolved(c) {
+      isBuild = c.command === 'build';
+    },
     buildStart() {
       replaced = 0;
-      negations = unavailablePrototypeRoots(root).map(dir => `!/${path.relative(path.join(root, 'src'), dir).split(path.sep).join('/')}/**`);
-      systemNegations = isBuild ? Object.entries(SYSTEM_SPECS).filter(([, spec]) => spec.status === 'archived').map(([id]) => `!/systems/${id}/**`) : [];
+      negations = unavailablePrototypeRoots(root).map(
+        dir => `!/${path.relative(path.join(root, 'src'), dir).split(path.sep).join('/')}/**`,
+      );
+      systemNegations = isBuild
+        ? Object.entries(SYSTEM_SPECS)
+            .filter(([, spec]) => spec.status === 'archived')
+            .map(([id]) => `!/systems/${id}/**`)
+        : [];
       if (!isBuild) return;
       const { archived } = buildManifest({ deploy: true, write: false, quiet: true });
-      negations.push(...archived.map((glob) => `!${literal(glob)}`));
+      negations.push(...archived.map(glob => `!${literal(glob)}`));
     },
     transform(code, id) {
       let updated = false;
-      if (systemNegations.length) code = code.replace(/(import\.meta\.glob(?:<[^\n]+?>)?\()(\[[^\]]+\]|'[^']+'|"[^"]+")/g, (whole, lead, patterns) => {
-        if (!patterns.includes('/systems/')) return whole;
-        updated = true;
-        const list = patterns.startsWith('[') ? patterns.slice(1, -1) : patterns;
-        return lead + '[' + list + ',' + systemNegations.map(value => JSON.stringify(value)).join(',') + ']';
-      });
+      if (systemNegations.length)
+        code = code.replace(
+          /(import\.meta\.glob(?:<[^\n]+?>)?\()(\[[^\]]+\]|'[^']+'|"[^"]+")/g,
+          (whole, lead, patterns) => {
+            if (!patterns.includes('/systems/')) return whole;
+            updated = true;
+            const list = patterns.startsWith('[') ? patterns.slice(1, -1) : patterns;
+            return lead + '[' + list + ',' + systemNegations.map(value => JSON.stringify(value)).join(',') + ']';
+          },
+        );
       if (/[\\/]app[\\/]docs[\\/]loadReference\.ts$/.test(id.split('?')[0])) {
-        const references = ['/platform/README.md', ...ENABLED_MODULES.map((m) => `/modules/${m.id}/*.md`)];
+        const references = ['/platform/README.md', ...ENABLED_MODULES.map(m => `/modules/${m.id}/*.md`)];
         return { code: code.replace("['/__studio_references__/*']", JSON.stringify(references)), map: null };
       }
       const match = LOADER.exec(id.split('?')[0]);
       if (!match || !code.includes("'/__studio_globs__/*'")) return updated ? { code, map: null } : null;
       // A type that is turned off is still bundled (the app reads every type's folder and keeps the ones that are on), so
       // its loader gets an empty list: it opens nothing.
-      const list = JSON.stringify(FILE_TYPES[match[1]] ? [...globsFor(match[1], FILE_TYPES, ENABLED_MODULES), ...negations, ...systemNegations] : []);
+      const list = JSON.stringify(
+        FILE_TYPES[match[1]]
+          ? [...globsFor(match[1], FILE_TYPES, ENABLED_MODULES), ...negations, ...systemNegations]
+          : [],
+      );
       replaced++;
       return { code: code.replace(MACRO, list), map: null };
     },
     // Archived files that no loader was told about would ship in the build, so stop instead.
     buildEnd() {
       if (negations.length && replaced === 0) {
-        this.error("Archived views and prototypes could not be left out of the build: no file type loader (src/modules/<type>/loader.ts) lists its files with the ['/__studio_globs__/*'] placeholder.");
+        this.error(
+          "Archived views and prototypes could not be left out of the build: no file type loader (src/modules/<type>/loader.ts) lists its files with the ['/__studio_globs__/*'] placeholder.",
+        );
       }
     },
   };

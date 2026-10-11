@@ -20,7 +20,10 @@ test('a deploy keeps active prototypes as they are', () => {
 
 test('a deploy leaves out an archived prototype whole', () => {
   const { kept, archived } = forDeploy([proto('old', { status: 'archived' }), proto('new')]);
-  assert.deepEqual(kept.map((p) => p.id), ['new']);
+  assert.deepEqual(
+    kept.map(p => p.id),
+    ['new'],
+  );
   assert.deepEqual(archived, ['/prototypes/patrick/old/**']);
 });
 

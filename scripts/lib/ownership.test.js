@@ -5,21 +5,37 @@ import os from 'node:os';
 import path from 'node:path';
 import { classify, mapProblems, ownershipReport, tierOf, trackedFiles } from './ownership.js';
 
-const map = { schema: 1, rules: [
-  { tier: 'upstream', paths: ['src/platform/**', 'src/modules/canvas/**'] },
-  { tier: 'team', paths: ['src/modules/**'] },
-  { tier: 'seed', paths: ['src/prototypes/patrick/**'] },
-  { tier: 'team', paths: ['src/prototypes/**'] },
-], mixed: [{ paths: ['AGENTS.md'], reason: 'Generated block.' }] };
+const map = {
+  schema: 1,
+  rules: [
+    { tier: 'upstream', paths: ['src/platform/**', 'src/modules/canvas/**'] },
+    { tier: 'team', paths: ['src/modules/**'] },
+    { tier: 'seed', paths: ['src/prototypes/patrick/**'] },
+    { tier: 'team', paths: ['src/prototypes/**'] },
+  ],
+  mixed: [{ paths: ['AGENTS.md'], reason: 'Generated block.' }],
+};
 
 test('a clean map covers every file, preferring the most specific rule', () => {
-  const r = classify(map, ['src/platform/a.ts', 'src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'src/prototypes/sam/a.tsx', 'AGENTS.md']);
+  const r = classify(map, [
+    'src/platform/a.ts',
+    'src/modules/canvas/x.ts',
+    'src/modules/mine/x.ts',
+    'src/prototypes/patrick/a.tsx',
+    'src/prototypes/sam/a.tsx',
+    'AGENTS.md',
+  ]);
   assert.deepEqual([r.unknown, r.conflicts, r.mixed], [[], [], ['AGENTS.md']]);
   assert.deepEqual(r.tiers, { upstream: 2, generated: 0, seed: 1, team: 2 });
 });
 
 test('one path resolves to its tier, mixed, or unknown', () => {
-  assert.deepEqual(['src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'AGENTS.md', 'notes.txt'].map(file => tierOf(map, file)), ['upstream', 'team', 'seed', 'mixed', 'unknown']);
+  assert.deepEqual(
+    ['src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'AGENTS.md', 'notes.txt'].map(
+      file => tierOf(map, file),
+    ),
+    ['upstream', 'team', 'seed', 'mixed', 'unknown'],
+  );
 });
 
 test('a path no rule matches is unknown', () => {
@@ -27,8 +43,19 @@ test('a path no rule matches is unknown', () => {
 });
 
 test('equally specific rules of different tiers conflict', () => {
-  const r = classify({ schema: 1, rules: [{ tier: 'upstream', paths: ['docs/*.md'] }, { tier: 'seed', paths: ['docs/*.md'] }] }, ['docs/a.md']);
-  assert.deepEqual(r.conflicts, [{ path: 'docs/a.md', tiers: ['upstream', 'seed'], globs: ['docs/*.md', 'docs/*.md'] }]);
+  const r = classify(
+    {
+      schema: 1,
+      rules: [
+        { tier: 'upstream', paths: ['docs/*.md'] },
+        { tier: 'seed', paths: ['docs/*.md'] },
+      ],
+    },
+    ['docs/a.md'],
+  );
+  assert.deepEqual(r.conflicts, [
+    { path: 'docs/a.md', tiers: ['upstream', 'seed'], globs: ['docs/*.md', 'docs/*.md'] },
+  ]);
 });
 
 test('malformed maps are reported', () => {
@@ -47,6 +74,7 @@ test('the report reads the map from a root and tracked files from an injected li
 });
 
 test('the repository map has no unknown or conflicting tracked paths', () => {
-  const root = path.resolve(import.meta.dirname, '../..'), r = ownershipReport(root, trackedFiles(root));
+  const root = path.resolve(import.meta.dirname, '../..'),
+    r = ownershipReport(root, trackedFiles(root));
   assert.deepEqual([r.problems, r.unknown, r.conflicts], [[], [], []]);
 });

@@ -22,14 +22,17 @@ const NAME = /^[\p{Ll}\p{Nd}]+(-[\p{Ll}\p{Nd}]+)*$/u;
 export function nameProblem(name: unknown): string | null {
   if (typeof name !== 'string' || !name) return 'is missing.';
   if (name.length > NAME_MAX) return `is too long: names are at most ${NAME_MAX} characters.`;
-  if (!NAME.test(name)) return 'can use only lowercase letters, numbers, and single hyphens, and can\'t start or end with a hyphen.';
+  if (!NAME.test(name))
+    return "can use only lowercase letters, numbers, and single hyphens, and can't start or end with a hyphen.";
   return null;
 }
 
 // Why a skill's description isn't valid, or null if it is.
 export function descriptionProblem(description: unknown): string | null {
-  if (typeof description !== 'string' || !description.trim()) return 'is missing: say what the skill does and when to use it.';
-  if (description.length > DESCRIPTION_MAX) return `is too long: descriptions are at most ${DESCRIPTION_MAX} characters.`;
+  if (typeof description !== 'string' || !description.trim())
+    return 'is missing: say what the skill does and when to use it.';
+  if (description.length > DESCRIPTION_MAX)
+    return `is too long: descriptions are at most ${DESCRIPTION_MAX} characters.`;
   return null;
 }
 
@@ -38,13 +41,17 @@ export function descriptionProblem(description: unknown): string | null {
 export function skillProblems(folder: string, frontmatter: Record<string, unknown> | null): string[] {
   const problems: string[] = [];
   const at = `skills/${folder}/${SKILL_FILE}`;
-  if (!frontmatter) return [`${at} has to start with frontmatter (a block between --- lines) holding the skill's name and description.`];
+  if (!frontmatter)
+    return [
+      `${at} has to start with frontmatter (a block between --- lines) holding the skill's name and description.`,
+    ];
   const folderProblem = nameProblem(folder);
   if (folderProblem) problems.push(`The skill folder "${folder}" ${folderProblem}`);
   const name = frontmatter.name === undefined ? undefined : String(frontmatter.name);
   const fromName = nameProblem(name);
   if (fromName) problems.push(`The "name" in ${at} ${fromName}`);
-  else if (name !== folder) problems.push(`The "name" in ${at} is "${name}", but the folder is "${folder}". They have to match.`);
+  else if (name !== folder)
+    problems.push(`The "name" in ${at} is "${name}", but the folder is "${folder}". They have to match.`);
   const fromDescription = descriptionProblem(frontmatter.description);
   if (fromDescription) problems.push(`The "description" in ${at} ${fromDescription}`);
   const compat = frontmatter.compatibility;

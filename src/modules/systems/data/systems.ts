@@ -9,18 +9,25 @@ const specs = import.meta.glob<SystemSpec>('/systems/*/system.ts', { eager: true
 const idOf = (path: string) => path.split('/').at(-2)!;
 
 export const SYSTEM_SPECS: Record<string, SystemSpec & { dir: string }> = Object.fromEntries(
-  Object.entries(specs).filter(([path]) => CONFIG.systems.includes(idOf(path))).map(([path, spec]) => [idOf(path), { ...spec, dir: `src/systems/${idOf(path)}/` }]).sort(([a], [b]) => (a as string).localeCompare(b as string)),
+  Object.entries(specs)
+    .filter(([path]) => CONFIG.systems.includes(idOf(path)))
+    .map(([path, spec]) => [idOf(path), { ...spec, dir: `src/systems/${idOf(path)}/` }])
+    .sort(([a], [b]) => (a as string).localeCompare(b as string)),
 );
 
 export const PLATFORM_ID = platformSystemId(SYSTEM_SPECS);
 export const PLATFORM_SOURCE = platformSourceOf(PLATFORM_ID, SYSTEM_SPECS[PLATFORM_ID]);
 
-export const PROTOTYPE_SYSTEMS = Object.fromEntries(Object.entries(SYSTEM_SPECS).filter(([, spec]) => spec.role === 'prototype'));
+export const PROTOTYPE_SYSTEMS = Object.fromEntries(
+  Object.entries(SYSTEM_SPECS).filter(([, spec]) => spec.role === 'prototype'),
+);
 
 // Creation selects this configured system and persists its ID in prototype metadata.
 export const DEFAULT_SYSTEM: string = CONFIG.defaultSystem;
 
-export const ACTIVE_PROTOTYPE_SYSTEMS = Object.fromEntries(Object.entries(PROTOTYPE_SYSTEMS).filter(([, spec]) => spec.status === 'active'));
+export const ACTIVE_PROTOTYPE_SYSTEMS = Object.fromEntries(
+  Object.entries(PROTOTYPE_SYSTEMS).filter(([, spec]) => spec.status === 'active'),
+);
 
 // Source keys locate installed files; browser addresses carry only permanent IDs.
 export function systemKeyFromIdentity(id: string | undefined): string | undefined {

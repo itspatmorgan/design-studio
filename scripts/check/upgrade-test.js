@@ -15,15 +15,21 @@ import { mergeUpstream } from '../lib/upstream-merge.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const [base, head, ...options] = process.argv.slice(2);
-if (!base || !head || options.some(option => option !== '--keep')) throw new Error('Usage: upgrade-test.js <base> <head> [--keep]');
-const resolve = ref => execFileSync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).trim();
+if (!base || !head || options.some(option => option !== '--keep'))
+  throw new Error('Usage: upgrade-test.js <base> <head> [--keep]');
+const resolve = ref =>
+  execFileSync('git', ['rev-parse', '--verify', `${ref}^{commit}`], { cwd: ROOT, encoding: 'utf8' }).trim();
 const [baseSha, headSha] = [resolve(base), resolve(head)];
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-upgrade-'));
 const step = title => console.log(`\n[upgrade] ${title}`);
-const run = (command, args) => execFileSync(command, args, { cwd: dir, stdio: 'inherit', env: { ...process.env, CI: process.env.CI ?? '1' } });
+const run = (command, args) =>
+  execFileSync(command, args, { cwd: dir, stdio: 'inherit', env: { ...process.env, CI: process.env.CI ?? '1' } });
 const read = (command, args) => execFileSync(command, args, { cwd: dir, encoding: 'utf8' }).trim();
-const edit = (file, change) => { const target = path.join(dir, file); fs.writeFileSync(target, change(fs.readFileSync(target, 'utf8'))); };
+const edit = (file, change) => {
+  const target = path.join(dir, file);
+  fs.writeFileSync(target, change(fs.readFileSync(target, 'utf8')));
+};
 
 let ok = false;
 try {
@@ -34,7 +40,18 @@ try {
   run('pnpm', ['install', '--frozen-lockfile']);
 
   step('Make team changes');
-  run('pnpm', ['join', '--key', 'fixture', '--name', 'Fixture Person', '--email', 'fixture@example.test', '--github', 'fixture-person', '--yes']);
+  run('pnpm', [
+    'join',
+    '--key',
+    'fixture',
+    '--name',
+    'Fixture Person',
+    '--email',
+    'fixture@example.test',
+    '--github',
+    'fixture-person',
+    '--yes',
+  ]);
   run('pnpm', ['studio', 'create-system', 'fixture-kit', '--label', 'Fixture kit', '--yes']);
   const system = JSON.parse(fs.readFileSync(path.join(dir, 'src/systems/fixture-kit/package.json'), 'utf8')).name;
   run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
@@ -48,11 +65,19 @@ try {
 
   step(`Update to ${head} (${headSha.slice(0, 7)})`);
   const result = mergeUpstream(dir, headSha, { message: `Update to ${headSha.slice(0, 7)}`, run });
-  if (!result.merged) throw new Error(`Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`);
+  if (!result.merged)
+    throw new Error(
+      `Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`,
+    );
 
   step('Verify the updated studio');
-  for (const [file, text] of [['studio.config.ts', "'Fixture Studio'"], ['README.md', 'Fixture team notes.'], ['src/systems/fixture-kit/package.json', '"clsx"']]) {
-    if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(text)) throw new Error(`The update lost the team's change to ${file}.`);
+  for (const [file, text] of [
+    ['studio.config.ts', "'Fixture Studio'"],
+    ['README.md', 'Fixture team notes.'],
+    ['src/systems/fixture-kit/package.json', '"clsx"'],
+  ]) {
+    if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(text))
+      throw new Error(`The update lost the team's change to ${file}.`);
   }
   for (const folder of ['contributors/fixture.json', 'src/prototypes/fixture', 'src/modules/fixture-notes']) {
     if (!fs.existsSync(path.join(dir, folder))) throw new Error(`The update removed ${folder}.`);
@@ -61,7 +86,8 @@ try {
   run('pnpm', ['studio', 'sync', '--check']);
   run('pnpm', ['check']);
   run('pnpm', ['build']);
-  if (read('git', ['status', '--porcelain'])) throw new Error('Verification changed tracked files:\n' + read('git', ['status', '--short']));
+  if (read('git', ['status', '--porcelain']))
+    throw new Error('Verification changed tracked files:\n' + read('git', ['status', '--short']));
   ok = true;
   console.log(`\n[upgrade] A customized studio from ${baseSha.slice(0, 7)} updates cleanly to ${headSha.slice(0, 7)}.`);
 } finally {

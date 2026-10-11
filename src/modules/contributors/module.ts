@@ -9,5 +9,10 @@ export default {
   optional: true,
   lib: false,
   section: { key: 'contributors' },
-  instructions: [{ path: 'skills/use-contributors/', when: 'asks to assign or review team Admins, system maintainers, or contributor permissions' }],
+  instructions: [
+    {
+      path: 'skills/use-contributors/',
+      when: 'asks to assign or review team Admins, system maintainers, or contributor permissions',
+    },
+  ],
 } satisfies ModuleSpec;

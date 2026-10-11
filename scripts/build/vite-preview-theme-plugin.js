@@ -13,7 +13,11 @@ export function installPreviewTheme(win) {
     } else {
       // Match useColorMode: a saved preference wins; otherwise follow the system.
       let saved;
-      try { saved = win.localStorage.getItem('design-studio:color-mode'); } catch { /* Use the system when storage is unavailable. */ }
+      try {
+        saved = win.localStorage.getItem('design-studio:color-mode');
+      } catch {
+        /* Use the system when storage is unavailable. */
+      }
       dark = saved == null ? win.matchMedia('(prefers-color-scheme: dark)').matches : saved === 'dark';
     }
     const doc = win.document;
@@ -26,7 +30,9 @@ export function installPreviewTheme(win) {
     // tokens take over afterward; assigned systems still own their view surfaces.
     background.textContent = 'html { background-color: var(--background, Canvas); }';
     doc.head.append(scheme, background);
-  } catch { /* Invalid addresses are reported by the preview runtime. */ }
+  } catch {
+    /* Invalid addresses are reported by the preview runtime. */
+  }
 }
 
 export default function previewTheme() {

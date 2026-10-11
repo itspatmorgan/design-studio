@@ -5,8 +5,22 @@ import { canChange, canMaintain, canOwn, parseMaintainers, policyFor, whyNot } f
 import type { ModuleSpec } from './modules/index.ts';
 
 const modules: ModuleSpec[] = [
-  { optional: false, lib: false, id: 'examples', label: 'Examples', version: '0.1.0', section: { key: 'examples', folder: 'src/examples', items: 'prototypes', policy: 'maintainers' } },
-  { optional: false, lib: false, id: 'documentation', label: 'Manual', version: '0.1.0', section: { key: 'documentation', folder: 'src/modules/documentation/pages' } },
+  {
+    optional: false,
+    lib: false,
+    id: 'examples',
+    label: 'Examples',
+    version: '0.1.0',
+    section: { key: 'examples', folder: 'src/examples', items: 'prototypes', policy: 'maintainers' },
+  },
+  {
+    optional: false,
+    lib: false,
+    id: 'documentation',
+    label: 'Manual',
+    version: '0.1.0',
+    section: { key: 'documentation', folder: 'src/modules/documentation/pages' },
+  },
   { optional: false, lib: false, id: 'extra', label: 'Extra', version: '0.1.0' },
 ];
 
@@ -39,7 +53,7 @@ test('a key no module claims is a contributor, and a section says its own policy
   assert.equal(policyFor('documentation', modules), 'none');
 });
 
-test('you own your own prototypes and nobody else\'s', () => {
+test("you own your own prototypes and nobody else's", () => {
   assert.equal(canOwn('owner', { me: 'patrick', key: 'patrick' }), true);
   assert.equal(canOwn('owner', { me: 'abigail', key: 'patrick' }), false);
   assert.equal(canOwn('owner', { me: null, key: 'patrick' }), false);
@@ -74,10 +88,14 @@ test('the reason says what to do', () => {
   assert.match(whyNot('none', 'abigail'), /can't be changed/);
 });
 
-
 test('resource grants separate prototype ownership, assigned systems, and platform administration', async () => {
   const { canPerform } = await import('./permissions.ts');
-  const config = { usage: 'team' as const, admins: ['admin'], systems: ['studio', 'product', 'marketing'], systemMaintainers: { product: ['sam'], marketing: [] } };
+  const config = {
+    usage: 'team' as const,
+    admins: ['admin'],
+    systems: ['studio', 'product', 'marketing'],
+    systemMaintainers: { product: ['sam'], marketing: [] },
+  };
   const roster = ['admin', 'sam', 'alex'];
   const product = { kind: 'system' as const, id: 'product', role: 'prototype' as const, status: 'active' as const };
   for (const action of ['edit', 'rename'] as const) {

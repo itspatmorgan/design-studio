@@ -22,20 +22,25 @@ function groupBySection(pages: ManualPage[]) {
 export default function ManualLayout() {
   const { manual } = rootApi.useLoaderData();
   return (
-    <div className="flex h-full min-h-0">
-      <SectionNav label="Documentation">
+    <div className='flex h-full min-h-0'>
+      <SectionNav label='Documentation'>
         <DocumentationHeader />
         <NavList>
           {groupBySection(manual).map((g, i) => (
             <NavGroup key={g.section ?? i} heading={g.section ?? undefined}>
-              {g.pages.map((page) => (
-                <DocumentationNavItem key={page.slug} href={page.slug === 'index' ? '/documentation/manual' : '/documentation/manual/' + page.slug} path={'src' + (page.source ?? '/modules/documentation/pages/' + page.slug + '.md')} label={page.title} />
+              {g.pages.map(page => (
+                <DocumentationNavItem
+                  key={page.slug}
+                  href={page.slug === 'index' ? '/documentation/manual' : '/documentation/manual/' + page.slug}
+                  path={'src' + (page.source ?? '/modules/documentation/pages/' + page.slug + '.md')}
+                  label={page.title}
+                />
               ))}
             </NavGroup>
           ))}
         </NavList>
       </SectionNav>
-      <main data-doc-scroll className="relative min-w-0 flex-1 overflow-y-auto">
+      <main data-doc-scroll className='relative min-w-0 flex-1 overflow-y-auto'>
         <Outlet />
       </main>
     </div>

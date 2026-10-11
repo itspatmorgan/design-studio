@@ -19,7 +19,11 @@
 @source not "../../**/*.test.*";
 
 /* Local light scopes block the global mode; local dark scopes work in light Studio too. */
-@custom-variant dark (&:where(.dark, .dark *, [data-color-mode="dark"], [data-color-mode="dark"] *):not(:where([data-color-mode="light"], [data-color-mode="light"] *)));
+@custom-variant dark (
+  &:where(.dark, .dark *, [data-color-mode="dark"], [data-color-mode="dark"] *):not(
+    :where([data-color-mode="light"], [data-color-mode="light"] *)
+  )
+);
 
 /* Highlighted blocks use the active Studio surface rather than Typography's dark pre default. */
 [data-rehype-pretty-code-figure] pre {
@@ -27,14 +31,30 @@
   color: var(--foreground);
 }
 /* Code highlighting in shared Markdown (Shiki), following the color mode. */
-[data-rehype-pretty-code-figure] code span { color: var(--shiki-light); }
-.dark [data-rehype-pretty-code-figure] code span { color: var(--shiki-dark); }
+[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-light);
+}
+.dark [data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-dark);
+}
 
 /* The shell owns scrolling; keep the document and navigation anchored to the viewport. */
-html, body { height: 100%; overflow: clip; }
-#root { position: fixed; inset: 0; overflow: clip; }
-html { color-scheme: light; }
-html.dark { color-scheme: dark; }
+html,
+body {
+  height: 100%;
+  overflow: clip;
+}
+#root {
+  position: fixed;
+  inset: 0;
+  overflow: clip;
+}
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
 
 /* A prototype choosing no system starts from browser defaults, with no system tokens. */
 .prototype-unstyled {
@@ -59,23 +79,23 @@ html.dark { color-scheme: dark; }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-        animation-duration: 0.35s;
-        animation-timing-function: ease-in-out;
-    }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.35s;
+    animation-timing-function: ease-in-out;
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
+  }
   body {
     @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    }
+  }
 }

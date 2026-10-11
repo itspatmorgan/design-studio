@@ -7,7 +7,11 @@ import { canonicalDirectory } from '../../../../scripts/lib/safe-paths.js';
 import { moveWithLinks, personAddress } from '../../../../scripts/lib/prototype-links.js';
 import { buildManifest } from '../../../../scripts/build/build-manifest.js';
 import { INSTALLED_FILE_TYPES } from '../../../../scripts/lib/file-types.js';
-import { retainedResourceIds, allocateResourceIdentity, identifyPrototypeArtifacts } from '../../../../scripts/lib/resource-identity-lifecycle.js';
+import {
+  retainedResourceIds,
+  allocateResourceIdentity,
+  identifyPrototypeArtifacts,
+} from '../../../../scripts/lib/resource-identity-lifecycle.js';
 import { prototypeAssignment } from '../../../../scripts/lib/prototype-assignment.js';
 import { loadContributors } from '../../../../scripts/lib/contributors.js';
 import { resourceId } from '../../../platform/core/fileTypes.ts';
@@ -35,29 +39,45 @@ export function duplicatePrototype({ key, id, title, system }) {
   const parent = path.join(ROOT, 'src/prototypes', key);
   const from = path.join(parent, id);
   const to = path.join(parent, slug);
-  if (!canonicalDirectory(from, ROOT) || !canonicalDirectory(parent, ROOT)) throw new Error('This prototype is unavailable.');
+  if (!canonicalDirectory(from, ROOT) || !canonicalDirectory(parent, ROOT))
+    throw new Error('This prototype is unavailable.');
   if (fs.existsSync(to)) throw new Error('A prototype with that name already exists. Choose another title.');
   checkFiles(from);
   const used = retainedResourceIds(ROOT, INSTALLED_FILE_TYPES);
   const meta = JSON.parse(fs.readFileSync(path.join(from, 'meta.json'), 'utf8'));
   const previousPrototypeId = resourceId(meta.studioId);
-  if (resourceId(meta.ownerContributorId) !== resourceId(loadContributors()[key]?.studioId)) throw new Error('Prototype owner does not match its contributor folder.');
+  if (resourceId(meta.ownerContributorId) !== resourceId(loadContributors()[key]?.studioId))
+    throw new Error('Prototype owner does not match its contributor folder.');
   meta.studioId = allocateResourceIdentity(used);
   const assignment = prototypeAssignment(meta, PROTOTYPE_SYSTEMS);
   if (assignment.problems.length) throw new Error(assignment.problems.join('\n'));
   const sourceSystem = assignment.system;
   const targetSystemKey = system === undefined ? sourceSystem : system;
-  for (const assigned of [sourceSystem, targetSystemKey]) if (assigned !== null && (!Object.hasOwn(PROTOTYPE_SYSTEMS, assigned) || PROTOTYPE_SYSTEMS[assigned].status !== 'active')) throw new Error('Choose an installed prototype system, or no system.');
+  for (const assigned of [sourceSystem, targetSystemKey])
+    if (
+      assigned !== null &&
+      (!Object.hasOwn(PROTOTYPE_SYSTEMS, assigned) || PROTOTYPE_SYSTEMS[assigned].status !== 'active')
+    )
+      throw new Error('Choose an installed prototype system, or no system.');
   const now = new Date();
   meta.title = title;
   meta.created = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   meta.systemId = assignment.systemId;
   delete meta.status;
   delete meta.rebuild;
-  if (targetSystemKey !== sourceSystem) meta.rebuild = { targetSystemId: targetSystemKey === null ? null : resourceId(PROTOTYPE_SYSTEMS[targetSystemKey].studioId), sourcePrototypeId: previousPrototypeId };
+  if (targetSystemKey !== sourceSystem)
+    meta.rebuild = {
+      targetSystemId: targetSystemKey === null ? null : resourceId(PROTOTYPE_SYSTEMS[targetSystemKey].studioId),
+      sourcePrototypeId: previousPrototypeId,
+    };
   fs.mkdirSync(to);
   try {
-    fs.cpSync(from, to, { recursive: true, force: false, errorOnExist: true, filter: file => file === from || !excluded.has(path.basename(file)) });
+    fs.cpSync(from, to, {
+      recursive: true,
+      force: false,
+      errorOnExist: true,
+      filter: file => file === from || !excluded.has(path.basename(file)),
+    });
     identifyPrototypeArtifacts(to, INSTALLED_FILE_TYPES, used, meta.studioId, previousPrototypeId);
     moveWithLinks(to, to, meta, personAddress(key, id), `/prototypes/${key}/${slug}`, `/prototypes/${key}/${id}`);
     return { id: slug, manifest: buildManifest().manifest };

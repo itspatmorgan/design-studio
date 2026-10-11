@@ -4,31 +4,43 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const LINK = /\[([^\]]*)\]\(([^)\s]+)\)/g;
-const external = (target) => /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(target);
+const external = target => /^(?:[a-z][a-z0-9+.-]*:|\/|#)/i.test(target);
 const resolve = (file, target) => path.posix.normalize(path.posix.join(path.posix.dirname(file), target));
 
 export function systemInstructions({ root, systemRoot, platform = false }) {
   const entries = [...(platform ? ['AGENTS.md'] : []), systemRoot + '/AGENTS.md'];
-  const exists = (file) => fs.existsSync(path.join(root, file)) && fs.statSync(path.join(root, file)).isFile();
-  const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-  const scoped = (target) => target.startsWith('src/platform/') || target.startsWith('src/modules/') || target.startsWith(systemRoot + '/');
-  const targetOf = (file, target) => target.startsWith('src/') ? target : resolve(file, target);
-  const agents = entries.filter(exists).map(file => read(file).replace(LINK, (match, label, target) => {
-    if (external(target)) return match;
-    return `[${label}](${targetOf(file, target)})`;
-  })).join('\n\n');
+  const exists = file => fs.existsSync(path.join(root, file)) && fs.statSync(path.join(root, file)).isFile();
+  const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+  const scoped = target =>
+    target.startsWith('src/platform/') || target.startsWith('src/modules/') || target.startsWith(systemRoot + '/');
+  const targetOf = (file, target) => (target.startsWith('src/') ? target : resolve(file, target));
+  const agents = entries
+    .filter(exists)
+    .map(file =>
+      read(file).replace(LINK, (match, label, target) => {
+        if (external(target)) return match;
+        return `[${label}](${targetOf(file, target)})`;
+      }),
+    )
+    .join('\n\n');
   const missing = new Set();
   const visited = new Set();
-  const visit = (file) => {
+  const visit = file => {
     if (visited.has(file)) return;
     visited.add(file);
-    for (const [, , target] of read(file).replace(/^```[^\n]*\n[\s\S]*?^```.*$/gm, '').replace(/`[^`\n]*`/g, '').matchAll(LINK)) {
+    for (const [, , target] of read(file)
+      .replace(/^```[^\n]*\n[\s\S]*?^```.*$/gm, '')
+      .replace(/`[^`\n]*`/g, '')
+      .matchAll(LINK)) {
       if (external(target)) continue;
       const resolved = targetOf(file, target).split('#')[0];
       // Audit the system's instruction graph, including context and skill references.
       // Platform/module contracts outside this system have their own documentation checks.
       if (!scoped(resolved)) continue;
-      if (!exists(resolved)) { missing.add(resolved); continue; }
+      if (!exists(resolved)) {
+        missing.add(resolved);
+        continue;
+      }
       if (resolved.endsWith('.md')) visit(resolved);
     }
   };

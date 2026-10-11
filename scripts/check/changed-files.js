@@ -6,8 +6,9 @@
 // Returns { files, baseRef }: baseRef is the "before" side, or null if there isn't one.
 import { execFileSync } from 'node:child_process';
 
-export const git = (...args) => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-const lines = (s) => s.split('\n').filter(Boolean);
+export const git = (...args) =>
+  execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+const lines = s => s.split('\n').filter(Boolean);
 const ZERO = /^0+$/;
 
 export function changedFiles(mode, before, after, { filter } = {}) {
@@ -15,7 +16,11 @@ export function changedFiles(mode, before, after, { filter } = {}) {
   if (mode === '--staged') return { files: lines(git('diff', '--cached', '--name-only', ...f)), baseRef: 'HEAD' };
   if (mode === '--push') {
     let upstream = null;
-    try { upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}'); } catch { /* no upstream yet */ }
+    try {
+      upstream = git('rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{u}');
+    } catch {
+      /* no upstream yet */
+    }
     // No upstream yet: everything not on any remote.
     const files = upstream
       ? lines(git('diff', '--name-only', ...f, `${upstream}..HEAD`))
@@ -27,8 +32,15 @@ export function changedFiles(mode, before, after, { filter } = {}) {
     if (!before || ZERO.test(before)) {
       // First push of a branch: check only the latest commit.
       let baseline = 'empty-tree';
-      try { baseline = git('rev-parse', '--verify', `${after}^`); } catch { /* Initial repository commit has no before-side authority. */ }
-      return { files: lines(git('diff-tree', '--no-commit-id', '--name-only', '-r', '--root', ...f, after)), baseRef: baseline };
+      try {
+        baseline = git('rev-parse', '--verify', `${after}^`);
+      } catch {
+        /* Initial repository commit has no before-side authority. */
+      }
+      return {
+        files: lines(git('diff-tree', '--no-commit-id', '--name-only', '-r', '--root', ...f, after)),
+        baseRef: baseline,
+      };
     }
     return { files: lines(git('diff', '--name-only', ...f, `${before}..${after}`)), baseRef: before };
   }

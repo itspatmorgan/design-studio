@@ -10,8 +10,12 @@ export default function spa404() {
   return {
     name: 'spa-404',
     apply: 'build',
-    configResolved(c) { outDir = path.resolve(c.root, c.build.outDir); },
-    buildEnd(error) { failed = Boolean(error); },
+    configResolved(c) {
+      outDir = path.resolve(c.root, c.build.outDir);
+    },
+    buildEnd(error) {
+      failed = Boolean(error);
+    },
     closeBundle() {
       if (failed) return;
       fs.copyFileSync(path.join(outDir, 'index.html'), path.join(outDir, '404.html'));

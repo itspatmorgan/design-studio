@@ -1,15 +1,37 @@
 // Adding a module from a source (pack.ts). Run with `pnpm test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { agentsBlock, applyAgentsBlock, editModulesFlag, licenseVerdict, packPlan, parseSource, plainPath, readDeclaration } from './pack.ts';
+import {
+  agentsBlock,
+  applyAgentsBlock,
+  editModulesFlag,
+  licenseVerdict,
+  packPlan,
+  parseSource,
+  plainPath,
+  readDeclaration,
+} from './pack.ts';
 
 test('a source is a folder, a git address, or an https tarball', () => {
   assert.deepEqual(parseSource('../my-module'), { kind: 'path', path: '../my-module' });
   assert.deepEqual(parseSource('/Users/me/dialkit'), { kind: 'path', path: '/Users/me/dialkit' });
-  assert.deepEqual(parseSource('https://github.com/acme/studio-quote'), { kind: 'git', url: 'https://github.com/acme/studio-quote' });
-  assert.deepEqual(parseSource('https://github.com/acme/studio-quote#v1.2.0'), { kind: 'git', url: 'https://github.com/acme/studio-quote', ref: 'v1.2.0' });
-  assert.deepEqual(parseSource('git@github.com:acme/studio-quote.git'), { kind: 'git', url: 'git@github.com:acme/studio-quote.git' });
-  assert.deepEqual(parseSource('https://example.com/quote-1.0.0.tar.gz'), { kind: 'tarball', url: 'https://example.com/quote-1.0.0.tar.gz' });
+  assert.deepEqual(parseSource('https://github.com/acme/studio-quote'), {
+    kind: 'git',
+    url: 'https://github.com/acme/studio-quote',
+  });
+  assert.deepEqual(parseSource('https://github.com/acme/studio-quote#v1.2.0'), {
+    kind: 'git',
+    url: 'https://github.com/acme/studio-quote',
+    ref: 'v1.2.0',
+  });
+  assert.deepEqual(parseSource('git@github.com:acme/studio-quote.git'), {
+    kind: 'git',
+    url: 'git@github.com:acme/studio-quote.git',
+  });
+  assert.deepEqual(parseSource('https://example.com/quote-1.0.0.tar.gz'), {
+    kind: 'tarball',
+    url: 'https://example.com/quote-1.0.0.tar.gz',
+  });
 });
 
 test('http, file, git:// and other schemes are refused, and so is anything that could be a flag', () => {
@@ -36,29 +58,66 @@ test('a ref has to look like a branch, tag or commit', () => {
 test('paths in a pack must be plain', () => {
   assert.equal(plainPath('app.tsx'), true);
   assert.equal(plainPath('lib/index.ts'), true);
-  for (const bad of ['../x', '/x', 'a/../b', 'a//b', 'a\\b', './a', '', 'a/\0b']) assert.equal(plainPath(bad), false, bad);
+  for (const bad of ['../x', '/x', 'a/../b', 'a//b', 'a\\b', './a', '', 'a/\0b'])
+    assert.equal(plainPath(bad), false, bad);
 });
 
-const spec = { id: 'quote', section: { key: 'quote', folder: 'src/quote' }, instructions: [{ path: 'context/quote.md', when: 'wants a quote' }, { path: 'skills/quote-tour/' }] };
+const spec = {
+  id: 'quote',
+  section: { key: 'quote', folder: 'src/quote' },
+  instructions: [{ path: 'context/quote.md', when: 'wants a quote' }, { path: 'skills/quote-tour/' }],
+};
 
 test('a module pack goes to its folder, with systemContent files and content sent where they belong', () => {
-  const plan = packPlan('module', 'quote', spec, ['module.ts', 'app.tsx', 'lib/index.ts', 'instructions/context/quote.md', 'instructions/skills/quote-tour/SKILL.md', 'content/sample/meta.json']);
-  assert.deepEqual(plan.problems, []);
-  assert.deepEqual(plan.moves.map((m) => m.to), [
-    'src/modules/quote/module.ts', 'src/modules/quote/app.tsx', 'src/modules/quote/lib/index.ts',
-    'src/modules/quote/context/quote.md', 'src/modules/quote/skills/quote-tour/SKILL.md', 'src/quote/sample/meta.json',
+  const plan = packPlan('module', 'quote', spec, [
+    'module.ts',
+    'app.tsx',
+    'lib/index.ts',
+    'instructions/context/quote.md',
+    'instructions/skills/quote-tour/SKILL.md',
+    'content/sample/meta.json',
   ]);
+  assert.deepEqual(plan.problems, []);
+  assert.deepEqual(
+    plan.moves.map(m => m.to),
+    [
+      'src/modules/quote/module.ts',
+      'src/modules/quote/app.tsx',
+      'src/modules/quote/lib/index.ts',
+      'src/modules/quote/context/quote.md',
+      'src/modules/quote/skills/quote-tour/SKILL.md',
+      'src/quote/sample/meta.json',
+    ],
+  );
 });
 
 test('systemContent files the module did not list, or listed but did not bring, are named', () => {
-  assert.match(packPlan('module', 'quote', spec, ['module.ts', 'instructions/context/other.md']).problems.join('\n'), /instructions\/context\/other\.md isn't listed/);
-  assert.match(packPlan('module', 'quote', spec, ['module.ts']).problems.join('\n'), /lists instructions\/context\/quote\.md, which isn't in the pack/);
+  assert.match(
+    packPlan('module', 'quote', spec, ['module.ts', 'instructions/context/other.md']).problems.join('\n'),
+    /instructions\/context\/other\.md isn't listed/,
+  );
+  assert.match(
+    packPlan('module', 'quote', spec, ['module.ts']).problems.join('\n'),
+    /lists instructions\/context\/quote\.md, which isn't in the pack/,
+  );
 });
 
 test('content needs a section, and hidden files and dependencies stay behind', () => {
-  assert.match(packPlan('module', 'x', { id: 'x' }, ['module.ts', 'content/a.md']).problems.join('\n'), /nowhere for content/);
-  const plan = packPlan('module', 'x', { id: 'x' }, ['module.ts', '.DS_Store', '.git/config', 'node_modules/a/index.js', '.env']);
-  assert.deepEqual(plan.moves.map((m) => m.to), ['src/modules/x/module.ts']);
+  assert.match(
+    packPlan('module', 'x', { id: 'x' }, ['module.ts', 'content/a.md']).problems.join('\n'),
+    /nowhere for content/,
+  );
+  const plan = packPlan('module', 'x', { id: 'x' }, [
+    'module.ts',
+    '.DS_Store',
+    '.git/config',
+    'node_modules/a/index.js',
+    '.env',
+  ]);
+  assert.deepEqual(
+    plan.moves.map(m => m.to),
+    ['src/modules/x/module.ts'],
+  );
   assert.equal(plan.skipped.length, 4);
 });
 
@@ -70,7 +129,10 @@ test('a path that climbs out of the pack is a problem, never a move', () => {
 
 test('a design system pack goes to src/systems', () => {
   const plan = packPlan('system', 'brand', undefined, ['system.ts', 'styles/theme.css', 'components/button.tsx']);
-  assert.deepEqual(plan.moves.map((m) => m.to), ['src/systems/brand/system.ts', 'src/systems/brand/styles/theme.css', 'src/systems/brand/components/button.tsx']);
+  assert.deepEqual(
+    plan.moves.map(m => m.to),
+    ['src/systems/brand/system.ts', 'src/systems/brand/styles/theme.css', 'src/systems/brand/components/button.tsx'],
+  );
 });
 
 test('a library needs a license file and a permissive license', () => {
@@ -90,12 +152,15 @@ test('turning a module off and on edits the one list in studio.config.ts', () =>
   assert.match(editModulesFlag(off, 'documentation', true)!, /documentation: true/);
   assert.equal(editModulesFlag(off, 'documentation', null), config);
   assert.equal(editModulesFlag('export default {}', 'documentation', false), null);
-  assert.equal(editModulesFlag("modules: { documentation: maybe },", 'documentation', false), null);
+  assert.equal(editModulesFlag('modules: { documentation: maybe },', 'documentation', false), null);
 });
 
 test('the AGENTS.md lines come from the modules that are on, and replace themselves', () => {
   const block = agentsBlock([spec, { id: 'plain' }]);
-  assert.match(block, /When the person wants a quote, read \[src\/modules\/quote\/context\/quote\.md\]\(src\/modules\/quote\/context\/quote\.md\)\./);
+  assert.match(
+    block,
+    /When the person wants a quote, read \[src\/modules\/quote\/context\/quote\.md\]\(src\/modules\/quote\/context\/quote\.md\)\./,
+  );
   assert.ok(!block.includes('quote-tour'), 'a systemContent entry with no "when" is not routed');
   const agents = '# A\n\nWhen the person asks for a canvas, read x.\nFind out who.\n';
   const once = applyAgentsBlock(agents, block);
@@ -120,31 +185,40 @@ export default {
   dependencies: { 'left-pad': '^1.0.0' },
 } satisfies ModuleSpec;
 `);
-  assert.deepEqual(r, { value: {
-    id: 'quote', label: "Quote's card", version: '0.1.0', optional: true,
-    section: { key: 'quote', folder: 'src/quote', items: 'prototypes' },
-    instructions: [{ path: 'context/quote.md', when: 'wants a quote' }], dependencies: { 'left-pad': '^1.0.0' },
-  } });
+  assert.deepEqual(r, {
+    value: {
+      id: 'quote',
+      label: "Quote's card",
+      version: '0.1.0',
+      optional: true,
+      section: { key: 'quote', folder: 'src/quote', items: 'prototypes' },
+      instructions: [{ path: 'context/quote.md', when: 'wants a quote' }],
+      dependencies: { 'left-pad': '^1.0.0' },
+    },
+  });
 });
 
 test('a declaration that needs code is refused, never run', () => {
   const refused = (text: string) => assert.ok('error' in readDeclaration(text), text);
-  refused("export default { id: process.exit(1) };");
+  refused('export default { id: process.exit(1) };');
   refused("export default { id: 'a', x: globalThis.process.getBuiltinModule('fs') };");
-  refused("export default { id: `a${1}` };");
-  refused("export default { id: someName };");
-  refused("export default { ...other };");
-  refused("export default { __proto__: { a: 1 } };");
+  refused('export default { id: `a${1}` };');
+  refused('export default { id: someName };');
+  refused('export default { ...other };');
+  refused('export default { __proto__: { a: 1 } };');
   refused("const x = 1; export default { id: 'a' }; console.log(x);");
   refused("export default { id: 'a' }; fetch('x');");
-  refused("export default 5;");
-  refused("export default [1];");
+  refused('export default 5;');
+  refused('export default [1];');
   refused("export default { id: 'a'");
   refused("module.exports = { id: 'a' };");
 });
 
 test('a comment marker inside text is text', () => {
-  assert.deepEqual(readDeclaration("export default { label: 'See https://x.y // not a comment', note: \"a /* b */ c\" };"), { value: { label: 'See https://x.y // not a comment', note: 'a /* b */ c' } });
+  assert.deepEqual(
+    readDeclaration('export default { label: \'See https://x.y // not a comment\', note: "a /* b */ c" };'),
+    { value: { label: 'See https://x.y // not a comment', note: 'a /* b */ c' } },
+  );
 });
 
 test('duplicate declaration keys cannot hide identity or authority changes', () => {
