@@ -33,9 +33,12 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `README.md` | Seed | The starter's README; rewrite it for the team. |
 | `scripts/`, `plugins/`, `patches/`, `public/` | Upstream | Tooling, setup, dependency patches, and shared static files. |
 | `package.json`, `pnpm-workspace.yaml`, `vite.config.ts`, `tsconfig*.json`, `mise.toml`, `.github/`, `.husky/` | Upstream | Root tooling and workflows. |
+| `.studio/ownership.json`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `SETUP.md`, `LICENSE`, `CLAUDE.md`, `.gitignore`, plugin manifests | Upstream | The ownership map, project documents, and plugin manifests. |
 | `pnpm-lock.yaml` | Generated | `pnpm install` |
 | `AGENTS.md` module routing block | Generated | `pnpm studio sync` |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
+
+`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. The most specific rule wins, so a team rule such as `src/modules/**` can sit beside the supplied module IDs.
 
 ## Mixed paths
 

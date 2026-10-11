@@ -20,6 +20,7 @@
         "scripts/lib/guidance-titles.test.js",
         "scripts/lib/manual-pages.test.js",
         "scripts/lib/mermaid-source.test.js",
+        "scripts/lib/ownership.test.js",
         "scripts/lib/persisted-studio-config.test.js",
         "scripts/lib/platform-references.test.js",
         "scripts/lib/prototype-context.test.js",

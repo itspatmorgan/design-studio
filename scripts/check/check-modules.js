@@ -28,6 +28,8 @@ import { CONFIG, MODULES, ENABLED_MODULES, SECTION_KEYS, PROTOTYPE_DIRS, declara
 import { PLATFORM_ID, SYSTEM_SPECS, PROTOTYPE_SYSTEMS, DEFAULT_SYSTEM, SYSTEM_IDS, systemDeclarationProblems } from '../../src/modules/systems/node/systems.js';
 import { changesFromLock } from '../lib/lock.js';
 import { readContributors } from '../lib/contributors.js';
+import { ownershipReport } from '../lib/ownership.js';
+import { printOwnership } from './check-ownership.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const problems = declarationProblems();
@@ -146,6 +148,9 @@ for (const c of changesFromLock()) {
 for (const m of specs) {
   if (!compatible(m)) console.log(`[modules] The ${m.id} module needs platform ${m.requires} or newer, and this is ${PLATFORM_VERSION}, so it is off. Update the platform to use it.`);
 }
+
+// Ownership map coverage is a warning for now: it never fails the check.
+try { printOwnership(ownershipReport(ROOT)); } catch (e) { console.log(`[ownership] warning: the ownership map could not be checked (${e.message}).`); }
 
 if (problems.length) {
   console.error(problems.map((p) => `[modules] ${p}`).join('\n'));
