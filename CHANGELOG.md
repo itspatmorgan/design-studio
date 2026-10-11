@@ -8,6 +8,7 @@
 - The Node tooling moved from `scripts/` to `src/platform/node/`, so `src/platform/` is the single upstream-owned root. Paths in `package.json`, hooks, and workflows changed; behavior did not.
 - Studio's own interface system moved from `src/systems/studio/` to `src/platform/systems/studio/`. Systems are now found in two roots, the supplied `src/platform/systems/` and the team's `src/systems/`, so `src/systems/` holds only the team's systems. URLs, the system's ID, and behavior did not change.
 - The supplied modules moved from `src/modules/` to `src/platform/modules/`. Modules are now found in two roots, the supplied `src/platform/modules/` and the team's `src/modules/`, so `src/modules/` holds only the team's modules; a team module can't reuse a supplied module's ID. Module IDs, URLs, and behavior did not change. A team system that imports `../../modules/systems/spec.ts` now imports `../../platform/modules/systems/spec.ts`.
+- Studio settings moved from `studio.config.ts` to `studio.config.json`, plain JSON with a JSON Schema (`src/platform/core/studio.config.schema.json`) that editors use to validate it, and every tool reads and writes it as JSON, changing only the settings you edit. `systems` no longer lists Studio, which is always available, and listing it is an error. A pre-release studio copies its values into the new file and deletes the old one.
 
 ## Portable setup preparation
 

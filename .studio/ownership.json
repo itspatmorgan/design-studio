@@ -29,7 +29,7 @@
     },
     {
       "tier": "seed",
-      "paths": ["studio.config.ts", "README.md"],
+      "paths": ["studio.config.json", "README.md"],
       "note": "The team's settings and README after creation."
     },
     {

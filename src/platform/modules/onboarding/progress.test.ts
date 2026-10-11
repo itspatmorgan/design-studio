@@ -74,16 +74,13 @@ test('each contributor gets Welcome once and keeps their own progress across res
 
 test('unregistered exploration and legacy studio state cannot dismiss a new contributor', t => {
   const root = fixture(t);
-  fs.writeFileSync(path.join(root, 'studio.config.ts'), 'export default { welcomeDismissed: true };');
+  fs.writeFileSync(path.join(root, 'studio.config.json'), '{ "welcomeDismissed": true }');
   fs.writeFileSync(path.join(root, '.design-studio-welcome-dismissed'), '');
   const before = fs.readFileSync(path.join(root, 'contributors/newcomer.json'), 'utf8');
   assert.equal(claimWelcome(root, null), null);
   assert.equal(fs.readFileSync(path.join(root, 'contributors/newcomer.json'), 'utf8'), before);
   assert.equal(claimWelcome(root, 'newcomer'), true);
-  assert.equal(
-    fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8'),
-    'export default { welcomeDismissed: true };',
-  );
+  assert.equal(fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8'), '{ "welcomeDismissed": true }');
 });
 
 test('progress preserves other roster entries and honors explicit false', t => {

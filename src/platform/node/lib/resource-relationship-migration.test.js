@@ -7,7 +7,6 @@ import { planResourceRelationshipMigration } from './resource-relationship-migra
 import { applySetupChanges } from './studio-setup.js';
 import { readResourceDirectory } from './resource-directory.js';
 import { resolveStudioReferences } from '../../core/resourceReferences.ts';
-import { readDeclaration } from '../../core/declarations.ts';
 
 const personId = '0123456789abcdef',
   systemId = 'abcdefghjkmnpqrs',
@@ -26,8 +25,8 @@ function fixture(t) {
   write('src/platform/systems/studio/system.ts', `export default { studioId: '${platformId}', role: 'platform' };`);
   write('src/systems/product/system.ts', `export default { studioId: '${systemId}', role: 'prototype' };`);
   write(
-    'studio.config.ts',
-    "// Keep this intent\nexport default { name: 'Studio', usage: 'team', modules: {}, systems: ['studio','product'], defaultSystem: 'product', admins: ['pat'], systemMaintainers: { product: ['pat'] } };\n",
+    'studio.config.json',
+    '{ "name": "Studio", "usage": "team", "modules": {}, "systems": ["product"], "defaultSystem": "product", "admins": ["pat"], "systemMaintainers": { "product": ["pat"] } }\n',
   );
   write(
     'src/prototypes/pat/original/meta.json',
@@ -50,8 +49,17 @@ test('relationship preview keeps source locations and source content while seria
   const changes = planResourceRelationshipMigration(root, {});
   assert.equal(changes.length, 3);
   for (const change of changes) assert.equal(fs.readFileSync(change.file, 'utf8'), change.before);
-  const proposed = readDeclaration(changes.find(change => change.file.endsWith('studio.config.ts')).after).value;
-  assert.deepEqual(proposed.systems, ['studio', 'product']);
+  const proposed = JSON.parse(changes.find(change => change.file.endsWith('studio.config.json')).after);
+  assert.deepEqual(proposed.systems, ['product']);
+  assert.deepEqual(Object.keys(proposed), [
+    'name',
+    'usage',
+    'modules',
+    'systems',
+    'defaultSystem',
+    'admins',
+    'systemMaintainers',
+  ]);
   assert.equal(proposed.defaultSystem, systemId);
   assert.deepEqual(proposed.admins, [personId]);
   assert.deepEqual(proposed.systemMaintainers, { [systemId]: [personId] });
@@ -79,7 +87,7 @@ test('unknown or deleted dependencies require reconciliation instead of inventin
     }),
   );
   assert.throws(() => planResourceRelationshipMigration(root, {}));
-  assert.match(fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8'), /admins: \['pat'\]/);
+  assert.match(fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8'), /"admins": \["pat"\]/);
   write(
     'src/prototypes/pat/copy/meta.json',
     JSON.stringify({

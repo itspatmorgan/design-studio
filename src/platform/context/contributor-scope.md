@@ -3,7 +3,7 @@ title: Contributor scope
 description: Contributor ownership, authorization for shared changes, and identity checks.
 ---
 
-Resolve the contributor with `node src/platform/node/cli/resolve-contributor.js` before changing repository content. Read their profile and the current grants in `studio.config.ts`.
+Resolve the contributor with `node src/platform/node/cli/resolve-contributor.js` before changing repository content. Read their profile and the current grants in `studio.config.json`.
 
 | Authority | Direct work |
 | --- | --- |

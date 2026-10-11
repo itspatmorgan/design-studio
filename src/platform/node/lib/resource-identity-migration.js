@@ -5,12 +5,12 @@ import path from 'node:path';
 import { createResourceId, resourceId, canvasIdentity } from '../../core/resourceIdentity.ts';
 import { readDeclaration } from '../../core/declarations.ts';
 import { auditResourceIdentities } from './resource-identity-audit.js';
-import { applySetupChanges, editStudioConfig } from './studio-setup.js';
+import { applySetupChanges, editDeclaration } from './studio-setup.js';
 
 function withIdentity(resource, source, id, types) {
   if (resource.kind === 'artifact') return types[resource.fileType].identity.write(source, id);
   if (resource.kind === 'system') {
-    const after = editStudioConfig(source, { studioId: id });
+    const after = editDeclaration(source, { studioId: id });
     const checked = readDeclaration(after);
     if ('error' in checked || checked.value.studioId !== id)
       throw new Error(`${resource.path}: cannot preserve the system declaration.`);

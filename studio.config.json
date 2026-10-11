@@ -1,0 +1,30 @@
+{
+  "$schema": "./src/platform/core/studio.config.schema.json",
+  "name": "Design Studio",
+  "usage": "personal",
+  "tagline": "A prototype sandbox for you and your team",
+  "modules": {
+    "canvas": true,
+    "diagrams": true,
+    "document": true,
+    "documentation": true,
+    "prototypes": true,
+    "systems": true,
+    "text": true,
+    "view": true,
+    "onboarding": true,
+    "contributors": true
+  },
+  "systems": [
+    "product",
+    "marketing"
+  ],
+  "systemMaintainers": {
+    "4f3m7z08hk5a0k53": [],
+    "v4576ka1mbpbqdp1": []
+  },
+  "defaultSystem": "4f3m7z08hk5a0k53",
+  "admins": [
+    "01ketxwns61brr7r"
+  ]
+}

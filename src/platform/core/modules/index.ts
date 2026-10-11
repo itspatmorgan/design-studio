@@ -19,7 +19,7 @@ export type ModuleSpec = {
   // The oldest platform version the module works with, like "0.1.0". A module that needs a newer one than
   // this copy has is turned off, and `pnpm check` says why, so an old copy never breaks on a new module.
   requires?: string;
-  // Explicitly declare whether studio.config.ts may turn this module off.
+  // Explicitly declare whether studio.config.json may turn this module off.
   optional: boolean;
   // The top-level area the module adds: its address in the app (/examples) and, if it keeps content, the folder
   // that content lives in, relative to the repo root. The key can't also be a contributor's folder, since both are addresses.

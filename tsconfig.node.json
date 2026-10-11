@@ -38,6 +38,7 @@
     "src/platform/core/permissions.test.ts",
     "src/platform/core/roots.test.ts",
     "src/platform/core/config.test.ts",
+    "src/platform/core/config-file.test.ts",
     "src/platform/modules/systems/spec.test.ts",
     "src/platform/core/modules/pack.test.ts"
   ]

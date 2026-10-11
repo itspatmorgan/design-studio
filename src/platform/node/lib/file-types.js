@@ -1,5 +1,5 @@
 // The file types installed in the module roots (the modules that have a type.ts and are on), for the build
-// and the dev server. Delete a folder, or turn the module off in studio.config.ts, and its type is gone from here
+// and the dev server. Delete a folder, or turn the module off in studio.config.json, and its type is gone from here
 // too: its files become plain files. The app finds the same folders with a glob (src/platform/app/data/fileTypes.ts).
 import fs from 'node:fs';
 import path from 'node:path';

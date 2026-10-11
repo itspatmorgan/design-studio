@@ -3,9 +3,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 
-// Edit only the supported setup properties; preserve all other properties and source comments.
-export function editStudioConfig(text, changes) {
-  const source = ts.createSourceFile('studio.config.ts', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+// Edit properties of a TypeScript declaration (a system.ts or module.ts) in place; preserve all other properties and
+// source comments. studio.config.json is plain JSON and is edited as an object instead (src/platform/core/config-file.ts).
+export function editDeclaration(text, changes) {
+  const source = ts.createSourceFile('declaration.ts', text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const exported = source.statements.find(ts.isExportAssignment);
   let object = exported?.expression;
   while (
@@ -14,9 +15,9 @@ export function editStudioConfig(text, changes) {
   )
     object = object.expression;
   if (!object || !ts.isObjectLiteralExpression(object) || source.parseDiagnostics.length)
-    throw new Error('Configuration must default-export an object. Edit custom computed configurations in your editor.');
+    throw new Error('The declaration must default-export an object. Edit custom computed declarations in your editor.');
   if (object.properties.some(ts.isSpreadAssignment))
-    throw new Error('Configure a plain object without spreads so the applied values are unambiguous.');
+    throw new Error('Declare a plain object without spreads so the applied values are unambiguous.');
   const checkNames = object => {
     const names = object.properties.map(property =>
       property.name && (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name))
@@ -24,7 +25,7 @@ export function editStudioConfig(text, changes) {
         : property.name?.getText(source),
     );
     if (new Set(names).size !== names.length)
-      throw new Error('Remove duplicate configuration properties before configuring the studio.');
+      throw new Error('Remove duplicate declaration properties before editing it.');
   };
   checkNames(object);
   const literal = value => {

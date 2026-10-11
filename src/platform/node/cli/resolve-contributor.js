@@ -3,7 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import fs from 'node:fs';
-import { readDeclaration } from '../../core/declarations.ts';
+import { CONFIG_FILE } from '../../core/config.ts';
+import { parseConfigFile } from '../../core/config-file.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 import { loadContributors } from '../lib/contributors.js';
 
@@ -38,7 +39,7 @@ export function resolveContributor() {
   if (matches.length === 1 && !contributors[matches[0]].email) return matches[0];
   // A configured, unregistered identity must not inherit a different global GitHub account.
   if (email) return null;
-  const declaration = readDeclaration(fs.readFileSync(path.join(ROOT, 'studio.config.ts'), 'utf8'));
+  const declaration = parseConfigFile(fs.readFileSync(path.join(ROOT, CONFIG_FILE), 'utf8'));
   if ('error' in declaration) throw new Error(declaration.error);
   const byGh =
     declaration.value.usage === 'personal'

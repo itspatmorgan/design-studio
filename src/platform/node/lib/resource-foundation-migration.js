@@ -12,6 +12,7 @@ import { auditResourceIdentities } from './resource-identity-audit.js';
 import { applySetupChanges } from './studio-setup.js';
 import { readDeclaration } from '../../core/declarations.ts';
 import { MODULE_ROOTS, SYSTEM_ROOTS } from '../../core/roots.ts';
+import { CONFIG_FILE } from '../../core/config.ts';
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.split(path.sep).join('/');
@@ -43,7 +44,7 @@ function capture(root) {
       contents.set(relative, bytes);
     } else throw new Error(`${relative}: migration requires an ordinary source file.`);
   };
-  visit('studio.config.ts');
+  visit(CONFIG_FILE);
   for (const directory of ['contributors', ...SYSTEM_ROOTS, 'src/prototypes'])
     if (fs.existsSync(path.join(root, directory))) visit(directory);
   // Module declarations are read from both module roots (src/platform/core/roots.ts).

@@ -67,7 +67,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
       admins: ['patrick'],
       tagline: 'Fixture',
       modules: Object.fromEntries(moduleIdsIn(dir).map(id => [id, id !== 'documentation'])),
-      systems: ['studio', 'bootstrap'],
+      systems: ['bootstrap'],
       systemMaintainers: { bootstrap: [] },
       defaultSystem: 'bootstrap',
     });
@@ -76,9 +76,9 @@ test('local personal setup resumes, then a second clone joins a team without cha
     run(dir, 'src/platform/node/cli/studio.js', 'configure', '--system', 'product', '--yes');
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'bootstrap', '--yes');
     assert.doesNotMatch(fs.readFileSync(path.join(dir, 'pnpm-lock.yaml'), 'utf8'), /src\/systems\/bootstrap:/);
-    const declared = () => readDeclaration(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8')).value;
-    assert.deepEqual(declared().systems, ['studio', 'product']);
-    const teamConfig = fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8');
+    const declared = () => JSON.parse(fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8'));
+    assert.deepEqual(declared().systems, ['product']);
+    const teamConfig = fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8');
     for (const args of [
       ['disable', 'contributors'],
       ['remove', 'contributors', '--yes'],
@@ -89,7 +89,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
       });
       assert.equal(denied.status, 1);
       assert.match(denied.stderr, /[Tt]eam use requires/);
-      assert.equal(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8'), teamConfig);
+      assert.equal(fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8'), teamConfig);
       assert.ok(fs.existsSync(path.join(dir, 'src/platform/modules/contributors/module.ts')));
     }
     const required = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', 'remove', 'studio', '--yes'], {
@@ -121,7 +121,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'lifecycle-fixture', '--yes');
     assert.equal(Object.hasOwn(declared().modules, 'lifecycle-fixture'), false);
     assert.ok(!fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture')));
-    const beforeFailedInstall = fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8');
+    const beforeFailedInstall = fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8');
     const pack = path.join(dir, 'failing-pack');
     fs.mkdirSync(pack);
     fs.writeFileSync(
@@ -130,7 +130,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     );
     fs.writeFileSync(path.join(pack, 'check.ts'), "export default () => ['Deliberate fixture failure'];\n");
     assert.throws(() => run(dir, 'src/platform/node/cli/studio.js', 'add', pack, '--yes'), /Command failed/);
-    assert.equal(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8'), beforeFailedInstall);
+    assert.equal(fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8'), beforeFailedInstall);
     assert.equal(fs.existsSync(path.join(dir, 'src/modules/failing-fixture')), false);
     fs.writeFileSync(path.join(pack, 'check.ts'), 'export default () => [];\n');
     run(dir, 'src/platform/node/cli/studio.js', 'add', pack, '--yes');
@@ -146,7 +146,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
         .status,
       1,
     );
-    const config = path.join(dir, 'studio.config.ts');
+    const config = path.join(dir, 'studio.config.json');
     const before = fs.readFileSync(config, 'utf8');
     run(dir, 'src/platform/node/cli/studio.js', 'configure', '--name', 'Personal Studio', '--usage', 'personal');
     assert.equal(fs.readFileSync(config, 'utf8'), before);
@@ -207,7 +207,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     git(clone, 'init', '-q');
     git(clone, 'config', 'user.name', 'Alex Partner');
     git(clone, 'config', 'user.email', 'alex@example.test');
-    const sharedConfig = fs.readFileSync(path.join(clone, 'studio.config.ts'), 'utf8');
+    const sharedConfig = fs.readFileSync(path.join(clone, 'studio.config.json'), 'utf8');
     run(
       clone,
       'src/platform/node/cli/setup-contributor.js',
@@ -222,7 +222,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
       '--yes',
     );
     assert.equal(run(clone, 'src/platform/node/cli/resolve-contributor.js').trim(), 'alex');
-    assert.equal(fs.readFileSync(path.join(clone, 'studio.config.ts'), 'utf8'), sharedConfig);
+    assert.equal(fs.readFileSync(path.join(clone, 'studio.config.json'), 'utf8'), sharedConfig);
     assert.equal(fs.readFileSync(path.join(clone, 'contributors/sam.json'), 'utf8'), contributor);
     for (const args of [
       ['create-system', 'unauthorized', '--yes'],
@@ -235,14 +235,14 @@ test('local personal setup resumes, then a second clone joins a team without cha
       });
       assert.equal(denied.status, 1);
       assert.match(denied.stderr, /Only an Admin/);
-      assert.equal(fs.readFileSync(path.join(clone, 'studio.config.ts'), 'utf8'), sharedConfig);
+      assert.equal(fs.readFileSync(path.join(clone, 'studio.config.json'), 'utf8'), sharedConfig);
     }
-    const assigned = readDeclaration(sharedConfig).value;
+    const assigned = JSON.parse(sharedConfig);
     const acmeId = readDeclaration(fs.readFileSync(path.join(clone, 'src/systems/acme/system.ts'), 'utf8')).value
       .studioId;
     const alexId = JSON.parse(fs.readFileSync(path.join(clone, 'contributors/alex.json'))).studioId;
     assigned.systemMaintainers[acmeId] = [alexId];
-    fs.writeFileSync(path.join(clone, 'studio.config.ts'), 'export default ' + JSON.stringify(assigned) + ';');
+    fs.writeFileSync(path.join(clone, 'studio.config.json'), JSON.stringify(assigned));
     const packageIdentity = JSON.parse(fs.readFileSync(path.join(clone, 'src/systems/acme/package.json'))).name;
     run(clone, 'src/platform/node/cli/studio.js', 'rename-system', 'acme', '--label', 'Partner System', '--yes');
     assert.equal(
@@ -253,7 +253,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.match(renamedLock, /src\/systems\/partner-system:/);
     assert.doesNotMatch(renamedLock, /src\/systems\/acme:/);
     assert.deepEqual(
-      readDeclaration(fs.readFileSync(path.join(clone, 'studio.config.ts'), 'utf8')).value.systemMaintainers[acmeId],
+      JSON.parse(fs.readFileSync(path.join(clone, 'studio.config.json'), 'utf8')).systemMaintainers[acmeId],
       [alexId],
     );
     const collision = spawnSync(

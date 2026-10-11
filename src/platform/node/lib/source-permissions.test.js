@@ -12,7 +12,7 @@ test('source writes recheck revoked grants and archive status without waiting fo
   const config = {
     usage: 'team',
     admins: ['admin'],
-    systems: ['studio', 'product'],
+    systems: ['product'],
     defaultSystem: 'product',
     systemMaintainers: { product: ['sam'] },
   };
@@ -65,7 +65,7 @@ test('source editor preserves prototype identity and refuses owner/location mism
     writeProfiles(root, { pat: { name: 'Pat', studioId: '0123456789abcdef' } });
     writeFixtureConfig(root, {
       usage: 'personal',
-      systems: ['studio', 'product'],
+      systems: ['product'],
       defaultSystem: 'product',
       systemMaintainers: { product: [] },
     });

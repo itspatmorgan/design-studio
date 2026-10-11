@@ -5,12 +5,16 @@ import path from 'node:path';
 import { createResourceId } from '../../../core/resourceIdentity.ts';
 import { readDeclaration } from '../../../core/declarations.ts';
 import { persistStudioReferences } from '../../../core/resourceReferences.ts';
+import { CONFIG_FILE } from '../../../core/config.ts';
+import { serializeConfig } from '../../../core/config-file.ts';
 import { readResourceDirectory } from '../resource-directory.js';
-import { editStudioConfig } from '../studio-setup.js';
+import { editDeclaration } from '../studio-setup.js';
 import { SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT } from '../../../core/roots.ts';
 
-export function writeFixtureConfig(root, config, { comment = '' } = {}) {
-  for (const key of config.systems) {
+// Writes studio.config.json for a fixture studio from a readable config, with the platform system installed beside
+// the config's own systems. The config lists only prototype systems, as a real one does.
+export function writeFixtureConfig(root, config) {
+  for (const key of ['studio', ...config.systems]) {
     // The platform system (Studio) lives in the supplied root, the others in the team's.
     const file = path.join(root, key === 'studio' ? SUPPLIED_SYSTEMS_ROOT : TEAM_SYSTEMS_ROOT, key, 'system.ts');
     fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -22,13 +26,10 @@ export function writeFixtureConfig(root, config, { comment = '' } = {}) {
     const source = fs.readFileSync(file, 'utf8'),
       declaration = readDeclaration(source);
     if ('error' in declaration) throw new Error(declaration.error);
-    if (!declaration.value.studioId) fs.writeFileSync(file, editStudioConfig(source, { studioId: createResourceId() }));
+    if (!declaration.value.studioId) fs.writeFileSync(file, editDeclaration(source, { studioId: createResourceId() }));
   }
   const directory = readResourceDirectory(root);
   const persisted = persistStudioReferences(config, directory);
-  fs.writeFileSync(
-    path.join(root, 'studio.config.ts'),
-    comment + 'export default ' + JSON.stringify(persisted) + ';\n',
-  );
+  fs.writeFileSync(path.join(root, CONFIG_FILE), serializeConfig(persisted));
   return { directory, persisted };
 }

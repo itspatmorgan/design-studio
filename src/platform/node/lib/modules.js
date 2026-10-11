@@ -14,7 +14,7 @@ import { setSections } from '../../core/roots.ts';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const { config: CONFIG } = readPersistedStudioConfig(ROOT);
 
-// The modules studio.config.ts explicitly enables and that work with this platform (`requires`). A module that is off keeps its files but is skipped everywhere.
+// The modules studio.config.json explicitly enables and that work with this platform (`requires`). A module that is off keeps its files but is skipped everywhere.
 export const ENABLED_MODULES = Object.values(MODULES).filter(m => m && isEnabled(CONFIG, m.id) && compatible(m));
 export { CONFIG, isEnabled };
 

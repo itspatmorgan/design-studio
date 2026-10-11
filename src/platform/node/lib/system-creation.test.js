@@ -10,7 +10,7 @@ import { writeFixtureConfig } from './fixtures/identities.js';
 const configOf = (admins = ['admin']) => ({
   usage: 'team',
   admins,
-  systems: ['studio', 'product'],
+  systems: ['product'],
   defaultSystem: 'product',
   systemMaintainers: { product: [] },
 });
@@ -20,7 +20,7 @@ test('system creation requires a current registered Admin and validates input be
   try {
     writeProfiles(root, { admin: { name: 'Admin' }, member: { name: 'Member' } });
     writeFixtureConfig(root, configOf());
-    const config = fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8');
+    const config = fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8');
     for (const actor of [null, 'missing', 'member'])
       assert.throws(() => createSystem(root, actor, { name: 'Product' }), /Admin/);
     for (const body of [
@@ -33,7 +33,7 @@ test('system creation requires a current registered Admin and validates input be
     ]) {
       assert.throws(() => createSystem(root, 'admin', body));
     }
-    assert.equal(fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8'), config);
+    assert.equal(fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8'), config);
     assert.equal(fs.existsSync(path.join(root, 'src/systems/kit')), false);
     writeFixtureConfig(root, configOf(['member']));
     assert.throws(() => createSystem(root, 'admin', { name: 'Kit' }), /Admin/);

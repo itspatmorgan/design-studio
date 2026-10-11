@@ -4,7 +4,7 @@
 //   node src/platform/node/cli/baseline.js coupling            which source files name each module
 //   node src/platform/node/cli/baseline.js build [dir]         build time, manifest size, bundle size (default: a scratch copy of this repo)
 //   node src/platform/node/cli/baseline.js removal <module>    delete a module in a scratch copy, then check the app still builds ("none" is the control);
-//                                                with --off, turn it off in studio.config.ts instead and keep its files
+//                                                with --off, turn it off in studio.config.json instead and keep its files
 //   node src/platform/node/cli/baseline.js fixture <count>     a scratch copy with <count> synthetic prototypes, then build it
 // Copies the committed files; add --working to include uncommitted changes, --keep to keep the copy. Modules: the names below. A removal that fails at a step shows which module the platform still depends on.
 import { execFileSync } from 'node:child_process';

@@ -72,7 +72,7 @@ Design systems are content in `src/systems/` (and Studio's own interface system 
 
 ## Configuration and commands
 
-`studio.config.ts` holds identity, personal or team use, enabled modules, and the default system. Each installed module has an explicit true/false entry, and each installed system appears in `systems`. Omitted declarations fail validation. Other customization happens in code.
+`studio.config.json` holds identity, personal or team use, enabled modules, and the default system. Each installed module has an explicit true/false entry, and each of the team's installed systems appears in `systems`; Studio's own system is always available and is never listed. Omitted declarations fail validation. Other customization happens in code.
 
 ```sh
 pnpm studio list

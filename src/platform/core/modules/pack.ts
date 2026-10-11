@@ -1,6 +1,7 @@
 // The pure parts of adding a module or design system from a source (src/platform/node/cli/studio.js): what a source can be,
-// where each file of a pack goes, whether a license is one a team can build on, and the edits to studio.config.ts
-// and AGENTS.md. Nothing here touches files or the network, so every rule is tested. Has only type imports, and the import-free roots.ts.
+// where each file of a pack goes, whether a license is one a team can build on, and the edits to AGENTS.md
+// (studio.config.json is edited with src/platform/core/config-file.ts). Nothing here touches files or the network, so
+// every rule is tested. Has only type imports, and the import-free roots.ts.
 import type { ModuleSpec } from './index.ts';
 import { TEAM_MODULES_ROOT, TEAM_SYSTEMS_ROOT, moduleFolder } from '../roots.ts';
 
@@ -146,36 +147,6 @@ export function licenseVerdict(
   const license = spec.upstream.license.trim();
   if (!license || /^(none|unlicensed)$/i.test(license) || !hasLicenseFile) return 'none';
   return PERMISSIVE_LICENSES.includes(license) ? 'ok' : 'not-permissive';
-}
-
-// studio.config.ts with one module turned on or off, or null if its `modules` list isn't in the plain form this writes
-// (edit it by hand then). true enables, false disables, null removes the installed entry.
-export function editModulesFlag(text: string, id: string, on: boolean | null): string | null {
-  const m = /((?:\bmodules|'modules'|"modules")\s*:\s*)\{([^{}]*)\}/.exec(text);
-  if (!m) return null;
-  const entries = new Map<string, boolean>();
-  for (const part of m[2]
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)) {
-    const e = /^([A-Za-z_][\w-]*|'[^']+'|"[^"]+")\s*:\s*(true|false)$/.exec(part);
-    if (!e) return null;
-    entries.set(e[1].replace(/^['"]|['"]$/g, ''), e[2] === 'true');
-  }
-  if (on === null) entries.delete(id);
-  else entries.set(id, on);
-  const body = [...entries].map(([k, v]) => `${/^[A-Za-z_]\w*$/.test(k) ? k : `'${k}'`}: ${v}`).join(', ');
-  const indent = text.slice(text.lastIndexOf('\n', m.index) + 1, m.index).match(/^\s*/)?.[0] ?? '';
-  const formatted =
-    body && m[2].includes('\n')
-      ? '\n' +
-        [...entries].map(([k, v]) => `${indent}  ${/^[A-Za-z_]\w*$/.test(k) ? k : `'${k}'`}: ${v},`).join('\n') +
-        '\n' +
-        indent
-      : body
-        ? ` ${body} `
-        : '';
-  return text.slice(0, m.index) + `${m[1]}{${formatted}}` + text.slice(m.index + m[0].length);
 }
 
 export const AGENTS_START = '<!-- studio:modules -->';

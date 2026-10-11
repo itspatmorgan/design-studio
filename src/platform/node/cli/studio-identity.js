@@ -8,10 +8,10 @@ import {
   applyResourceFoundationMigration,
 } from '../lib/resource-foundation-migration.js';
 import { planPrototypeIdentification, applyPrototypeIdentification } from '../lib/prototype-identification.js';
-import { readDeclaration } from '../../core/declarations.ts';
+import { parseConfigFile } from '../../core/config-file.ts';
 import { resolveStudioReferences } from '../../core/resourceReferences.ts';
 import { readResourceDirectory } from '../lib/resource-directory.js';
-import { studioRole } from '../../core/config.ts';
+import { CONFIG_FILE, studioRole } from '../../core/config.ts';
 import { resolveContributor, loadContributors } from './resolve-contributor.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -60,7 +60,7 @@ if (command === 'identity-audit') {
   else {
     // Evaluate current authority, never the proposed post-migration grants. Only
     // this one-time migrator interprets historical source-key relationships.
-    const declaration = readDeclaration(fs.readFileSync(path.join(ROOT, 'studio.config.ts'), 'utf8'));
+    const declaration = parseConfigFile(fs.readFileSync(path.join(ROOT, CONFIG_FILE), 'utf8'));
     if ('error' in declaration) throw new Error(declaration.error);
     const persisted = declaration.value;
     const config = /^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(persisted.defaultSystem ?? '')

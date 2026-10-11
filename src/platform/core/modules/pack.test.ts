@@ -4,7 +4,6 @@ import assert from 'node:assert/strict';
 import {
   agentsBlock,
   applyAgentsBlock,
-  editModulesFlag,
   licenseVerdict,
   packPlan,
   parseSource,
@@ -151,17 +150,6 @@ test('a library needs a license file and a permissive license', () => {
   assert.equal(licenseVerdict(up('MIT'), false), 'none');
   assert.equal(licenseVerdict(up('none'), true), 'none');
   assert.equal(licenseVerdict(up('GPL-3.0-only'), true), 'not-permissive');
-});
-
-test('turning a module off and on edits the one list in studio.config.ts', () => {
-  const config = "export default {\n  name: 'X',\n  modules: {},\n} satisfies StudioConfig;\n";
-  const off = editModulesFlag(config, 'documentation', false)!;
-  assert.match(off, /modules: \{ documentation: false \},/);
-  assert.match(editModulesFlag(off, 'examples', false)!, /modules: \{ documentation: false, examples: false \},/);
-  assert.match(editModulesFlag(off, 'documentation', true)!, /documentation: true/);
-  assert.equal(editModulesFlag(off, 'documentation', null), config);
-  assert.equal(editModulesFlag('export default {}', 'documentation', false), null);
-  assert.equal(editModulesFlag('modules: { documentation: maybe },', 'documentation', false), null);
 });
 
 test('the AGENTS.md lines come from the modules that are on, and replace themselves', () => {

@@ -24,7 +24,8 @@ setSystemFolders(found.map(({ id, dir }) => [id, dir]));
 
 export const SYSTEM_SPECS: Record<string, SystemSpec & { dir: string }> = Object.fromEntries(
   Object.entries(specs)
-    .filter(([path]) => CONFIG.systems.includes(idOf(path)))
+    // The platform system is always part of the studio; the team's systems are the ones `systems` lists.
+    .filter(([path, spec]) => spec.role === 'platform' || CONFIG.systems.includes(idOf(path)))
     .map(([path, spec]) => [idOf(path), { ...spec, dir: dirOf(path) }])
     .sort(([a], [b]) => (a as string).localeCompare(b as string)),
 );

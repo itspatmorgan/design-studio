@@ -6,7 +6,7 @@ import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 //   - no id is in both roots: a team module can't reuse a supplied module's id
 //   - no two modules claim the same section key or folder
 //   - a module's section folder exists
-//   - studio.config.ts is well formed, and only turns off modules that can be turned off
+//   - studio.config.json is well formed, and only turns off modules that can be turned off
 //   - each design system in the system roots (src/platform/systems/ and src/systems/, src/platform/core/roots.ts) has a well formed system.ts, components/, and styles/theme.css
 //   - no contributor, and no folder in src/prototypes/, uses a section key, since both are addresses
 //   - nothing outside an optional module imports its files other than its module.ts, and no module imports an
@@ -63,7 +63,7 @@ if (!SYSTEM_IDS.length)
   );
 if (SYSTEM_IDS.length > 1 && !CONFIG.defaultSystem)
   problems.push(
-    `There are ${SYSTEM_IDS.length} design systems (${SYSTEM_IDS.join(', ')}), so say which one prototypes use when their meta.json names none: add defaultSystem: '${SYSTEM_IDS.includes('product') ? 'product' : SYSTEM_IDS[0]}', to studio.config.ts.`,
+    `There are ${SYSTEM_IDS.length} design systems (${SYSTEM_IDS.join(', ')}), so say which one prototypes use when their meta.json names none: set defaultSystem in studio.config.json.`,
   );
 for (const id of SYSTEM_IDS) {
   for (const part of ['components', 'styles/theme.css']) {

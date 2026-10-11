@@ -44,7 +44,7 @@ function fixture(t) {
     folder,
     contributor: 'alex',
     contributors: ['alex', 'sam'],
-    config: { usage: 'team', admins: ['sam'], systems: ['product', 'brand', 'studio'], defaultSystem: 'product' },
+    config: { usage: 'team', admins: ['sam'], systems: ['product', 'brand'], defaultSystem: 'product' },
     systems: {
       product: { studioId: ids.product, role: 'prototype', status: 'active' },
       brand: { studioId: ids.brand, role: 'prototype', status: 'active' },
@@ -128,7 +128,7 @@ test('context distinguishes access, archived work, and deleted systems from inva
   }
   write({ systemId: 'brand' });
   assert.throws(
-    () => prototypeContext({ ...options, config: { ...options.config, systems: ['product', 'studio'] } }),
+    () => prototypeContext({ ...options, config: { ...options.config, systems: ['product'] } }),
     /installed system/,
   );
 });

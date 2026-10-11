@@ -8,6 +8,7 @@ import { readContributors } from '../../lib/contributors.js';
 import { readSettings } from '../../lib/studio-settings.js';
 import { canPerform, pathResource, sameSystemIdentity } from '../../../core/permissions.ts';
 import { readDeclaration } from '../../../core/declarations.ts';
+import { systemRegistered } from '../../../core/config.ts';
 import { MODULES } from '../../lib/modules.js';
 import { jsonIdentity, resourceId } from '../../../core/resourceIdentity.ts';
 import { canonicalDirectory } from '../../lib/safe-paths.js';
@@ -104,10 +105,9 @@ export function canWriteSource(me, file, root = ROOT, content) {
   const systems = {};
   const id = systemIdOfPath(file);
   if (id) {
-    if (!config.systems?.includes(id)) return false;
     try {
       const declaration = readDeclaration(fs.readFileSync(path.join(root, systemDirOf(root, id), 'system.ts'), 'utf8'));
-      if ('error' in declaration) return false;
+      if ('error' in declaration || !systemRegistered(config, id, declaration.value.role)) return false;
       systems[id] = declaration.value;
       if (file === systemDirOf(root, id) + '/system.ts' && typeof content === 'string') {
         const next = readDeclaration(content);

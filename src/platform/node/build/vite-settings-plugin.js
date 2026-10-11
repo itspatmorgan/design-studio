@@ -7,7 +7,7 @@ import { PLATFORM_ID, SYSTEM_IDS, SYSTEM_SPECS } from '../../modules/systems/nod
 import { loadContributors } from '../lib/contributors.js';
 import { resolveContributor } from '../cli/resolve-contributor.js';
 import { compatible } from '../../core/modules/index.ts';
-import { studioRole } from '../../core/config.ts';
+import { CONFIG_FILE, studioRole } from '../../core/config.ts';
 import { SYSTEM_ROOTS } from '../../core/roots.ts';
 import { readSettings, saveSettings } from '../lib/studio-settings.js';
 import { readJson, sameOrigin, send } from './files/http.js';
@@ -21,7 +21,7 @@ export const configurationRestartPending = server => restarting.has(server);
 
 export default function settings() {
   const runtimeId = randomUUID();
-  const configFile = path.join(ROOT, 'studio.config.ts');
+  const configFile = path.join(ROOT, CONFIG_FILE);
   let restartTimer;
   return {
     name: 'studio-settings',
@@ -103,7 +103,7 @@ export default function settings() {
             send(res, 200, {
               saved: true,
               runtimeId,
-              restarting: plan.edits.some(edit => edit.file === path.join(ROOT, 'studio.config.ts')),
+              restarting: plan.edits.some(edit => edit.file === path.join(ROOT, CONFIG_FILE)),
             });
             return;
           }

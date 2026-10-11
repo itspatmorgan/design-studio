@@ -1,13 +1,18 @@
 // Explicit studio identity, installed module states, system registration, and the default system.
-// Node scripts and the app read the same declaration.
+// Node scripts and the app read the same declaration: studio.config.json at the repository root. Its JSON Schema,
+// src/platform/core/studio.config.schema.json, lets editors validate and complete it; configProblems below stays the
+// source of truth for the rules, and config.test.ts keeps the two in agreement.
+
+// The configuration file, relative to the repository root.
+export const CONFIG_FILE = 'studio.config.json';
 
 export type StudioConfig = {
+  // The schema the file declares for editors. Only the file carries it; it has no effect at run time.
+  $schema?: string;
   // What the app calls itself: the rail's tooltip and every page's title.
   name: string;
   // Explicit onboarding mode; contributor ownership is identical in both modes.
   usage: 'personal' | 'team';
-  // Deprecated: accepted for older configs, ignored by Welcome. Progress belongs to contributor profiles.
-  welcomeDismissed?: boolean;
   // Persisted Admin contributor IDs. Resolved runtime projections contain source keys.
   admins?: readonly string[];
   // Persisted system-ID -> contributor-ID grants; runtime projections use source keys.
@@ -17,11 +22,36 @@ export type StudioConfig = {
   tagline?: string;
   // Every installed module is declared true or false. Disabling retains its files.
   modules: Record<string, boolean>;
-  // Source-folder keys of every installed system, including Studio. Discovery is not registration.
+  // Source-folder keys of the team's design systems. The platform system (Studio's own interface, role 'platform')
+  // is always available and is never listed. Discovery is not registration.
   systems: readonly string[];
   // Persisted default system ID; resolved runtime projection contains its source key.
   defaultSystem: string;
 };
+
+// Every property the file accepts, in the order a file lists them. The schema's `properties` must name exactly these.
+export const CONFIG_KEYS = [
+  '$schema',
+  'name',
+  'usage',
+  'tagline',
+  'modules',
+  'systems',
+  'systemMaintainers',
+  'defaultSystem',
+  'admins',
+] as const satisfies readonly (keyof StudioConfig)[];
+// Compile-time guard: fails to type-check if StudioConfig gains a property CONFIG_KEYS does not list.
+type Unlisted = Exclude<keyof StudioConfig, (typeof CONFIG_KEYS)[number]>;
+export const configKeysCoverType: [Unlisted] extends [never] ? true : never = true;
+
+export const USAGES = ['personal', 'team'] as const;
+export const TAGLINE_MAX = 140;
+
+// Whether a system is part of this studio: the platform system always is, and any other must be registered in `systems`.
+// `role` is the system's declared role, so callers need not know the platform system's folder name.
+export const systemRegistered = (config: Partial<StudioConfig>, id: string, role: 'platform' | 'prototype') =>
+  role === 'platform' || Boolean(config.systems?.includes(id));
 
 // What is wrong with a config, each as a sentence that says what to fix. `modules` is the installed
 // modules and whether each can be turned off, and `systems` the installed design systems' ids.
@@ -32,12 +62,18 @@ export function configProblems(
   platformId: string = 'studio',
   contributors?: readonly string[],
 ): string[] {
-  const where = 'studio.config.ts';
-  if (!config || typeof config !== 'object') return [`${where} must export a config as its default.`];
+  const where = CONFIG_FILE;
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return [`${where} must be a JSON object.`];
   const c = config as Partial<StudioConfig>;
   const problems: string[] = [];
+  for (const key of Object.keys(c))
+    if (!(CONFIG_KEYS as readonly string[]).includes(key))
+      problems.push(`${where}: "${key}" is not a setting. Settings are ${CONFIG_KEYS.slice(1).join(', ')}.`);
+  if (c.$schema !== undefined && typeof c.$schema !== 'string')
+    problems.push(`${where}: $schema should be the path of the schema, as text.`);
   if (typeof c.name !== 'string' || !c.name.trim()) problems.push(`${where}: add a name, what the app calls itself.`);
-  if (!c.usage || !['personal', 'team'].includes(c.usage)) problems.push(`${where}: usage should be personal or team.`);
+  if (!c.usage || !(USAGES as readonly string[]).includes(c.usage))
+    problems.push(`${where}: usage should be personal or team.`);
   problems.push(...adminProblems(c, contributors));
   if (
     c.usage === 'team' &&
@@ -47,8 +83,8 @@ export function configProblems(
       `${where}: team use requires the Contributors & Permissions module installed and enabled. Switch to personal use before disabling or removing it.`,
     );
   }
-  if (c.tagline !== undefined && (typeof c.tagline !== 'string' || c.tagline.length > 140))
-    problems.push(`${where}: tagline should be one short line of text, under 140 characters.`);
+  if (c.tagline !== undefined && (typeof c.tagline !== 'string' || c.tagline.length > TAGLINE_MAX))
+    problems.push(`${where}: tagline should be one short line of text, under ${TAGLINE_MAX} characters.`);
   if (typeof c.defaultSystem !== 'string' || !c.defaultSystem)
     problems.push(`${where}: declare defaultSystem explicitly.`);
   else if (systems && !systems.includes(c.defaultSystem)) {
@@ -78,21 +114,23 @@ export function configProblems(
   }
   if (
     !Array.isArray(c.systems) ||
-    !c.systems.length ||
     c.systems.some(id => typeof id !== 'string') ||
     new Set(c.systems).size !== c.systems.length
   )
     problems.push(
-      `${where}: systems must explicitly list unique installed system ids, including the application system.`,
+      `${where}: systems must list the unique folder names of your own design systems, like ["product"]. Studio's own system is always available and is not listed.`,
     );
   else {
-    if (!c.systems.includes(platformId)) problems.push(`${where}: systems must include ${platformId}.`);
+    if (c.systems.includes(platformId))
+      problems.push(
+        `${where}: systems lists "${platformId}", the platform system. It is always available; remove it and list only your own design systems.`,
+      );
     if (systems) {
-      const installed = [platformId, ...systems];
-      for (const id of installed)
+      for (const id of systems)
         if (!c.systems.includes(id)) problems.push(`${where}: register installed system "${id}" in systems.`);
       for (const id of c.systems)
-        if (!installed.includes(id)) problems.push(`${where}: systems lists "${id}", but it is not installed.`);
+        if (id !== platformId && !systems.includes(id))
+          problems.push(`${where}: systems lists "${id}", but it is not installed.`);
     }
     if (c.defaultSystem && !c.systems.includes(c.defaultSystem))
       problems.push(`${where}: defaultSystem must be registered in systems.`);
@@ -113,12 +151,12 @@ export function adminProblems(config: Partial<StudioConfig>, contributors?: read
     admins.some(key => typeof key !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(key)) ||
     new Set(admins).size !== admins.length
   ) {
-    return ['studio.config.ts: admins must list unique contributor keys; team use requires at least one Admin.'];
+    return [`${CONFIG_FILE}: admins must list unique contributor keys; team use requires at least one Admin.`];
   }
   return contributors
     ? admins
         .filter(key => !contributors.includes(key))
-        .map(key => `studio.config.ts: Admin "${key}" is not a registered contributor.`)
+        .map(key => `${CONFIG_FILE}: Admin "${key}" is not a registered contributor.`)
     : [];
 }
 
@@ -139,25 +177,25 @@ export function systemMaintainerProblems(
 ): string[] {
   const grants = config.systemMaintainers;
   if (!grants || typeof grants !== 'object' || Array.isArray(grants))
-    return ['studio.config.ts: declare systemMaintainers explicitly for every prototype system.'];
+    return [`${CONFIG_FILE}: declare systemMaintainers explicitly for every prototype system.`];
   const problems: string[] = [];
   const systems = Array.isArray(config.systems) ? config.systems.filter(id => id !== platformId) : [];
   for (const id of systems)
     if (!Object.hasOwn(grants, id))
-      problems.push(`studio.config.ts: declare systemMaintainers.${id}, using [] when unassigned.`);
+      problems.push(`${CONFIG_FILE}: declare systemMaintainers.${id}, using [] when unassigned.`);
   for (const [id, keys] of Object.entries(grants)) {
     if (!systems.includes(id))
-      problems.push(`studio.config.ts: systemMaintainers.${id} must name a registered prototype system.`);
+      problems.push(`${CONFIG_FILE}: systemMaintainers.${id} must name a registered prototype system.`);
     if (
       !Array.isArray(keys) ||
       keys.some(key => typeof key !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(key)) ||
       new Set(keys).size !== keys.length
     )
-      problems.push(`studio.config.ts: systemMaintainers.${id} must list unique contributor keys.`);
+      problems.push(`${CONFIG_FILE}: systemMaintainers.${id} must list unique contributor keys.`);
     else if (contributors)
       for (const key of keys)
         if (!contributors.includes(key))
-          problems.push(`studio.config.ts: system maintainer "${key}" is not a registered contributor.`);
+          problems.push(`${CONFIG_FILE}: system maintainer "${key}" is not a registered contributor.`);
   }
   return problems;
 }

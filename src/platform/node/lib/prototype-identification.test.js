@@ -16,7 +16,7 @@ function fixture(t) {
   writeFixtureConfig(root, {
     usage: 'team',
     admins: ['admin'],
-    systems: ['studio', 'product'],
+    systems: ['product'],
     defaultSystem: 'product',
     systemMaintainers: { product: [] },
     modules: {},

@@ -25,8 +25,8 @@ function fixture(t) {
   write('src/systems/product/system.ts', "// Source contract\nexport default { role: 'prototype', label: 'Product' };");
   write('src/systems/product/components/button.md', '# Button');
   write(
-    'studio.config.ts',
-    "// Keep this comment\nexport default { name:'Studio', usage:'team', admins:['pat'], modules:{}, systems:['studio','product'], defaultSystem:'product', systemMaintainers:{ product:['pat'] } };",
+    'studio.config.json',
+    '{ "name": "Studio", "usage": "team", "admins": ["pat"], "modules": {}, "systems": ["product"], "defaultSystem": "product", "systemMaintainers": { "product": ["pat"] } }\n',
   );
   write(
     'src/prototypes/pat/example/meta.json',
@@ -68,12 +68,21 @@ test('one read-only preview composes identities, stable relationships and stored
   assert.equal(meta.ownerContributorId, person.studioId);
   assert.equal(meta.systemId, system.studioId);
   assert.equal(meta.archivedBySystemId, system.studioId);
-  const config = readDeclaration(changes.get('studio.config.ts').after).value;
+  const config = JSON.parse(changes.get('studio.config.json').after);
   assert.equal(config.defaultSystem, system.studioId);
   assert.deepEqual(config.admins, [person.studioId]);
   assert.deepEqual(config.systemMaintainers, { [system.studioId]: [person.studioId] });
-  assert.deepEqual(config.systems, ['studio', 'product']);
-  assert.ok(changes.get('studio.config.ts').after.startsWith('// Keep this comment'));
+  assert.deepEqual(config.systems, ['product']);
+  assert.deepEqual(Object.keys(config), [
+    'name',
+    'usage',
+    'admins',
+    'modules',
+    'systems',
+    'defaultSystem',
+    'systemMaintainers',
+  ]);
+  assert.ok(changes.get('studio.config.json').after.endsWith('}\n'));
   const href = `/prototypes/${prototype.studioId}/artifacts/${main.studioId}`;
   const notes = changes.get('src/prototypes/pat/example/notes.md').after;
   assert.ok(notes.includes(`[Source](./main.tsx)`));

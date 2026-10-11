@@ -15,6 +15,8 @@ A studio is a copy of the Design Studio repository. Every path in it has one own
 | Seed | Upstream ships it once; then the team | The team's copy stays. Later upstream changes do not overwrite it. |
 | Team | The team | Untouched. |
 
+A seed file stays the team's even when upstream changes how it is kept. If upstream deletes or replaces one (before the first release, the settings moved from a TypeScript file to `studio.config.json`), the update keeps the team's copy of the old file, brings the replacement as a new file, and leaves a person to move the team's values across and delete the old file. Release notes name such a step.
+
 Prefer team and seed paths for studio-specific work. If an upstream path must change, keep the edit small and record why, so the next update conflict is easy to resolve. A change that would help other studios belongs in the upstream project.
 
 ## Path map
@@ -29,7 +31,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `src/systems/product/`, `src/systems/marketing/` | Seed | Example systems; adapt or replace them. |
 | `src/prototypes/<contributor>/` | Team | The sample prototypes are seed. |
 | `contributors/` | Team | The sample contributor is seed. |
-| `studio.config.ts` | Seed | The team's settings after creation. |
+| `studio.config.json` | Seed | The team's settings after creation. Its schema, `src/platform/core/studio.config.schema.json`, is upstream. |
 | `README.md` | Seed | The starter's README; rewrite it for the team. |
 | `patches/`, `public/` | Upstream | Dependency patches and shared static files. |
 | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `vite.config.ts`, `tsconfig*.json`, `mise.toml`, `.github/`, `.husky/` | Upstream | Root tooling and workflows. |
@@ -58,6 +60,6 @@ Some paths hold more than one tier. Change only your part of each:
 ## Related contracts
 
 - [Modules and extensions](modules.md) defines supplied and team modules, `studio.lock.json`, and module boundaries.
-- [Studio configuration](config.md) defines `studio.config.ts`.
+- [Studio configuration](config.md) defines `studio.config.json`.
 - [Contributor scope](contributor-scope.md) defines what a contributor may change inside a studio.
 - [Agent context routing](agent-context.md) defines generated skill adapters.

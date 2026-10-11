@@ -105,7 +105,7 @@ test('Git inventories inspect their own tree and staged blobs, including retaine
     fs.writeFileSync(file, content);
   };
   write('contributors/pat.json', JSON.stringify({ studioId: owner, name: 'Pat' }));
-  write('studio.config.ts', "export default { usage: 'personal' };");
+  write('studio.config.json', '{ "usage": "personal" }');
   write(
     'src/prototypes/pat/example/meta.json',
     JSON.stringify({ studioId: parent, ownerId: owner, title: 'Example', status: 'archived' }),
@@ -182,7 +182,7 @@ test('CI resolves persisted grants from the before-side identity directory and p
     admins: [owner],
     systemMaintainers: { [secondParent]: [replacement] },
   };
-  write('studio.config.ts', 'export default ' + JSON.stringify(config) + ';');
+  write('studio.config.json', JSON.stringify(config));
   const commit = message => {
     git(['add', '.']);
     git(['-c', 'core.hooksPath=/dev/null', 'commit', '-qm', message]);
@@ -204,12 +204,12 @@ test('CI resolves persisted grants from the before-side identity directory and p
   const allowed = check(baseline, assignedWork);
   assert.equal(allowed.status, 0, allowed.stderr + allowed.stdout);
   config.admins.push(replacement);
-  write('studio.config.ts', 'export default ' + JSON.stringify(config) + ';');
+  write('studio.config.json', JSON.stringify(config));
   write('src/platform/fixture.md', '# Proposed shared work');
   const elevated = commit('Proposed elevation');
   const denied = check(assignedWork, elevated);
   assert.equal(denied.status, 1, denied.stderr + denied.stdout);
-  assert.match(denied.stdout, /studio.config.ts/);
+  assert.match(denied.stdout, /studio.config.json/);
   assert.match(denied.stdout, /src\/platform\/fixture.md/);
 });
 
@@ -230,7 +230,7 @@ test('the first repository commit has no before-side grants to authorize itself'
     path.join(root, 'contributors/pat.json'),
     JSON.stringify({ studioId: owner, name: 'Pat', github: 'pat-fixture' }),
   );
-  fs.writeFileSync(path.join(root, 'studio.config.ts'), "export default {usage:'personal'};");
+  fs.writeFileSync(path.join(root, 'studio.config.json'), '{"usage":"personal"}');
   git(['add', '.']);
   git(['-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'Initial']);
   const head = git(['rev-parse', 'HEAD']);

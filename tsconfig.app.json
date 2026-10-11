@@ -6,6 +6,7 @@
     "module": "esnext",
     "types": ["vite/client"],
     "allowArbitraryExtensions": true,
+    "resolveJsonModule": true,
     "skipLibCheck": true,
 
     /* Bundler mode */
@@ -30,7 +31,7 @@
     /* shadcn/ui import alias */
     "paths": { "@/*": ["./src/*"], "@module/*": ["./src/platform/modules/*/lib/index", "./src/modules/*/lib/index"] }
   },
-  "include": ["src", "studio.config.ts"],
+  "include": ["src"],
   "exclude": [
     "src/platform/modules/canvas/liveViews.test.ts",
     "src/platform/modules/canvas/opening.test.ts",
@@ -64,6 +65,7 @@
     "src/platform/core/permissions.test.ts",
     "src/platform/core/roots.test.ts",
     "src/platform/core/config.test.ts",
+    "src/platform/core/config-file.test.ts",
     "src/platform/modules/systems/spec.test.ts",
     "src/platform/core/modules/pack.test.ts"
   ]

@@ -5,7 +5,8 @@ import { readDeclaration as readSystemDeclaration } from '../../core/modules/pac
 import { configProblems, studioRole } from '../../core/config.ts';
 import { compatible } from '../../core/modules/index.ts';
 import { agentsBlock, applyAgentsBlock } from '../../core/modules/pack.ts';
-import { applySetupChanges, editStudioConfig } from './studio-setup.js';
+import { applySetupChanges } from './studio-setup.js';
+import { serializeConfig, withSettings } from '../../core/config-file.ts';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { persistStudioReferences } from '../../core/resourceReferences.ts';
 import { systemDirOf } from './system-folders.js';
@@ -23,7 +24,7 @@ export function readSettings(root, contributors) {
   try {
     current = readPersistedStudioConfig(root);
   } catch (error) {
-    throw new SettingsError(`Open the source declarations in your editor: ${error.message}`);
+    throw new SettingsError(`Open studio.config.json in your editor: ${error.message}`);
   }
   const version = createHash('sha256')
     .update(current.source)
@@ -87,7 +88,16 @@ export function planSettings({
   const serializedChanges = Object.fromEntries(
     Object.entries(changed).map(([key, value]) => [key, key === 'modules' ? value : persisted[key]]),
   );
-  const source = Object.keys(changed).length ? editStudioConfig(current.source, serializedChanges) : current.source;
+  // Read-modify-write of the parsed file: only the changed settings differ from what was read.
+  const { modules: moduleStates, ...settings } = serializedChanges;
+  const source = Object.keys(changed).length
+    ? serializeConfig(
+        withSettings(current.persisted, {
+          ...settings,
+          ...(moduleStates && { modules: { ...current.persisted.modules, ...moduleStates } }),
+        }),
+      )
+    : current.source;
   const pins = [];
   const edits = [...pins, { file: current.file, before: current.source, after: source }];
   const agents = path.join(root, 'AGENTS.md');

@@ -2,18 +2,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { canonicalDirectory } from './safe-paths.js';
 import { readResourceDirectory } from './resource-directory.js';
-import { readDeclaration } from '../../core/declarations.ts';
+import { CONFIG_FILE } from '../../core/config.ts';
+import { parseConfigFile } from '../../core/config-file.ts';
 import { resolveStudioReferences } from '../../core/resourceReferences.ts';
 
 // This reader never accepts mutable-key relationship fallbacks. Managed source
 // writers retain `persisted`; existing filesystem APIs consume `config` instead.
 export function readPersistedStudioConfig(root) {
-  const file = path.join(root, 'studio.config.ts');
+  const file = path.join(root, CONFIG_FILE);
   if (!canonicalDirectory(root, root) || fs.lstatSync(file).isSymbolicLink() || !fs.lstatSync(file).isFile())
-    throw new Error('Studio configuration must be an ordinary source declaration.');
+    throw new Error(`${CONFIG_FILE} must be an ordinary file.`);
   const source = fs.readFileSync(file, 'utf8');
-  const declaration = readDeclaration(source);
-  if ('error' in declaration) throw new Error(`studio.config.ts: ${declaration.error}`);
+  const declaration = parseConfigFile(source);
+  if ('error' in declaration) throw new Error(declaration.error);
   const directory = readResourceDirectory(root);
   return {
     file,

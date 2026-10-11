@@ -112,3 +112,73 @@ test('a conflict inside the generated module block of AGENTS.md takes upstream a
   });
   assert.deepEqual(mergeUpstream(outside.dir, 'upstream', { run }), { merged: false, conflicts: ['AGENTS.md'] });
 });
+
+// Upstream renames a seed file (settings.old.txt to settings.new.txt) and its map then lists only the new name.
+const renamedSeed = () =>
+  studio({ studio: { 'src/prototypes/sam/p/view.tsx': 'team\n' }, upstream: { 'src/platform/a.ts': 'release\n' } });
+const withSeedFile = (dir, git) => {
+  // Put settings.old.txt (a seed file) in the shared base, so both branches start with it.
+  git('checkout', '-q', 'upstream');
+  fs.writeFileSync(path.join(dir, 'settings.old.txt'), 'base\n');
+  const map = JSON.parse(fs.readFileSync(path.join(dir, '.studio/ownership.json'), 'utf8'));
+  map.rules.push({ tier: 'seed', paths: ['settings.old.txt'] });
+  fs.writeFileSync(path.join(dir, '.studio/ownership.json'), JSON.stringify(map));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'seed file');
+  git('checkout', '-q', 'studio');
+  git('merge', '-q', '--no-edit', 'upstream');
+};
+const upstreamRenames = (dir, git) => {
+  git('checkout', '-q', 'upstream');
+  git('rm', '-q', 'settings.old.txt');
+  fs.writeFileSync(path.join(dir, 'settings.new.txt'), 'release\n');
+  const map = JSON.parse(fs.readFileSync(path.join(dir, '.studio/ownership.json'), 'utf8'));
+  map.rules = map.rules.map(rule => ({
+    ...rule,
+    paths: rule.paths.map(file => (file === 'settings.old.txt' ? 'settings.new.txt' : file)),
+  }));
+  fs.writeFileSync(path.join(dir, '.studio/ownership.json'), JSON.stringify(map));
+  git('add', '-A');
+  git('commit', '-q', '-m', 'rename seed file');
+  git('checkout', '-q', 'studio');
+};
+
+test('a seed file upstream deleted keeps the team’s edited copy and receives its replacement', () => {
+  const { dir, git, read } = renamedSeed();
+  withSeedFile(dir, git);
+  fs.writeFileSync(path.join(dir, 'settings.old.txt'), 'team\n');
+  git('commit', '-q', '-am', 'team edits settings');
+  upstreamRenames(dir, git);
+  commands.length = 0;
+  assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: true, changed: true });
+  assert.equal(read('settings.old.txt'), 'team\n', 'the team’s copy stays for a person to move');
+  assert.equal(read('settings.new.txt'), 'release\n');
+  assert.equal(git('status', '--porcelain'), '');
+  assert.deepEqual(commands, ['pnpm install --no-frozen-lockfile', 'pnpm studio sync']);
+});
+
+test('a seed file upstream deleted that the team never edited is simply removed', () => {
+  const { dir, git, read } = renamedSeed();
+  withSeedFile(dir, git);
+  upstreamRenames(dir, git);
+  assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: true, changed: true });
+  assert.equal(fs.existsSync(path.join(dir, 'settings.old.txt')), false);
+  assert.equal(read('settings.new.txt'), 'release\n');
+});
+
+test('a deleted file that the studio’s own map does not list as seed is still reported', () => {
+  const { dir, git } = renamedSeed();
+  git('checkout', '-q', 'upstream');
+  fs.writeFileSync(path.join(dir, 'notes.old.txt'), 'base\n');
+  git('add', '-A');
+  git('commit', '-q', '-m', 'unlisted file');
+  git('checkout', '-q', 'studio');
+  git('merge', '-q', '--no-edit', 'upstream');
+  fs.writeFileSync(path.join(dir, 'notes.old.txt'), 'team\n');
+  git('commit', '-q', '-am', 'team edits it');
+  git('checkout', '-q', 'upstream');
+  git('rm', '-q', 'notes.old.txt');
+  git('commit', '-q', '-m', 'delete it');
+  git('checkout', '-q', 'studio');
+  assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: false, conflicts: ['notes.old.txt'] });
+});

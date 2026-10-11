@@ -5,7 +5,8 @@
 // Creates a studio from <base> in a temporary worktree, makes the changes a team makes (a contributor, a system
 // with its own package dependency, a prototype, a local module, studio settings, and the README), then merges
 // <head> with the update rules in src/platform/node/lib/upstream-merge.js and requires `pnpm check` and `pnpm build` to pass.
-// Until the first release exists, CI passes the pull request's merge base and head.
+// Until the first release exists, CI passes the pull request's merge base and head, so the base can be older than a
+// change that needs a person's help (see PRE_RELEASE_TRANSITIONS below).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -13,6 +14,9 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { mergeUpstream } from '../lib/upstream-merge.js';
 import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
+import { CONFIG_KEYS } from '../../core/config.ts';
+import { readDeclaration } from '../../core/declarations.ts';
+import { serializeConfig } from '../../core/config-file.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const [base, head, ...options] = process.argv.slice(2);
@@ -31,6 +35,61 @@ const edit = (file, change) => {
   const target = path.join(dir, file);
   fs.writeFileSync(target, change(fs.readFileSync(target, 'utf8')));
 };
+
+// Pre-release transitions.
+//
+// Until the first release exists, CI upgrades a studio made from the pull request's merge base, which can predate a
+// change that a released studio would have a migration or an instruction for. Each entry stands in for the manual step
+// a pre-release studio needs after taking such a change. It runs after the merge, and only when its condition holds,
+// so an update from a base that already has the change runs none of them. Nothing here is part of the update rules
+// (src/platform/node/lib/upstream-merge.js). Remove this list when the upgrade test starts from the first release tag.
+const PRE_RELEASE_TRANSITIONS = [
+  {
+    // The supplied modules moved to src/platform/modules. A team system made before the move imports its spec type from
+    // the old path; a person repoints it.
+    name: 'repoint the team system spec import',
+    applies: () =>
+      !fs.existsSync(path.join(dir, 'src/modules/systems/spec.ts')) &&
+      fs
+        .readFileSync(path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts'), 'utf8')
+        .includes("'../../modules/systems/spec.ts'"),
+    apply: () => {
+      const file = path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts');
+      fs.writeFileSync(
+        file,
+        fs
+          .readFileSync(file, 'utf8')
+          .replace("'../../modules/systems/spec.ts'", "'../../platform/modules/systems/spec.ts'"),
+      );
+    },
+  },
+  {
+    // Settings moved from studio.config.ts to studio.config.json. Upstream deleted the TypeScript file, which the team
+    // had edited, so the update kept the team's copy (a seed file) next to the new JSON seed. A person moves the team's
+    // settings into the JSON file and deletes the TypeScript one; Studio is the platform system and is no longer listed
+    // in systems.
+    name: 'move the team settings from studio.config.ts into studio.config.json',
+    applies: () =>
+      fs.existsSync(path.join(dir, 'studio.config.ts')) && fs.existsSync(path.join(dir, 'studio.config.json')),
+    apply: () => {
+      const team = readDeclaration(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8'));
+      if ('error' in team) throw new Error(`studio.config.ts: ${team.error}`);
+      const seed = JSON.parse(fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8'));
+      // The team's values win; settings only the new seed has (such as a module added upstream) are kept.
+      const merged = {
+        ...seed,
+        ...team.value,
+        modules: { ...seed.modules, ...team.value.modules },
+        systems: team.value.systems.filter(id => id !== 'studio'),
+      };
+      const ordered = Object.fromEntries(CONFIG_KEYS.filter(key => key in merged).map(key => [key, merged[key]]));
+      fs.writeFileSync(path.join(dir, 'studio.config.json'), serializeConfig(ordered));
+      fs.rmSync(path.join(dir, 'studio.config.ts'));
+      // The routing block of AGENTS.md follows the enabled modules, which the team's settings just changed.
+      run('pnpm', ['studio', 'sync']);
+    },
+  },
+];
 
 let ok = false;
 try {
@@ -60,7 +119,11 @@ try {
   run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
   run('pnpm', ['new', 'Fixture Prototype']);
   run('pnpm', ['studio', 'create-module', 'fixture-notes', '--label', 'Fixture notes', '--yes']);
-  edit('studio.config.ts', text => text.replace(/name: '[^']*'/, "name: 'Fixture Studio'"));
+  // Studio settings: JSON in a studio that has studio.config.json, the older TypeScript file in one that does not yet
+  // (a base from before the JSON file; this branch goes away with PRE_RELEASE_TRANSITIONS).
+  if (fs.existsSync(path.join(dir, 'studio.config.json')))
+    edit('studio.config.json', text => serializeConfig({ ...JSON.parse(text), name: 'Fixture Studio' }));
+  else edit('studio.config.ts', text => text.replace(/name: '[^']*'/, "name: 'Fixture Studio'"));
   edit('README.md', text => `${text}\nFixture team notes.\n`);
   run('pnpm', ['check']);
   run('git', ['add', '-A']);
@@ -73,19 +136,17 @@ try {
       `Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`,
     );
 
-  // A team system made before the supplied modules moved imports its spec type from the old path; a person repoints it.
-  const teamSystemFile = path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts');
-  const repointed = fs
-    .readFileSync(teamSystemFile, 'utf8')
-    .replace("'../../modules/systems/spec.ts'", "'../../platform/modules/systems/spec.ts'");
-  if (!fs.existsSync(path.join(dir, 'src/modules/systems/spec.ts'))) {
-    fs.writeFileSync(teamSystemFile, repointed);
-    run('git', ['commit', '-q', '--no-verify', '-am', 'Repoint the team system at the moved spec type']);
+  for (const transition of PRE_RELEASE_TRANSITIONS) {
+    if (!transition.applies()) continue;
+    step(`Pre-release transition: ${transition.name}`);
+    transition.apply();
+    run('git', ['add', '-A']);
+    run('git', ['commit', '-q', '--no-verify', '-m', `Pre-release transition: ${transition.name}`]);
   }
 
   step('Verify the updated studio');
   for (const [file, text] of [
-    ['studio.config.ts', "'Fixture Studio'"],
+    ['studio.config.json', '"Fixture Studio"'],
     ['README.md', 'Fixture team notes.'],
     [`${TEAM_SYSTEMS_ROOT}/fixture-kit/package.json`, '"clsx"'],
   ]) {

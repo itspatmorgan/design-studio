@@ -12,16 +12,17 @@ function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-settings-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const config = {
+    $schema: './src/platform/core/studio.config.schema.json',
     name: 'Studio',
     usage: 'team',
     admins: ['sam'],
     modules: { contributors: true, prototypes: true, notes: true },
-    systems: ['studio', 'product', 'brand'],
+    systems: ['product', 'brand'],
     systemMaintainers: { product: [], brand: [] },
     defaultSystem: 'product',
   };
   writeProfiles(root, { sam: { name: 'Sam' }, alex: { name: 'Alex' } });
-  const { directory } = writeFixtureConfig(root, config, { comment: '// keep this comment\n' });
+  const { directory } = writeFixtureConfig(root, config);
   fs.writeFileSync(
     path.join(root, 'AGENTS.md'),
     'Shared guidance\n<!-- studio:modules -->\n<!-- /studio:modules -->\n',
@@ -51,7 +52,7 @@ function fixture(t) {
 
 test('settings saves enforce Admin authority from current files and preserve rejected changes', t => {
   const options = fixture(t);
-  const before = fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8');
+  const before = fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8');
   for (const actor of ['alex', 'unknown', null])
     assert.throws(
       () => saveSettings({ ...options, actor, changes: { admins: ['alex'] } }),
@@ -65,7 +66,7 @@ test('settings saves enforce Admin authority from current files and preserve rej
     { modules: { missing: true } },
   ]) {
     assert.throws(() => saveSettings({ ...options, changes }));
-    assert.equal(fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8'), before);
+    assert.equal(fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8'), before);
   }
   saveSettings({ ...options, changes: { admins: ['alex'] } });
   const base = readSettings(options.root, options.contributors).version;
@@ -90,7 +91,7 @@ test('stale configuration and contributor snapshots cannot overwrite current set
       }),
     error => error.status === 409,
   );
-  fs.appendFileSync(path.join(options.root, 'studio.config.ts'), '// changed elsewhere\n');
+  fs.appendFileSync(path.join(options.root, 'studio.config.json'), '\n');
   assert.throws(
     () => saveSettings({ ...options, changes: { name: 'New' } }),
     error => error.status === 409,
@@ -125,10 +126,31 @@ test('default changes preserve explicit assignments, None, disabled content, and
   );
   const current = readSettings(options.root, options.contributors);
   assert.equal(current.config.modules.notes, false);
-  assert.match(current.source, /keep this comment/);
+  assert.equal(Object.keys(JSON.parse(current.source))[0], '$schema');
+  assert.ok(current.source.endsWith('}\n'));
   assert.doesNotMatch(fs.readFileSync(path.join(options.root, 'AGENTS.md'), 'utf8'), /rules\/notes/);
   saveSettings({ ...options, base: current.version, changes: { modules: { notes: true } } });
   assert.match(fs.readFileSync(path.join(options.root, 'AGENTS.md'), 'utf8'), /rules\/notes/);
+});
+
+test('saving one setting changes only that line of studio.config.json', t => {
+  const options = fixture(t);
+  const file = path.join(options.root, 'studio.config.json');
+  const before = fs.readFileSync(file, 'utf8').split('\n');
+  saveSettings({ ...options, changes: { name: 'Renamed' } });
+  const text = fs.readFileSync(file, 'utf8');
+  const after = text.split('\n');
+  assert.equal(after.length, before.length);
+  assert.deepEqual(
+    after.map((line, i) => [before[i], line]).filter(([was, now]) => was !== now),
+    [['  "name": "Studio",', '  "name": "Renamed",']],
+  );
+  assert.ok(text.endsWith('}\n') && !text.endsWith('\n\n'));
+  // A save that changes nothing does not rewrite the file.
+  const { version } = readSettings(options.root, options.contributors);
+  const plan = saveSettings({ ...options, base: version, changes: { name: 'Renamed' } });
+  assert.deepEqual(plan.edits, []);
+  assert.equal(fs.readFileSync(file, 'utf8'), text);
 });
 
 test('personal local contributors are Admins and switching to team requires an explicit Admin', t => {
@@ -157,21 +179,21 @@ test('CLI plans cannot enable incompatible modules and stale multi-file plans ap
     /incompatible/,
   );
   const plan = planSettings({ ...options, base: undefined, changes: { modules: { notes: true } } });
-  const before = fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8');
+  const before = fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8');
   fs.appendFileSync(path.join(options.root, 'AGENTS.md'), 'Changed elsewhere\n');
   assert.throws(() => applySetupChanges(plan.edits), /changed/);
-  assert.equal(fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8'), before);
+  assert.equal(fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8'), before);
 });
 
 test('full UI snapshots change only the intended source properties', t => {
   const options = fixture(t);
-  const before = fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8');
+  const before = fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8');
   const config = readSettings(options.root, options.contributors).config;
-  const { systems, ...changes } = config;
+  const { systems, $schema, ...changes } = config;
   saveSettings({ ...options, changes: { ...changes, modules: { ...changes.modules, notes: false } } });
   assert.equal(
-    fs.readFileSync(path.join(options.root, 'studio.config.ts'), 'utf8'),
-    before.replace('"notes":true', '"notes":false'),
+    fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8'),
+    before.replace('"notes": true', '"notes": false'),
   );
 });
 

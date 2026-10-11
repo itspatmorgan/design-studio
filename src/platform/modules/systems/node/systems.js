@@ -38,13 +38,15 @@ export function refreshSystems() {
   PLATFORM_ID = platformSystemId(SYSTEM_SPECS);
   PLATFORM_SOURCE = platformSourceOf(PLATFORM_ID, SYSTEM_SPECS[PLATFORM_ID]);
   PROTOTYPE_SYSTEMS = Object.fromEntries(
-    Object.entries(SYSTEM_SPECS).filter(([id, spec]) => CONFIG.systems.includes(id) && spec.role === 'prototype'),
+    Object.entries(SYSTEM_SPECS).filter(([id, spec]) => spec.role === 'prototype' && CONFIG.systems.includes(id)),
   );
   DEFAULT_SYSTEM = CONFIG.defaultSystem;
+  // The platform system is always registered; the team's systems are the ones `systems` lists.
   SYSTEM_SOURCES = Object.fromEntries(
-    ids.filter(id => CONFIG.systems.includes(id)).map(id => [id, sourceOf(id, SYSTEM_SPECS[id])]),
+    ids
+      .filter(id => SYSTEM_SPECS[id].role === 'platform' || CONFIG.systems.includes(id))
+      .map(id => [id, id === PLATFORM_ID ? PLATFORM_SOURCE : sourceOf(id, SYSTEM_SPECS[id])]),
   );
-  SYSTEM_SOURCES[PLATFORM_ID] = PLATFORM_SOURCE;
   SYSTEM_IDS = ids.filter(id => SYSTEM_SPECS[id].role === 'prototype');
 }
 refreshSystems();

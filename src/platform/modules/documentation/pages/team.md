@@ -31,7 +31,7 @@ These permissions guide Studio and repository workflows. They do not authenticat
 
 Give them access to the team's repository through your Git host. Ask their agent to obtain a local copy, register their contributor identity, and open the existing studio. An Admin can then assign any additional permissions.
 
-Each person works in their own local copy. Joining should preserve the team's systems, configuration, and existing work. See [Working environment](/documentation/manual/environment#how-do-i-join-a-team-studio).
+Each person works in their own local copy. Joining should preserve the team's systems, configuration (`studio.config.json`), and existing work. See [Working environment](/documentation/manual/environment#how-do-i-join-a-team-studio).
 
 ## How do teammates contribute safely?
 

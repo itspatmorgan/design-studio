@@ -7,7 +7,7 @@ import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { writeProfiles } from './fixtures/contributors.js';
 import { readDeclaration } from '../../core/declarations.ts';
-import { editStudioConfig } from './studio-setup.js';
+import { parseConfigFile, serializeConfig, withSettings } from '../../core/config-file.ts';
 import { inspectBuild } from '../check/inspect-build.js';
 
 const temporary = () => fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'studio-boundaries-')));
@@ -29,13 +29,15 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     fs.symlinkSync(path.join(original, 'node_modules'), path.join(root, 'node_modules'));
     linkSystemDependencies(original, root);
     writeProfiles(root, { 'boundary-fixture': { name: 'Boundary Fixture', email: 'boundary@example.test' } });
-    const configFile = path.join(root, 'studio.config.ts');
+    const configFile = path.join(root, 'studio.config.json');
     fs.writeFileSync(
       configFile,
-      editStudioConfig(fs.readFileSync(configFile, 'utf8'), {
-        usage: 'personal',
-        admins: [JSON.parse(fs.readFileSync(path.join(root, 'contributors/boundary-fixture.json'))).studioId],
-      }),
+      serializeConfig(
+        withSettings(parseConfigFile(fs.readFileSync(configFile, 'utf8')).value, {
+          usage: 'personal',
+          admins: [JSON.parse(fs.readFileSync(path.join(root, 'contributors/boundary-fixture.json'))).studioId],
+        }),
+      ),
     );
     const env = {
       ...process.env,

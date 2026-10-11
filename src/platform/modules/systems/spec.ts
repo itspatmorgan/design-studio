@@ -1,6 +1,7 @@
 // A design system prototypes build with is a folder in src/systems/<id>/ with a system.ts that says what it is,
 // next to its components/ and styles/theme.css. The build, the dev server and the app all find the systems by
-// their folders; studio.config.ts explicitly registers each installed system.
+// their folders; studio.config.json explicitly registers each of the team's installed systems, while the platform
+// system is always registered and never listed there.
 // The Studio system lives in src/platform/systems/studio/ and declares role: 'platform'; prototypes
 // never use it (src/platform/modules/systems/sources.ts). Systems are found in two roots, the supplied one first
 // (SYSTEM_ROOTS in src/platform/core/roots.ts). Node scripts and the app share this contract.

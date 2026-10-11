@@ -13,7 +13,7 @@ const idOf = (path: string) => path.split('/').at(-2)!;
 const specs = import.meta.glob<FileTypeSpec>('/__studio_modules__/type.ts', { eager: true, import: 'default' });
 const modules = import.meta.glob<FileTypeModule>('/__studio_modules__/open.tsx', { eager: true, import: 'default' });
 
-// A type is on when its module is installed and studio.config.ts leaves it on (the same rule the build uses).
+// A type is on when its module is installed and studio.config.json leaves it on (the same rule the build uses).
 const on = (path: string) => MODULES.some(m => m.id === idOf(path) && compatible(m)) && isEnabled(idOf(path));
 
 export const FILE_TYPES: Record<string, FileTypeSpec> = Object.fromEntries(

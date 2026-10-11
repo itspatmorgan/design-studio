@@ -2,6 +2,7 @@
 // require resource authority through canPerform. Local identity is workflow policy,
 // not filesystem authentication. Runtime import boundaries are independent.
 export { studioRole } from './config.ts';
+import { systemRegistered } from './config.ts';
 import { MODULE_ROOTS, SYSTEM_CONTENT_KEY, systemIdOfPath } from './roots.ts';
 import type { ModuleSpec } from './modules/index.ts';
 
@@ -69,7 +70,8 @@ export function canPerform(
   if (!role) return false;
   if (resource.kind === 'prototype') return role === 'admin' || resource.owner === actor;
   if (resource.kind !== 'system') return role === 'admin';
-  if (!config.systems?.includes(resource.id)) return false;
+  // The platform system is always part of the studio; any other must be registered in `systems`.
+  if (!systemRegistered(config, resource.id, resource.role)) return false;
   if (resource.role === 'platform') return role === 'admin' && action === 'edit';
   if (action === 'manage') return role === 'admin';
   if (resource.status !== 'active') return false;

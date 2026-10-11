@@ -10,7 +10,7 @@ import { systemPackage, systemDependencyProblems } from '../lib/system-dependenc
 // changes nothing until it is run again with --yes.
 //
 //   list                              what is installed, and what is on
-//   enable <module> / disable <module>   turn an optional module on or off in studio.config.ts (its files stay)
+//   enable <module> / disable <module>   turn an optional module on or off in studio.config.json (its files stay)
 //   add <source> [--path <dir>] [--id <name>] [--yes] [--allow-license]
 //                                     add a module or design system from a folder, a git address (https or ssh,
 //                                     with an optional #branch, tag or commit), or an https .tar.gz
@@ -36,7 +36,6 @@ import { compatible, listProblems, moduleProblems, PLATFORM_VERSION } from '../.
 import {
   agentsBlock,
   applyAgentsBlock,
-  editModulesFlag,
   licenseVerdict,
   packPlan,
   parseSource,
@@ -52,8 +51,9 @@ import {
   SYSTEM_IDS,
 } from '../../modules/systems/node/systems.js';
 import { canPerform, studioRole } from '../../core/permissions.ts';
-import { configProblems } from '../../core/config.ts';
-import { applySetupChanges, editStudioConfig } from '../lib/studio-setup.js';
+import { CONFIG_FILE, configProblems } from '../../core/config.ts';
+import { parseConfigFile, serializeConfig, withModule, withSettings } from '../../core/config-file.ts';
+import { applySetupChanges, editDeclaration } from '../lib/studio-setup.js';
 import { planSettings } from '../lib/studio-settings.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { fetchSource, walk } from '../lib/fetch-source.js';
@@ -219,7 +219,7 @@ function list() {
   }
   say();
   say('Systems');
-  for (const id of CONFIG.systems ?? []) {
+  for (const id of [PLATFORM_ID, ...(CONFIG.systems ?? [])]) {
     const where = lock.systems[id] ? `added from ${lock.systems[id].source}` : 'came with the kit';
     say(`  ${id.padEnd(12)} ${id === DEFAULT_SYSTEM ? 'default ' : '        '} ${where}`);
   }
@@ -248,17 +248,20 @@ function setEnabled(id, on) {
 
 // Installation and registration are one operation. Rollback restores both.
 function registerCapability(kind, id, present, remember = () => {}) {
-  const file = rel('studio.config.ts');
-  const text = fs.readFileSync(file, 'utf8');
+  const file = rel(CONFIG_FILE);
+  const parsed = parseConfigFile(fs.readFileSync(file, 'utf8'));
+  if ('error' in parsed) throw new Error(parsed.error);
+  const config = parsed.value;
   let next;
-  if (kind === 'module') next = editModulesFlag(text, id, present ? true : null);
-  else {
-    const declaration = readDeclaration(text);
-    if ('error' in declaration || !Array.isArray(declaration.value.systems))
-      throw new Error('Declare systems as an explicit array in studio.config.ts.');
-    const systems = declaration.value.systems.filter(value => value !== id);
+  if (kind === 'module') {
+    if (!config.modules || typeof config.modules !== 'object' || Array.isArray(config.modules))
+      throw new Error(`Declare modules as explicit true/false entries in ${CONFIG_FILE}.`);
+    next = withModule(config, id, present ? true : null);
+  } else {
+    if (!Array.isArray(config.systems)) throw new Error(`Declare systems as an explicit array in ${CONFIG_FILE}.`);
+    const systems = config.systems.filter(value => value !== id);
     if (present) systems.push(id);
-    const systemMaintainers = { ...declaration.value.systemMaintainers };
+    const systemMaintainers = { ...config.systemMaintainers };
     const spec = present
       ? readDeclaration(fs.readFileSync(rel(systemDirOf(ROOT, id), 'system.ts'), 'utf8'))
       : { value: SYSTEM_SPECS[id] };
@@ -266,11 +269,10 @@ function registerCapability(kind, id, present, remember = () => {}) {
     const permanentId = resourceId(spec.value.studioId);
     if (present) systemMaintainers[permanentId] = [];
     else delete systemMaintainers[permanentId];
-    next = editStudioConfig(text, { systems, systemMaintainers });
+    next = withSettings(config, { systems, systemMaintainers });
   }
-  if (next === null) throw new Error('Declare modules as explicit true/false entries in studio.config.ts.');
   remember(file);
-  fs.writeFileSync(file, next);
+  fs.writeFileSync(file, serializeConfig(next));
 }
 
 async function add() {
@@ -391,14 +393,14 @@ async function add() {
       if (spec.instructions?.length)
         provides.push(`${spec.instructions.length} platform instruction file(s) for agents`);
       say(`It provides: ${provides.join('; ') || 'nothing yet'}.`);
-      say(`${spec.optional ? 'It can be turned off in studio.config.ts.' : 'It cannot be turned off.'}`);
+      say(`${spec.optional ? 'It can be turned off in studio.config.json.' : 'It cannot be turned off.'}`);
     }
     if (deps.length)
       say(
         `It needs npm packages: ${deps.map(([n, v]) => `${n}@${v}${needed.some(([x]) => x === n) ? '' : ' (already installed)'}`).join(', ')}. ${needed.length ? 'They are installed only if you say yes, with install scripts off.' : ''}`,
       );
     if (plan.skipped.length) say(`Left behind: ${plan.skipped.length} hidden or dependency file(s).`);
-    say(`Registration: studio.config.ts ${kind === 'module' ? `modules.${id}: true` : `systems includes ${id}`}.`);
+    say(`Registration: studio.config.json ${kind === 'module' ? `modules.${id}: true` : `systems includes ${id}`}.`);
     say('Everything it adds is code that will run in your app and your dev server, so read it before you say yes.');
     if (names.includes('check.ts'))
       say('With --yes, its check.ts runs on your computer during installation, after its packages are installed.');
@@ -425,7 +427,7 @@ async function add() {
       if (kind === 'system' && m.from === 'system.ts')
         fs.writeFileSync(
           to,
-          editStudioConfig(fs.readFileSync(path.join(pack.dir, m.from), 'utf8'), { studioId: installationId }),
+          editDeclaration(fs.readFileSync(path.join(pack.dir, m.from), 'utf8'), { studioId: installationId }),
         );
       else if (kind === 'system' && m.from === 'package.json')
         fs.writeFileSync(
@@ -598,7 +600,7 @@ function remove() {
     paths.push(systemDirOf(ROOT, id));
     if (SYSTEM_IDS.length === 1) fail(`${id} is the only design system, and prototypes need one. Add another first.`);
     if (id === DEFAULT_SYSTEM)
-      fail(`${id} is the default design system. Set defaultSystem in studio.config.ts to another one first.`);
+      fail(`${id} is the default design system. Set defaultSystem in studio.config.json to another one first.`);
     const users = [];
     const protoRoot = rel('src', 'prototypes');
     for (const who of fs.existsSync(protoRoot)
@@ -739,7 +741,7 @@ function create(kind) {
     if (fs.existsSync(rel(move.to))) fail(`${move.to} already exists.`);
     say(`Create ${move.to}`);
   }
-  say(`Register ${kind} ${id} in studio.config.ts and synchronize agent routing.`);
+  say(`Register ${kind} ${id} in studio.config.json and synchronize agent routing.`);
   if (!flags.yes) {
     say('Nothing written. Apply this scaffold with --yes.');
     return;
@@ -757,7 +759,7 @@ function create(kind) {
       const content = fill(fs.readFileSync(path.join(template, sourceOf.get(m.from)), 'utf8'));
       let source = content;
       if (kind === 'system' && sourceOf.get(m.from) === 'system.ts')
-        source = editStudioConfig(content, { studioId: installationId });
+        source = editDeclaration(content, { studioId: installationId });
       if (kind === 'system' && sourceOf.get(m.from) === 'package.json') {
         const host = JSON.parse(fs.readFileSync(rel('package.json'), 'utf8'));
         source =
@@ -853,7 +855,7 @@ function configure() {
   }
   applySetupChanges(plan.edits);
   syncInFreshProcess();
-  say('Updated studio.config.ts. Restart the dev server.');
+  say('Updated studio.config.json. Restart the dev server.');
 }
 
 function status() {
@@ -867,7 +869,7 @@ function status() {
       enabled: ENABLED_MODULES.map(module => module.id),
       disabled: Object.keys(MODULES).filter(id => !ENABLED_MODULES.some(module => module.id === id)),
     },
-    systems: CONFIG.systems,
+    systems: [PLATFORM_ID, ...CONFIG.systems],
     systemContentPlaceholders: systemContent.filter(
       file => fs.existsSync(rel(file)) && fs.readFileSync(rel(file), 'utf8').includes('**Placeholder.**'),
     ),

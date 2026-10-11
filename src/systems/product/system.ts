@@ -2,7 +2,7 @@ import type { SystemSpec } from '../../platform/modules/systems/spec.ts';
 
 // The placeholder design system the kit ships with. Replace it with your product's, or add yours next to it
 // (pnpm studio create-system). A prototype picks one with "system" in its meta.json; without it, the one named by
-// the explicitly configured defaultSystem in studio.config.ts.
+// the explicitly configured defaultSystem in studio.config.json.
 export default {
   status: 'active',
   role: 'prototype',

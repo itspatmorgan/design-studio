@@ -126,10 +126,10 @@ test('create and rename preserve addresses, file errors recover, and system remo
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
     linkSystemDependencies(root, dir);
     // This journey creates prototypes with both starter systems, regardless of the host's QA state.
-    const { editStudioConfig } = await import('./studio-setup.js');
+    const { editDeclaration } = await import('./studio-setup.js');
     for (const id of ['product', 'marketing']) {
       const declaration = path.join(dir, 'src/systems', id, 'system.ts');
-      fs.writeFileSync(declaration, editStudioConfig(fs.readFileSync(declaration, 'utf8'), { status: 'active' }));
+      fs.writeFileSync(declaration, editDeclaration(fs.readFileSync(declaration, 'utf8'), { status: 'active' }));
     }
     // CLI operations need a registered identity independent of the host's Git config.
     const ownerContributorId = JSON.parse(
@@ -247,13 +247,13 @@ test('create and rename preserve addresses, file errors recover, and system remo
       await handler({...request, url:'/file?contributor=system-content&prototype=studio%3Acontext&path=beta-context.md'}, systemContentResponse, () => assert.fail('Unexpected fallback'));
       assert.equal(systemContentResponse.statusCode, 200);
       // Exercise both shared-source handlers with current grants, including revocation.
-      const configBeforePermissions = fs.readFileSync('studio.config.ts', 'utf8');
-      const permissionConfig = (await load('src/platform/core/declarations.ts')).readDeclaration(configBeforePermissions).value;
+      const configBeforePermissions = fs.readFileSync('studio.config.json', 'utf8');
+      const permissionConfig = JSON.parse(configBeforePermissions);
       fs.writeFileSync('contributors/permission-admin.json', JSON.stringify({ studioId: createResourceId(), name: 'Permission Admin', email: '', github: '', welcomeDismissed: false }));
       permissionConfig.usage = 'team'; permissionConfig.admins = [JSON.parse(fs.readFileSync('contributors/permission-admin.json')).studioId];
       const ownerContributorIdentity = JSON.parse(fs.readFileSync('contributors/patrick.json')).studioId;
       permissionConfig.systemMaintainers[defaultIdentity] = [ownerContributorIdentity];
-      const writePermissionConfig = () => fs.writeFileSync('studio.config.ts', 'export default ' + JSON.stringify(permissionConfig) + ';');
+      const writePermissionConfig = () => fs.writeFileSync('studio.config.json', JSON.stringify(permissionConfig, null, 2));
       const sourceRequest = async (url, body) => {
         const req = Readable.from([JSON.stringify(body)]); req.method = 'POST'; req.url = url; req.headers = {'sec-fetch-site':'same-origin'};
         const res = response(); await handler(req, res, () => assert.fail('Unexpected fallback')); return res;
@@ -270,15 +270,15 @@ test('create and rename preserve addresses, file errors recover, and system remo
       permissionConfig.systemMaintainers[defaultIdentity] = []; writePermissionConfig();
       const themeDenied = await sourceRequest('/system-source', {action:'write', path:themePath, base:theme.version, content:theme.content});
       assert.equal(themeDenied.statusCode, 403);
-      fs.writeFileSync('studio.config.ts', configBeforePermissions); fs.unlinkSync('contributors/permission-admin.json');
+      fs.writeFileSync('studio.config.json', configBeforePermissions); fs.unlinkSync('contributors/permission-admin.json');
 
       fs.mkdirSync('src/systems/z-beta-fixture');
       const newSystemIdentity = createResourceId();
       const productSource = fs.readFileSync('src/systems/product/system.ts', 'utf8');
-      const { editStudioConfig } = await load('src/platform/node/lib/studio-setup.js');
-      fs.writeFileSync('src/systems/z-beta-fixture/system.ts', editStudioConfig(productSource, { studioId: newSystemIdentity }));
-      const registeredConfig = readDeclaration(fs.readFileSync('studio.config.ts', 'utf8')).value;
-      fs.writeFileSync('studio.config.ts', editStudioConfig(fs.readFileSync('studio.config.ts', 'utf8'), { systems: [...registeredConfig.systems, 'z-beta-fixture'], systemMaintainers: { ...registeredConfig.systemMaintainers, [newSystemIdentity]: [] } }));
+      const { editDeclaration } = await load('src/platform/node/lib/studio-setup.js');
+      fs.writeFileSync('src/systems/z-beta-fixture/system.ts', editDeclaration(productSource, { studioId: newSystemIdentity }));
+      const registeredConfig = JSON.parse(fs.readFileSync('studio.config.json', 'utf8'));
+      fs.writeFileSync('studio.config.json', JSON.stringify({ ...registeredConfig, systems: [...registeredConfig.systems, 'z-beta-fixture'], systemMaintainers: { ...registeredConfig.systemMaintainers, [newSystemIdentity]: [] } }, null, 2));
       const metaPath = path.join(moved, 'meta.json');
       const meta = JSON.parse(fs.readFileSync(metaPath)); meta.systemId = newSystemIdentity;
       fs.writeFileSync(metaPath, JSON.stringify(meta));
@@ -359,8 +359,8 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
       assert.equal(result.status, expected, result.stderr + result.stdout);
     }
     const { readDeclaration } = await import('../../core/modules/pack.ts');
-    const configFile = path.join(dir, 'studio.config.ts');
-    const config = readDeclaration(fs.readFileSync(configFile, 'utf8')).value;
+    const configFile = path.join(dir, 'studio.config.json');
+    const config = JSON.parse(fs.readFileSync(configFile, 'utf8'));
     writeProfiles(dir, { sam: { name: 'Sam', github: 'sam-fixture' } });
     const patrickId = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/patrick.json'))).studioId;
     const samId = JSON.parse(fs.readFileSync(path.join(dir, 'contributors/sam.json'))).studioId;
@@ -369,13 +369,13 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
     config.usage = 'team';
     config.admins = [patrickId];
     config.systemMaintainers[productId] = [samId];
-    fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2) + '\n');
     const systemFile = path.join(dir, 'src/systems/product/system.ts');
-    const { editStudioConfig } = await import('./studio-setup.js');
-    fs.writeFileSync(systemFile, editStudioConfig(fs.readFileSync(systemFile, 'utf8'), { status: 'active' }));
+    const { editDeclaration } = await import('./studio-setup.js');
+    fs.writeFileSync(systemFile, editDeclaration(fs.readFileSync(systemFile, 'utf8'), { status: 'active' }));
     runGit(
       'add',
-      'studio.config.ts',
+      'studio.config.json',
       'contributors/sam.json',
       ...config.systems.map(key => `${systemDirOf(dir, key)}/system.ts`),
     );
@@ -428,14 +428,14 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
     runGit('commit', '-qm', 'Restore profile');
     const beforeElevation = runGit('rev-parse', 'HEAD');
     config.admins.push(samId);
-    fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
-    runGit('add', 'studio.config.ts');
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2) + '\n');
+    runGit('add', 'studio.config.json');
     runGit('commit', '-qm', 'Proposed Admin assignment');
     assert.equal(check(beforeElevation).status, 1, 'Proposed grants do not authorize themselves');
     const beforeMode = runGit('rev-parse', 'HEAD');
     config.usage = 'personal';
-    fs.writeFileSync(configFile, 'export default ' + JSON.stringify(config) + ';');
-    runGit('add', 'studio.config.ts');
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 2) + '\n');
+    runGit('add', 'studio.config.json');
     runGit('commit', '-qm', 'Proposed personal mode');
     assert.equal(
       check(beforeMode, 'unregistered-fixture').status,
@@ -577,9 +577,10 @@ test('standalone diagrams are discovered by both extensions and disabling preser
         '--eval',
         `
       import fs from 'node:fs'; import assert from 'node:assert/strict';
-      import { editModulesFlag } from './src/platform/core/modules/pack.ts';
-      const config='studio.config.ts';
-      fs.writeFileSync(config, editModulesFlag(fs.readFileSync(config,'utf8'), 'diagrams', true));
+      import { parseConfigFile, serializeConfig, withModule } from './src/platform/core/config-file.ts';
+      const config='studio.config.json';
+      const setModule=on=>fs.writeFileSync(config, serializeConfig(withModule(parseConfigFile(fs.readFileSync(config,'utf8')).value, 'diagrams', on)));
+      setModule(true);
       const folder='src/prototypes/patrick/feedback-inbox';
       fs.writeFileSync(folder+'/test-flow.mermaid','flowchart LR\\n  a --> b');
       fs.writeFileSync(folder+'/test-sequence.mmd','sequenceDiagram\\n  Alice->>Bob: Hello');
@@ -610,7 +611,7 @@ test('standalone diagrams are discovered by both extensions and disabling preser
         assert.ok(manifest.manual.some(p=>p.slug==='diagrams' && p.source==='/platform/modules/documentation/pages/diagrams.md'));
         assert.ok(manifest.manual.every(p=>p.source?.startsWith('/platform/modules/documentation/pages/')));
       }
-      fs.writeFileSync(config,editModulesFlag(fs.readFileSync(config,'utf8'),'diagrams',false));
+      setModule(false);
     `,
       ],
       { cwd: dir, encoding: 'utf8', stdio: 'pipe' },

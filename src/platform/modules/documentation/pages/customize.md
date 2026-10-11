@@ -29,8 +29,9 @@ Open **Studio settings** from the local gear icon or search. Registered contribu
 
 Choose **Save changes** to save locally and restart Studio with the new configuration. **Discard** resets unsaved edits. If settings changed elsewhere while you were editing, reload before retrying the save.
 
-Saving settings does not share or publish them. See [Personal & team use](/documentation/manual/team) for permissions and shared changes.
+Settings live in `studio.config.json` at the top of your project, a plain JSON file your team owns. Saving from Studio settings changes only the fields you edited, and editors that understand JSON Schema validate and complete the file. Your own design systems are listed there; Studio's own system is always available and is not listed.
 
+Saving settings does not share or publish them. See [Personal & team use](/documentation/manual/team) for permissions and shared changes.
 ## What are modules?
 
 Modules add capabilities such as Documents, Diagrams, and Canvases. Open **Studio settings → Modules** to enable or disable installed optional modules. Required capabilities remain enabled.

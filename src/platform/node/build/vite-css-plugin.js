@@ -14,12 +14,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONFIG, PROTOTYPE_DIRS } from '../lib/modules.js';
 import { PROTOTYPE_SYSTEMS } from '../../modules/systems/node/systems.js';
+import { systemRegistered } from '../../core/config.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const STYLESHEET = path.join(ROOT, 'src', 'platform', 'app', 'styles.css');
 export function inventories(deploy = false) {
   return Object.entries(SYSTEM_SPECS)
-    .filter(([id, spec]) => CONFIG.systems.includes(id) && (!deploy || spec.status !== 'archived'))
+    .filter(([id, spec]) => systemRegistered(CONFIG, id, spec.role) && (!deploy || spec.status !== 'archived'))
     .map(([id, spec]) => ({
       ...spec,
       inventory: themeInventory(

@@ -9,7 +9,7 @@
     "includes": [
       "**",
       "!pnpm-lock.yaml",
-      "!studio.config.ts",
+      "!studio.config.json",
       "!.agents",
       "!.claude",
       "!contributors",

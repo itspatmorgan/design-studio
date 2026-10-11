@@ -15,12 +15,12 @@ function fixture() {
   const config = {
     usage: 'team',
     admins: ['admin'],
-    systems: ['studio', 'kit', 'other'],
+    systems: ['kit', 'other'],
     systemMaintainers: { kit: [], other: [] },
     defaultSystem: 'other',
   };
   writeProfiles(root, { admin: { name: 'Admin' }, member: { name: 'Member' } });
-  for (const id of config.systems) {
+  for (const id of ['studio', ...config.systems]) {
     const systemsRoot = id === 'studio' ? 'src/platform/systems' : 'src/systems';
     fs.mkdirSync(path.join(root, systemsRoot, id, 'components'), { recursive: true });
     fs.writeFileSync(
@@ -63,6 +63,20 @@ test('system actions recheck Admin roles, protect Studio, default and unsafe ide
       await assert.rejects(systemAction(root, 'admin', { action, system: 'studio', name: 'Changed' }), /protected/);
     for (const action of ['archive-check', 'delete-check'])
       await assert.rejects(systemAction(root, 'admin', { action, system: 'other' }), /another default/);
+    // An installed prototype system that `systems` does not list is not registered; Studio, which is never listed, is.
+    fs.mkdirSync(path.join(root, 'src/systems/unlisted'), { recursive: true });
+    fs.writeFileSync(
+      path.join(root, 'src/systems/unlisted/system.ts'),
+      `export default { studioId: '${createResourceId()}', status: 'active', role: 'prototype', label: 'Unlisted' };`,
+    );
+    await assert.rejects(
+      systemAction(root, 'admin', { action: 'rename', system: 'unlisted', name: 'Changed' }),
+      /registered/,
+    );
+    await assert.rejects(
+      systemAction(root, 'admin', { action: 'rename', system: 'studio', name: 'Changed' }),
+      /protected/,
+    );
     for (const system of ['../kit', 'missing'])
       await assert.rejects(systemAction(root, 'admin', { action: 'rename', system, name: 'Changed' }), /registered/);
     await assert.rejects(
@@ -91,10 +105,9 @@ test('archive and restore track only prototypes archived together; delete preser
     const before = fs.readFileSync(path.join(path.dirname(active), 'view.tsx'), 'utf8');
     applySystemLifecycle(planSystemLifecycle(root, config, 'delete', 'kit'));
     assert.equal(fs.existsSync(path.join(root, 'src/systems/kit')), false);
-    assert.deepEqual(
-      readDeclaration(fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8')).value.systemMaintainers,
-      { [directory.systemIds.other]: [] },
-    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8')).systemMaintainers, {
+      [directory.systemIds.other]: [],
+    });
     assert.equal(fs.existsSync(path.join(root, '.trash')), false);
     assert.deepEqual(JSON.parse(fs.readFileSync(active)).systemMissing, {
       systemId: directory.systemIds.kit,
@@ -134,10 +147,10 @@ test('true rename preserves identity relationships and share links, repairs sour
     assert.equal(fs.readFileSync(meta, 'utf8'), sourceMeta);
     applySystemLifecycle(planSystemLifecycle(root, config, 'rename', 'kit', { name: 'Team Kit' }));
     assert.equal(fs.readFileSync(meta, 'utf8'), sourceMeta);
-    assert.deepEqual(
-      readDeclaration(fs.readFileSync(path.join(root, 'studio.config.ts'), 'utf8')).value.systemMaintainers,
-      { [directory.systemIds.kit]: [directory.contributorIds.member], [directory.systemIds.other]: [] },
-    );
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'studio.config.json'), 'utf8')).systemMaintainers, {
+      [directory.systemIds.kit]: [directory.contributorIds.member],
+      [directory.systemIds.other]: [],
+    });
     assert.equal(JSON.parse(fs.readFileSync(meta)).rebuild.targetSystemId, directory.systemIds.kit);
     assert.match(fs.readFileSync(path.join(path.dirname(meta), 'view.tsx'), 'utf8'), /@\/systems\/team-kit\//);
     assert.ok(fs.readFileSync(path.join(root, 'README.md'), 'utf8').includes(`/systems/${directory.systemIds.kit})`));
@@ -153,7 +166,7 @@ test('true rename preserves identity relationships and share links, repairs sour
     assert.match(spec, /Team Kit/);
     assert.throws(
       () =>
-        planSystemLifecycle(root, { ...config, systems: ['studio', 'team-kit', 'other'] }, 'rename', 'team-kit', {
+        planSystemLifecycle(root, { ...config, systems: ['team-kit', 'other'] }, 'rename', 'team-kit', {
           name: 'Other',
         }),
       /already/,

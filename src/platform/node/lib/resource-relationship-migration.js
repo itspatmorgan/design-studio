@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { resourceId } from '../../core/resourceIdentity.ts';
-import { readDeclaration } from '../../core/declarations.ts';
+import { CONFIG_FILE } from '../../core/config.ts';
+import { parseConfigFile, serializeConfig, withSettings } from '../../core/config-file.ts';
 import { persistStudioReferences, resolveStudioReferences } from '../../core/resourceReferences.ts';
 import { readResourceDirectory } from './resource-directory.js';
 import { auditResourceIdentities } from './resource-identity-audit.js';
-import { editStudioConfig } from './studio-setup.js';
 
 // Source IDs must be complete first. This stage is composed into the guarded
 // saved-preview migration; ordinary runtime readers do not accept source keys.
@@ -15,9 +15,9 @@ export function planResourceRelationshipMigration(root, types) {
     throw new Error('Complete valid source identities before migrating relationships.');
   const directory = readResourceDirectory(root);
   const changes = [];
-  const configFile = path.join(root, 'studio.config.ts'),
+  const configFile = path.join(root, CONFIG_FILE),
     configBefore = fs.readFileSync(configFile, 'utf8');
-  const declaration = readDeclaration(configBefore);
+  const declaration = parseConfigFile(configBefore);
   if ('error' in declaration) throw new Error(declaration.error);
   const configuration = declaration.value;
   // Migration alone accepts source keys. Already migrated IDs are preserved and
@@ -44,11 +44,13 @@ export function planResourceRelationshipMigration(root, types) {
   const runtime = resolveStudioReferences(nextConfig, directory);
   if (JSON.stringify(persistStudioReferences(runtime, directory)) !== JSON.stringify(nextConfig))
     throw new Error('Relationship migration cannot round-trip configuration.');
-  const configAfter = editStudioConfig(configBefore, {
-    defaultSystem: nextConfig.defaultSystem,
-    ...(nextConfig.admins !== undefined && { admins: nextConfig.admins }),
-    systemMaintainers: nextConfig.systemMaintainers,
-  });
+  const configAfter = serializeConfig(
+    withSettings(configuration, {
+      defaultSystem: nextConfig.defaultSystem,
+      ...(nextConfig.admins !== undefined && { admins: nextConfig.admins }),
+      systemMaintainers: nextConfig.systemMaintainers,
+    }),
+  );
   if (configBefore !== configAfter) changes.push({ file: configFile, before: configBefore, after: configAfter });
   const prototypes = audit.resources.filter(resource => resource.kind === 'prototype');
   for (const prototype of prototypes) {

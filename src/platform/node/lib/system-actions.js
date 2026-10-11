@@ -7,6 +7,7 @@ import { editorFile, openEditor } from '../build/files/editor.js';
 import { reveal } from '../build/files/ops.js';
 import { readDeclaration } from '../../core/modules/pack.ts';
 import { canPerform, studioRole } from '../../core/permissions.ts';
+import { systemRegistered } from '../../core/config.ts';
 import { planSystemLifecycle, systemDependents } from './system-lifecycle.js';
 import { systemDirOf } from './system-folders.js';
 
@@ -52,7 +53,11 @@ export async function systemAction(root, actor, body) {
     });
     return { items };
   }
-  if (typeof system !== 'string' || !/^[a-z][a-z0-9-]*$/.test(system) || !config.systems.includes(system))
+  if (
+    typeof system !== 'string' ||
+    !/^[a-z][a-z0-9-]*$/.test(system) ||
+    !fs.existsSync(path.join(root, systemDirOf(root, system), 'system.ts'))
+  )
     fail('Choose a registered system.', 404);
   const dir = editorFile(root, systemDirOf(root, system)),
     file = editorFile(root, `${systemDirOf(root, system)}/system.ts`);
@@ -60,6 +65,8 @@ export async function systemAction(root, actor, body) {
   const declaration = readDeclaration(fs.readFileSync(file, 'utf8'));
   if ('error' in declaration) fail(declaration.error);
   const spec = declaration.value;
+  // The platform system is always registered; any other must be listed in `systems`.
+  if (!systemRegistered(config, system, spec.role)) fail('Choose a registered system.', 404);
   if (action === 'open') return openEditor(dir, { reveal });
   if (action === 'reveal') {
     await reveal(dir);

@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { readDeclaration } from '../../core/modules/pack.ts';
-import { editStudioConfig, applySetupChanges } from './studio-setup.js';
+import { editDeclaration, applySetupChanges } from './studio-setup.js';
+import { CONFIG_FILE, systemRegistered } from '../../core/config.ts';
+import { parseConfigFile, serializeConfig, withSettings } from '../../core/config-file.ts';
 import { snapshotFiles, repairText } from './artifact-moves.js';
 import { canonicalDirectory } from './safe-paths.js';
 import { resourceId } from '../../core/resourceIdentity.ts';
@@ -47,7 +49,7 @@ export function unavailablePrototypeRoots(root) {
     .map(({ file }) => path.dirname(file));
 }
 export function planSystemLifecycle(root, config, action, id, { name, restorePrototypes = false } = {}) {
-  if (!/^[a-z][a-z0-9-]*$/.test(id ?? '') || !config.systems.includes(id))
+  if (!/^[a-z][a-z0-9-]*$/.test(id ?? '') || !fs.existsSync(path.join(root, systemDirOf(root, id), 'system.ts')))
     throw new Error('Choose a registered system.');
   const dir = path.join(root, systemDirOf(root, id)),
     file = path.join(dir, 'system.ts');
@@ -56,14 +58,16 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
   const declaration = readDeclaration(fs.readFileSync(file, 'utf8'));
   if ('error' in declaration) throw new Error(declaration.error);
   const spec = declaration.value;
-  const systemIdentity = resourceId(spec.studioId);
-  const configFile = path.join(root, 'studio.config.ts');
-  const configSource = fs.readFileSync(configFile, 'utf8'),
-    persistedDeclaration = readDeclaration(configSource);
-  if ('error' in persistedDeclaration) throw new Error(persistedDeclaration.error);
-  const persisted = persistedDeclaration.value;
+  // The platform system is always part of the studio and is never in `systems`; it is protected, not unregistered.
   if (spec.role !== 'prototype')
     throw new Error('Studio is maintained by the platform. Its identity and availability are protected.');
+  if (!systemRegistered(config, id, spec.role)) throw new Error('Choose a registered system.');
+  const systemIdentity = resourceId(spec.studioId);
+  const configFile = path.join(root, CONFIG_FILE);
+  const configSource = fs.readFileSync(configFile, 'utf8'),
+    persistedDeclaration = parseConfigFile(configSource);
+  if ('error' in persistedDeclaration) throw new Error(persistedDeclaration.error);
+  const persisted = persistedDeclaration.value;
   const dependents = systemDependents(root, systemIdentity);
   const edits = [];
   let nextId = id;
@@ -79,13 +83,15 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
     if (nextId !== id && (systemFolderTaken(root, nextId) || Object.hasOwn(config.modules ?? {}, nextId)))
       throw new Error('A system or module already uses this name.');
     // Preserve the independently declared theme scope: its CSS contract is not the folder identity.
-    edits.push(edit(file, editStudioConfig(fs.readFileSync(file, 'utf8'), { label: name.trim() })));
+    edits.push(edit(file, editDeclaration(fs.readFileSync(file, 'utf8'), { label: name.trim() })));
     if (nextId !== id) {
       move = { from: dir, to: nextDir };
       edits.push(
         edit(
           configFile,
-          editStudioConfig(configSource, { systems: config.systems.map(value => (value === id ? nextId : value)) }),
+          serializeConfig(
+            withSettings(persisted, { systems: config.systems.map(value => (value === id ? nextId : value)) }),
+          ),
         ),
       );
       // Resolve relative imports/Markdown links against actual files, and system aliases/URLs against the old identity.
@@ -129,12 +135,12 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
         }
       }
       const declarationEdit = edits.find(change => change.file === file);
-      declarationEdit.after = editStudioConfig(declarationEdit.after, { renameReview: review });
+      declarationEdit.after = editDeclaration(declarationEdit.after, { renameReview: review });
     }
   } else if (action === 'archive') {
     if (id === config.defaultSystem) throw new Error('Choose another default system before archiving this one.');
     if (spec.status !== 'active') throw new Error('This system is already archived.');
-    edits.push(edit(file, editStudioConfig(fs.readFileSync(file, 'utf8'), { status: 'archived' })));
+    edits.push(edit(file, editDeclaration(fs.readFileSync(file, 'utf8'), { status: 'archived' })));
     for (const { file, meta } of dependents) {
       if (meta.status === 'archived') continue;
       meta.status = 'archived';
@@ -143,7 +149,7 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
     }
   } else if (action === 'restore') {
     if (spec.status !== 'archived') throw new Error('This system is already active.');
-    edits.push(edit(file, editStudioConfig(fs.readFileSync(file, 'utf8'), { status: 'active' })));
+    edits.push(edit(file, editDeclaration(fs.readFileSync(file, 'utf8'), { status: 'active' })));
     for (const { file, meta } of prototypeMetadata(root)) {
       if (meta.archivedBySystemId !== systemIdentity) continue;
       if (restorePrototypes && !meta.systemMissing) delete meta.status;
@@ -156,12 +162,14 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
     edits.push(
       edit(
         configFile,
-        editStudioConfig(configSource, {
-          systemMaintainers: Object.fromEntries(
-            Object.entries(persisted.systemMaintainers).filter(([key]) => key !== systemIdentity),
-          ),
-          systems: config.systems.filter(value => value !== id),
-        }),
+        serializeConfig(
+          withSettings(persisted, {
+            systemMaintainers: Object.fromEntries(
+              Object.entries(persisted.systemMaintainers).filter(([key]) => key !== systemIdentity),
+            ),
+            systems: config.systems.filter(value => value !== id),
+          }),
+        ),
       ),
     );
     for (const { file, meta } of dependents) {

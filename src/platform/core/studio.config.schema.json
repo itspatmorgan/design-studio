@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design Studio configuration",
+  "description": "studio.config.json: the small set of choices a studio's team shares. Start personal; switch to team use in Studio settings when you are ready to collaborate. Installed capabilities (modules) and design-system registration are explicit, never inferred from what is on disk. The rules that matter are enforced by `pnpm check` (src/platform/core/config.ts); this schema lets editors validate and complete the file, and a test keeps the two in agreement.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "usage", "modules", "systems", "systemMaintainers", "defaultSystem"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Where editors find this schema, relative to this file. It has no effect on the studio."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "\\S",
+      "description": "What the studio calls itself: the rail's tooltip and every page's title. Required, and not blank."
+    },
+    "usage": {
+      "enum": ["personal", "team"],
+      "description": "Start personal. Personal use gives the registered local contributor Admin access and skips team ownership checks; build, asset, and dependency checks still apply. Switch to team use in Studio settings when you are ready to collaborate: contributors then work within their assigned scopes and Admins manage the studio. Team use requires the Contributors & Permissions module installed and enabled, and at least one Admin in `admins`."
+    },
+    "tagline": {
+      "type": "string",
+      "maxLength": 140,
+      "description": "Optional. One short line under the name on the front page of the published site that tells a visitor what this is, such as \"Our team's prototypes and design systems.\" Up to 140 characters. Left out, there is no line."
+    },
+    "modules": {
+      "type": "object",
+      "description": "Installed capabilities, each declared explicitly as true (on) or false (off). Every installed module needs an entry: omission is invalid and never turns a module on. Turning a module off keeps its files and content. Required modules cannot be turned off, and an id that is not installed is an error. Turn optional modules on or off in Studio settings or with `pnpm studio enable|disable`.",
+      "additionalProperties": { "type": "boolean" }
+    },
+    "systems": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string" },
+      "description": "Your own design systems, registered explicitly by source-folder name under src/systems/, such as [\"product\"]. Every installed design system must be listed, and discovery on disk never registers one. Studio's own system (the platform system, in src/platform/systems/studio) is always available and must not be listed: listing it is an error."
+    },
+    "systemMaintainers": {
+      "type": "object",
+      "description": "Who may edit each design system in addition to Admins. Every system in `systems` needs an entry: its permanent ID mapped to the permanent IDs of its maintainers, or [] when unassigned. The platform system cannot have an entry. Renaming a system keeps its entry, deleting removes it, and archiving preserves it for restoration. Assign maintainers in Studio settings or with `pnpm studio configure --maintainers`.",
+      "additionalProperties": {
+        "type": "array",
+        "uniqueItems": true,
+        "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+      }
+    },
+    "defaultSystem": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The design system selected when a prototype is created without a different choice, as the system's permanent ID, and one of the systems in `systems`. It is a creation default only: each prototype persists its own explicit systemId, so changing the default does not change existing prototypes. There is no alphabetical fallback."
+    },
+    "admins": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+      "description": "Admins, as the permanent IDs of registered contributors. Required and nonempty in team use, where saving cannot remove the last Admin; optional in personal use, where the local contributor is Admin automatically. Several Admins are supported. Assign them in Studio settings or with `pnpm studio configure --admins`."
+    }
+  },
+  "if": {
+    "properties": { "usage": { "const": "team" } },
+    "required": ["usage"]
+  },
+  "then": {
+    "required": ["admins"],
+    "properties": { "admins": { "minItems": 1 } }
+  }
+}

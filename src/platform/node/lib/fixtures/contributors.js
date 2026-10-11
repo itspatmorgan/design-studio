@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { editStudioConfig } from '../studio-setup.js';
+import { CONFIG_FILE } from '../../../core/config.ts';
+import { parseConfigFile, serializeConfig, withModule } from '../../../core/config-file.ts';
 import { createResourceId } from '../../../core/resourceIdentity.ts';
 
 export function writeProfiles(root, entries) {
@@ -29,6 +30,9 @@ export function ensureTeamManagement(root) {
       "export default { id: 'contributors', label: 'Team fixture', version: '0.1.0', optional: true, lib: false, section: { key: 'contributors' } };\n",
     );
   }
-  const config = path.join(root, 'studio.config.ts');
-  fs.writeFileSync(config, editStudioConfig(fs.readFileSync(config, 'utf8'), { modules: { contributors: true } }));
+  const config = path.join(root, CONFIG_FILE);
+  fs.writeFileSync(
+    config,
+    serializeConfig(withModule(parseConfigFile(fs.readFileSync(config, 'utf8')).value, 'contributors', true)),
+  );
 }

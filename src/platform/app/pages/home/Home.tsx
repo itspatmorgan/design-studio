@@ -4,7 +4,7 @@
 // what is worth showing and in what order, so a module added to the app can put something here with no change to this file.
 //
 // While you run the app locally it greets you and puts your own work first. The deployed site doesn't know who is
-// looking, so it names the app, adds the tagline from studio.config.ts, and puts what colleagues come for first.
+// looking, so it names the app, adds the tagline from studio.config.json, and puts what colleagues come for first.
 import { getRouteApi } from '@tanstack/react-router';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Search01Icon } from '@hugeicons/core-free-icons';

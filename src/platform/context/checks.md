@@ -16,7 +16,7 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | `pnpm test:changed <base> <head>` | Execute affected regression groups. Add `--plan-only` to inspect selection or `--full` to force all tests. |
 | `pnpm build:release` | Full regression suite followed by the production build. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |
-| `pnpm format` / `pnpm format:check` | Format upstream code, JSON and CSS with Biome, or check that it is formatted. Team and seed paths, generated files and `studio.config.ts` are excluded. CI runs the check. |
+| `pnpm format` / `pnpm format:check` | Format upstream code, JSON and CSS with Biome, or check that it is formatted. Team and seed paths, generated files and `studio.config.json` are excluded. CI runs the check. |
 | `node src/platform/node/check/upgrade-test.js <base> <head>` | Create a studio from `<base>`, make typical team changes, update it to `<head>`, and require a clean merge, `pnpm check`, and `pnpm build`. Add `--keep` to inspect the result. |
 | GitHub pull request | Scope review, asset sizes, selected regressions, production build, and the upgrade test. Platform proposals are flagged for review. |
 | Push to `main` | Scope authorization, asset sizes, selected regressions, and production build. Platform changes require an admin or maintainer role. |
