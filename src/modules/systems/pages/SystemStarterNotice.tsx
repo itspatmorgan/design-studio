@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Copy } from 'lucide-react';
 import { Button, buttonVariants } from '@/systems/studio/components/button';
+import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
 
 export default function SystemStarterNotice({ system, label, canCustomize }: {
   system: string; label: string; canCustomize: boolean;
@@ -14,9 +15,9 @@ export default function SystemStarterNotice({ system, label, canCustomize }: {
     try { await navigator.clipboard.writeText(prompt); setCopied(true); setError(''); }
     catch { setError('Could not copy. Select the prompt and paste it into your agent’s chat.'); }
   }
-  return <aside className="mb-6 rounded-xl border border-info-border bg-info p-6 text-info-foreground" aria-labelledby="system-example">
-    <h2 id="system-example" className="mb-2 text-lg font-semibold tracking-tight">Make this example system your own</h2>
-    <p className="text-sm leading-6 text-info-foreground/90">Customize {label}’s theme, components, and guidance. Or start with a new system and delete this example from its menu.</p>
+  return <Alert variant="info" role="note" className="mb-6 p-4" aria-labelledby="system-example">
+    <AlertTitle id="system-example">Make this example system your own</AlertTitle>
+    <AlertDescription>Customize {label}’s theme, components, and guidance. Or start with a new system and delete this example from its menu.</AlertDescription>
     {canCustomize && <>
       <div className="mt-4 flex flex-wrap gap-3">
         <Button onClick={() => setOpen(previous => !previous)} aria-expanded={open} aria-controls="system-customization-prompt">Customize this system</Button>
@@ -29,5 +30,5 @@ export default function SystemStarterNotice({ system, label, canCustomize }: {
         <p role="status" className="mt-2 text-xs text-info-foreground/90">{error || (copied ? 'Paste into your agent’s chat and send to continue.' : '')}</p>
       </div>}
     </>}
-  </aside>;
+  </Alert>;
 }
