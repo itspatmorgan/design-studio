@@ -15,7 +15,9 @@ A studio is a copy of the Design Studio repository. Every path in it has one own
 | Seed | Upstream ships it once; then the team | The team's copy stays. Later upstream changes do not overwrite it. |
 | Team | The team | Untouched. |
 
-A seed file stays the team's even when upstream changes how it is kept. If upstream deletes or replaces one (before the first release, the settings moved from a TypeScript file to `studio.config.json`), the update keeps the team's copy of the old file, brings the replacement as a new file, and leaves a person to move the team's values across and delete the old file. Release notes name such a step.
+A seed file belongs to the studio once installed, including an unchanged copy. If upstream deletes or replaces it, the update keeps the studio's old file and brings a genuinely new seed path from the release. A person reviews the replacement and removes the old file when ready. A studio's own deletion stays deleted; an update does not restore it.
+
+Ownership applies to the entire merge result, including files Git merges without conflict. The studio's pre-update map protects existing seed and team paths during that update, even if the release changes their tier. Incoming rules govern new paths and other upstream changes. New seed paths use the release's complete copy, without transplanting edits from a renamed old seed. New team-owned paths are not imported from upstream. An unlisted studio path is team-owned. Generated paths take the release's copy or deletion before regeneration. Skill adapters and their receipt instead retain the studio's input for synchronization, which replaces managed entries while preserving team-authored or modified entries. Upstream and mixed paths use Git's merge; their conflicts remain for review.
 
 Prefer team and seed paths for studio-specific work. If an upstream path must change, keep the edit small and record why, so the next update conflict is easy to resolve. A change that would help other studios belongs in the upstream project.
 
@@ -43,7 +45,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `AGENTS.team.md` | Seed | The team's own guidance for coding agents. `src/platform/AGENTS.md` is upstream. |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
-`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. In a studio, any path the map does not name is yours: it is treated as team-owned, so you can add top-level files without editing the map. Two rules of different tiers claiming one path is an error, since only upstream edits the map. The upstream project's CI also runs `pnpm ownership --strict`, which fails on an unnamed path so the map stays complete. Updates (see [Updating a studio](#updating-a-studio)) read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
+`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. In a studio, any path the map does not name is yours: it is treated as team-owned, so you can add top-level files without editing the map. Two rules of different tiers claiming one path is an error, since only upstream edits the map. The upstream project's CI also runs `pnpm ownership --strict`, which fails on an unnamed path so the map stays complete. Updates (see [Updating a studio](#updating-a-studio)) use the studio and incoming maps to apply the preservation rules above across the entire tree. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
 
 ## Updating a studio
 
@@ -60,7 +62,7 @@ The update:
 1. Requires a clean working tree, no merge in progress, and an `upstream` remote. Without the remote it prints the command to add one: `git remote add upstream https://github.com/itspatmorgan/design-studio-starter.git`.
 2. Fetches the `v*` tags from `upstream` into `refs/studio/upstream-tags/`, so they never replace the team's own tags. Without a version it takes the newest release that is not a pre-release.
 3. Stops with nothing to do if the studio already contains the release's commit, or `studio.lock.json` records it or a later one.
-4. Creates and switches to `studio-update/v<version>` from the current HEAD, and merges the release with the update rules (`src/platform/node/lib/upstream-merge.js`): generated files take the release and are regenerated, seed and team files keep the studio's copy, and other files merge as text.
+4. Creates and switches to `studio-update/v<version>` from the current HEAD, and merges the release with the update rules (`src/platform/node/lib/upstream-merge.js`): existing seed and team paths keep the studio's complete copy or deletion, genuinely new seed paths take the release, generated files take the release and are regenerated, and upstream or mixed files merge as text.
 5. On a conflict, leaves the merge in progress and lists the files the release and the team both changed. The person resolves them, runs `git add`, and runs `pnpm studio update --continue`; or runs `git merge --abort`, switches back to their branch, and deletes the update branch.
 6. On success, records the release in `studio.lock.json` within the merge commit, then runs `pnpm check` and `pnpm build` and reports the result. The next step is to review the branch and merge it into the team's branch.
 
@@ -106,6 +108,8 @@ Modules are found in two roots, listed once (supplied first) in `src/platform/co
 Some paths hold more than one tier. Change only your part of each:
 
 - `package.json`: a team module's dependencies are added to the root manifest. Systems keep their dependencies in their own `package.json`.
+
+An update merges root dependency additions with upstream tooling changes. If both sides change the same declaration, the conflict requires review before installation. A system's team-owned manifest retains its complete copy.
 
 ## Related contracts
 

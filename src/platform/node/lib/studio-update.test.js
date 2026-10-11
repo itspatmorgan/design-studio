@@ -185,6 +185,39 @@ test('failing checks are reported after the update is committed', () => {
   assert.deepEqual(result, { merged: true, checks: 'failed', failed: 'build' });
 });
 
+test('the update preserves complete seed bytes and lock records while stamping the exact selected release', () => {
+  const { studio, release } = setup();
+  const modules = { notes: { source: 'team-notes', files: { 'src/modules/notes/module.ts': 'hash' } } };
+  const systems = { kit: { source: 'team-kit', files: { 'src/systems/kit/package.json': 'hash' } } };
+  studio.commit(
+    {
+      'studio.lock.json': JSON.stringify({ lockfileVersion: 1, modules, systems }),
+      'src/prototypes/me/p.tsx': 'mine\n',
+    },
+    'team content and installed records',
+  );
+  const original = studio.git('rev-parse', 'main');
+  const commit = release('0.3.0', {
+    'README.md': 'release replaces unchanged seed\n',
+    'studio.lock.json': JSON.stringify({ lockfileVersion: 1, modules: {}, systems: {} }),
+    'src/platform/a.ts': 'release\n',
+  });
+  assert.deepEqual(applyUpdate(studio.dir, planUpdate(studio.dir), { run: recorder().run }), {
+    merged: true,
+    checks: 'passed',
+  });
+  assert.equal(studio.read('README.md'), 'base\n');
+  assert.deepEqual(readLock(studio.dir), {
+    lockfileVersion: 1,
+    platform: { version: '0.3.0', commit },
+    modules,
+    systems,
+  });
+  assert.deepEqual(JSON.parse(studio.git('show', 'HEAD:studio.lock.json')), readLock(studio.dir));
+  assert.equal(studio.git('rev-parse', 'main'), original);
+  assert.equal(studio.git('status', '--porcelain'), '');
+});
+
 test('a conflict stops with the merge in progress, and --continue finishes it once resolved', () => {
   const { studio, release } = setup();
   studio.commit({ 'src/platform/a.ts': 'team\n' }, 'team edits the platform');

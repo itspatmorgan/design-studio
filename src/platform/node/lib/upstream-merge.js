@@ -1,18 +1,24 @@
-// Merge an upstream revision into a studio the way an update does: generated files are regenerated instead of
-// merged, seed files keep the studio's copy, and anything else that conflicts is reported for a person to resolve.
-// Team files are resolved like seed files. Tiers come from the incoming revision's .studio/ownership.json (src/platform/context/ownership.md).
-// A file the incoming revision no longer lists (upstream renamed or deleted it) takes its tier from the studio's own map,
-// so a seed file the team edited and upstream deleted keeps the team's copy instead of stopping the update; a person
-// moves what they need from it into its replacement (see "Seed files" in src/platform/context/ownership.md).
+// Apply ownership to the entire merge tree, including clean Git merges (context/ownership.md).
+// Existing seed/team paths and their deletions stay with the studio even if the incoming map changes their tier.
+// New seed paths take the release copy; generated paths take the release before regeneration.
+// Upstream and mixed paths use Git's merge and leave conflicts for review.
 import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { tierOf } from './ownership.js';
+import { mapProblems, tierOf } from './ownership.js';
 
-const resolution = (map, file) => ({ generated: '--theirs', seed: '--ours', team: '--ours' })[tierOf(map, file)];
+const protectedTier = tier => ['seed', 'team', 'unknown'].includes(tier);
+const records = text => text.split('\0').filter(Boolean);
+const entry = record => [record.slice(0, record.indexOf('\t')), record.slice(record.indexOf('\t') + 1)];
+const treeEntries = text =>
+  new Map(
+    records(text).map(record => {
+      const [metadata, file] = entry(record);
+      const [mode, , hash] = metadata.split(' ');
+      return [file, `${mode} ${hash}`];
+    }),
+  );
 
 // `beforeRegenerate()` runs after the conflicts are resolved and before regeneration, in the merged tree, for a step the
-// regeneration commands need first. Pre-release studios use it to stamp format versions (upgrade-test.js).
+// regeneration commands need first, such as recording the selected release in studio.lock.json.
 // Returns { merged: true, changed } or { merged: false, conflicts: [paths] }, leaving the merge in progress when it fails.
 // `run(command, args)` runs a command in the studio; regeneration needs pnpm.
 export function mergeUpstream(
@@ -20,15 +26,28 @@ export function mergeUpstream(
   ref,
   {
     message = `Update from ${ref}`,
-    map,
     run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }),
     beforeRegenerate = () => {},
   } = {},
 ) {
-  const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+  const git = (...args) =>
+    execFileSync('git', ['--literal-pathspecs', ...args], { cwd, encoding: 'utf8', maxBuffer: 1 << 28 }).trimEnd();
+  const ownership = revision => {
+    const map = JSON.parse(git('show', `${revision}:.studio/ownership.json`));
+    const problems = mapProblems(map);
+    if (problems.length) throw new Error(`Invalid ownership map in ${revision}: ${problems.join(' ')}`);
+    return map;
+  };
+  const incoming = git('rev-parse', `${ref}^{commit}`);
+  const studioTiers = ownership('HEAD');
+  const tiers = ownership(incoming);
+  const tree = revision => treeEntries(git('ls-tree', '-r', '-z', revision));
+  const ours = tree('HEAD');
+  const theirs = tree(incoming);
+  const base = tree(git('merge-base', 'HEAD', incoming));
   let failure = null;
   try {
-    git('merge', '--no-ff', '--no-commit', ref);
+    git('merge', '--no-ff', '--no-commit', incoming);
   } catch (error) {
     failure = error;
   }
@@ -39,31 +58,38 @@ export function mergeUpstream(
     if (failure) throw failure;
     return { merged: true, changed: false };
   }
-  const conflicts = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
-  const tiers = map ?? JSON.parse(git('show', 'MERGE_HEAD:.studio/ownership.json'));
-  let studioTiers = tiers;
-  if (!map) {
-    try {
-      studioTiers = JSON.parse(git('show', 'HEAD:.studio/ownership.json'));
-    } catch {
-      /* A studio without a map has nothing older to consult. */
-    }
+  const index = new Map();
+  const conflicts = new Set();
+  for (const record of records(git('ls-files', '--stage', '-z'))) {
+    const [metadata, file] = entry(record);
+    const [mode, hash, stage] = metadata.split(' ');
+    if (stage === '0') index.set(file, `${mode} ${hash}`);
+    else conflicts.add(file);
   }
-  for (const file of conflicts) {
-    const side =
-      resolution(tiers, file) ?? (tierOf(tiers, file) === 'unknown' ? resolution(studioTiers, file) : undefined);
-    if (!side) continue;
-    // Upstream deleted a file the team edited: --ours keeps the team's copy. The team deleted a file upstream edited,
-    // or upstream deleted a generated file: the side to check out has no stage, so the file stays deleted.
-    try {
-      git('checkout', side, '--', file);
-    } catch {
-      git('rm', '-q', '--', file);
-      continue;
-    }
-    git('add', '--', file);
+  for (const file of new Set([...base.keys(), ...ours.keys(), ...theirs.keys(), ...index.keys(), ...conflicts])) {
+    const previous = tierOf(studioTiers, file);
+    const declared = tierOf(tiers, file);
+    if (previous?.conflict || declared?.conflict) throw new Error(`Conflicting ownership rules for ${file}.`);
+    const tier = declared === 'unknown' ? previous : declared;
+    let source;
+    if ((ours.has(file) || base.has(file)) && protectedTier(previous)) source = 'HEAD';
+    else if (tier === 'seed') source = ours.has(file) || base.has(file) ? 'HEAD' : incoming;
+    else if (protectedTier(tier)) source = 'HEAD';
+    else if (tier === 'generated') {
+      // Sync owns adapter replacement/removal using the studio receipt. Taking release adapters first would
+      // overwrite user modifications or turn generated team-module adapters into unrecognized collisions.
+      const adapters =
+        file === '.agents/studio-skills.json' ||
+        file.startsWith('.agents/skills/') ||
+        file.startsWith('.claude/skills/');
+      source = adapters ? 'HEAD' : incoming;
+    } else continue;
+    const expected = (source === 'HEAD' ? ours : theirs).get(file);
+    if (!conflicts.has(file) && index.get(file) === expected) continue;
+    if (expected) git('restore', `--source=${source}`, '--staged', '--worktree', '--', file);
+    else git('rm', '-q', '-f', '--ignore-unmatch', '--', file);
   }
-  const unresolved = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
+  const unresolved = records(git('diff', '-z', '--name-only', '--diff-filter=U'));
   if (unresolved.length) return { merged: false, conflicts: unresolved };
   finishUpstreamMerge(cwd, { message, run, beforeRegenerate });
   return { merged: true, changed: true };

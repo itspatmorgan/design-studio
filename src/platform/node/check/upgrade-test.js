@@ -12,6 +12,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { mergeUpstream } from '../lib/upstream-merge.js';
+import { loadOwnership, tierOf, trackedFiles } from '../lib/ownership.js';
 import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
 import { serializeConfig } from '../../core/config-file.ts';
 
@@ -50,6 +51,7 @@ try {
     GIT_CONFIG_VALUE_1: 'fixture@example.test',
   });
   run('pnpm', ['install', '--frozen-lockfile']);
+  const originalDependencies = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies;
 
   step('Make team changes');
   run('pnpm', [
@@ -69,19 +71,27 @@ try {
     fs.readFileSync(path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/package.json'), 'utf8'),
   ).name;
   run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
+  run('pnpm', ['add', '-w', 'clsx@2.1.1']);
   run('pnpm', ['new', 'Fixture Prototype']);
   run('pnpm', ['studio', 'create-module', path.basename(FIXTURE_MODULE), '--label', 'Fixture notes', '--yes']);
   edit('studio.config.json', text => serializeConfig({ ...JSON.parse(text), name: 'Fixture Studio' }));
   edit('README.md', text => `${text}\nFixture team notes.\n`);
-  // A studio whose base predates the team agent file has nothing to edit.
-  const teamAgents = fs.existsSync(path.join(dir, 'AGENTS.team.md'));
-  if (teamAgents) {
-    edit('AGENTS.team.md', text => `${text}\n${TEAM_AGENTS_LINE}\n`);
-    run('pnpm', ['studio', 'sync']);
-  }
+  edit('AGENTS.team.md', text => `${text}\n${TEAM_AGENTS_LINE}\n`);
+  run('pnpm', ['studio', 'sync']);
   run('pnpm', ['check']);
   run('git', ['add', '-A']);
   run('git', ['commit', '-q', '--no-verify', '-m', 'Team changes']);
+
+  const ownership = loadOwnership(dir);
+  const protectedFiles = trackedFiles(dir).filter(file =>
+    ['seed', 'team', 'unknown'].includes(tierOf(ownership, file)),
+  );
+  const protectedBytes = new Map(protectedFiles.map(file => [file, fs.readFileSync(path.join(dir, file))]));
+  const dependencies = Object.fromEntries(
+    Object.entries(JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies).filter(
+      ([name, version]) => originalDependencies[name] !== version,
+    ),
+  );
 
   step(`Update to ${head} (${headSha.slice(0, 7)})`);
   const result = mergeUpstream(dir, headSha, { message: `Update to ${headSha.slice(0, 7)}`, run });
@@ -91,22 +101,23 @@ try {
     );
 
   step('Verify the updated studio');
-  for (const [file, text] of [
-    ['studio.config.json', '"Fixture Studio"'],
-    ['README.md', 'Fixture team notes.'],
-    [`${TEAM_SYSTEMS_ROOT}/fixture-kit/package.json`, '"clsx"'],
-  ]) {
-    if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(text))
-      throw new Error(`The update lost the team's change to ${file}.`);
+  for (const [file, bytes] of protectedBytes) {
+    if (!fs.existsSync(path.join(dir, file)) || !fs.readFileSync(path.join(dir, file)).equals(bytes))
+      throw new Error(`The update changed or removed the team's complete copy of ${file}.`);
   }
-  // The team's agent guidance survives in its own file and in the generated AGENTS.md, when the base had the file.
-  if (teamAgents)
-    for (const file of ['AGENTS.team.md', 'AGENTS.md'])
-      if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(TEAM_AGENTS_LINE))
-        throw new Error(`The update lost the team's agent guidance in ${file}.`);
-  for (const folder of ['contributors/fixture.json', 'src/prototypes/fixture', FIXTURE_MODULE]) {
-    if (!fs.existsSync(path.join(dir, folder))) throw new Error(`The update removed ${folder}.`);
-  }
+  const current = new Set(trackedFiles(dir));
+  const expected = new Set(protectedFiles);
+  for (const file of current)
+    if (['team', 'unknown'].includes(tierOf(ownership, file)) && !expected.has(file))
+      throw new Error(`The update introduced an unexpected team file: ${file}.`);
+  const updatedDependencies = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).dependencies;
+  for (const [name, version] of Object.entries(dependencies))
+    if (updatedDependencies[name] !== version)
+      throw new Error(
+        `The update changed the studio's dependency ${name}: ${version} -> ${updatedDependencies[name]}.`,
+      );
+  if (!fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8').includes(TEAM_AGENTS_LINE))
+    throw new Error('The update lost the team guidance in regenerated AGENTS.md.');
   run('pnpm', ['install', '--frozen-lockfile']);
   run('pnpm', ['studio', 'sync', '--check']);
   run('pnpm', ['check']);
