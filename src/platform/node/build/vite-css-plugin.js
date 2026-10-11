@@ -7,7 +7,7 @@ import { scopePolicy } from '../lib/scope.js';
 // Fills in the two lists in the app's stylesheet (src/platform/app/styles.css) that depend on what is installed,
 // so adding a design system or a module needs no edit to it. CSS can't be given a list at run time, so the stylesheet
 // has a marker where each goes and this puts the lines in as the file is read:
-//   /* @studio:system-themes */   an @import of each design system's styles/theme.css (src/systems/<id>/)
+//   /* @studio:system-themes */   an @import of each design system's styles/theme.css (in either system root, src/platform/core/roots.ts)
 //   /* @studio:data-files */      an @source not for each folder of prototype-shaped folders' meta.json files, which
 //                                  Tailwind would otherwise scan for class names and reload the page when they change
 import path from 'node:path';
@@ -23,7 +23,7 @@ export function inventories(deploy = false) {
     .map(([id, spec]) => ({
       ...spec,
       inventory: themeInventory(
-        fs.readFileSync(path.join(ROOT, 'src/systems', id, 'styles/theme.css'), 'utf8'),
+        fs.readFileSync(path.join(ROOT, spec.dir, 'styles/theme.css'), 'utf8'),
         spec.themeClass,
       ),
     }));
@@ -33,7 +33,7 @@ const rel = target => path.relative(path.dirname(STYLESHEET), target).split(path
 
 function validateThemes() {
   const problems = Object.keys(SYSTEM_SPECS).flatMap(id => {
-    const file = path.join(ROOT, 'src/systems', id, 'styles/theme.css');
+    const file = path.join(ROOT, SYSTEM_SPECS[id].dir, 'styles/theme.css');
     const code = fs.readFileSync(file, 'utf8');
     return [
       ...(SYSTEM_SPECS[id].role === 'platform'
@@ -72,7 +72,7 @@ export default function css() {
         this.addWatchFile(path.join(ROOT, system.dir, 'styles/theme.css'));
       const themes = Object.keys(PROTOTYPE_SYSTEMS)
         .filter(id => !deploy || PROTOTYPE_SYSTEMS[id].status !== 'archived')
-        .map(id => `@import "${rel(path.join(ROOT, 'src', 'systems', id, 'styles', 'theme.css'))}";`)
+        .map(id => `@import "${rel(path.join(ROOT, PROTOTYPE_SYSTEMS[id].dir, 'styles', 'theme.css'))}";`)
         .join('\n');
       const sources = ['prototypes', ...PROTOTYPE_DIRS.map(dir => path.basename(dir))]
         .map(name => `@source not "${rel(path.join(ROOT, 'src', name))}/**/meta.json";`)

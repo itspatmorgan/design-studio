@@ -114,7 +114,7 @@ export function nextStep(actionable: boolean, count = 3) {
 
 ## Customize the defaults
 
-Studio owners can edit `src/systems/studio/styles/contentPalette.js` to change the shared accent palette and document syntax color roles. The source editor reads the same palette.
+Studio owners can edit `src/platform/systems/studio/styles/contentPalette.js` to change the shared accent palette and document syntax color roles. The source editor reads the same palette.
 
 Edit `src/platform/app/diagrams/mermaidTheme.ts` for diagram color roles and `MermaidDiagram.tsx` for renderer defaults. Diagram neutrals resolve from the platform's current CSS theme. The renderer keeps theme and security defaults under platform control. Authors can still use Mermaid's supported diagram styles, such as flowchart `classDef`, to communicate specific meaning.
 

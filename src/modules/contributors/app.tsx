@@ -1,7 +1,7 @@
 import { createRoute } from '@tanstack/react-router';
 import { UserGroupIcon } from '@hugeicons/core-free-icons';
 import { APP_NAME, CONFIG, type ModuleApp, type PaletteContext } from '@/platform/core/api';
-import { CommandItem } from '@/systems/studio/components/command';
+import { CommandItem } from '@/platform/systems/studio/components/command';
 import Contributors from './Contributors';
 
 function Places({ go }: PaletteContext) {

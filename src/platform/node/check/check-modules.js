@@ -6,7 +6,7 @@ import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 //   - no two modules claim the same section key or folder
 //   - a module's section folder exists
 //   - studio.config.ts is well formed, and only turns off modules that can be turned off
-//   - each design system in src/systems/ has a well formed system.ts, components/, and styles/theme.css
+//   - each design system in the system roots (src/platform/systems/ and src/systems/, src/platform/core/roots.ts) has a well formed system.ts, components/, and styles/theme.css
 //   - no contributor, and no folder in src/prototypes/, uses a section key, since both are addresses
 //   - nothing outside an optional module imports its files other than its module.ts, and no module imports an
 //     optional one, so deleting its folder leaves nothing broken (a required module is part of the platform,
@@ -18,6 +18,7 @@ import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 import fs from 'node:fs';
 import { themeUsageProblems } from '../lib/theme-usage.js';
 import { inventories } from '../build/vite-css-plugin.js';
+import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
 import { tailwindThemeProblems } from '../lib/tailwind-theme.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +50,7 @@ problems.push(
 if (SYSTEM_SPECS[DEFAULT_SYSTEM]?.status !== 'active') problems.push('The default system must be active.');
 if (!SYSTEM_IDS.length)
   problems.push(
-    'There is no design system in src/systems/. Prototypes need one to build with: add one with pnpm studio create-system.',
+    `There is no design system in ${TEAM_SYSTEMS_ROOT}/. Prototypes need one to build with: add one with pnpm studio create-system.`,
   );
 if (SYSTEM_IDS.length > 1 && !CONFIG.defaultSystem)
   problems.push(
@@ -58,12 +59,12 @@ if (SYSTEM_IDS.length > 1 && !CONFIG.defaultSystem)
 for (const id of SYSTEM_IDS) {
   for (const part of ['components', 'styles/theme.css']) {
     if (!fs.existsSync(path.join(ROOT, SYSTEM_SPECS[id].dir, part)))
-      problems.push(`src/systems/${id}/${part} is missing. A design system has components/ and styles/theme.css.`);
+      problems.push(`${SYSTEM_SPECS[id].dir}${part} is missing. A design system has components/ and styles/theme.css.`);
   }
 }
 
 for (const [id, spec] of Object.entries(SYSTEM_SPECS)) {
-  const file = path.join(ROOT, 'src/systems', id, 'styles/theme.css');
+  const file = path.join(ROOT, spec.dir, 'styles/theme.css');
   if (fs.existsSync(file)) problems.push(...tailwindThemeProblems(fs.readFileSync(file, 'utf8'), { file, ...spec }));
 }
 
@@ -92,9 +93,10 @@ problems.push(
       system.role === 'platform'
         ? ['src/platform', 'src/modules', system.dir + 'components']
         : [system.dir + 'components'];
-    const files = dirs
-      .flatMap(dir => [...sourceFiles(path.join(ROOT, dir))])
-      .filter(file => /\.[cm]?[jt]sx?$/.test(file) && !/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file));
+    // The platform system's components are inside src/platform, so a file can be listed by two folders.
+    const files = [...new Set(dirs.flatMap(dir => [...sourceFiles(path.join(ROOT, dir))]))].filter(
+      file => /\.[cm]?[jt]sx?$/.test(file) && !/\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file),
+    );
     const prototypeFiles =
       system.role === 'platform'
         ? []

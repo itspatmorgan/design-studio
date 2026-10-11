@@ -1,6 +1,6 @@
 /* Tailwind configuration is explicit; system CSS supplies scoped runtime values. */
 @import "tailwindcss" source("../..");
-@import "../../systems/studio/styles/theme.css";
+@import "../systems/studio/styles/theme.css";
 /* @studio:system-themes */
 /* Explicit shared component-animation extensions; not system theme defaults. */
 @import "tw-animate-css";
@@ -11,7 +11,7 @@
 /* Tailwind scans the project for class names and reloads the page when a scanned file
    that isn't code changes. These are data, never classes, so skip them: editing a
    prototype's meta.json then updates the app live instead of reloading it. (The two markers below are filled in
-   by src/platform/node/build/vite-css-plugin.js: a theme for each design system in src/systems/, and a line for each folder of
+   by src/platform/node/build/vite-css-plugin.js: a theme for each design system in the system roots (src/platform/core/roots.ts), and a line for each folder of
    prototypes.) */
 /* @studio:data-files */
 @source not "../../../contributors/**";

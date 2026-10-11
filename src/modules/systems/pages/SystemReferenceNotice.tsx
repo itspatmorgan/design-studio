@@ -1,6 +1,7 @@
 import { SYSTEM_SPECS } from '../data/systems';
-import { Button } from '@/systems/studio/components/button';
-import { toast } from '@/systems/studio/components/toast';
+import { systemFolder } from '@/platform/core/roots';
+import { Button } from '@/platform/systems/studio/components/button';
+import { toast } from '@/platform/systems/studio/components/toast';
 export default function SystemReferenceNotice({ system }: { system: string }) {
   const files = SYSTEM_SPECS[system].renameReview;
   if (!files?.length) return null;
@@ -21,7 +22,7 @@ export default function SystemReferenceNotice({ system }: { system: string }) {
         onClick={() =>
           void navigator.clipboard
             .writeText(
-              `Review remaining references after renaming the system to ${system}. Read AGENTS.md and src/systems/${system}/AGENTS.md. Check these files: ${files.join(', ')}. Repair relevant links without changing external source URLs. Verify the build, then clear renameReview in src/systems/${system}/system.ts.`,
+              `Review remaining references after renaming the system to ${system}. Read AGENTS.md and src/${systemFolder(system)}/AGENTS.md. Check these files: ${files.join(', ')}. Repair relevant links without changing external source URLs. Verify the build, then clear renameReview in src/systems/${system}/system.ts.`,
             )
             .then(
               () => toast.add({ title: 'Cleanup instructions copied' }),

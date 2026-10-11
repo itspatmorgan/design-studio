@@ -5,12 +5,19 @@ import { useManifest } from '@/platform/app/data/useManifest';
 import { systemPath } from '../data/systems';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
-import { Button } from '@/systems/studio/components/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { CodeBlock, PageHeader, SystemFrame } from '@/modules/systems/pages/foundations';
 import { Prose } from '@/platform/app/docs/Prose';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/systems/studio/components/collapsible';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/systems/studio/components/table';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/platform/systems/studio/components/collapsible';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/platform/systems/studio/components/table';
 import { useDocsVersion, type ComponentPageData } from '@/modules/systems/data/loadDocs';
 import type { PropDoc, SystemComponentDoc } from '@/modules/systems/docs';
 import { shadcnDocsUrl } from '@/modules/systems/sources';

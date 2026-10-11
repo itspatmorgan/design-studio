@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, CircleHelp, Copy } from 'lucide-react';
-import { Button, buttonVariants } from '@/systems/studio/components/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/studio/components/tabs';
-import { Textarea } from '@/systems/studio/components/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Button, buttonVariants } from '@/platform/systems/studio/components/button';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/platform/systems/studio/components/tabs';
+import { Textarea } from '@/platform/systems/studio/components/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import presetHelpImage from '../assets/shadcn-preset-help.png';
-import { Input } from '@/systems/studio/components/input';
+import { Input } from '@/platform/systems/studio/components/input';
 import { curationPrompt } from '../curation';
 
 type Props = { system: string; label: string };

@@ -1,7 +1,7 @@
 import { artifactAvailability } from '@/platform/core/fileTypes';
 import { Suspense } from 'react';
 import { lazyRouteComponent, useRouter } from '@tanstack/react-router';
-import { Button } from '@/systems/studio/components/button';
+import { Button } from '@/platform/systems/studio/components/button';
 import { findArtifact } from '@/platform/app/data/manifest';
 import { FILE_TYPES, fileTypeModules } from '@/platform/app/data/fileTypes';
 import { useSourceView } from '@/platform/core/source/useSourceView';

@@ -11,7 +11,7 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@/systems/studio/components/command';
+} from '@/platform/systems/studio/components/command';
 import { findArtifact, findPrototype, firstArtifact } from '@/platform/app/data/manifest';
 import { moduleApps, type PaletteContext } from '@/platform/app/modules';
 import type { Artifact, Prototype } from '@/platform/app/data/types';

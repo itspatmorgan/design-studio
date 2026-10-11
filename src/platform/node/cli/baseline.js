@@ -22,7 +22,7 @@ const MODULES = {
   onboarding: { paths: ['src/modules/onboarding'], pattern: "modules/onboarding|'onboarding'" },
   documentation: { paths: ['src/modules/documentation'], pattern: "modules/documentation|'documentation'" },
   systems: {
-    paths: ['src/systems', 'src/modules/systems/pages', 'src/modules/systems/data/loadDocs.ts'],
+    paths: ['src/systems', 'src/platform/systems', 'src/modules/systems/pages', 'src/modules/systems/data/loadDocs.ts'],
     pattern: 'systems',
   },
   canvas: { paths: ['src/modules/canvas'], pattern: 'excalidraw|canvas' },

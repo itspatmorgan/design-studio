@@ -1,4 +1,4 @@
-// What can be made, renamed, moved, and deleted in the system content (src/systems/<id>/), which has a fixed
+// What can be made, renamed, moved, and deleted in the system content (a system's folder: src/systems/<id>/, or src/platform/systems/studio/), which has a fixed
 // shape (src/modules/systems/content/node/content-check.js). The file layer checks every change with these, and the
 // navigation uses them to offer only what fits. Paths are inside a section, like "review/SKILL.md"
 // in skills. This file has no imports beyond skills.ts, so Node scripts can load it directly.

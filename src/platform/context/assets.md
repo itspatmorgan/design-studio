@@ -8,7 +8,7 @@ Keep fonts, icons, logos, images, and other static files with the scope that own
 
 | Owner or purpose | Location |
 | --- | --- |
-| Shared Studio UI assets | `src/systems/studio/assets/` |
+| Shared Studio UI assets | `src/platform/systems/studio/assets/` |
 | A design system's brand assets and fonts | `src/systems/<id>/assets/` |
 | Assets intentionally shared across prototypes and systems | `src/lib/assets/` |
 | Assets used by one prototype | `src/prototypes/<contributor>/<prototype>/assets/` |

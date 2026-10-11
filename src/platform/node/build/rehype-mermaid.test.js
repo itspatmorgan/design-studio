@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import mdx from '@mdx-js/rollup';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeMermaid from './rehype-mermaid.js';
-import { contentPalette, documentCodeTheme } from '../../../systems/studio/styles/contentPalette.js';
+import { contentPalette, documentCodeTheme } from '../../systems/studio/styles/contentPalette.js';
 
 test('Mermaid source survives compilation while ordinary code still highlights', async () => {
   const source = 'flowchart LR\n  A["<Feedback> {draft}"] --> B[Review]\n';

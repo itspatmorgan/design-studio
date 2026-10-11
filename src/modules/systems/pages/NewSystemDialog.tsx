@@ -3,8 +3,8 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Add01Icon } from '@hugeicons/core-free-icons';
 import { callModule, useMe } from '@/platform/app/data/files';
 import { CONFIG } from '@/platform/app/data/config';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import { beginSystemCreation, finishSystemCreation, openCreatedSystem } from './creationTransition';
 
 export default function NewSystemButton() {

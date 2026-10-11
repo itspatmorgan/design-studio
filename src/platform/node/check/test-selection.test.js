@@ -26,7 +26,7 @@ test('authoring keeps publishing validation without platform regressions; Studio
   ])
     assert.deepEqual(select([file]).groups, [], file);
   assert.deepEqual(select(['src/platform/app/shell/MainNav.tsx']).groups, ['runtime']);
-  assert.deepEqual(select(['src/systems/studio/components/button/button.tsx']).groups, ['runtime']);
+  assert.deepEqual(select(['src/platform/systems/studio/components/button/button.tsx']).groups, ['runtime']);
 });
 test('shared dependencies and mixed changes include setup and publishing only when affected', () => {
   assert.deepEqual(select(['src/platform/app/router.tsx']).groups, ['runtime', 'publishing']);

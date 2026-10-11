@@ -12,9 +12,9 @@ import { systemSourceRequest } from './systemSource';
 import { shortcutLabel } from '@/platform/app/shell/artifactShortcuts';
 import { canEditSource, useMe, fileOp, systemFiles } from '@/platform/app/data/files';
 import { setManifest } from '@/platform/app/data/manifest';
-import { Button } from '@/systems/studio/components/button';
-import { toast } from '@/systems/studio/components/toast';
-import { Tabs, TabsList, TabsTrigger } from '@/systems/studio/components/tabs';
+import { Button } from '@/platform/systems/studio/components/button';
+import { toast } from '@/platform/systems/studio/components/toast';
+import { Tabs, TabsList, TabsTrigger } from '@/platform/systems/studio/components/tabs';
 import {
   Dialog,
   DialogContent,
@@ -22,7 +22,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import type { SystemComponentDoc } from '@/modules/systems/docs';
 
 type Kind = keyof SystemComponentDoc['files'];

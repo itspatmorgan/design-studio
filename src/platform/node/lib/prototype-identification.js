@@ -11,6 +11,7 @@ import { prototypeAssignment } from './prototype-assignment.js';
 import { readDeclaration } from '../../core/declarations.ts';
 import { auditResourceIdentities } from './resource-identity-audit.js';
 import { applySetupChanges } from './studio-setup.js';
+import { systemDirOf } from './system-folders.js';
 
 export function planPrototypeIdentification(root, types, folder, actor, { ids = {} } = {}) {
   const absolute = path.resolve(root, folder),
@@ -39,7 +40,9 @@ export function planPrototypeIdentification(root, types, folder, actor, { ids = 
   const systems = Object.fromEntries(
     current.config.systems
       .map(key => {
-        const declaration = readDeclaration(fs.readFileSync(path.join(root, 'src/systems', key, 'system.ts'), 'utf8'));
+        const declaration = readDeclaration(
+          fs.readFileSync(path.join(root, systemDirOf(root, key), 'system.ts'), 'utf8'),
+        );
         if ('error' in declaration) throw new Error(declaration.error);
         return [key, declaration.value];
       })

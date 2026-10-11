@@ -1,5 +1,5 @@
 import { Info } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/platform/systems/studio/components/alert';
 
 export default function SystemStarterNotice({ label }: { label: string }) {
   return (

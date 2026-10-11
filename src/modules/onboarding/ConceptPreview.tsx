@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { DialogDescription } from '@/systems/studio/components/dialog';
-import { Button } from '@/systems/studio/components/button';
+import { DialogDescription } from '@/platform/systems/studio/components/dialog';
+import { Button } from '@/platform/systems/studio/components/button';
 import { CONFIG } from '@/platform/core/api';
 import { ArtifactSketch, SystemSketch, StorySketch, ScopeDiagram } from './Illustrations';
 

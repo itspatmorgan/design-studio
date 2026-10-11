@@ -4,7 +4,7 @@ Systems are discovered from their folders and explicitly registered in `studio.c
 
 ## Structure
 
-A prototype system lives in `src/systems/<id>/` and contains:
+A system lives in a folder named for its id, in one of two system roots, and contains:
 
 | Path | Purpose |
 | --- | --- |
@@ -26,7 +26,7 @@ A prototype system lives in `src/systems/<id>/` and contains:
 
 [System curation](context/curation.md) defines the Overview setup prompt builder, saved decisions, and isolated `pnpm prepare-shadcn` command.
 
-The Studio system lives in `src/systems/studio/` with the same structure as other systems. Its `system.ts` declares `role: 'platform'`; other systems explicitly declare `role: 'prototype'`. Exactly one installed system must declare that role. Discovery resolves the application system by role, independently of its folder name. It must be registered and cannot be removed or assigned to prototypes. Its documentation mode is `off`. Every system explicitly declares `status` (`active` or `archived`), `role`, `styling`, `colorModes`, `docs`, and `origin`. Platform infrastructure remains under `src/platform/`.
+The two system roots are `src/platform/systems/` (supplied by the upstream project) and `src/systems/` (the team's). They are listed once, supplied root first, in `src/platform/core/roots.ts`; discovery, the build, and the app all read that list. A system's id is its folder name, and the same id cannot appear in both roots. The supplied root holds only the platform system and the platform system lives only there, so the Studio system is `src/platform/systems/studio/` with the same structure as other systems; every team system, including the starter Product and Marketing systems, is in `src/systems/<id>/`. A system's `dir` is the folder it was found in, and every path built for it (components, theme, assets, context, skills) starts from that folder. Creating, renaming, archiving, and removing systems only touch `src/systems/`. Its `system.ts` declares `role: 'platform'`; other systems explicitly declare `role: 'prototype'`. Exactly one installed system must declare that role. Discovery resolves the application system by role, independently of its folder name. It must be registered and cannot be removed or assigned to prototypes. Its documentation mode is `off`. Every system explicitly declares `status` (`active` or `archived`), `role`, `styling`, `colorModes`, `docs`, and `origin`. Platform infrastructure remains under `src/platform/`.
 
 Follow the [static asset convention](../../platform/context/assets.md) for system assets and font loading.
 
@@ -164,7 +164,7 @@ Module packs carry module-owned context and skills. Their declared instruction p
 ## Implementation files
 
 The design systems pages, at `/systems`: what each system has, its tokens, and a page per component. Required. The systems themselves are
-folders in `src/systems/<id>/`, which are your content.
+folders in `src/systems/<id>/`, which are your content, plus Studio's own system in `src/platform/systems/studio/`, which upstream maintains.
 
 - `module.ts`, `app.tsx`: who it is, its rail button and routes.
 - `spec.ts`: what a `system.ts` declares (`SystemSpec`) and the check for it.

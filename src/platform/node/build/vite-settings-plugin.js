@@ -8,10 +8,14 @@ import { loadContributors } from '../lib/contributors.js';
 import { resolveContributor } from '../cli/resolve-contributor.js';
 import { compatible } from '../../core/modules/index.ts';
 import { studioRole } from '../../core/config.ts';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 import { readSettings, saveSettings } from '../lib/studio-settings.js';
 import { readJson, sameOrigin, send } from './files/http.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
+// A system's declaration (<system root>/<id>/system.ts), in either root, restarts the server like the config does.
+const isSystemDeclaration = file =>
+  SYSTEM_ROOTS.some(systemsRoot => /^[^\\/]+[\\/]system\.ts$/.test(path.relative(path.join(ROOT, systemsRoot), file)));
 const restarting = new WeakSet();
 export const configurationRestartPending = server => restarting.has(server);
 
@@ -34,7 +38,7 @@ export default function settings() {
       }));
     },
     async hotUpdate({ file, server }) {
-      if (file !== configFile && !/src[\\/]systems[\\/][^\\/]+[\\/]system\.ts$/.test(file)) return;
+      if (file !== configFile && !isSystemDeclaration(file)) return;
       restarting.add(server);
       while (fs.existsSync(path.join(ROOT, '.studio-system-operation')))
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -53,7 +57,7 @@ export default function settings() {
     configureServer(server) {
       // Own configuration updates so settings saves trigger one restart.
       server.config.configFileDependencies = server.config.configFileDependencies.filter(
-        file => file !== configFile && !/src[\\/]systems[\\/][^\\/]+[\\/]system\.ts$/.test(file),
+        file => file !== configFile && !isSystemDeclaration(file),
       );
       server.watcher.add(configFile);
       server.middlewares.use('/__studio/settings', async (req, res) => {

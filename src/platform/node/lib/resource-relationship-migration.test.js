@@ -23,7 +23,7 @@ function fixture(t) {
     fs.writeFileSync(absolute, content);
   };
   write('contributors/pat.json', JSON.stringify({ studioId: personId, name: 'Pat', email: '', github: '' }));
-  write('src/systems/studio/system.ts', `export default { studioId: '${platformId}', role: 'platform' };`);
+  write('src/platform/systems/studio/system.ts', `export default { studioId: '${platformId}', role: 'platform' };`);
   write('src/systems/product/system.ts', `export default { studioId: '${systemId}', role: 'prototype' };`);
   write(
     'studio.config.ts',

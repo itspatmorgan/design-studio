@@ -20,7 +20,7 @@ import {
 import { PLATFORM_ID } from '../../../modules/systems/node/systems.js';
 import { isHelper, artifactSlug } from '../../core/fileTypes.ts';
 import { jsonIdentity } from '../../core/resourceIdentity.ts';
-import { SYSTEM_CONTENT_KEY, SYSTEM_CONTENT_SECTIONS, rootOf, contentId, systemRoot } from '../../core/roots.ts';
+import { SYSTEM_CONTENT_KEY, SYSTEM_CONTENT_SECTIONS, TEAM_SYSTEMS_ROOT, rootOf, contentId } from '../../core/roots.ts';
 import { STATUSES, forDeploy, linksToArchived, parseStatus } from '../../core/archive.ts';
 import { byOrder, parseOrder } from '../../core/order.ts';
 import { parseMaintainers } from '../../core/permissions.ts';
@@ -475,14 +475,14 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
       : [];
     const instructions = systemInstructions({
       root: ROOT,
-      systemRoot: 'src/' + systemRoot(system),
+      systemRoot: owner.root,
       platform: owner.kind !== 'system',
     });
     maps[system] = systemContentMap({
       agents: instructions.agents,
       context,
       skills,
-      root: 'src/' + systemRoot(system),
+      root: owner.root,
     });
     maps[system].missing = [...new Set([...maps[system].missing, ...instructions.missing])];
     for (const file of maps[system].missing) {
@@ -515,7 +515,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   // 'off' says nothing.
   if (PLATFORM_ID in PROTOTYPE_SYSTEMS) {
     out.error(
-      `[manifest] src/systems/${PLATFORM_ID}/: "${PLATFORM_ID}" is the app's own system, so a prototype system can't use that name`,
+      `[manifest] ${TEAM_SYSTEMS_ROOT}/${PLATFORM_ID}/: "${PLATFORM_ID}" is the app's own system, so a prototype system can't use that name`,
     );
     errors++;
   }

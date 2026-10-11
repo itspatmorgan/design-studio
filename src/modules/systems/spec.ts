@@ -1,9 +1,11 @@
 // A design system prototypes build with is a folder in src/systems/<id>/ with a system.ts that says what it is,
 // next to its components/ and styles/theme.css. The build, the dev server and the app all find the systems by
 // their folders; studio.config.ts explicitly registers each installed system.
-// The Studio system lives in src/systems/studio/ and declares role: 'platform'; prototypes
-// never use it (src/modules/systems/sources.ts). Node scripts and the app share this contract.
+// The Studio system lives in src/platform/systems/studio/ and declares role: 'platform'; prototypes
+// never use it (src/modules/systems/sources.ts). Systems are found in two roots, the supplied one first
+// (SYSTEM_ROOTS in src/platform/core/roots.ts). Node scripts and the app share this contract.
 import { resourceId } from '../../platform/core/fileTypes.ts';
+import { SUPPLIED_SYSTEMS_ROOT, SYSTEM_ROOTS, TEAM_SYSTEMS_ROOT } from '../../platform/core/roots.ts';
 
 export type ColorMode = 'light' | 'dark';
 
@@ -54,14 +56,13 @@ export type SystemSpec = {
 const ID = /^[a-z][a-z0-9-]*$/;
 const CLASS = /^[a-z][a-z0-9-]*$/;
 
-// What is wrong with a system's system.ts, each as a sentence that says what to fix. `folder` is the folder it
-// was found in, which is also its id.
-export function systemProblems(spec: unknown, folder: string): string[] {
-  const where = `src/systems/${folder}/system.ts`;
+// What is wrong with a system's system.ts, each as a sentence that says what to fix. `folder` is the name of the
+// folder it was found in, which is also its id; `dir` is that folder's path ("src/systems/product/"), in the team
+// root unless said otherwise.
+export function systemProblems(spec: unknown, folder: string, dir = `${TEAM_SYSTEMS_ROOT}/${folder}/`): string[] {
+  const where = `${dir}system.ts`;
   if (!ID.test(folder))
-    return [
-      `src/systems/${folder}/: a system's folder should be lowercase letters, numbers, and dashes, starting with a letter.`,
-    ];
+    return [`${dir}: a system's folder should be lowercase letters, numbers, and dashes, starting with a letter.`];
   if (!spec || typeof spec !== 'object') return [`${where} must export a system as its default.`];
   const s = spec as Partial<SystemSpec>;
   const problems: string[] = [];
@@ -143,6 +144,34 @@ export function systemProblems(spec: unknown, folder: string): string[] {
       )
         problems.push(`${where}: library components must be component slugs.`);
     }
+  }
+  return problems;
+}
+
+// Where a system may live. A system's id is its folder name in whichever root holds it, so an id found in both
+// roots is ambiguous. The supplied root (upstream) holds only the platform system, and the platform system lives
+// only there, so the team's systems and the upstream one never share a folder. `found` lists every folder with a
+// system.ts, including a duplicate that discovery would otherwise overwrite: `dir` is the folder ("src/systems/product/")
+// and `role` is what its system.ts declares, when it could be read.
+export function systemRootProblems(found: readonly { id: string; dir: string; role?: string }[]): string[] {
+  const problems: string[] = [];
+  const dirs = new Map<string, string[]>();
+  for (const { id, dir } of found) dirs.set(id, [...(dirs.get(id) ?? []), dir]);
+  for (const [id, where] of dirs)
+    if (where.length > 1)
+      problems.push(
+        `${id}: found in ${where.join(' and ')}. A system's id is its folder name, so it can exist in only one of ${SYSTEM_ROOTS.join(' and ')}.`,
+      );
+  for (const { dir, role } of found) {
+    const supplied = dir.startsWith(`${SUPPLIED_SYSTEMS_ROOT}/`);
+    if (supplied && role !== 'platform')
+      problems.push(
+        `${dir}system.ts: ${SUPPLIED_SYSTEMS_ROOT}/ holds only the platform system. Put other systems in ${TEAM_SYSTEMS_ROOT}/.`,
+      );
+    if (role === 'platform' && !supplied)
+      problems.push(
+        `${dir}system.ts: the platform system (role: 'platform') lives in ${SUPPLIED_SYSTEMS_ROOT}/, not ${TEAM_SYSTEMS_ROOT}/.`,
+      );
   }
   return problems;
 }

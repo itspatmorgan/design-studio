@@ -9,6 +9,7 @@ import { auditResourceIdentities } from './resource-identity-audit.js';
 import { linkedFiles } from './prototype-links.js';
 import { escapeAddress } from './prototype-links.js';
 import { rewriteResourceLinks } from './resource-links.js';
+import { systemDirOf } from './system-folders.js';
 
 // References inside prototype work are migrated once. No compatibility routes
 // are installed. Source imports and relative links retain their filesystem role.
@@ -54,7 +55,7 @@ export function planResourceLinkMigration(root, types, { updated = Date.now() } 
     const before = `/systems/${system.key}`,
       after = systemAddress(resourceId(system.studioId));
     prefixes.set(before, after);
-    const directory = path.join(root, 'src/systems', system.key, 'components');
+    const directory = path.join(root, systemDirOf(root, system.key), 'components');
     const components = discoverComponents(fs.existsSync(directory) ? [...snapshotFiles(directory).keys()] : []);
     for (const component of components)
       routes.set(`${before}/${component.slug}`, `${after}/components/${component.slug}`);

@@ -15,7 +15,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/systems/studio/components/dropdown-menu';
+} from '@/platform/systems/studio/components/dropdown-menu';
 
 // `triggerClassName` adds to the button's look, for a card whose top isn't a plain surface. By default it sits in the
 // card's top right corner; `inline` leaves it where it is drawn, for a row that places it itself.

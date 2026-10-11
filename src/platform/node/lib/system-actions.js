@@ -8,6 +8,7 @@ import { reveal } from '../build/files/ops.js';
 import { readDeclaration } from '../../core/modules/pack.ts';
 import { canPerform, studioRole } from '../../core/permissions.ts';
 import { planSystemLifecycle, systemDependents } from './system-lifecycle.js';
+import { systemDirOf } from './system-folders.js';
 
 /** @returns {never} */
 function fail(message, status = 400) {
@@ -37,7 +38,7 @@ export async function systemAction(root, actor, body) {
     fail('Only an Admin can change shared systems.', 403);
   if (action === 'archived') {
     const items = config.systems.flatMap(id => {
-      const declaration = readDeclaration(fs.readFileSync(path.join(root, 'src/systems', id, 'system.ts'), 'utf8'));
+      const declaration = readDeclaration(fs.readFileSync(path.join(root, systemDirOf(root, id), 'system.ts'), 'utf8'));
       if ('error' in declaration || declaration.value.status !== 'archived') return [];
       return [
         {
@@ -53,8 +54,8 @@ export async function systemAction(root, actor, body) {
   }
   if (typeof system !== 'string' || !/^[a-z][a-z0-9-]*$/.test(system) || !config.systems.includes(system))
     fail('Choose a registered system.', 404);
-  const dir = editorFile(root, `src/systems/${system}`),
-    file = editorFile(root, `src/systems/${system}/system.ts`);
+  const dir = editorFile(root, systemDirOf(root, system)),
+    file = editorFile(root, `${systemDirOf(root, system)}/system.ts`);
   if (!dir || !file) fail('This system must use regular source files.', 404);
   const declaration = readDeclaration(fs.readFileSync(file, 'utf8'));
   if ('error' in declaration) fail(declaration.error);

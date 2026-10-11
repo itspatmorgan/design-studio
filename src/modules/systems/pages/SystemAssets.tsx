@@ -1,4 +1,5 @@
 import { systemPath } from '../data/systems';
+import { systemFolder } from '@/platform/core/roots';
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { ArrowRight, Image, Smile, Type } from 'lucide-react';
@@ -6,7 +7,13 @@ import { useManifest } from '@/platform/app/data/useManifest';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { NotFound } from '@/platform/app/shell/App';
 import { IconsPage, PageHeader } from './foundations';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/systems/studio/components/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/platform/systems/studio/components/empty';
 import { ThemeScope } from '../ThemeScope';
 import { assetLink, systemAssets, type SystemAsset } from '../data/assets';
 
@@ -90,7 +97,7 @@ export default function SystemAssets({
             <img src={asset.url} alt={asset.path} className='mx-auto max-h-[24rem] max-w-full object-contain' />
           )}
         </div>
-        <p className='mt-4 break-all text-xs text-muted-foreground'>{`src/systems/${system}/assets/${asset.path}`}</p>
+        <p className='mt-4 break-all text-xs text-muted-foreground'>{`src/${systemFolder(system)}/assets/${asset.path}`}</p>
       </>
     );
   }

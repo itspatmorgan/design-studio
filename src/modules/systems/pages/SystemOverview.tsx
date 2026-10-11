@@ -3,7 +3,7 @@ import { Link } from '@tanstack/react-router';
 import { ArrowUpRight } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Archive02Icon } from '@hugeicons/core-free-icons';
-import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
+import { Alert, AlertTitle, AlertDescription } from '@/platform/systems/studio/components/alert';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { systemUsage, prototypeLink } from '@/platform/app/data/manifest';
 import { contentId } from '@/platform/core/roots';

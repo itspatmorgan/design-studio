@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import semver from 'semver';
+import { systemDirOf } from './system-folders.js';
 
 export const SHARED_RUNTIME_PACKAGES = ['react', 'react-dom', 'lucide-react', '@tanstack/react-router'];
 export const SYSTEM_RUNTIME_PACKAGES = ['react', 'react-dom'];
@@ -38,7 +39,9 @@ export function systemDependencyProblems(root, systems) {
   const host = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
   for (const [id, spec] of Object.entries(systems)) {
     if (spec.role !== 'prototype') continue;
-    const dir = path.resolve(root, spec.dir ?? `src/systems/${id}`);
+    const dir = path.resolve(root, spec.dir ?? systemDirOf(root, id));
+    // Where it is in the repository; a system still being added is checked from its pack, and will be in the team root.
+    const where = spec.dir && !path.isAbsolute(spec.dir) ? spec.dir.replace(/\/$/, '') : systemDirOf(root, id);
     let pkg;
     try {
       pkg = systemPackage(dir);
@@ -46,7 +49,7 @@ export function systemDependencyProblems(root, systems) {
       problems.push(error.message);
       continue;
     }
-    const fail = message => problems.push(`src/systems/${id}/package.json: ${message}`);
+    const fail = message => problems.push(`${where}/package.json: ${message}`);
     if (pkg.private !== true || typeof pkg.name !== 'string' || !pkg.name.startsWith('@studio-system/'))
       fail('declare private: true and a unique @studio-system/<identity> name.');
     if (names.has(pkg.name)) fail('another system uses this package name.');
@@ -86,7 +89,7 @@ export function systemDependencyProblems(root, systems) {
 }
 export function systemLibraryInventory(root, id, spec) {
   if (!Array.isArray(spec.libraries) || !spec.libraries.length) return [];
-  const dir = path.resolve(root, spec.dir ?? `src/systems/${id}`);
+  const dir = path.resolve(root, spec.dir ?? systemDirOf(root, id));
   const pkg = systemPackage(dir);
   return spec.libraries.map(library => {
     if (library.kind === 'source') return { ...library, requirement: null, version: library.version ?? null };
@@ -114,7 +117,7 @@ export function systemPeerProblems(root, systems) {
   }
   for (const [id, spec] of Object.entries(systems)) {
     if (spec.role !== 'prototype') continue;
-    const dir = path.resolve(root, spec.dir ?? `src/systems/${id}`);
+    const dir = path.resolve(root, spec.dir ?? systemDirOf(root, id));
     let pkg;
     try {
       pkg = systemPackage(dir);

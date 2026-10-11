@@ -1,17 +1,31 @@
-// The prototype design systems installed in src/systems/: one folder each, found with a glob, so the app runs with
-// any of them removed. (src/modules/systems/node/systems.js finds the same folders for the build.)
-import { platformSystemId, type SystemSpec } from '@/modules/systems/spec';
+// The design systems installed in the system roots: src/platform/systems/ (supplied, the platform system) and
+// src/systems/ (the team's), one folder each, found with globs, so the app runs with any of them removed. The roots
+// are listed once in src/platform/core/roots.ts; Vite needs the glob patterns literal, so both spell them out.
+// (src/modules/systems/node/systems.js finds the same folders for the build.)
+import { platformSystemId, systemRootProblems, type SystemSpec } from '@/modules/systems/spec';
 import { platformSourceOf } from '../sources';
 import { resourceId, systemAddress } from '@/platform/core/fileTypes';
 import { CONFIG } from '@/platform/app/data/config';
+import { setSystemFolders } from '@/platform/core/roots';
 
-const specs = import.meta.glob<SystemSpec>('/systems/*/system.ts', { eager: true, import: 'default' });
+const specs = import.meta.glob<SystemSpec>(['/platform/systems/*/system.ts', '/systems/*/system.ts'], {
+  eager: true,
+  import: 'default',
+});
 const idOf = (path: string) => path.split('/').at(-2)!;
+const dirOf = (path: string) => `src${path.slice(0, path.lastIndexOf('/') + 1)}`;
+
+// Where each system's folder is, so a system's files (src/platform/core/roots.ts) are looked up in the right root.
+// This registers when the module loads, which is before anything asks for a system's files.
+const found = Object.entries(specs).map(([path, spec]) => ({ id: idOf(path), dir: dirOf(path), role: spec.role }));
+const rootProblems = systemRootProblems(found);
+if (rootProblems.length) throw new Error(rootProblems.join('\n'));
+setSystemFolders(found.map(({ id, dir }) => [id, dir]));
 
 export const SYSTEM_SPECS: Record<string, SystemSpec & { dir: string }> = Object.fromEntries(
   Object.entries(specs)
     .filter(([path]) => CONFIG.systems.includes(idOf(path)))
-    .map(([path, spec]) => [idOf(path), { ...spec, dir: `src/systems/${idOf(path)}/` }])
+    .map(([path, spec]) => [idOf(path), { ...spec, dir: dirOf(path) }])
     .sort(([a], [b]) => (a as string).localeCompare(b as string)),
 );
 

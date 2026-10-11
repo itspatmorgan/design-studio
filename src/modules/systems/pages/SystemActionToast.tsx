@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { toast } from '@/systems/studio/components/toast';
+import { toast } from '@/platform/systems/studio/components/toast';
 export default function SystemActionToast() {
   useEffect(() => {
     const message = sessionStorage.getItem('studio:system-action');

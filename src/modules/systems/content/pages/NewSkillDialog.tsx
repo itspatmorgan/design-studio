@@ -5,10 +5,16 @@
 // (src/modules/systems/content/skills.ts), and again by the file layer.
 import { useState } from 'react';
 import { NAME_MAX, descriptionProblem, nameProblem } from '@/modules/systems/content/skills';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { Textarea } from '@/systems/studio/components/textarea';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/systems/studio/components/dialog';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import { Textarea } from '@/platform/systems/studio/components/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/platform/systems/studio/components/dialog';
 
 type Props = {
   open: boolean;

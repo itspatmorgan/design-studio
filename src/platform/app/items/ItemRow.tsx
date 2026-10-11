@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
-import { Item, ItemContent, ItemMedia, ItemTitle } from '@/systems/studio/components/item';
+import { Item, ItemContent, ItemMedia, ItemTitle } from '@/platform/systems/studio/components/item';
 import { cn } from '@/lib/utils';
 
 // The row for anything in a section: on the front page (HomeSection.tsx) and in a collection's list view (Collection.tsx). It is

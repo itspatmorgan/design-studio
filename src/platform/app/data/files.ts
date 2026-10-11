@@ -9,7 +9,7 @@ import { SYSTEMS_KEY, rootOf } from '@/platform/core/roots';
 import { MODULES } from '@/platform/app/data/modules';
 import { canOwn, policyFor, canPerform, pathResource } from '@/platform/core/permissions';
 import type { Status } from '@/platform/core/archive';
-import { toast } from '@/systems/studio/components/toast';
+import { toast } from '@/platform/systems/studio/components/toast';
 
 export type FileNode = { name: string; path: string; dir: boolean; children?: FileNode[] };
 

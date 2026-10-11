@@ -3,6 +3,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { auditResourceIdentities } from './resource-identity-audit.js';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 // Build the same retained identity inventory from Git, never from the checkout.
 // Staged checks inspect index blobs; CI inspects the explicitly requested tree.
@@ -36,7 +37,10 @@ export function gitResourceIdentities(
       const parts = file.split('/');
       if (parts.some(part => part.startsWith('.') || part === 'node_modules')) continue;
       const profile = /^contributors\/[^/]+\.json$/.test(file);
-      const system = /^src\/systems\/[^/]+\/system\.ts$/.test(file);
+      const system = SYSTEM_ROOTS.some(
+        systemsRoot =>
+          file.startsWith(systemsRoot + '/') && /^[^/]+\/system\.ts$/.test(file.slice(systemsRoot.length + 1)),
+      );
       const prototype =
         /^src\/prototypes\/[^/]+\/[^/]+\//.test(file) && !parts.slice(4).some(part => part.startsWith('_'));
       const artifact =
@@ -45,7 +49,10 @@ export function gitResourceIdentities(
           type => type.inPrototype && type.extensions.some(extension => file.endsWith(extension)),
         );
       const metadata = /^src\/prototypes\/[^/]+\/[^/]+\/meta\.json$/.test(file);
-      const symbolic = mode === '120000' && /^(?:contributors|src\/(?:systems|prototypes))(?:\/|$)/.test(file);
+      const symbolic =
+        mode === '120000' &&
+        (/^(?:contributors|src\/prototypes)(?:\/|$)/.test(file) ||
+          SYSTEM_ROOTS.some(systemsRoot => file === systemsRoot || file.startsWith(systemsRoot + '/')));
       if (!(profile || system || artifact || metadata || symbolic)) continue;
       const target = path.join(root, file);
       fs.mkdirSync(path.dirname(target), { recursive: true });

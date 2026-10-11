@@ -20,7 +20,7 @@ import { fileOp, openInEditor, ownsPrototype, repoPath, revealInFinder, useMe } 
 import { prototypeLink, setManifest } from '@/platform/app/data/manifest';
 import type { PrototypeInfo } from '@/platform/app/data/types';
 import { moduleApps } from '@/platform/app/modules';
-import { toast } from '@/systems/studio/components/toast';
+import { toast } from '@/platform/systems/studio/components/toast';
 import RenamePrototypeDialog from '@/modules/prototypes/viewer/RenamePrototypeDialog';
 import DuplicatePrototypeDialog from '@/modules/prototypes/viewer/DuplicatePrototypeDialog';
 import DeletePrototypeDialog from '@/modules/prototypes/viewer/DeletePrototypeDialog';

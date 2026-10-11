@@ -21,9 +21,10 @@ function fixture() {
   };
   writeProfiles(root, { admin: { name: 'Admin' }, member: { name: 'Member' } });
   for (const id of config.systems) {
-    fs.mkdirSync(path.join(root, 'src/systems', id, 'components'), { recursive: true });
+    const systemsRoot = id === 'studio' ? 'src/platform/systems' : 'src/systems';
+    fs.mkdirSync(path.join(root, systemsRoot, id, 'components'), { recursive: true });
     fs.writeFileSync(
-      path.join(root, 'src/systems', id, 'system.ts'),
+      path.join(root, systemsRoot, id, 'system.ts'),
       `// preserve comment\nexport default { status: 'active', role: '${id === 'studio' ? 'platform' : 'prototype'}', label: '${id}', themeClass: '${id}-theme' };`,
     );
   }

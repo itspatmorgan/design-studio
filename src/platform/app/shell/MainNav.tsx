@@ -7,7 +7,7 @@ import {
   Sun01Icon,
   Settings01Icon,
 } from '@hugeicons/core-free-icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 import { Link, useRouterState, type LinkProps } from '@tanstack/react-router';

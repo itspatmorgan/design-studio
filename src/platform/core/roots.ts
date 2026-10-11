@@ -4,12 +4,48 @@
 // This file has no imports, so Node scripts can load it directly.
 
 export const SYSTEM_CONTENT_KEY = 'system-content';
+
+// The two folders that hold design systems, supplied first. The supplied root belongs to the upstream project and
+// holds only the platform system (Studio's own interface); the team root holds the team's systems. A system's id is
+// its folder name in either. Everything that lists or locates systems reads this list instead of naming a folder.
+// (Vite globs must be written out literally, so the app's import.meta.glob patterns spell both roots; the build
+// derives the same patterns from this list.)
+export const SUPPLIED_SYSTEMS_ROOT = 'src/platform/systems';
+export const TEAM_SYSTEMS_ROOT = 'src/systems';
+export const SYSTEM_ROOTS = [SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT] as const;
+
+// The roots as folders under src/ with a leading slash, the shape glob keys and patterns use: "/platform/systems".
+export const SYSTEM_GLOB_ROOTS = SYSTEM_ROOTS.map(root => root.replace(/^src/, ''));
+
+// Where each discovered system's folder is under src/ ("platform/systems/studio"), by id. The app and the build
+// register it at startup from discovery (src/modules/systems/data/systems.ts and src/modules/systems/node/systems.js),
+// since this file can't read the filesystem. A system that isn't registered is taken to be in the team root.
+let systemFolders: ReadonlyMap<string, string> = new Map();
+export const setSystemFolders = (folders: Iterable<readonly [string, string]>) => {
+  systemFolders = new Map(
+    [...folders].map(([id, folder]) => [id, folder.replace(/^src\//, '').replace(/\/+$/, '')] as const),
+  );
+};
+// A system's folder under src/ for its id.
+export const systemFolder = (system: string) =>
+  systemFolders.get(system) ?? `${TEAM_SYSTEMS_ROOT.replace(/^src\//, '')}/${system}`;
+// The id of the system a path belongs to when it is inside a system root ("src/systems/product/system.ts" → "product",
+// "src/platform/systems/studio/intro.tsx" → "studio"), or undefined for any other path. A leading "/" and the
+// "src/" prefix are optional.
+export const systemIdOfPath = (file: string) => {
+  const path = file.replace(/^\/?(?:src\/)?/, '');
+  for (const root of SYSTEM_ROOTS) {
+    const base = `${root.replace(/^src\//, '')}/`;
+    if (path.startsWith(base)) return path.slice(base.length).split('/')[0] || undefined;
+  }
+  return undefined;
+};
 export const systemRoot = (system: string) =>
   system === 'platform.core'
     ? 'platform'
     : system.startsWith('module.')
       ? `modules/${system.slice(7)}`
-      : `systems/${system}`;
+      : systemFolder(system);
 export const contentId = (system: string, section: string) => `${system}:${section}`;
 export const contentParts = (id: string) => {
   const [system, section] = id.split(':');
@@ -17,9 +53,9 @@ export const contentParts = (id: string) => {
 };
 export const contentSection = (id: string) => contentParts(id).section;
 
-// A prototype system's components (src/systems/<id>/components/) are opened for editing the same
+// A system's components (<system folder>/components/) are opened for editing the same
 // way: under the reserved key "systems" (already an app page URL, so nobody's folder), with the
-// system's id as the prototype ("studio" is the app's own, in src/systems/studio/components/). Studio
+// system's id as the prototype ("studio" is the app's own, in src/platform/systems/studio/components/). Studio
 // files too: changed in the repo and reviewed.
 export const SYSTEMS_KEY = 'systems';
 
@@ -92,5 +128,5 @@ export const rootOf = (contributor: string, id: string) =>
     : sectionKeys.has(contributor)
       ? `${contributor}/${id}`
       : contributor === SYSTEMS_KEY
-        ? `${SYSTEMS_KEY}/${id}/components`
+        ? `${systemFolder(id)}/components`
         : `prototypes/${contributor}/${id}`;

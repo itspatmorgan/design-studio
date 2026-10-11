@@ -66,7 +66,7 @@ The core page key `settings` is reserved. Modules and contributors cannot use it
 
 Use the TypeScript declaration for exact fields. See the [file-type contract](file-types.md) for artifact capability declarations, browser implementations, availability, and module-owned file actions.
 
-Design systems are content in `src/systems/`, not platform modules. Their [contract](../../modules/systems/README.md) defines system structure.
+Design systems are content in `src/systems/` (and Studio's own interface system in `src/platform/systems/`), not platform modules. Their [contract](../../modules/systems/README.md) defines system structure.
 
 ## Configuration and commands
 

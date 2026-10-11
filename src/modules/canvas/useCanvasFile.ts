@@ -17,7 +17,7 @@ import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
 import type { AppState, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { readSource, writeSource } from '@/platform/app/data/files';
 import type { Artifact, Prototype } from '@/platform/app/data/types';
-import { toast } from '@/systems/studio/components/toast';
+import { toast } from '@/platform/systems/studio/components/toast';
 import { parseCanvas, serializeCanvas } from './format';
 import { mergeRemote } from './mergeRemote';
 

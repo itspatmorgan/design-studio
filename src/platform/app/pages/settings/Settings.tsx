@@ -1,10 +1,16 @@
 import { type ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/systems/studio/components/select';
-import { Switch } from '@/systems/studio/components/switch';
-import { Label } from '@/systems/studio/components/label';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/platform/systems/studio/components/select';
+import { Switch } from '@/platform/systems/studio/components/switch';
+import { Label } from '@/platform/systems/studio/components/label';
 import {
   Dialog,
   DialogContent,
@@ -12,10 +18,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
-import { Badge } from '@/systems/studio/components/badge';
-import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
-import { Card, CardHeader, CardContent, CardDescription } from '@/systems/studio/components/card';
+} from '@/platform/systems/studio/components/dialog';
+import { Badge } from '@/platform/systems/studio/components/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/platform/systems/studio/components/alert';
+import { Card, CardHeader, CardContent, CardDescription } from '@/platform/systems/studio/components/card';
 import { adminProblems, type StudioConfig } from '@/platform/core/config';
 import { useStudioSettings } from '@/platform/app/settings/useStudioSettings';
 

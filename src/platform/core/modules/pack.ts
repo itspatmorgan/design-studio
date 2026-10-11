@@ -1,7 +1,8 @@
 // The pure parts of adding a module or design system from a source (src/platform/node/cli/studio.js): what a source can be,
 // where each file of a pack goes, whether a license is one a team can build on, and the edits to studio.config.ts
-// and AGENTS.md. Nothing here touches files or the network, so every rule is tested. Has only type imports.
+// and AGENTS.md. Nothing here touches files or the network, so every rule is tested. Has only type imports, and the import-free roots.ts.
 import type { ModuleSpec } from './index.ts';
+import { TEAM_SYSTEMS_ROOT } from '../roots.ts';
 
 export type Source =
   | { kind: 'path'; path: string }
@@ -62,7 +63,7 @@ export const plainPath = (p: string) =>
 
 // Where each file of a pack goes. `files` are paths inside the pack. A module pack's files go to src/modules/<id>/,
 // except instructions/ (strip its prefix for declared module-owned guidance) and content/ (to the section's folder,
-// which the module must declare). A design system pack goes to src/systems/<id>/. Hidden files are left behind.
+// which the module must declare). A design system pack goes to the team's system root, src/systems/<id>/ (the supplied root is upstream's). Hidden files are left behind.
 export function packPlan(
   kind: Kind,
   id: string,
@@ -87,7 +88,7 @@ export function packPlan(
       continue;
     }
     if (kind === 'system') {
-      moves.push({ from: file, to: `src/systems/${id}/${file}` });
+      moves.push({ from: file, to: `${TEAM_SYSTEMS_ROOT}/${id}/${file}` });
       continue;
     }
     if (parts[0] === 'instructions') {

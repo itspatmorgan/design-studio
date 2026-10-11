@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage, AvatarFallback } from '@/systems/studio/components/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/platform/systems/studio/components/avatar';
 
 // GitHub photos enhance the byline; initials remain available offline or after a failed load.
 export function ContributorAvatar({

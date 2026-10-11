@@ -75,6 +75,8 @@ test('the fallback type lists the SystemContent files no other type opens', need
   assert.deepEqual(
     globsFor('text', types, modules),
     [
+      '/platform/systems/*/context',
+      '/platform/systems/*/skills',
       '/systems/*/context',
       '/systems/*/skills',
       '/platform/context',
@@ -119,6 +121,8 @@ test('SystemContent Markdown stays readable and validated without prototype Docu
   assert.deepEqual(
     globsFor('systems', withoutDocuments, modules),
     [
+      '/platform/systems/*/context',
+      '/platform/systems/*/skills',
       '/systems/*/context',
       '/systems/*/skills',
       '/platform/context',
@@ -129,6 +133,8 @@ test('SystemContent Markdown stays readable and validated without prototype Docu
   assert.deepEqual(
     globsFor('text', withoutDocuments, modules),
     [
+      '/platform/systems/*/context',
+      '/platform/systems/*/skills',
       '/systems/*/context',
       '/systems/*/skills',
       '/platform/context',

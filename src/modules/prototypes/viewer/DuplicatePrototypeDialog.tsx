@@ -4,9 +4,15 @@ import { duplicatePrototype } from '@/platform/app/data/files';
 import { findPrototype, prototypeLink, setManifest } from '@/platform/app/data/manifest';
 import type { PrototypeInfo } from '@/platform/app/data/types';
 import { ACTIVE_PROTOTYPE_SYSTEMS } from '@/modules/systems/data/systems';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/systems/studio/components/select';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/platform/systems/studio/components/select';
 import {
   Dialog,
   DialogContent,
@@ -14,7 +20,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 
 export const systemLabel = (id: string | null) =>
   id === null ? 'No system — custom styling' : (ACTIVE_PROTOTYPE_SYSTEMS[id]?.label ?? id);

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readResourceDirectory } from '../lib/resource-directory.js';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 export const RESOURCE_DIRECTORY_MODULE = 'virtual:studio-resource-directory';
@@ -20,7 +21,13 @@ export default function resourceDirectoryPlugin(root = ROOT) {
   let lastSource;
   const relevant = file => {
     const relative = path.relative(root, file).split(path.sep).join('/');
-    return /^contributors\/[^/]+\.json$/.test(relative) || /^src\/systems\/[^/]+\/system\.ts$/.test(relative);
+    return (
+      /^contributors\/[^/]+\.json$/.test(relative) ||
+      SYSTEM_ROOTS.some(
+        systemsRoot =>
+          relative.startsWith(`${systemsRoot}/`) && /^[^/]+\/system\.ts$/.test(relative.slice(systemsRoot.length + 1)),
+      )
+    );
   };
   return {
     name: 'studio-resource-directory',
@@ -32,7 +39,10 @@ export default function resourceDirectoryPlugin(root = ROOT) {
       return (lastSource = directoryModuleSource(readResourceDirectory(root)));
     },
     configureServer(server) {
-      server.watcher.add([path.join(root, 'contributors'), path.join(root, 'src/systems')]);
+      server.watcher.add([
+        path.join(root, 'contributors'),
+        ...SYSTEM_ROOTS.map(systemsRoot => path.join(root, systemsRoot)),
+      ]);
       const refresh = file => {
         if (!relevant(file) || fs.existsSync(path.join(root, '.studio-system-operation'))) return;
         const graph = server.environments.client.moduleGraph;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { markdownPath, migratedGuidancePath } from '../../app/docs/referenceLinks.ts';
-import globs from '../build/vite-globs-plugin.js';
+import globs, { archivedSystemGlobs, withSystemNegations } from '../build/vite-globs-plugin.js';
 import { ENABLED_MODULES } from './modules.js';
 import titleFromHeading from '../build/remark-title-from-heading.js';
 
@@ -16,6 +16,12 @@ test('owner README and relative context links use the same browser', () => {
     resolve('../../systems/studio/context/writing.md', '/modules/systems'),
     '/systems/studio/context/writing',
   );
+  // Studio's own system is in the supplied root but is addressed like any system.
+  assert.equal(
+    resolve('../../platform/systems/studio/context/writing.md', '/modules/systems'),
+    '/systems/studio/context/writing',
+  );
+  assert.equal(resolve('../../platform/systems/studio/README.md', '/modules/systems'), '/systems/studio');
   assert.equal(resolve('./main.tsx', '/prototypes/patrick/example'), '/prototypes/patrick/example/main.tsx');
   assert.equal(markdownPath('/modules/documentation/pages/prototypes.md'), '/documentation/manual/prototypes');
   assert.equal(markdownPath('/modules/documentation/pages/index.md'), '/documentation/manual');
@@ -131,4 +137,27 @@ test('saved Reference, Knowledge, and system guidance links follow both migratio
   for (const [from, to] of Object.entries(cases)) assert.equal(migratedGuidancePath(from), to, from);
   assert.equal(migratedGuidancePath('/documentation/context/platform.core/context/personas'), null);
   assert.equal(migratedGuidancePath('/systems/product/context/accessibility'), null);
+});
+
+test('archived systems are left out of the build in whichever root they are in', () => {
+  const specs = {
+    studio: { status: 'active', dir: 'src/platform/systems/studio/' },
+    old: { status: 'archived', dir: 'src/systems/old/' },
+    older: { status: 'archived', dir: 'src/platform/systems/older/' },
+  };
+  assert.deepEqual(archivedSystemGlobs(specs), ['!/systems/old/**', '!/platform/systems/older/**']);
+  const negations = archivedSystemGlobs(specs);
+  assert.equal(
+    withSystemNegations(
+      "import.meta.glob<string>(['/platform/systems/*/intro.tsx', '/systems/*/intro.tsx'], { eager: true })",
+      negations,
+    ),
+    'import.meta.glob<string>([\'/platform/systems/*/intro.tsx\', \'/systems/*/intro.tsx\',"!/systems/old/**","!/platform/systems/older/**"], { eager: true })',
+  );
+  const unrelated = "import.meta.glob('/modules/*/module.ts')";
+  assert.equal(withSystemNegations(unrelated, negations), unrelated);
+  assert.equal(
+    withSystemNegations("import.meta.glob('/systems/*/system.ts')", []),
+    "import.meta.glob('/systems/*/system.ts')",
+  );
 });

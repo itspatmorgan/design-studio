@@ -46,7 +46,6 @@ test('local personal setup resumes, then a second clone joins a team without cha
       fs.rmSync(path.join(dir, folder), { recursive: true, force: true });
       fs.mkdirSync(path.join(dir, folder), { recursive: true });
     }
-    fs.cpSync(path.join(root, 'src/systems/studio'), path.join(dir, 'src/systems/studio'), { recursive: true });
     for (const file of fs
       .globSync('**/*', { cwd: path.join(root, 'src/platform/node/templates/system') })
       .filter(file => fs.statSync(path.join(root, 'src/platform/node/templates/system', file)).isFile())) {
@@ -103,7 +102,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     });
     assert.equal(required.status, 1);
     assert.match(required.stderr, /cannot be removed/);
-    assert.ok(fs.existsSync(path.join(dir, 'src/systems/studio/system.ts')));
+    assert.ok(fs.existsSync(path.join(dir, 'src/platform/systems/studio/system.ts')));
     // One successful lifecycle journey complements the rollback below. Keep it
     // separate from prototype authoring rather than duplicating full builds.
     run(dir, 'src/platform/node/cli/studio.js', 'create-module', 'lifecycle-fixture', '--yes');

@@ -4,6 +4,7 @@ import { readContributors } from './contributors.js';
 import { canonicalDirectory } from './safe-paths.js';
 import { readDeclaration } from '../../core/declarations.ts';
 import { resourceDirectory } from '../../core/resourceReferences.ts';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 import { jsonIdentity } from '../../core/resourceIdentity.ts';
 import { resourceId } from '../../core/resourceIdentity.ts';
 
@@ -16,9 +17,10 @@ export function readResourceDirectory(root) {
   // single unambiguous studioId, including escaped spellings of that key.
   for (const key of Object.keys(contributors))
     jsonIdentity(fs.readFileSync(path.join(root, 'contributors', `${key}.json`), 'utf8'));
-  const folder = path.join(root, 'src/systems');
   const systems = Object.create(null);
-  if (fs.existsSync(folder)) {
+  for (const systemsRoot of SYSTEM_ROOTS) {
+    const folder = path.join(root, systemsRoot);
+    if (!fs.existsSync(folder)) continue;
     if (!canonicalDirectory(folder, root)) throw new Error('System identities require an ordinary source directory.');
     for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
       if (entry.name.startsWith('.')) continue;
@@ -32,6 +34,10 @@ export function readResourceDirectory(root) {
         !fs.lstatSync(file).isFile()
       )
         throw new Error(`${file}: system identity requires an ordinary declaration.`);
+      if (entry.name in systems)
+        throw new Error(
+          `${file}: system ${entry.name} is also in another system root; a system's id is its folder name.`,
+        );
       const declaration = readDeclaration(fs.readFileSync(file, 'utf8'));
       if ('error' in declaration) throw new Error(`${file}: ${declaration.error}`);
       systems[entry.name] = declaration.value;

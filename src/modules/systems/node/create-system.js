@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { readContributors } from '../../../platform/node/lib/contributors.js';
 import { readSettings } from '../../../platform/node/lib/studio-settings.js';
 import { studioRole } from '../../../platform/core/permissions.ts';
+import { newSystemDir } from '../../../platform/node/lib/system-folders.js';
 const execute = promisify(execFile);
 
 export function createSystem(root, me, body) {
@@ -44,7 +45,7 @@ export function createSystem(root, me, body) {
       const options = { cwd: root, encoding: 'utf8', timeout: 30000 };
       await execute(process.execPath, args, options);
       await execute(process.execPath, [...args, '--yes'], options);
-      const declaration = readDeclaration(fs.readFileSync(path.join(root, 'src/systems', id, 'system.ts'), 'utf8'));
+      const declaration = readDeclaration(fs.readFileSync(path.join(root, newSystemDir(id), 'system.ts'), 'utf8'));
       if ('error' in declaration) throw new Error(declaration.error);
       return { id, studioId: resourceId(declaration.value.studioId) };
     } catch (error) {

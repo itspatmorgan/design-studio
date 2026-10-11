@@ -18,9 +18,9 @@ import { callModule, useMe } from '@/platform/app/data/files';
 import { CONFIG } from '@/platform/app/data/config';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { prototypeLink } from '@/platform/app/data/manifest';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { toast } from '@/systems/studio/components/toast';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import { toast } from '@/platform/systems/studio/components/toast';
 import {
   Dialog,
   DialogContent,
@@ -28,17 +28,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/systems/studio/components/dropdown-menu';
+} from '@/platform/systems/studio/components/dropdown-menu';
 import { beginSystemDeletion, finishSystemCreation } from './creationTransition';
 import { canPerform } from '@/platform/core/permissions';
 import { DEFAULT_SYSTEM, SYSTEM_SPECS, systemPath } from '../data/systems';
+import { systemFolder } from '@/platform/core/roots';
 
 export const systemRequest = <T,>(action: string, system?: string, extra: object = {}) =>
   callModule<T>('systems', 'action', { action, system, ...extra });
@@ -170,7 +171,7 @@ export default function SystemMenu({
   }
   async function copyPath() {
     try {
-      await navigator.clipboard.writeText(`src/systems/${system}/`);
+      await navigator.clipboard.writeText(`src/${systemFolder(system)}/`);
       toast.add({ title: 'Path copied' });
     } catch {
       toast.add({ type: 'error', title: 'Could not copy the path.' });

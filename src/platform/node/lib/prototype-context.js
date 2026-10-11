@@ -6,6 +6,7 @@ import { canPerform, studioRole } from '../../core/permissions.ts';
 import { parseStatus } from '../../core/archive.ts';
 import { jsonIdentity, resourceId } from '../../core/resourceIdentity.ts';
 import { prototypeSourceForIdentity } from './resource-directory.js';
+import { systemDirOf } from './system-folders.js';
 
 // Report facts and entry paths without reading a transitive instruction bundle,
 // writing a manifest, or deciding which task the person wants performed.
@@ -32,7 +33,7 @@ export function prototypeContext({ root, folder, config, systems, modules, contr
   if (!status) throw new Error(`${relative}/meta.json has an invalid status.`);
   const entry = id => {
     if (id === null) return null;
-    const file = `src/systems/${id}/AGENTS.md`;
+    const file = `${systemDirOf(root, id)}/AGENTS.md`;
     return { status: registered[id]?.status ?? 'missing', entry: fs.existsSync(path.join(root, file)) ? file : null };
   };
   const ownerFile = path.join(root, 'contributors', match[1] + '.json');

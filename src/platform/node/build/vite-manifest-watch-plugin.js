@@ -1,6 +1,6 @@
 // Keeps the manifest live during `pnpm dev`, without reloading the page.
 //
-// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, src/systems/, src/modules/documentation/pages/, or a module contract
+// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, the system roots (src/platform/systems/ and src/systems/), src/modules/documentation/pages/, or a module contract
 // changes (from the app, an agent, or your editor), this rebuilds the manifest in-process
 // and pushes it to the app over Vite's dev connection. The app swaps it in and refreshes
 // only the routes that use it (see router.tsx), so the open view and scroll position stay.
@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-skills.js';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 import { SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
 import { fileURLToPath } from 'node:url';
 import { buildManifest } from './build-manifest.js';
@@ -21,7 +22,8 @@ const SYSTEM_CONTENT = path.join(ROOT, 'src', 'platform');
 // The Manual's pages, or null when its module is off or not installed.
 const documentationModule = ENABLED_MODULES.find(m => m.id === 'documentation');
 const MANUAL = documentationModule?.section?.folder ? path.join(ROOT, documentationModule.section.folder) : null;
-const SYSTEMS = path.join(ROOT, 'src', 'systems');
+// Where systems live: the supplied root (inside src/platform) and the team's.
+const SYSTEMS = SYSTEM_ROOTS.map(systemsRoot => path.join(ROOT, systemsRoot));
 // The system content's map reads it (src/modules/systems/content/map.ts).
 const AGENTS = path.join(ROOT, 'AGENTS.md');
 const BATCH_MS = 50;
@@ -42,14 +44,14 @@ const inside = (dir, file) => file === dir || file.startsWith(dir + path.sep);
 function relevant(file, kind) {
   if (inside(CONTRIBUTORS_DIR, file) || file === AGENTS) return true;
   if (MANUAL && inside(MANUAL, file)) return file.endsWith('.md');
-  if (inside(SYSTEM_CONTENT, file)) return kind !== 'change' || file.endsWith('.md');
-  if (file.endsWith('.md') && /src[\\/](?:platform[\\/]core|modules)[\\/]/.test(file)) return true;
   // A system's component docs: files coming and going, and edits to the ones that describe a component
-  // and to its theme (the tokens it lists).
-  if (inside(SYSTEMS, file))
+  // and to its theme (the tokens it lists). The platform system is inside src/platform, so this comes first.
+  if (SYSTEMS.some(dir => inside(dir, file)))
     return (
       kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$|(?:system\.ts|package\.json)$/.test(file)
     );
+  if (inside(SYSTEM_CONTENT, file)) return kind !== 'change' || file.endsWith('.md');
+  if (file.endsWith('.md') && /src[\\/](?:platform[\\/]core|modules)[\\/]/.test(file)) return true;
   if (![PROTOS, ...PROTOTYPE_DIRS].some(dir => inside(dir, file))) return false;
   return kind !== 'change' || path.basename(file) === 'meta.json' || hasFidelity(file);
 }
@@ -70,7 +72,7 @@ export default function manifestWatch() {
         ...PROTOTYPE_DIRS,
         SYSTEM_CONTENT,
         ...(MANUAL ? [MANUAL] : []),
-        SYSTEMS,
+        ...SYSTEMS,
         CONTRIBUTORS_DIR,
         AGENTS,
       ]);

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ChevronDown, Search, X, FileText, NotebookText, WandSparkles } from 'lucide-react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/systems/studio/components/collapsible';
-import { Input } from '@/systems/studio/components/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/platform/systems/studio/components/collapsible';
+import { Input } from '@/platform/systems/studio/components/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { Link, Outlet, useParams, useRouterState } from '@tanstack/react-router';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { contentId, SYSTEM_CONTENT_SECTIONS } from '@/platform/core/roots';

@@ -4,6 +4,7 @@
 // result in place of the ['/__studio_globs__/*'] placeholder when it reads a loader. Patterns are relative to src/.
 // Has no imports but types, so Node scripts and tests can load it.
 import type { FileTypeSpec } from '../fileTypes.ts';
+import { SYSTEM_GLOB_ROOTS } from '../roots.ts';
 import { itemFolders, type ModuleSpec } from './index.ts';
 
 const rootOf = (folder: string) => folder.replace(/^src/, ''); // "src/examples" → "/examples"
@@ -14,8 +15,7 @@ export function globsFor(id: string, types: Record<string, FileTypeSpec>, module
   const spec = types[id];
   if (!spec) throw new Error(`There is no "${id}" file type, so its loader can't list files.`);
   const systemContent = [
-    '/systems/*/context',
-    '/systems/*/skills',
+    ...SYSTEM_GLOB_ROOTS.flatMap(root => [`${root}/*/context`, `${root}/*/skills`]),
     '/platform/context',
     '/platform/skills',
     ...modules.flatMap(m => [`/modules/${m.id}/context`, `/modules/${m.id}/skills`]),

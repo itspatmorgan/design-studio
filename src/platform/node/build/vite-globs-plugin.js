@@ -24,6 +24,22 @@ function literal(glob) {
   return glob.endsWith('/**') ? `${escape(glob.slice(0, -3))}/**` : escape(glob);
 }
 
+// Negated patterns for the archived systems, whichever system root each is in (its `dir`, like "src/systems/old/").
+export const archivedSystemGlobs = specs =>
+  Object.values(specs)
+    .filter(spec => spec.status === 'archived')
+    .map(spec => `!/${spec.dir.replace(/^src\//, '')}**`);
+
+// A glob over the systems' folders (any pattern that mentions /systems/, in either root) with the negations added.
+export function withSystemNegations(code, negations) {
+  if (!negations.length) return code;
+  return code.replace(/(import\.meta\.glob(?:<[^\n]+?>)?\()(\[[^\]]+\]|'[^']+'|"[^"]+")/g, (whole, lead, patterns) => {
+    if (!patterns.includes('/systems/')) return whole;
+    const list = patterns.startsWith('[') ? patterns.slice(1, -1) : patterns;
+    return lead + '[' + list + ',' + negations.map(value => JSON.stringify(value)).join(',') + ']';
+  });
+}
+
 const LOADER = /[\\/]modules[\\/]([^\\/]+)[\\/]loader\.ts$/;
 const MACRO = /\['\/__studio_globs__\/\*'\]/g;
 
@@ -44,27 +60,18 @@ export default function globs() {
       negations = unavailablePrototypeRoots(root).map(
         dir => `!/${path.relative(path.join(root, 'src'), dir).split(path.sep).join('/')}/**`,
       );
-      systemNegations = isBuild
-        ? Object.entries(SYSTEM_SPECS)
-            .filter(([, spec]) => spec.status === 'archived')
-            .map(([id]) => `!/systems/${id}/**`)
-        : [];
+      systemNegations = isBuild ? archivedSystemGlobs(SYSTEM_SPECS) : [];
       if (!isBuild) return;
       const { archived } = buildManifest({ deploy: true, write: false, quiet: true });
       negations.push(...archived.map(glob => `!${literal(glob)}`));
     },
     transform(code, id) {
       let updated = false;
-      if (systemNegations.length)
-        code = code.replace(
-          /(import\.meta\.glob(?:<[^\n]+?>)?\()(\[[^\]]+\]|'[^']+'|"[^"]+")/g,
-          (whole, lead, patterns) => {
-            if (!patterns.includes('/systems/')) return whole;
-            updated = true;
-            const list = patterns.startsWith('[') ? patterns.slice(1, -1) : patterns;
-            return lead + '[' + list + ',' + systemNegations.map(value => JSON.stringify(value)).join(',') + ']';
-          },
-        );
+      const withNegations = withSystemNegations(code, systemNegations);
+      if (withNegations !== code) {
+        code = withNegations;
+        updated = true;
+      }
       if (/[\\/]app[\\/]docs[\\/]loadReference\.ts$/.test(id.split('?')[0])) {
         const references = ['/platform/README.md', ...ENABLED_MODULES.map(m => `/modules/${m.id}/*.md`)];
         return { code: code.replace("['/__studio_references__/*']", JSON.stringify(references)), map: null };

@@ -1,3 +1,4 @@
+import { systemDirOf } from './system-folders.js';
 import { linkSystemDependencies } from './fixtures/workspace-dependencies.js';
 import { writeProfiles, ensureTeamManagement } from './fixtures/contributors.js';
 import { test } from 'node:test';
@@ -240,8 +241,8 @@ test('create and rename preserve addresses, file errors recover, and system remo
       assert.ok(!fs.existsSync('src/prototypes/patrick/unauthorized-copy'));
       // Shared Markdown remains editable even when prototype Documents is absent.
       const { runOp } = await load('src/platform/node/build/files/ops.js');
-      runOp(path.resolve('src/systems/studio/context'), {op:'create', name:'beta-context.md'}, 'context');
-      assert.match(fs.readFileSync('src/systems/studio/context/beta-context.md', 'utf8'), /title: Beta Context/);
+      runOp(path.resolve('src/platform/systems/studio/context'), {op:'create', name:'beta-context.md'}, 'context');
+      assert.match(fs.readFileSync('src/platform/systems/studio/context/beta-context.md', 'utf8'), /title: Beta Context/);
       const systemContentResponse = response();
       await handler({...request, url:'/file?contributor=system-content&prototype=studio%3Acontext&path=beta-context.md'}, systemContentResponse, () => assert.fail('Unexpected fallback'));
       assert.equal(systemContentResponse.statusCode, 200);
@@ -376,7 +377,7 @@ test('CI accepts reviewed platform proposals and maintainer pushes, rejecting ot
       'add',
       'studio.config.ts',
       'contributors/sam.json',
-      ...config.systems.map(key => `src/systems/${key}/system.ts`),
+      ...config.systems.map(key => `${systemDirOf(dir, key)}/system.ts`),
     );
     runGit('commit', '-qm', 'Trusted grants');
     const granted = runGit('rev-parse', 'HEAD');

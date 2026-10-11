@@ -8,6 +8,7 @@ import { agentsBlock, applyAgentsBlock } from '../../core/modules/pack.ts';
 import { applySetupChanges, editStudioConfig } from './studio-setup.js';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { persistStudioReferences } from '../../core/resourceReferences.ts';
+import { systemDirOf } from './system-folders.js';
 
 export class SettingsError extends Error {
   constructor(message, status = 400) {
@@ -61,7 +62,7 @@ export function planSettings({
       throw new SettingsError('Module states must be an object.');
     next.modules = { ...current.config.modules, ...changes.modules };
   }
-  const systemFile = path.join(root, 'src/systems', next.defaultSystem ?? '', 'system.ts');
+  const systemFile = path.join(root, systemDirOf(root, next.defaultSystem ?? ''), 'system.ts');
   if (fs.existsSync(systemFile)) {
     const spec = readSystemDeclaration(fs.readFileSync(systemFile, 'utf8'));
     if (!('error' in spec) && spec.value.status === 'archived')

@@ -26,7 +26,7 @@ The [agent context contract](../../../context/agent-context.md) owns current rou
 
 The current generated map reports two always-read Studio rules, nine on-demand rules, one rule reached through another rule, five skills, and no missing or unrouted rules. That is structural evidence, not proof of successful task routing. Product currently has no product knowledge beyond its entry point; Marketing routes Brand, Library, and Marketing Design.
 
-There is no checked-in `.agents/skills` adapter registering these system skills as native Codex skills. A procedure can still be read through root and system links. Do not assume a `src/systems/<id>/skills/` folder is automatically in a host's skill catalog.
+There is no checked-in `.agents/skills` adapter registering these system skills as native Codex skills. A procedure can still be read through root and system links. Do not assume a system's `skills/` folder (`src/systems/<id>/skills/`, or `src/platform/systems/studio/skills/`) is automatically in a host's skill catalog.
 
 ## Offline measurements
 

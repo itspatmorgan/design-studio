@@ -6,23 +6,23 @@ import { HugeiconsIcon } from '@hugeicons/react';
 import { Archive02Icon, MoreHorizontalIcon, ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
 import { useShowAllFiles } from '@/platform/app/shell/appPrefs';
 import type { Prototype } from '@/platform/app/data/types';
-import { Input } from '@/systems/studio/components/input';
-import { toast } from '@/systems/studio/components/toast';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Input } from '@/platform/systems/studio/components/input';
+import { toast } from '@/platform/systems/studio/components/toast';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@/systems/studio/components/context-menu';
+} from '@/platform/systems/studio/components/context-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/systems/studio/components/dropdown-menu';
+} from '@/platform/systems/studio/components/dropdown-menu';
 import { useRenamePrototype } from '@/modules/prototypes/viewer/useRenamePrototype';
 import { usePrototypeActions, type Action } from '@/modules/prototypes/viewer/usePrototypeActions';
 import { NavHeader } from '@/platform/app/shell/nav';

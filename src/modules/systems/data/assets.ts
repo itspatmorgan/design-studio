@@ -1,13 +1,18 @@
 import { systemPath } from './systems';
+import { systemFolder } from '@/platform/core/roots';
 // Only previewable static files are exposed; source code and HTML are not assets here.
+// Both system roots (src/platform/core/roots.ts), the platform system's and the team's.
 const urls = import.meta.glob<string>(
-  '/systems/*/assets/**/*.{svg,png,jpg,jpeg,webp,avif,gif,ico,woff,woff2,ttf,otf}',
+  [
+    '/platform/systems/*/assets/**/*.{svg,png,jpg,jpeg,webp,avif,gif,ico,woff,woff2,ttf,otf}',
+    '/systems/*/assets/**/*.{svg,png,jpg,jpeg,webp,avif,gif,ico,woff,woff2,ttf,otf}',
+  ],
   { eager: true, query: '?url', import: 'default' },
 );
 
 export type SystemAsset = { path: string; url: string; kind: 'Fonts' | 'Icons' | 'Images' };
 export function systemAssets(system: string): SystemAsset[] {
-  const prefix = `/systems/${system}/assets/`;
+  const prefix = `/${systemFolder(system)}/assets/`;
   return Object.entries(urls)
     .filter(([path]) => path.startsWith(prefix))
     .map(([file, url]) => {

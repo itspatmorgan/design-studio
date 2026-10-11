@@ -3,7 +3,7 @@ import { useState } from 'react';
 import type { FallbackProps } from 'react-error-boundary';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Copy01Icon, Tick02Icon } from '@hugeicons/core-free-icons';
-import { Button } from '@/systems/studio/components/button';
+import { Button } from '@/platform/systems/studio/components/button';
 
 export default function ViewError({ error }: FallbackProps) {
   const [copied, setCopied] = useState(false);

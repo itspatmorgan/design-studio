@@ -65,7 +65,7 @@ export type ManualPage = {
 
 // `sections` holds the artifacts of the modules' sections of prototype-shaped folders, by section key: the
 // module section artifacts (src/examples/, as `sections.examples`), shaped like prototypes.
-// `systemContent` holds the system content's sections (src/systems/<id>/, see src/platform/core/roots.ts), shaped like
+// `systemContent` holds the system content's sections (a system's folder in either system root, see src/platform/core/roots.ts), shaped like
 // prototypes.
 // `systemContentMaps` inventories declared instruction routes; it does not record agent reads.
 // `systems` holds each system's components and their docs (systemDocs.ts), the tokens its theme
@@ -105,7 +105,7 @@ export type Manifest = {
   >;
 };
 
-// Authored overview copy, optional additional content, and icon examples live in src/systems/<id>/intro.tsx.
+// Authored overview copy, optional additional content, and icon examples live in <system folder>/intro.tsx (src/systems/<id>/, or src/platform/systems/studio/ for Studio's own).
 // Inventory metrics and theme/component pages come from the system's files.
 export type SystemIntro = {
   summary?: string;
@@ -129,7 +129,7 @@ export type DesignSystem = {
   overview?: SystemOverviewSummary; // authored descriptions; inventory counts stay automatic
   summary?: string; // system-owned purpose shown above the generated overview
   label: string;
-  dir: string; // where its components live, e.g. "src/systems/studio/components/"
+  dir: string; // where its components live, e.g. "src/platform/systems/studio/components/"
   scopeClass: string; // the class its theme is set under, or "" when it's set on the page (studio)
   intro?: ReactNode; // optional system-owned content shown directly below the overview
   icons?: { library: string; href: string; snippet: string; grid: ReactNode };

@@ -6,6 +6,7 @@ import { frontmatter } from './frontmatter.js';
 import { skillProblems } from '../../../modules/systems/content/skills.ts';
 import { canonicalDirectory } from './safe-paths.js';
 
+// `systems` is the discovered systems (SYSTEM_SPECS or SYSTEM_SOURCES), each with the `dir` it was found in.
 export function knowledgeOwners(modules, systems) {
   return [
     { id: 'platform.core', kind: 'platform', label: 'Platform', root: 'src/platform' },
@@ -14,7 +15,7 @@ export function knowledgeOwners(modules, systems) {
       id,
       kind: 'system',
       label: s.label ?? id,
-      root: `src/systems/${id}`,
+      root: s.dir.replace(/\/$/, ''), // the folder it was found in, in either system root
     })),
   ];
 }

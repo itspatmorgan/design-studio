@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
 import { HeadContent, Link, Outlet, useRouterState } from '@tanstack/react-router';
 import MainNav from '@/platform/app/shell/MainNav';
-import { TooltipProvider } from '@/systems/studio/components/tooltip';
-import { Toaster } from '@/systems/studio/components/toast';
+import { TooltipProvider } from '@/platform/systems/studio/components/tooltip';
+import { Toaster } from '@/platform/systems/studio/components/toast';
 import { CommandPaletteProvider } from '@/platform/app/shell/CommandPalette';
 import { MODULES } from '@/platform/app/data/modules';
 import {

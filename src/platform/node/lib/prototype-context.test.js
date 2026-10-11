@@ -35,8 +35,9 @@ function fixture(t) {
     }),
   );
   for (const id of ['product', 'brand', 'studio']) {
-    fs.mkdirSync(path.join(root, 'src/systems', id), { recursive: true });
-    fs.writeFileSync(path.join(root, 'src/systems', id, 'AGENTS.md'), `# ${id}`);
+    const systemsRoot = id === 'studio' ? 'src/platform/systems' : 'src/systems';
+    fs.mkdirSync(path.join(root, systemsRoot, id), { recursive: true });
+    fs.writeFileSync(path.join(root, systemsRoot, id, 'AGENTS.md'), `# ${id}`);
   }
   const options = {
     root,

@@ -7,9 +7,15 @@ import { Add01Icon } from '@hugeicons/core-free-icons';
 import { createPrototype, useMe } from '@/platform/app/data/files';
 import { findPrototype, prototypeLink, setManifest } from '@/platform/app/data/manifest';
 import { DEFAULT_SYSTEM, ACTIVE_PROTOTYPE_SYSTEMS } from '@/modules/systems/data/systems';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/systems/studio/components/select';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/platform/systems/studio/components/select';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +23,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 
 export default function NewPrototypeButton() {
   // Dev only: in the build, this is false and the rest is left out of the deployed site.

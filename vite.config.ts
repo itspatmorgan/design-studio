@@ -15,7 +15,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeMermaid from './src/platform/node/build/rehype-mermaid.js';
 import rehypeFileEmbeds from './src/platform/node/build/rehype-file-embeds.js';
-import { documentCodeTheme } from './src/systems/studio/styles/contentPalette.js';
+import { documentCodeTheme } from './src/platform/systems/studio/styles/contentPalette.js';
 import tailwindcss from '@tailwindcss/vite';
 import importGuard from './src/platform/node/build/vite-import-guard-plugin.js';
 import manifestWatch from './src/platform/node/build/vite-manifest-watch-plugin.js';

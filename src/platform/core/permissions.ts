@@ -2,7 +2,7 @@
 // require resource authority through canPerform. Local identity is workflow policy,
 // not filesystem authentication. Runtime import boundaries are independent.
 export { studioRole } from './config.ts';
-import { SYSTEM_CONTENT_KEY } from './roots.ts';
+import { SYSTEM_CONTENT_KEY, systemIdOfPath } from './roots.ts';
 import type { ModuleSpec } from './modules/index.ts';
 
 export type Policy = 'owner' | 'maintainers' | 'open' | 'none';
@@ -82,8 +82,8 @@ export function pathResource(
 ): Resource {
   const parts = file.replace(/^\/?src\//, '').split('/');
   if (parts[0] === 'prototypes' && parts[1]) return { kind: 'prototype', owner: parts[1] };
-  if (parts[0] === 'systems' && parts[1] && systems[parts[1]])
-    return { kind: 'system', id: parts[1], ...systems[parts[1]] };
+  const system = systemIdOfPath(file);
+  if (system && systems[system]) return { kind: 'system', id: system, ...systems[system] };
   return { kind: parts[0] === 'modules' ? 'module' : 'platform' };
 }
 

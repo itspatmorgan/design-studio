@@ -12,6 +12,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { mergeUpstream } from '../lib/upstream-merge.js';
+import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const [base, head, ...options] = process.argv.slice(2);
@@ -53,7 +54,9 @@ try {
     '--yes',
   ]);
   run('pnpm', ['studio', 'create-system', 'fixture-kit', '--label', 'Fixture kit', '--yes']);
-  const system = JSON.parse(fs.readFileSync(path.join(dir, 'src/systems/fixture-kit/package.json'), 'utf8')).name;
+  const system = JSON.parse(
+    fs.readFileSync(path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/package.json'), 'utf8'),
+  ).name;
   run('pnpm', ['--filter', system, 'add', 'clsx@2.1.1']);
   run('pnpm', ['new', 'Fixture Prototype']);
   run('pnpm', ['studio', 'create-module', 'fixture-notes', '--label', 'Fixture notes', '--yes']);
@@ -74,7 +77,7 @@ try {
   for (const [file, text] of [
     ['studio.config.ts', "'Fixture Studio'"],
     ['README.md', 'Fixture team notes.'],
-    ['src/systems/fixture-kit/package.json', '"clsx"'],
+    [`${TEAM_SYSTEMS_ROOT}/fixture-kit/package.json`, '"clsx"'],
   ]) {
     if (!fs.readFileSync(path.join(dir, file), 'utf8').includes(text))
       throw new Error(`The update lost the team's change to ${file}.`);

@@ -15,7 +15,6 @@
       "!contributors",
       "!src/prototypes",
       "!src/systems/*/**",
-      "src/systems/studio/**",
       "!src/platform/node/templates",
       "!src/platform/core/contract.snapshot.json"
     ]

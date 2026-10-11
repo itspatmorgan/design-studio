@@ -10,6 +10,7 @@ import { INSTALLED_FILE_TYPES } from '../lib/installed-file-types.js';
 import { gitResourceIdentities } from '../lib/git-resource-identities.js';
 import { resourceIdentityChangeProblems } from '../lib/resource-identity-changes.js';
 import { resourceDirectory, resolveStudioReferences } from '../../core/resourceReferences.ts';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 const [mode, before, after, policy] = process.argv.slice(2);
 const review = mode === '--ci' && policy === '--review';
@@ -137,10 +138,11 @@ function maintainedItem(f) {
 
 const studioAdmin = studioRole(baseConfig, key, Object.keys(baseProfiles)) === 'admin';
 const systemScope = f => {
-  const match = /^src\/systems\/([^/]+)\//.exec(f);
+  const folder = SYSTEM_ROOTS.find(systemsRoot => f.startsWith(systemsRoot + '/'));
+  const match = folder && /^([^/]+)\//.exec(f.slice(folder.length + 1));
   if (!match) return false;
   try {
-    const declarationFile = 'src/systems/' + match[1] + '/system.ts';
+    const declarationFile = folder + '/' + match[1] + '/system.ts';
     const spec = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:${declarationFile}`));
     if (
       'error' in spec ||
@@ -176,7 +178,7 @@ console.log(`Scope check (${who}): ${inScope.length} in scope, ${platform.length
 if (!key) console.log('  Not registered in contributors/, so every file counts as out of scope.');
 for (const f of platform)
   console.log(
-    `  ${f.startsWith('src/systems/') ? 'system' : f.startsWith('src/modules/') ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`,
+    `  ${SYSTEM_ROOTS.some(systemsRoot => f.startsWith(systemsRoot + '/')) ? 'system' : f.startsWith('src/modules/') ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`,
   );
 
 if (platform.length && review)

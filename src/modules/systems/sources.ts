@@ -6,7 +6,7 @@ export type { DocsMode };
 
 export type SystemSource = {
   label: string;
-  dir: string; // the folder it lives in, like "src/systems/product/"
+  dir: string; // the folder it lives in, like "src/systems/product/" or "src/platform/systems/studio/"
   components: string; // where its components are, without a trailing "/"
   theme: string; // the CSS file that sets its variables
   scope: { light: string; dark: string }; // the selectors that hold its values in that file
@@ -14,19 +14,20 @@ export type SystemSource = {
   origin: 'shadcn' | null; // where its components come from, so each page can link to their docs
 };
 
-// A prototype system's parts, from its system.ts and the folder it was found in.
-export const sourceOf = (id: string, spec: SystemSpec): SystemSource => ({
+// A system's parts, from its system.ts and the folder it was found in (`spec.dir`, which the app and the build
+// set when they discover systems in either root).
+export const sourceOf = (_id: string, spec: SystemSpec & { dir: string }): SystemSource => ({
   label: spec.label,
-  dir: `src/systems/${id}/`,
-  components: `src/systems/${id}/components`,
-  theme: `src/systems/${id}/styles/theme.css`,
+  dir: spec.dir,
+  components: `${spec.dir}components`,
+  theme: `${spec.dir}styles/theme.css`,
   scope: { light: `.${spec.themeClass}`, dark: `.${spec.themeClass}[data-color-mode="dark"]` },
   docs: spec.docs,
   origin: spec.origin,
 });
 
 // The app's own system: stock shadcn/ui components, themed on the page itself (:root and .dark).
-export const platformSourceOf = (id: string, spec: SystemSpec): SystemSource => ({
+export const platformSourceOf = (id: string, spec: SystemSpec & { dir: string }): SystemSource => ({
   ...sourceOf(id, spec),
   scope: { light: ':root', dark: '.dark' },
 });

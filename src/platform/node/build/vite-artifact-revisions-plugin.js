@@ -6,7 +6,7 @@ import path from 'node:path';
 import postcss from 'postcss';
 import { canonicalDirectory } from '../lib/safe-paths.js';
 import { ROOT, prototypeDir, itemFile } from './files/paths.js';
-import { PLATFORM_ID, PROTOTYPE_SYSTEMS } from '../../../modules/systems/node/systems.js';
+import { PLATFORM_ID, PROTOTYPE_SYSTEMS, SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
 import { sameOrigin, send } from './files/http.js';
 
 export const digest = value => crypto.createHash('sha256').update(value).digest('hex');
@@ -18,7 +18,7 @@ const supported = file => local(file) && /\.(?:[cm]?[jt]sx?|md|css|json)$/.test(
 const keyOf = file => '/' + path.relative(SRC, file).split(path.sep).join('/');
 const themeFiles = () =>
   [...new Set([PLATFORM_ID, ...Object.keys(PROTOTYPE_SYSTEMS)])].map(id =>
-    path.join(SRC, 'systems', id, 'styles/theme.css'),
+    path.join(ROOT, SYSTEM_SPECS[id].dir, 'styles/theme.css'),
   );
 function pairOf(file) {
   if (!local(file) || !canonicalDirectory(path.dirname(file), ROOT) || fs.lstatSync(file).isSymbolicLink())

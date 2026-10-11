@@ -167,14 +167,14 @@ test("changes stay inside the SystemContent's shape", () => {
 test('the map inventories declared routes from real files', () => {
   const agents = [
     '# Starter',
-    "If `node_modules/` doesn't exist, or the person is new, follow [setup](src/systems/studio/skills/setup/SKILL.md) first.",
+    "If `node_modules/` doesn't exist, or the person is new, follow [setup](src/platform/systems/studio/skills/setup/SKILL.md) first.",
     '',
     'At the start of every session, read:',
-    '- [systems](src/systems/studio/context/systems.md)',
-    '- [workflow](src/systems/studio/context/workflow.md)',
+    '- [systems](src/platform/systems/studio/context/systems.md)',
+    '- [workflow](src/platform/systems/studio/context/workflow.md)',
     '',
-    'When the person asks for a canvas (a page of views), read [canvases](src/systems/studio/context/canvases.md).',
-    'Also see [gone](src/systems/studio/context/gone.md) and [nope](src/systems/studio/skills/nope/SKILL.md).',
+    'When the person asks for a canvas (a page of views), read [canvases](src/platform/systems/studio/context/canvases.md).',
+    'Also see [gone](src/platform/systems/studio/context/gone.md) and [nope](src/platform/systems/studio/skills/nope/SKILL.md).',
   ].join('\n');
   const map = systemContentMap({
     agents,
@@ -194,7 +194,10 @@ test('the map inventories declared routes from real files', () => {
   assert.deepEqual(map.onDemand, [{ path: 'canvases.md', when: 'the person asks for a canvas (a page of views)' }]);
   assert.deepEqual(map.via, [{ path: 'sub/scope.md', from: 'workflow.md' }]);
   assert.deepEqual(map.unrouted, ['orphan.md']);
-  assert.deepEqual(map.missing, ['src/systems/studio/context/gone.md', 'src/systems/studio/skills/nope/SKILL.md']);
+  assert.deepEqual(map.missing, [
+    'src/platform/systems/studio/context/gone.md',
+    'src/platform/systems/studio/skills/nope/SKILL.md',
+  ]);
   assert.equal(
     map.skills.find(s => s.folder === 'setup')?.when,
     "`node_modules/` doesn't exist, or the person is new".replace(/`/g, ''),
@@ -225,12 +228,12 @@ test('platform reference discovery preserves ownership and excludes unavailable 
     write('src/modules/example/internal/notes.md', '# Internal notes');
     write('src/modules/off/README.md', '# Unavailable capability');
     write(
-      'src/systems/studio/context/example.md',
-      '# Example document\nRead [contract](../../../modules/example/reference.md#details).',
+      'src/platform/systems/studio/context/example.md',
+      '# Example document\nRead [contract](../../../../modules/example/reference.md#details).',
     );
     write(
-      'src/systems/studio/skills/example/SKILL.md',
-      '---\nname: example\ndescription: Example task\n---\nRead [reference](../../../../modules/example/README.md).',
+      'src/platform/systems/studio/skills/example/SKILL.md',
+      '---\nname: example\ndescription: Example task\n---\nRead [reference](../../../../../modules/example/README.md).',
     );
     const modules = [
       { id: 'example', label: 'Example' },

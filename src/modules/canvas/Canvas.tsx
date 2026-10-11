@@ -24,7 +24,7 @@ import { useCanvasShortcuts } from './shortcuts';
 import { STICKY_IDS, STICKY_LIBRARY } from './stickyNotes';
 import { useCanvasFile } from './useCanvasFile';
 import { useCanvasDark } from './theme';
-import { Button } from '@/systems/studio/components/button';
+import { Button } from '@/platform/systems/studio/components/button';
 import {
   Dialog,
   DialogContent,
@@ -32,7 +32,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 
 type Props = { proto: Prototype; item: Artifact; text: string; version: string };
 

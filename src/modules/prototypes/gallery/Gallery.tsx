@@ -1,12 +1,18 @@
 import { Popover } from '@base-ui/react/popover';
-import { Button } from '@/systems/studio/components/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/systems/studio/components/select';
+import { Button } from '@/platform/systems/studio/components/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/platform/systems/studio/components/select';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@/systems/studio/components/input-group';
+} from '@/platform/systems/studio/components/input-group';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Cancel01Icon, CursorInWindowIcon, FilterIcon, Search01Icon } from '@hugeicons/core-free-icons';
 import { getRouteApi, Link, useNavigate, useSearch } from '@tanstack/react-router';
@@ -18,7 +24,13 @@ import { cn } from '@/lib/utils';
 import { ArchivedHeading, Collection, ViewToggle } from '@/platform/app/items/Collection';
 import NewPrototypeButton from '@/modules/prototypes/gallery/NewPrototypeDialog';
 import PrototypeCard, { PrototypeRow } from './PrototypeCard';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/systems/studio/components/empty';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/platform/systems/studio/components/empty';
 import { useMe } from '@/platform/app/data/files';
 
 const rootApi = getRouteApi('__root__');

@@ -23,12 +23,12 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { Input } from '@/systems/studio/components/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Input } from '@/platform/systems/studio/components/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { artifactLabel, findArtifact } from '@/platform/app/data/manifest';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/systems/studio/components/collapsible';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/platform/systems/studio/components/collapsible';
 import FileTree from '@/modules/prototypes/viewer/FileTree';
-import { contentId, SYSTEM_CONTENT_SECTIONS } from '@/platform/core/roots';
+import { contentId, SYSTEM_CONTENT_SECTIONS, systemFolder } from '@/platform/core/roots';
 import type { ContentData } from '../content/SystemContentPage';
 import SystemContentPage from '../content/SystemContentPage';
 import type { Prototype } from '@/platform/app/data/types';
@@ -80,11 +80,13 @@ export const prepareSystemSource = () => Promise.all([ComponentEditor?.preload?.
 // Systems: one page per theme category and component,
 // at /systems/<system>/<page> (the system's introduction at /systems/<system>).
 // Every system is treated the same, the app's own (Studio) included. What only its people can write
-// comes from src/systems/<id>/intro.tsx: overview summaries, optional additional content, and icons. The rest comes from its files: a component page for each component in its components
+// comes from <system folder>/intro.tsx (src/systems/<id>/ or, for Studio's own, src/platform/systems/studio/): overview summaries, optional additional content, and icons. The rest comes from its files: a component page for each component in its components
 // folder (src/modules/systems/docs.ts), and a theme page for each kind of token its theme
 // defines (src/modules/systems/themeTokens.ts).
-const intros = import.meta.glob<{ default: SystemIntro }>('/systems/*/intro.tsx', { eager: true });
-const introOf = (id: string): SystemIntro => intros[`/systems/${id}/intro.tsx`]?.default ?? {};
+const intros = import.meta.glob<{ default: SystemIntro }>(['/platform/systems/*/intro.tsx', '/systems/*/intro.tsx'], {
+  eager: true,
+});
+const introOf = (id: string): SystemIntro => intros[`/${systemFolder(id)}/intro.tsx`]?.default ?? {};
 const PROTOTYPE_SPECS: Record<string, DesignSystem> = Object.fromEntries(
   Object.entries(SYSTEM_SPECS).map(([id, spec]) => [
     id,

@@ -3,6 +3,8 @@ import path from 'node:path';
 import { frontmatter } from './frontmatter.js';
 import { rootOf, addressOf, contentParts } from '../../core/roots.ts';
 import { skillTitle } from '../../../modules/systems/content/skills.ts';
+// Discovering the systems registers where each system's folder is, which rootOf reads.
+import '../../../modules/systems/node/systems.js';
 
 // Match the shared reader's deliberately limited top-level Markdown set.
 export function platformReferences({ root, modules, enabled, systemContent, systemIdentities = {} }) {

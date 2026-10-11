@@ -4,7 +4,7 @@
     {
       "tier": "upstream",
       "paths": ["src/platform/**", "src/index.html", "src/lib/**", "src/types/**"],
-      "note": "Shell, core APIs, Node tooling, platform context and skills."
+      "note": "Shell, core APIs, Node tooling, platform context and skills, and Studio's own interface system (src/platform/systems/studio/)."
     },
     {
       "tier": "upstream",
@@ -28,7 +28,6 @@
       "paths": ["src/modules/**"],
       "note": "The team's own modules. Less specific than the supplied ids above."
     },
-    { "tier": "upstream", "paths": ["src/systems/studio/**"], "note": "Studio's own interface system." },
     {
       "tier": "seed",
       "paths": ["src/systems/product/**", "src/systems/marketing/**"],

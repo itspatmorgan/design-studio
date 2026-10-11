@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useBlocker } from '@tanstack/react-router';
 import type { StudioConfig } from '@/platform/core/config';
 import { waitForRestart } from './waitForRestart';
-import { toast } from '@/systems/studio/components/toast';
+import { toast } from '@/platform/systems/studio/components/toast';
 import { beginSettingsTransition, finishSettingsTransition } from './restartTransition';
 
 type Snapshot = {

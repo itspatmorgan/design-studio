@@ -14,8 +14,8 @@ import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { bracketMatching, foldGutter, foldKeymap, indentOnInput } from '@codemirror/language';
 import { highlightSelectionMatches, search, searchKeymap } from '@codemirror/search';
 import { SourceChanged, type SourceAccess } from './access';
-import { Button } from '@/systems/studio/components/button';
-import { toast } from '@/systems/studio/components/toast';
+import { Button } from '@/platform/systems/studio/components/button';
+import { toast } from '@/platform/systems/studio/components/toast';
 import { shortcutLabel } from '@/platform/app/shell/artifactShortcuts';
 import { sourceTheme } from '@/platform/core/source/sourceTheme';
 import {
@@ -25,7 +25,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 
 // The file type's syntax, loaded when it's needed.
 async function languageExtension(

@@ -1,10 +1,10 @@
 import { Fragment, useSyncExternalStore, type ReactNode } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { GridViewIcon, InformationCircleIcon, LeftToRightListBulletIcon } from '@hugeicons/core-free-icons';
-import { Card } from '@/systems/studio/components/card';
-import { ToggleGroup, ToggleGroupItem } from '@/systems/studio/components/toggle-group';
-import { ItemGroup } from '@/systems/studio/components/item';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Card } from '@/platform/systems/studio/components/card';
+import { ToggleGroup, ToggleGroupItem } from '@/platform/systems/studio/components/toggle-group';
+import { ItemGroup } from '@/platform/systems/studio/components/item';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { ItemGrid } from './ItemGrid';
 
 export function ArchivedHeading() {

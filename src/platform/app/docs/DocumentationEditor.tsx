@@ -1,7 +1,7 @@
 import { canEditSource, useMe } from '@/platform/app/data/files';
 import { useMemo } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@/systems/studio/components/button';
+import { Button } from '@/platform/systems/studio/components/button';
 import SourceEditor from '@/platform/core/source/SourceEditor';
 import type { SourceAccess } from '@/platform/core/source/access';
 import { documentationRequest } from './documentationSource';

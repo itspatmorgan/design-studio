@@ -58,6 +58,8 @@ import { planSettings } from '../lib/studio-settings.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { fetchSource, walk } from '../lib/fetch-source.js';
 import { loadContributors } from '../lib/contributors.js';
+import { SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
+import { newSystemDir, systemDirOf, systemFolderTaken } from '../lib/system-folders.js';
 import { changesFromLock, hashFile, readLock, writeLock } from '../lib/lock.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -131,10 +133,11 @@ const PROTECTED = new Set([
   'src/modules',
   'src/prototypes',
   'src/lib',
-  `src/systems/${PLATFORM_ID}`,
-  `src/systems/${PLATFORM_ID}/context`,
-  `src/systems/${PLATFORM_ID}/skills`,
-  'src/systems',
+  SUPPLIED_SYSTEMS_ROOT,
+  systemDirOf(ROOT, PLATFORM_ID),
+  `${systemDirOf(ROOT, PLATFORM_ID)}/context`,
+  `${systemDirOf(ROOT, PLATFORM_ID)}/skills`,
+  TEAM_SYSTEMS_ROOT,
   'src/types',
 ]);
 function removable(relative) {
@@ -250,7 +253,7 @@ function registerCapability(kind, id, present, remember = () => {}) {
     if (present) systems.push(id);
     const systemMaintainers = { ...declaration.value.systemMaintainers };
     const spec = present
-      ? readDeclaration(fs.readFileSync(rel('src/systems', id, 'system.ts'), 'utf8'))
+      ? readDeclaration(fs.readFileSync(rel(systemDirOf(ROOT, id), 'system.ts'), 'utf8'))
       : { value: SYSTEM_SPECS[id] };
     if ('error' in spec) throw new Error(spec.error);
     const permanentId = resourceId(spec.value.studioId);
@@ -310,8 +313,7 @@ async function add() {
       problems.push(
         `It needs platform ${spec.requires} or newer, and this is ${PLATFORM_VERSION}. Update the platform first.`,
       );
-    const installed =
-      kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : fs.existsSync(rel('src', 'systems', id));
+    const installed = kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : systemFolderTaken(ROOT, id);
     if (installed)
       problems.push(
         `There's already a ${kind === 'module' ? 'module' : 'design system'} called "${id}". Remove it first (pnpm studio remove ${id}), or add this one with another id.`,
@@ -405,7 +407,7 @@ async function add() {
     // The package ID describes its source; this ID identifies this installation.
     const installationId =
       kind === 'system' ? allocateResourceIdentity(retainedResourceIds(ROOT, INSTALLED_FILE_TYPES)) : undefined;
-    if (kind === 'system') createdSystem = rel('src/systems', id);
+    if (kind === 'system') createdSystem = rel(newSystemDir(id));
     // Add it.
     for (const m of plan.moves) {
       const to = rel(m.to);
@@ -522,7 +524,7 @@ function lifecycle(action) {
           ...entry,
           files: Object.fromEntries(
             Object.entries(entry.files ?? {}).map(([file, hash]) => [
-              file.replace(`src/systems/${positional[0]}/`, `src/systems/${plan.id}/`),
+              file.replace(`${TEAM_SYSTEMS_ROOT}/${positional[0]}/`, `${TEAM_SYSTEMS_ROOT}/${plan.id}/`),
               hash,
             ]),
           ),
@@ -582,7 +584,7 @@ function remove() {
         `Its npm packages stay installed: ${Object.keys(spec.dependencies).join(', ')}. Remove them with pnpm remove if nothing else uses them.`,
       );
   } else {
-    paths.push(`src/systems/${id}`);
+    paths.push(systemDirOf(ROOT, id));
     if (SYSTEM_IDS.length === 1) fail(`${id} is the only design system, and prototypes need one. Add another first.`);
     if (id === DEFAULT_SYSTEM)
       fail(`${id} is the default design system. Set defaultSystem in studio.config.ts to another one first.`);
@@ -622,7 +624,7 @@ function remove() {
     const scan = dir => {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const file = path.join(dir, entry.name);
-        if (entry.name.startsWith('.') || file === rel('src/systems/' + id)) continue;
+        if (entry.name.startsWith('.') || file === rel(systemDirOf(ROOT, id))) continue;
         if (entry.isDirectory()) scan(file);
         else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name === 'AGENTS.md')) {
           const text = fs.readFileSync(file, 'utf8').replace(/```[\s\S]*?```/g, '');
@@ -631,7 +633,7 @@ function remove() {
               const href = m[1].split('#')[0];
               if (/^[a-z][a-z0-9+.-]*:/i.test(href)) return false;
               const target = href.startsWith('/') ? rel('src' + href) : path.resolve(path.dirname(file), href);
-              const root = rel('src/systems/' + id);
+              const root = rel(systemDirOf(ROOT, id));
               return target === root || target.startsWith(root + path.sep);
             })
           )
@@ -641,7 +643,7 @@ function remove() {
     };
     scan(rel('src'));
     const rootInstructions = fs.readFileSync(rel('AGENTS.md'), 'utf8');
-    if (rootInstructions.includes('src/systems/' + id + '/')) references.push('AGENTS.md');
+    if (rootInstructions.includes(systemDirOf(ROOT, id) + '/')) references.push('AGENTS.md');
     if (references.length && !flags.force)
       fail(
         references.length +
@@ -712,7 +714,7 @@ function create(kind) {
   const spec = readDeclaration(
     fill(fs.readFileSync(path.join(template, kind === 'module' ? 'module.ts' : 'system.ts'), 'utf8')),
   ).value;
-  if (kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : fs.existsSync(rel('src', 'systems', id)))
+  if (kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : systemFolderTaken(ROOT, id))
     fail(`There's already a ${kind} called "${id}".`);
   if (kind === 'module' && SECTION_TAKEN(id))
     fail(`"${id}" is already the address of another module, or a contributor's folder. Choose another id.`);
@@ -772,7 +774,7 @@ function create(kind) {
   }
   syncInFreshProcess();
   say(
-    `Made the ${kind} "${id}" in ${kind === 'module' ? `src/modules/${id}/` : `src/systems/${id}/`}. Restart the dev server to see it.`,
+    `Made the ${kind} "${id}" in ${kind === 'module' ? `src/modules/${id}/` : `${newSystemDir(id)}/`}. Restart the dev server to see it.`,
   );
 }
 
@@ -840,7 +842,9 @@ function configure() {
 }
 
 function status() {
-  const systemContent = ['principles', 'personas'].map(name => `src/systems/${DEFAULT_SYSTEM}/context/${name}.md`);
+  const systemContent = ['principles', 'personas'].map(
+    name => `${systemDirOf(ROOT, DEFAULT_SYSTEM)}/context/${name}.md`,
+  );
   const report = {
     config: { name: CONFIG.name, usage: CONFIG.usage, defaultSystem: DEFAULT_SYSTEM },
     contributor: resolveContributor(),

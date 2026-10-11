@@ -6,6 +6,7 @@ import { resourceId, jsonIdentity } from '../../core/resourceIdentity.ts';
 import { isHelper } from '../../core/fileTypes.ts';
 import { readDeclaration } from '../../core/declarations.ts';
 import { canonicalDirectory } from './safe-paths.js';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 export function auditResourceIdentities(root, types) {
   const resources = [],
@@ -52,25 +53,27 @@ export function auditResourceIdentities(root, types) {
     if (entry.name.endsWith('.json'))
       record('contributor', path.join(contributors, entry.name), jsonIdentity, { key: entry.name.slice(0, -5) });
 
-  const systems = path.join(root, 'src/systems');
-  for (const entry of entries(systems))
-    if (!entry.name.startsWith('.')) {
-      if (entry.isSymbolicLink()) {
-        problems.push(`${relative(path.join(systems, entry.name))}: system directories cannot be symbolic links.`);
-        continue;
+  for (const systemsRoot of SYSTEM_ROOTS) {
+    const systems = path.join(root, systemsRoot);
+    for (const entry of entries(systems))
+      if (!entry.name.startsWith('.')) {
+        if (entry.isSymbolicLink()) {
+          problems.push(`${relative(path.join(systems, entry.name))}: system directories cannot be symbolic links.`);
+          continue;
+        }
+        if (!entry.isDirectory()) continue;
+        record(
+          'system',
+          path.join(systems, entry.name, 'system.ts'),
+          text => {
+            const declaration = readDeclaration(text);
+            if ('error' in declaration) throw new Error(declaration.error);
+            return declaration.value.studioId === undefined ? null : resourceId(declaration.value.studioId);
+          },
+          { key: entry.name },
+        );
       }
-      if (!entry.isDirectory()) continue;
-      record(
-        'system',
-        path.join(systems, entry.name, 'system.ts'),
-        text => {
-          const declaration = readDeclaration(text);
-          if ('error' in declaration) throw new Error(declaration.error);
-          return declaration.value.studioId === undefined ? null : resourceId(declaration.value.studioId);
-        },
-        { key: entry.name },
-      );
-    }
+  }
 
   const walkArtifacts = (directory, parent, ownerKey) => {
     for (const entry of entries(directory)) {

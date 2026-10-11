@@ -44,7 +44,12 @@ function resolve(from: string, target: string): string {
   return parts.join('/');
 }
 
-export function systemContentMap({ agents, context, skills, root = 'src/systems/studio' }: MapInput): SystemContentMap {
+export function systemContentMap({
+  agents,
+  context,
+  skills,
+  root = 'src/platform/systems/studio',
+}: MapInput): SystemContentMap {
   const CONTEXT = new RegExp('^(?:\\./)?' + root + '/context/(.+\\.md)(?:#.*)?$');
   const SKILL = new RegExp('^(?:\\./)?' + root + '/skills/([^/]+)/SKILL\\.md(?:#.*)?$');
   const map: SystemContentMap = {

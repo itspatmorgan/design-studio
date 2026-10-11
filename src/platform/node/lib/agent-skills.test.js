@@ -12,7 +12,9 @@ function fixture(t) {
     fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
     fs.writeFileSync(path.join(root, file), text);
   };
-  const owners = knowledgeOwners([{ id: 'canvas', label: 'Canvas' }], { marketing: { label: 'Marketing' } });
+  const owners = knowledgeOwners([{ id: 'canvas', label: 'Canvas' }], {
+    marketing: { label: 'Marketing', dir: 'src/systems/marketing/' },
+  });
   for (const owner of owners) {
     write(
       `${owner.root}/skills/review/SKILL.md`,

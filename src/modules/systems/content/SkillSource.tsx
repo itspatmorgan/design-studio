@@ -2,8 +2,14 @@ import { useState } from 'react';
 import ArtifactSource from '@/platform/app/source/ArtifactSource';
 import { openInEditor, repoPath, useFileTree, type FileNode } from '@/platform/app/data/files';
 import type { Artifact, Prototype } from '@/platform/app/data/types';
-import { Button } from '@/systems/studio/components/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/systems/studio/components/select';
+import { Button } from '@/platform/systems/studio/components/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/platform/systems/studio/components/select';
 import {
   Dialog,
   DialogContent,
@@ -11,7 +17,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import { skillBundlePaths, skillFolder } from './skillBundle';
 
 const filePaths = (nodes: FileNode[]): string[] =>

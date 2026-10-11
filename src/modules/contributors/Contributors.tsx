@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router';
-import { Button } from '@/systems/studio/components/button';
-import { Checkbox } from '@/systems/studio/components/checkbox';
-import { Alert, AlertTitle, AlertDescription } from '@/systems/studio/components/alert';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Checkbox } from '@/platform/systems/studio/components/checkbox';
+import { Alert, AlertTitle, AlertDescription } from '@/platform/systems/studio/components/alert';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import { adminProblems } from '@/platform/core/api';
 import { useStudioSettings } from '@/platform/app/settings/useStudioSettings';
 

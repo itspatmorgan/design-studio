@@ -11,6 +11,7 @@ import { planResourceLinkMigration } from './resource-link-migration.js';
 import { auditResourceIdentities } from './resource-identity-audit.js';
 import { applySetupChanges } from './studio-setup.js';
 import { readDeclaration } from '../../core/declarations.ts';
+import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.split(path.sep).join('/');
@@ -43,7 +44,7 @@ function capture(root) {
     } else throw new Error(`${relative}: migration requires an ordinary source file.`);
   };
   visit('studio.config.ts');
-  for (const directory of ['contributors', 'src/systems', 'src/prototypes'])
+  for (const directory of ['contributors', ...SYSTEM_ROOTS, 'src/prototypes'])
     if (fs.existsSync(path.join(root, directory))) visit(directory);
   const modules = path.join(root, 'src/modules');
   if (fs.existsSync(modules)) {

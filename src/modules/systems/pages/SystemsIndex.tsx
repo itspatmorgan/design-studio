@@ -14,17 +14,26 @@ import {
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from '@/systems/studio/components/input-group';
-import { Badge } from '@/systems/studio/components/badge';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/systems/studio/components/empty';
+} from '@/platform/systems/studio/components/input-group';
+import { Badge } from '@/platform/systems/studio/components/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
+import { systemFolder } from '@/platform/core/roots';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/platform/systems/studio/components/empty';
 import { DEFAULT_SYSTEM, SYSTEM_SPECS } from '../data/systems';
 import { finishSystemDeletion } from './creationTransition';
 import SystemActionToast from './SystemActionToast';
 import SystemMenu from './SystemMenu';
 import NewSystemButton from './NewSystemDialog';
 
-const intros = import.meta.glob<{ default: SystemIntro }>('/systems/*/intro.tsx', { eager: true });
+const intros = import.meta.glob<{ default: SystemIntro }>(['/platform/systems/*/intro.tsx', '/systems/*/intro.tsx'], {
+  eager: true,
+});
 export default function SystemsIndex() {
   const manifest = useManifest();
   useEffect(() => {
@@ -36,7 +45,7 @@ export default function SystemsIndex() {
     void navigate({ to: '/systems' as never, search: { q: value || undefined } as never, replace: true });
   const items = Object.entries(SYSTEM_SPECS)
     .map(([id, spec]) => {
-      const intro = intros[`/systems/${id}/intro.tsx`]?.default;
+      const intro = intros[`/${systemFolder(id)}/intro.tsx`]?.default;
       return {
         id,
         spec,

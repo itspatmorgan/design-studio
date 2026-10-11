@@ -23,7 +23,7 @@ import { documentationSources, sourceFile } from './files/source.js';
 //        meta     { title?, status? }  edit meta.json (status is "active" or "archived")
 //        create-skill { name, description }       system content skills only: skills/<name>/SKILL.md, in the Agent Skills format
 //      (In the system content, anyone can change files, but only in its fixed shape: src/modules/systems/content/rules.ts.)
-//      (contributor "systems" opens a prototype system's components, src/systems/<id>/components/. Anyone can
+//      (contributor "systems" opens a system's components, <system folder>/components/ in either system root. Anyone can
 //      read and save its text files, and it has one operation of its own:
 //        add-docs { component }                    the examples and page a component is missing)
 //   POST /__studio/prototype { title, system? }   a new prototype in your folder, like pnpm new
@@ -384,7 +384,7 @@ export default function filesPlugin() {
             const allowed = Object.entries(SYSTEM_SOURCES).flatMap(([id, source]) => [
               source.theme,
               ...(id === 'platform' ? [] : [source.dir + 'system.ts']),
-              id === 'platform' ? 'src/systems/studio/intro.tsx' : source.dir + 'intro.tsx',
+              source.dir + 'intro.tsx',
               ...(manifest.systems[id]?.components ?? []).flatMap(component =>
                 Object.values(component.files)
                   .filter(Boolean)

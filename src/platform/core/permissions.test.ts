@@ -1,7 +1,7 @@
 // Who may change what (permissions.ts). Run with `pnpm test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { canChange, canMaintain, canOwn, parseMaintainers, policyFor, whyNot } from './permissions.ts';
+import { canChange, canMaintain, canOwn, parseMaintainers, pathResource, policyFor, whyNot } from './permissions.ts';
 import type { ModuleSpec } from './modules/index.ts';
 
 const modules: ModuleSpec[] = [
@@ -117,4 +117,28 @@ test('resource grants separate prototype ownership, assigned systems, and platfo
   assert.equal(canPerform(config, 'admin', [], product, 'edit'), false);
   assert.equal(canPerform(config, null, roster, product, 'read'), true);
   assert.equal(canPerform({ ...config, usage: 'personal' }, 'sam', roster, { kind: 'platform' }, 'edit'), true);
+});
+
+test('a file belongs to the system whose folder holds it, in either system root', () => {
+  const systems = {
+    studio: { role: 'platform', status: 'active' },
+    product: { role: 'prototype', status: 'active' },
+  } as const;
+  assert.deepEqual(pathResource('src/systems/product/components/button.tsx', systems), {
+    kind: 'system',
+    id: 'product',
+    role: 'prototype',
+    status: 'active',
+  });
+  assert.deepEqual(pathResource('src/platform/systems/studio/components/button/button.tsx', systems), {
+    kind: 'system',
+    id: 'studio',
+    role: 'platform',
+    status: 'active',
+  });
+  // Neither root's folder name is a system until it is installed; the rest of src/platform is the platform's.
+  assert.deepEqual(pathResource('src/systems/unknown/system.ts', systems), { kind: 'platform' });
+  assert.deepEqual(pathResource('src/platform/systems/unknown/system.ts', systems), { kind: 'platform' });
+  assert.deepEqual(pathResource('src/platform/app/styles.css', systems), { kind: 'platform' });
+  assert.deepEqual(pathResource('src/modules/systems/spec.ts', systems), { kind: 'module' });
 });

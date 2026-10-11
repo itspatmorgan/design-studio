@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Link } from '@tanstack/react-router';
 import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
-import { Card, CardContent } from '@/systems/studio/components/card';
+import { Card, CardContent } from '@/platform/systems/studio/components/card';
 import { cn } from '@/lib/utils';
 
 // The card for anything in a collection (a prototype, a section item), on each collection's index. Neutral on purpose: a tile with

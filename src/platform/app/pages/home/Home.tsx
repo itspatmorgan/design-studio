@@ -8,7 +8,7 @@
 import { getRouteApi } from '@tanstack/react-router';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Search01Icon } from '@hugeicons/core-free-icons';
-import { Card } from '@/systems/studio/components/card';
+import { Card } from '@/platform/systems/studio/components/card';
 import { APP_NAME, TAGLINE } from '@/platform/app/data/config';
 import { homeApps } from '@/platform/app/modules';
 import { useMyName } from '@/platform/app/data/files';

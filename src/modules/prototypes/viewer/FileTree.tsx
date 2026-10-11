@@ -55,24 +55,24 @@ import { place } from '@/platform/core/order';
 import { DRAG_KIND, DragRow, type Dropped, type Operations } from '@/modules/prototypes/viewer/DragRow';
 import { creatableTypes, FILE_TYPES, fileTypeModules } from '@/platform/app/data/fileTypes';
 import { useShowAllFiles } from '@/platform/app/shell/appPrefs';
-import { Button } from '@/systems/studio/components/button';
-import { Input } from '@/systems/studio/components/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
-import { toast } from '@/systems/studio/components/toast';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Input } from '@/platform/systems/studio/components/input';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
+import { toast } from '@/platform/systems/studio/components/toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/systems/studio/components/dropdown-menu';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/systems/studio/components/collapsible';
+} from '@/platform/systems/studio/components/dropdown-menu';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/platform/systems/studio/components/collapsible';
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
-} from '@/systems/studio/components/context-menu';
+} from '@/platform/systems/studio/components/context-menu';
 import {
   Dialog,
   DialogContent,
@@ -80,7 +80,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/systems/studio/components/dialog';
+} from '@/platform/systems/studio/components/dialog';
 import { menuGroups } from '@/platform/app/shell/menuGroups';
 import { cn } from '@/lib/utils';
 

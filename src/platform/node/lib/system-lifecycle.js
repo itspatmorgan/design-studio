@@ -8,6 +8,8 @@ import { snapshotFiles, repairText } from './artifact-moves.js';
 import { canonicalDirectory } from './safe-paths.js';
 import { resourceId } from '../../core/resourceIdentity.ts';
 import { readResourceDirectory } from './resource-directory.js';
+import { TEAM_SYSTEMS_ROOT, systemIdOfPath } from '../../core/roots.ts';
+import { newSystemDir, systemDirOf, systemFolderTaken } from './system-folders.js';
 
 export const systemSlug = text =>
   text
@@ -22,7 +24,7 @@ const edit = (file, after) => ({ file, before: fs.readFileSync(file, 'utf8'), af
 export function prototypeMetadata(root) {
   // Includes disabled module content and archived prototypes, without following symlinks.
   return [...snapshotFiles(path.join(root, 'src'))]
-    .filter(([file]) => file.endsWith('/meta.json') && !file.startsWith('systems/'))
+    .filter(([file]) => file.endsWith('/meta.json') && !systemIdOfPath(file))
     .map(([file]) => {
       const absolute = path.join(root, 'src', file);
       return { file: absolute, meta: read(absolute) };
@@ -47,7 +49,7 @@ export function unavailablePrototypeRoots(root) {
 export function planSystemLifecycle(root, config, action, id, { name, restorePrototypes = false } = {}) {
   if (!/^[a-z][a-z0-9-]*$/.test(id ?? '') || !config.systems.includes(id))
     throw new Error('Choose a registered system.');
-  const dir = path.join(root, 'src/systems', id),
+  const dir = path.join(root, systemDirOf(root, id)),
     file = path.join(dir, 'system.ts');
   if (!canonicalDirectory(dir, root) || !fs.lstatSync(file).isFile() || fs.lstatSync(file).isSymbolicLink())
     throw new Error('This system must use regular source files.');
@@ -72,8 +74,9 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
       throw new Error('Use a plain name between 1 and 120 characters.');
     nextId = systemSlug(name);
     if (!nextId) throw new Error('Include a letter in the system name.');
-    const nextDir = path.join(root, 'src/systems', nextId);
-    if (nextId !== id && (fs.existsSync(nextDir) || Object.hasOwn(config.modules ?? {}, nextId)))
+    // A renamed system stays in the team root: Studio's own system is never renamed.
+    const nextDir = path.join(root, newSystemDir(nextId));
+    if (nextId !== id && (systemFolderTaken(root, nextId) || Object.hasOwn(config.modules ?? {}, nextId)))
       throw new Error('A system or module already uses this name.');
     // Preserve the independently declared theme scope: its CSS contract is not the folder identity.
     edits.push(edit(file, editStudioConfig(fs.readFileSync(file, 'utf8'), { label: name.trim() })));
@@ -87,8 +90,9 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
       );
       // Resolve relative imports/Markdown links against actual files, and system aliases/URLs against the old identity.
       const before = snapshotFiles(root);
-      const prefix = `src/systems/${id}/`,
-        target = `src/systems/${nextId}/`;
+      const prefix = `${systemDirOf(root, id)}/`,
+        target = `${newSystemDir(nextId)}/`;
+      const alias = TEAM_SYSTEMS_ROOT.replace(/^src\//, '@/');
       const review = [];
       const moves = new Map(
         [...before.keys()]
@@ -112,7 +116,7 @@ export function planSystemLifecycle(root, config, action, id, { name, restorePro
         ]);
         // Exact path prefixes include source examples and declared package destinations.
         for (const [from, to] of [
-          [`@/systems/${id}/`, `@/systems/${nextId}/`],
+          [`${alias}/${id}/`, `${alias}/${nextId}/`],
           [prefix, target],
         ]) {
           next = next.replace(new RegExp(`(?<![A-Za-z0-9_:/.-])${from}`, 'g'), () => to);

@@ -1,4 +1,5 @@
 // Compatibility routes preserve saved links to guidance moved in the ownership migration.
+import { SUPPLIED_SYSTEMS_ROOT } from '../../core/roots.ts';
 const movedRules: Record<string, string> = {
   'prototype-workflow': 'module.prototypes/skills/build-prototype/SKILL',
   archiving: 'module.prototypes/skills/organize-prototype/SKILL',
@@ -74,6 +75,9 @@ export function migratedGuidancePath(path: string): string | null {
 
 // Repository source links and saved reading URLs resolve to the same owner browser.
 function sourceMarkdownPath(path: string): string {
+  // A system in the supplied root (/platform/systems/studio/context/x.md) is addressed like any system: /systems/studio/context/x.md.
+  const supplied = SUPPLIED_SYSTEMS_ROOT.replace(/^src/, '') + '/';
+  if (path.startsWith(supplied)) path = '/systems/' + path.slice(supplied.length);
   const moved = migratedGuidancePath(path);
   if (moved) return moved;
   const chapter = path.match(/^\/modules\/documentation\/pages\/([a-z0-9-]+)\.md$/);

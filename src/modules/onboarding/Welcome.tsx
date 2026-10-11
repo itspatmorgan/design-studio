@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowRight01Icon } from '@hugeicons/core-free-icons';
-import { Button } from '@/systems/studio/components/button';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/systems/studio/components/dialog';
+import { Button } from '@/platform/systems/studio/components/button';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/platform/systems/studio/components/dialog';
 import { APP_NAME, CONFIG } from '@/platform/core/api';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { useMe } from '@/platform/app/data/files';

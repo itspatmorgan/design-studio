@@ -11,6 +11,8 @@ import { readDeclaration } from '../../../core/declarations.ts';
 import { MODULES } from '../../lib/modules.js';
 import { jsonIdentity, resourceId } from '../../../core/resourceIdentity.ts';
 import { canonicalDirectory } from '../../lib/safe-paths.js';
+import { systemIdOfPath } from '../../../core/roots.ts';
+import { systemDirOf } from '../../lib/system-folders.js';
 
 // Artifact ownership composes with current resource grants. Shared system content
 // requires an assigned maintainer; Admin authority also covers other contributors' prototypes.
@@ -100,14 +102,14 @@ export function canWriteSource(me, file, root = ROOT, content) {
     }
   }
   const systems = {};
-  const id = /^src\/systems\/([^/]+)(?:\/|$)/.exec(file)?.[1];
+  const id = systemIdOfPath(file);
   if (id) {
     if (!config.systems?.includes(id)) return false;
     try {
-      const declaration = readDeclaration(fs.readFileSync(path.join(root, 'src/systems', id, 'system.ts'), 'utf8'));
+      const declaration = readDeclaration(fs.readFileSync(path.join(root, systemDirOf(root, id), 'system.ts'), 'utf8'));
       if ('error' in declaration) return false;
       systems[id] = declaration.value;
-      if (file === 'src/systems/' + id + '/system.ts' && typeof content === 'string') {
+      if (file === systemDirOf(root, id) + '/system.ts' && typeof content === 'string') {
         const next = readDeclaration(content);
         if ('error' in next || !sameSystemIdentity(declaration.value, next.value)) return false;
       }

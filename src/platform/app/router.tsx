@@ -15,7 +15,7 @@ import {
 } from '@tanstack/react-router';
 import { useSourceView } from '@/platform/core/source/useSourceView';
 import { shortcutLabel } from '@/platform/app/shell/artifactShortcuts';
-import { Button } from '@/systems/studio/components/button';
+import { Button } from '@/platform/systems/studio/components/button';
 import App, { NotFound } from '@/platform/app/shell/App';
 import Home from '@/platform/app/pages/home/Home';
 import PrototypeLayout from '@/modules/prototypes/viewer/PrototypeLayout';

@@ -15,7 +15,7 @@ const profiles = {
   baseline,
   studioOrientation: [
     ...baseline,
-    'src/systems/studio/AGENTS.md',
+    'src/platform/systems/studio/AGENTS.md',
     'src/platform/context/principles.md',
     'src/platform/context/personas.md',
   ],

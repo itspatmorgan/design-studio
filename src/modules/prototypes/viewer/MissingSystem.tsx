@@ -1,6 +1,12 @@
 import { Shapes01Icon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@/systems/studio/components/empty';
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from '@/platform/systems/studio/components/empty';
 export default function MissingSystem({ label }: { label: string }) {
   return (
     <div className='flex flex-1 items-center justify-center p-6'>

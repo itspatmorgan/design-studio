@@ -3,7 +3,7 @@ import { PortalContext } from '@/lib/portal';
 import type { ColorMode } from '../spec';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/studio/components/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { KNOWN_COLORS, type ThemeToken } from '@/modules/systems/themeTokens';
 
 // Shared building blocks for the Systems page. Everything here reads live values

@@ -23,7 +23,7 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
     const runtime = readPersistedStudioConfig(root).config;
     runtime.usage = 'personal';
     fs.writeFileSync(path.join(root, 'studio.config.ts'), 'export default ' + JSON.stringify(runtime) + ';');
-    for (const file of fs.globSync('src/systems/*/system.ts', { cwd: root })) {
+    for (const file of fs.globSync(['src/platform/systems/*/system.ts', 'src/systems/*/system.ts'], { cwd: root })) {
       const spec = readDeclaration(fs.readFileSync(path.join(root, file), 'utf8')).value;
       delete spec.studioId;
       fs.writeFileSync(path.join(root, file), 'export default ' + JSON.stringify(spec) + ';');

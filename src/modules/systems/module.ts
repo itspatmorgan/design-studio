@@ -1,6 +1,6 @@
 import type { ModuleSpec } from '../../platform/core/api.ts';
 
-// Systems: the design systems prototypes are built with (/systems), in src/systems/.
+// Systems: the design systems prototypes are built with (/systems), in src/systems/ (and Studio's own interface system in src/platform/systems/).
 export default {
   optional: false,
   lib: false,

@@ -3,19 +3,29 @@ import type { MDXContent } from 'mdx/types';
 import { SYSTEMS_KEY } from '@/platform/core/roots';
 import { exampleNames, type ComponentPropsDoc, type SystemComponentDoc } from '@/modules/systems/docs';
 
-// A component's docs files in a system (src/systems/<system>/components/, or src/systems/studio/components/; see
+// A component's docs files in a system (src/systems/<system>/components/, or src/platform/systems/studio/components/; see
 // src/modules/systems/docs.ts): its examples, the examples file's text, and its Markdown page.
 export type Example = { name: string; Component: ComponentType };
 
 // Vite only loads a file when it is asked for.
-// The app's own system (Studio) keeps its components in /systems/studio/components/.
+// The app's own system (Studio) keeps its components in /platform/systems/studio/components/; the team's systems keep
+// theirs in /systems/<id>/components/ (both roots, src/platform/core/roots.ts).
 const globs = {
-  examples: import.meta.glob<Record<string, unknown>>(['/systems/*/components/**/*.examples.{tsx,jsx}']),
-  sources: import.meta.glob<string>(['/systems/*/components/**/*.examples.{tsx,jsx}'], {
-    query: '?raw',
-    import: 'default',
-  }),
-  docs: import.meta.glob<{ default: MDXContent }>(['/systems/*/components/**/*.md']),
+  examples: import.meta.glob<Record<string, unknown>>([
+    '/platform/systems/*/components/**/*.examples.{tsx,jsx}',
+    '/systems/*/components/**/*.examples.{tsx,jsx}',
+  ]),
+  sources: import.meta.glob<string>(
+    ['/platform/systems/*/components/**/*.examples.{tsx,jsx}', '/systems/*/components/**/*.examples.{tsx,jsx}'],
+    {
+      query: '?raw',
+      import: 'default',
+    },
+  ),
+  docs: import.meta.glob<{ default: MDXContent }>([
+    '/platform/systems/*/components/**/*.md',
+    '/systems/*/components/**/*.md',
+  ]),
 };
 
 // In dev, adding or removing a file makes Vite run this file again with new lists. The app keeps
@@ -26,14 +36,23 @@ const state: { globs: typeof globs; listeners: Set<() => void> } = import.meta.h
   listeners: new Set(),
 };
 
-const at = (system: string, file: string) => `${`/systems/${system}`}/components/${file}`;
+// A system id is unique across the two roots (src/platform/core/roots.ts), so a system's file is under one of them.
+// These are the globs' keys: the supplied root's first, then the team's.
+const ROOT_KEYS = ['/platform/systems', '/systems'];
+const find = <T>(files: Record<string, T>, system: string, file: string): T | undefined => {
+  for (const root of ROOT_KEYS) {
+    const loader = files[`${root}/${system}/components/${file}`];
+    if (loader) return loader;
+  }
+  return undefined;
+};
 
 // The examples an examples file exports: each export named with a capital that is a component,
 // in the order the file lists them (a module's exports come alphabetically).
 export async function loadExamples(system: string, file: string): Promise<Example[]> {
   const [module, source] = await Promise.all([
-    state.globs.examples[at(system, file)]?.(),
-    state.globs.sources[at(system, file)]?.(),
+    find(state.globs.examples, system, file)?.(),
+    find(state.globs.sources, system, file)?.(),
   ]);
   if (!module || source === undefined) throw new Error(`Couldn't load the examples in ${file}.`);
   const order = exampleNames(source ?? '');
@@ -47,9 +66,9 @@ export async function loadExamples(system: string, file: string): Promise<Exampl
     .map(([name, value]) => ({ name, Component: value as ComponentType }));
 }
 
-export const loadExamplesSource = (system: string, file: string) => state.globs.sources[at(system, file)]?.();
+export const loadExamplesSource = (system: string, file: string) => find(state.globs.sources, system, file)?.();
 export const loadComponentDoc = async (system: string, file: string) =>
-  (await state.globs.docs[at(system, file)]?.())?.default;
+  (await find(state.globs.docs, system, file)?.())?.default;
 
 // A number that changes when a docs file is edited, added, or removed while the app runs, so a
 // page showing one loads it again.

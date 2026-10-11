@@ -6,10 +6,11 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createHash } from 'node:crypto';
 import { readDeclaration } from '../../../platform/core/declarations.ts';
+import { systemDirOf } from '../../../platform/node/lib/system-folders.js';
 
 function targetSystem(root, system) {
   if (!/^[a-z][a-z0-9-]*$/.test(system ?? '')) throw new Error('Provide the source key of an active system.');
-  const declaration = readDeclaration(fs.readFileSync(path.join(root, 'src/systems', system, 'system.ts'), 'utf8'));
+  const declaration = readDeclaration(fs.readFileSync(path.join(root, systemDirOf(root, system), 'system.ts'), 'utf8'));
   if (
     'error' in declaration ||
     !['prototype', 'platform'].includes(declaration.value.role) ||
@@ -35,18 +36,20 @@ function checkConfig(config) {
   return config;
 }
 
-function systemConfig(system, config) {
+// The aliases point at the system's folder wherever it was found (src/platform/systems/studio, src/systems/product).
+function systemConfig(root, system, config) {
+  const alias = `@/${systemDirOf(root, system).replace(/^src\//, '')}`;
   return {
     ...config,
     rsc: false,
     tsx: true,
     tailwind: { ...config.tailwind, config: '', css: 'styles/theme.css', prefix: '' },
     aliases: {
-      components: `@/systems/${system}/components`,
-      ui: `@/systems/${system}/components`,
+      components: `${alias}/components`,
+      ui: `${alias}/components`,
       utils: '@/lib/utils',
-      lib: `@/systems/${system}/lib`,
-      hooks: `@/systems/${system}/hooks`,
+      lib: `${alias}/lib`,
+      hooks: `${alias}/hooks`,
     },
   };
 }
@@ -61,11 +64,12 @@ export function saveShadcnConfig(root, system, workspace) {
     path.resolve(plan.workspace) !== path.resolve(workspace)
   )
     throw new Error('The staging plan does not belong to this system.');
-  const destination = path.join(root, 'src/systems', system, 'components.json');
+  const destination = path.join(root, systemDirOf(root, system), 'components.json');
   const current = fs.existsSync(destination) ? fs.readFileSync(destination, 'utf8') : null;
   if (current !== plan.target.configBefore)
     throw new Error('System configuration changed since preparation. Prepare again before saving.');
   const config = systemConfig(
+    root,
     system,
     checkConfig(JSON.parse(fs.readFileSync(path.join(workspace, 'components.json'), 'utf8'))),
   );
@@ -75,7 +79,7 @@ export function saveShadcnConfig(root, system, workspace) {
 
 export function prepareShadcn(root, system, { preset, base, components = [], designMd } = {}) {
   const declaration = targetSystem(root, system);
-  const configFile = path.join(root, 'src/systems', system, 'components.json');
+  const configFile = path.join(root, systemDirOf(root, system), 'components.json');
   const configBefore = fs.existsSync(configFile) ? fs.readFileSync(configFile, 'utf8') : null;
   const config = configBefore ? checkConfig(JSON.parse(configBefore)) : null;
   const savedBase = config?.style.split('-')[0];
@@ -159,7 +163,7 @@ export function prepareShadcn(root, system, { preset, base, components = [], des
         2,
       ) + '\n',
     );
-    const theme = path.join(root, 'src/systems', system, 'styles/theme.css');
+    const theme = path.join(root, systemDirOf(root, system), 'styles/theme.css');
     if (fs.existsSync(theme)) write('src/index.css', '@import "tailwindcss";\n' + fs.readFileSync(theme, 'utf8'));
     write('src/lib/utils.ts', 'export { cn } from "cn";\n');
     dependencies.cn = studio.dependencies.cn;
@@ -233,7 +237,7 @@ export function prepareShadcn(root, system, { preset, base, components = [], des
       : []),
   ];
   const plan = {
-    target: { sourceKey: system, studioId: declaration.studioId, directory: `src/systems/${system}`, configBefore },
+    target: { sourceKey: system, studioId: declaration.studioId, directory: systemDirOf(root, system), configBefore },
     source: {
       library: 'shadcn/ui',
       cliVersion: upstream.version,

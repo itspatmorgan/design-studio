@@ -62,12 +62,12 @@
         "src/modules/canvas/liveViews.test.ts",
         "src/modules/canvas/opening.test.ts",
         "src/modules/systems/curation.test.js",
-        "src/platform/node/lib/system-dependencies.test.js"
+        "src/platform/node/lib/system-dependencies.test.js",
+        "src/platform/node/lib/system-folders.test.js"
       ],
       "dependencies": [
         "src/platform/**",
         "src/modules/**",
-        "src/systems/studio/**",
         "src/platform/node/build/**",
         "src/platform/node/lib/**",
         "src/platform/node/check/**",

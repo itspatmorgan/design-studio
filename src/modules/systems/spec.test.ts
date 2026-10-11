@@ -1,7 +1,8 @@
 // What a design system's system.ts may say (systems.ts). Run with `pnpm test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { platformSystemId, systemProblems, systemColorMode, type SystemSpec } from './spec.ts';
+import { platformSystemId, systemProblems, systemRootProblems, systemColorMode, type SystemSpec } from './spec.ts';
+import { platformSourceOf, sourceOf } from './sources.ts';
 
 const product: SystemSpec = {
   status: 'active',
@@ -128,4 +129,54 @@ test('library inventory distinguishes curated sources from installed packages an
     assert.ok(systemProblems({ ...product, libraries: [{ ...source, ...invalid }] }, 'product').length);
   for (const invalid of [{ version: '1.0.0' }, { assets: ['other'] }, { package: undefined }])
     assert.ok(systemProblems({ ...product, libraries: [{ ...icons, ...invalid }] }, 'product').length);
+});
+
+test('problems name the folder a system was found in, in either root', () => {
+  assert.match(systemProblems({ ...product, label: ' ' }, 'product')[0], /^src\/systems\/product\/system\.ts:/);
+  assert.match(
+    systemProblems({ ...product, label: ' ' }, 'studio', 'src/platform/systems/studio/')[0],
+    /^src\/platform\/systems\/studio\/system\.ts:/,
+  );
+  assert.match(systemProblems(product, 'Product', 'src/systems/Product/')[0], /^src\/systems\/Product\/:/);
+});
+
+test('a system lives in one of two roots: the supplied root holds only the platform system', () => {
+  const studio = { id: 'studio', dir: 'src/platform/systems/studio/', role: 'platform' };
+  const team = { id: 'product', dir: 'src/systems/product/', role: 'prototype' };
+  assert.deepEqual(systemRootProblems([studio, team]), []);
+  assert.deepEqual(systemRootProblems([team]), []);
+  // An id in both roots is ambiguous, because the id is the folder name.
+  const both = systemRootProblems([
+    studio,
+    team,
+    { id: 'product', dir: 'src/platform/systems/product/', role: 'prototype' },
+  ]);
+  assert.match(
+    both.join('\n'),
+    /product: found in src\/systems\/product\/ and src\/platform\/systems\/product\/|product: found in src\/platform\/systems\/product\/ and src\/systems\/product\//,
+  );
+  const platformTwice = systemRootProblems([studio, { id: 'studio', dir: 'src/systems/studio/', role: 'platform' }]);
+  assert.match(platformTwice.join('\n'), /studio: found in .* and .*can exist in only one/);
+  // The supplied root may only hold the platform-role system.
+  assert.match(
+    systemRootProblems([studio, { id: 'extra', dir: 'src/platform/systems/extra/', role: 'prototype' }]).join('\n'),
+    /src\/platform\/systems\/extra\/system\.ts: src\/platform\/systems\/ holds only the platform system/,
+  );
+  // The platform-role system must live in the supplied root.
+  assert.match(
+    systemRootProblems([{ id: 'custom', dir: 'src/systems/custom/', role: 'platform' }, team]).join('\n'),
+    /src\/systems\/custom\/system\.ts: the platform system \(role: 'platform'\) lives in src\/platform\/systems\//,
+  );
+  // A declaration that could not say its role is not the platform system.
+  assert.equal(systemRootProblems([{ id: 'odd', dir: 'src/platform/systems/odd/' }]).length, 1);
+});
+
+test('a system source is built from the folder the system was found in', () => {
+  const found = (dir: string) => ({ ...product, dir });
+  assert.equal(sourceOf('product', found('src/systems/product/')).components, 'src/systems/product/components');
+  const studio = platformSourceOf('studio', { ...found('src/platform/systems/studio/'), role: 'platform' });
+  assert.equal(studio.dir, 'src/platform/systems/studio/');
+  assert.equal(studio.components, 'src/platform/systems/studio/components');
+  assert.equal(studio.theme, 'src/platform/systems/studio/styles/theme.css');
+  assert.deepEqual(studio.scope, { light: ':root', dark: '.dark' });
 });

@@ -7,10 +7,12 @@ import { readDeclaration } from '../../../core/declarations.ts';
 import { persistStudioReferences } from '../../../core/resourceReferences.ts';
 import { readResourceDirectory } from '../resource-directory.js';
 import { editStudioConfig } from '../studio-setup.js';
+import { SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT } from '../../../core/roots.ts';
 
 export function writeFixtureConfig(root, config, { comment = '' } = {}) {
   for (const key of config.systems) {
-    const file = path.join(root, 'src/systems', key, 'system.ts');
+    // The platform system (Studio) lives in the supplied root, the others in the team's.
+    const file = path.join(root, key === 'studio' ? SUPPLIED_SYSTEMS_ROOT : TEAM_SYSTEMS_ROOT, key, 'system.ts');
     fs.mkdirSync(path.dirname(file), { recursive: true });
     if (!fs.existsSync(file))
       fs.writeFileSync(

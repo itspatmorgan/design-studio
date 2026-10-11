@@ -9,7 +9,7 @@ import { EditorView } from '@codemirror/view';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags as t } from '@lezer/highlight';
 
-import { editorPalette } from '@/systems/studio/styles/contentPalette';
+import { editorPalette } from '@/platform/systems/studio/styles/contentPalette';
 
 // The two panels share their styles: a selector for each, ending in `rest`.
 const panels = (rest: string) => `.cm-panel.cm-search${rest}, .cm-panel.cm-goto-line${rest}`;

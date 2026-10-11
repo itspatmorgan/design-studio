@@ -94,10 +94,10 @@ export function selectTests(files, catalog, available, { full = false, reason = 
       reasons.push(`${file}: verification, dependencies, or infrastructure changed.`);
       continue;
     }
-    // Studio is application code. Other systems and prototypes are authored content.
+    // Studio's system (src/platform/systems/studio) is application code. The team's systems and prototypes are authored content.
     if (
       file.startsWith('src/prototypes/') ||
-      (file.startsWith('src/systems/') && !file.startsWith('src/systems/studio/')) ||
+      file.startsWith('src/systems/') ||
       file.startsWith('contributors/') ||
       file.startsWith('public/')
     ) {
@@ -179,7 +179,7 @@ export function planTests(base, head, { root = process.cwd(), full = false, merg
       file =>
         !fs.existsSync(path.join(root, file)) &&
         !file.startsWith('src/prototypes/') &&
-        !(file.startsWith('src/systems/') && !file.startsWith('src/systems/studio/')),
+        !file.startsWith('src/systems/'),
     )
   ) {
     full = true;
