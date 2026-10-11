@@ -19,21 +19,29 @@ export function mapProblems(map) {
   return problems;
 }
 
+// The tier of one path: a tier name, 'mixed', 'unknown', or { conflict: { tiers, globs } } when equally specific rules disagree.
+export function tierOf(map, file) {
+  if ((map.mixed ?? []).some((m) => m.paths.some((g) => matches(file, g)))) return 'mixed';
+  let best = -1, hits = [];
+  for (const r of map.rules) for (const g of r.paths) {
+    if (!matches(file, g)) continue;
+    const s = specificity(g);
+    if (s > best) { best = s; hits = []; }
+    if (s === best) hits.push({ tier: r.tier, glob: g });
+  }
+  const found = [...new Set(hits.map((h) => h.tier))];
+  if (!hits.length) return 'unknown';
+  return found.length > 1 ? { conflict: { tiers: found, globs: hits.map((h) => h.glob) } } : found[0];
+}
+
 export function classify(map, files) {
   const unknown = [], conflicts = [], mixed = [], tiers = Object.fromEntries(TIERS.map((t) => [t, 0]));
   for (const file of files) {
-    if ((map.mixed ?? []).some((m) => m.paths.some((g) => matches(file, g)))) { mixed.push(file); continue; }
-    let best = -1, hits = [];
-    for (const r of map.rules) for (const g of r.paths) {
-      if (!matches(file, g)) continue;
-      const s = specificity(g);
-      if (s > best) { best = s; hits = []; }
-      if (s === best) hits.push({ tier: r.tier, glob: g });
-    }
-    const found = [...new Set(hits.map((h) => h.tier))];
-    if (!hits.length) unknown.push(file);
-    else if (found.length > 1) conflicts.push({ path: file, tiers: found, globs: hits.map((h) => h.glob) });
-    else tiers[found[0]]++;
+    const tier = tierOf(map, file);
+    if (tier === 'mixed') mixed.push(file);
+    else if (tier === 'unknown') unknown.push(file);
+    else if (tier.conflict) conflicts.push({ path: file, ...tier.conflict });
+    else tiers[tier]++;
   }
   return { unknown, conflicts, mixed, tiers };
 }

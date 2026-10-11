@@ -13,7 +13,8 @@ function studio(changes) {
   const write = files => { for (const [file, text] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true }); fs.writeFileSync(path.join(dir, file), text); } };
   git('init', '-q', '-b', 'upstream');
   git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.test'); git('config', 'commit.gpgsign', 'false');
-  write({ 'pnpm-lock.yaml': 'base\n', 'README.md': 'base\n', 'src/platform/a.ts': 'base\n', 'src/prototypes/sam/p/view.tsx': 'base\n' });
+  const map = { schema: 1, rules: [{ tier: 'upstream', paths: ['src/platform/**', '.studio/ownership.json'] }, { tier: 'generated', paths: ['pnpm-lock.yaml'] }, { tier: 'seed', paths: ['README.md', 'src/prototypes/sam/**'] }] };
+  write({ '.studio/ownership.json': JSON.stringify(map), 'pnpm-lock.yaml': 'base\n', 'README.md': 'base\n', 'src/platform/a.ts': 'base\n', 'src/prototypes/sam/p/view.tsx': 'base\n' });
   git('add', '-A'); git('commit', '-q', '-m', 'base');
   git('checkout', '-q', '-b', 'studio');
   write(changes.studio); git('add', '-A'); git('commit', '-q', '-m', 'team');

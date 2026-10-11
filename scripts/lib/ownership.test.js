@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { classify, mapProblems, ownershipReport, trackedFiles } from './ownership.js';
+import { classify, mapProblems, ownershipReport, tierOf, trackedFiles } from './ownership.js';
 
 const map = { schema: 1, rules: [
   { tier: 'upstream', paths: ['src/platform/**', 'src/modules/canvas/**'] },
@@ -16,6 +16,10 @@ test('a clean map covers every file, preferring the most specific rule', () => {
   const r = classify(map, ['src/platform/a.ts', 'src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'src/prototypes/sam/a.tsx', 'AGENTS.md']);
   assert.deepEqual([r.unknown, r.conflicts, r.mixed], [[], [], ['AGENTS.md']]);
   assert.deepEqual(r.tiers, { upstream: 2, generated: 0, seed: 1, team: 2 });
+});
+
+test('one path resolves to its tier, mixed, or unknown', () => {
+  assert.deepEqual(['src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'AGENTS.md', 'notes.txt'].map(file => tierOf(map, file)), ['upstream', 'team', 'seed', 'mixed', 'unknown']);
 });
 
 test('a path no rule matches is unknown', () => {

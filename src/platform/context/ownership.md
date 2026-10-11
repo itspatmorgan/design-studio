@@ -38,7 +38,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `AGENTS.md` module routing block | Generated | `pnpm studio sync` |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
-`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. The most specific rule wins, so a team rule such as `src/modules/**` can sit beside the supplied module IDs.
+`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a team rule such as `src/modules/**` can sit beside the supplied module IDs.
 
 ## Mixed paths
 

@@ -1,17 +1,14 @@
 // Merge an upstream revision into a studio the way an update does: generated files are regenerated instead of
 // merged, seed files keep the studio's copy, and anything else that conflicts is reported for a person to resolve.
-// Tiers follow src/platform/context/ownership.md.
+// Team files are resolved like seed files. Tiers come from the incoming revision's .studio/ownership.json (src/platform/context/ownership.md).
 import { execFileSync } from 'node:child_process';
-import { matches } from '../check/test-selection.js';
+import { tierOf } from './ownership.js';
 
-export const GENERATED = ['pnpm-lock.yaml', '.agents/skills/**', '.agents/studio-skills.json', '.claude/skills/**'];
-export const SEED = ['README.md', 'studio.config.ts', 'contributors/patrick.json', 'src/prototypes/patrick/**', 'src/systems/product/**', 'src/systems/marketing/**'];
-
-const tier = file => GENERATED.some(glob => matches(file, glob)) ? 'generated' : SEED.some(glob => matches(file, glob)) ? 'seed' : 'other';
+const resolution = (map, file) => ({ generated: '--theirs', seed: '--ours', team: '--ours' })[tierOf(map, file)];
 
 // Returns { merged: true, changed } or { merged: false, conflicts: [paths] }, leaving the merge in progress when it fails.
 // `run(command, args)` runs a command in the studio; regeneration needs pnpm.
-export function mergeUpstream(cwd, ref, { message = `Update from ${ref}`, run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }) } = {}) {
+export function mergeUpstream(cwd, ref, { message = `Update from ${ref}`, map, run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }) } = {}) {
   const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
   let failure = null;
   try { git('merge', '--no-ff', '--no-commit', ref); } catch (error) { failure = error; }
@@ -21,11 +18,12 @@ export function mergeUpstream(cwd, ref, { message = `Update from ${ref}`, run = 
     return { merged: true, changed: false };
   }
   const conflicts = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
+  const tiers = map ?? JSON.parse(git('show', 'MERGE_HEAD:.studio/ownership.json'));
   for (const file of conflicts) {
-    const kind = tier(file);
-    if (kind === 'other') continue;
+    const side = resolution(tiers, file);
+    if (!side) continue;
     // A side that deleted the file has no stage to check out; keep the surviving side.
-    try { git('checkout', kind === 'generated' ? '--theirs' : '--ours', '--', file); } catch { git('rm', '-q', '--', file); continue; }
+    try { git('checkout', side, '--', file); } catch { git('rm', '-q', '--', file); continue; }
     git('add', '--', file);
   }
   const unresolved = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
