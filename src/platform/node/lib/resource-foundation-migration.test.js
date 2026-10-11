@@ -133,17 +133,19 @@ test('symbolic assets cannot be concealed by the isolated review workspace', t =
   assert.throws(() => planResourceFoundationMigration(root, types), /symbolic/);
 });
 
-test('retained module declarations are part of review and unsupported prototype sections fail explicitly', t => {
-  const { root, write } = fixture(t);
-  write('src/modules/custom/module.ts', "export default { id: 'custom', lib: false };");
-  const plan = planResourceFoundationMigration(root, types);
-  write(
-    'src/modules/custom/module.ts',
-    "export default { id: 'custom', section: { items: 'prototypes', folder: 'src/examples', byPerson: false } };",
-  );
-  assert.throws(() => applyResourceFoundationMigration(root, types, plan), /explicit identity policy/);
-  for (const change of plan.changes) assert.equal(fs.readFileSync(path.join(root, change.path), 'utf8'), change.before);
-});
+for (const modulesRoot of ['src/modules', 'src/platform/modules'])
+  test(`retained module declarations in ${modulesRoot} are part of review and unsupported prototype sections fail explicitly`, t => {
+    const { root, write } = fixture(t);
+    write(`${modulesRoot}/custom/module.ts`, "export default { id: 'custom', lib: false };");
+    const plan = planResourceFoundationMigration(root, types);
+    write(
+      `${modulesRoot}/custom/module.ts`,
+      "export default { id: 'custom', section: { items: 'prototypes', folder: 'src/examples', byPerson: false } };",
+    );
+    assert.throws(() => applyResourceFoundationMigration(root, types, plan), /explicit identity policy/);
+    for (const change of plan.changes)
+      assert.equal(fs.readFileSync(path.join(root, change.path), 'utf8'), change.before);
+  });
 
 test('a failed apply rolls back every completed stage and preserves concurrent edits', t => {
   const { root } = fixture(t);

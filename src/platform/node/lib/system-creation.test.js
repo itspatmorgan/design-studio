@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { createSystem } from '../../../modules/systems/node/create-system.js';
+import { createSystem } from '../../modules/systems/node/create-system.js';
 import { writeFixtureConfig } from './fixtures/identities.js';
 
 const configOf = (admins = ['admin']) => ({

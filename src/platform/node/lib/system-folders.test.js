@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import { discoverSystemFolders, newSystemDir, systemDirOf, systemFolderTaken, systemIdsIn } from './system-folders.js';
 import { readResourceDirectory } from './resource-directory.js';
 import { auditResourceIdentities } from './resource-identity-audit.js';
-import { systemRootProblems } from '../../../modules/systems/spec.ts';
+import { systemRootProblems } from '../../modules/systems/spec.ts';
 
 function fixture(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-system-folders-'));

@@ -13,23 +13,29 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
+import { MODULE_ROOTS } from '../../core/roots.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 // A module's own files (what removing it deletes) and the words that mean source code is using it.
 const MODULES = {
-  contributors: { paths: ['src/modules/contributors'], pattern: 'modules/contributors' },
-  onboarding: { paths: ['src/modules/onboarding'], pattern: "modules/onboarding|'onboarding'" },
-  documentation: { paths: ['src/modules/documentation'], pattern: "modules/documentation|'documentation'" },
+  contributors: { paths: ['src/platform/modules/contributors'], pattern: 'modules/contributors' },
+  onboarding: { paths: ['src/platform/modules/onboarding'], pattern: "modules/onboarding|'onboarding'" },
+  documentation: { paths: ['src/platform/modules/documentation'], pattern: "modules/documentation|'documentation'" },
   systems: {
-    paths: ['src/systems', 'src/platform/systems', 'src/modules/systems/pages', 'src/modules/systems/data/loadDocs.ts'],
+    paths: [
+      'src/systems',
+      'src/platform/systems',
+      'src/platform/modules/systems/pages',
+      'src/platform/modules/systems/data/loadDocs.ts',
+    ],
     pattern: 'systems',
   },
-  canvas: { paths: ['src/modules/canvas'], pattern: 'excalidraw|canvas' },
-  diagrams: { paths: ['src/modules/diagrams'], pattern: 'modules/diagrams' },
-  document: { paths: ['src/modules/document'], pattern: 'modules/document' },
-  view: { paths: ['src/modules/view'], pattern: 'modules/view' },
-  text: { paths: ['src/modules/text'], pattern: 'modules/text' },
+  canvas: { paths: ['src/platform/modules/canvas'], pattern: 'excalidraw|canvas' },
+  diagrams: { paths: ['src/platform/modules/diagrams'], pattern: 'modules/diagrams' },
+  document: { paths: ['src/platform/modules/document'], pattern: 'modules/document' },
+  view: { paths: ['src/platform/modules/view'], pattern: 'modules/view' },
+  text: { paths: ['src/platform/modules/text'], pattern: 'modules/text' },
 };
 
 // Tools run straight from node_modules: pnpm would stop to re-check dependencies in a scratch copy.
@@ -128,7 +134,7 @@ function coupling() {
           ':!src/platform/core',
           ':!src/platform/skills',
           ':!*.test.ts',
-          ':!src/modules',
+          ...MODULE_ROOTS.map(root => `:!${root}`),
           ...m.paths.map(p => `:!${p}`),
         ],
         { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },

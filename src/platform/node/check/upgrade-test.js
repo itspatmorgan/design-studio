@@ -73,6 +73,16 @@ try {
       `Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`,
     );
 
+  // A team system made before the supplied modules moved imports its spec type from the old path; a person repoints it.
+  const teamSystemFile = path.join(dir, TEAM_SYSTEMS_ROOT, 'fixture-kit/system.ts');
+  const repointed = fs
+    .readFileSync(teamSystemFile, 'utf8')
+    .replace("'../../modules/systems/spec.ts'", "'../../platform/modules/systems/spec.ts'");
+  if (!fs.existsSync(path.join(dir, 'src/modules/systems/spec.ts'))) {
+    fs.writeFileSync(teamSystemFile, repointed);
+    run('git', ['commit', '-q', '--no-verify', '-am', 'Repoint the team system at the moved spec type']);
+  }
+
   step('Verify the updated studio');
   for (const [file, text] of [
     ['studio.config.ts', "'Fixture Studio'"],

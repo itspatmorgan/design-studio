@@ -24,12 +24,13 @@
   "include": [
     "src/platform/core/resourceReferences.test.ts",
     "vite.config.ts",
+    "src/platform/modules/*/server.ts",
     "src/modules/*/server.ts",
-    "src/modules/canvas/cli.ts",
-    "src/modules/canvas/tools.test.ts",
-    "src/modules/view/lofi.test.ts",
-    "src/modules/systems/content/content.test.ts",
-    "src/modules/systems/docs.test.ts",
+    "src/platform/modules/canvas/cli.ts",
+    "src/platform/modules/canvas/tools.test.ts",
+    "src/platform/modules/view/lofi.test.ts",
+    "src/platform/modules/systems/content/content.test.ts",
+    "src/platform/modules/systems/docs.test.ts",
     "src/platform/core/archive.test.ts",
     "src/platform/core/order.test.ts",
     "src/platform/core/modules/modules.test.ts",
@@ -37,7 +38,7 @@
     "src/platform/core/permissions.test.ts",
     "src/platform/core/roots.test.ts",
     "src/platform/core/config.test.ts",
-    "src/modules/systems/spec.test.ts",
+    "src/platform/modules/systems/spec.test.ts",
     "src/platform/core/modules/pack.test.ts"
   ]
 }

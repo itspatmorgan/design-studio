@@ -11,7 +11,7 @@ Design Studio has two kinds of agent guidance: context and skills. Both belong t
 | Owner | Canonical root | Context | Skills |
 | --- | --- | --- | --- |
 | Platform | `src/platform/` | Design Studio principles, personas, shared working requirements, and technical context. | Cross-module tasks such as configuring a studio, contributor setup, module management, and documentation maintenance. |
-| Module | `src/modules/<id>/` | Capability knowledge and the module README's authoritative technical requirements. | Tasks using or maintaining that capability. |
+| Module | `src/platform/modules/<id>/` (the team's: `<module folder>/`) | Capability knowledge and the module README's authoritative technical requirements. | Tasks using or maintaining that capability. |
 | System | `src/systems/<id>/` (Studio's own: `src/platform/systems/studio/`) | Product, brand, audience, design, component usage, and writing conventions. | Domain-specific tasks for that system. |
 
 Context can describe facts, rationale, or standing requirements. Label requirements clearly; a context document is not necessarily optional advice. Skills define task triggers, required input, procedures, supporting resources, and completion criteria. Keep short relevant constraints in the skill when they do not need an independent shared document.

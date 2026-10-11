@@ -11,6 +11,7 @@ import {
   plainPath,
   readDeclaration,
 } from './pack.ts';
+import { setModuleFolders } from '../roots.ts';
 
 test('a source is a folder, a git address, or an https tarball', () => {
   assert.deepEqual(parseSource('../my-module'), { kind: 'path', path: '../my-module' });
@@ -88,6 +89,14 @@ test('a module pack goes to its folder, with systemContent files and content sen
       'src/modules/quote/skills/quote-tour/SKILL.md',
       'src/quote/sample/meta.json',
     ],
+  );
+});
+
+test('a pack never goes to the supplied root, even for a supplied id', () => {
+  const plan = packPlan('module', 'canvas', { id: 'canvas' }, ['module.ts', 'lib/index.ts']);
+  assert.deepEqual(
+    plan.moves.map(m => m.to),
+    ['src/modules/canvas/module.ts', 'src/modules/canvas/lib/index.ts'],
   );
 });
 
@@ -169,6 +178,30 @@ test('the AGENTS.md lines come from the modules that are on, and replace themsel
   assert.ok(!twice.includes('wants a quote'));
   assert.equal(applyAgentsBlock(twice, agentsBlock([])), twice);
   assert.match(applyAgentsBlock('# only\n', block), /<!-- studio:modules -->/);
+});
+
+test('the AGENTS.md lines point at each module in the root that holds it', () => {
+  const supplied = {
+    id: 'canvas',
+    instructions: [{ path: 'skills/use-canvas/', when: 'asks for a canvas' }],
+  };
+  setModuleFolders([
+    ['canvas', 'src/platform/modules/canvas/'],
+    ['quote', 'src/modules/quote/'],
+  ]);
+  try {
+    const block = agentsBlock([supplied, spec]);
+    assert.match(
+      block,
+      /When the person asks for a canvas, read \[src\/platform\/modules\/canvas\/skills\/use-canvas\/SKILL\.md\]\(src\/platform\/modules\/canvas\/skills\/use-canvas\/SKILL\.md\)\./,
+    );
+    assert.match(
+      block,
+      /read \[src\/modules\/quote\/context\/quote\.md\]\(src\/modules\/quote\/context\/quote\.md\)\./,
+    );
+  } finally {
+    setModuleFolders([]);
+  }
 });
 
 test('a declaration is read as plain data, comments and types ignored', () => {

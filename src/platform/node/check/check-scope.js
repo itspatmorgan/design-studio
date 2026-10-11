@@ -10,7 +10,7 @@ import { INSTALLED_FILE_TYPES } from '../lib/installed-file-types.js';
 import { gitResourceIdentities } from '../lib/git-resource-identities.js';
 import { resourceIdentityChangeProblems } from '../lib/resource-identity-changes.js';
 import { resourceDirectory, resolveStudioReferences } from '../../core/resourceReferences.ts';
-import { SYSTEM_ROOTS } from '../../core/roots.ts';
+import { MODULE_ROOTS, SYSTEM_ROOTS } from '../../core/roots.ts';
 
 const [mode, before, after, policy] = process.argv.slice(2);
 const review = mode === '--ci' && policy === '--review';
@@ -92,12 +92,16 @@ const prefix = key ? `src/prototypes/${key}/` : null;
 // has no earlier list, so its own is used.
 const beforeModules = [];
 try {
-  for (const file of git('ls-tree', '-r', '--name-only', baseRef ?? 'HEAD', '--', 'src/modules')
-    .split('\n')
-    .filter(file => /^src\/modules\/[^/]+\/module\.ts$/.test(file))) {
-    const declaration = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:${file}`));
-    if (!('error' in declaration)) beforeModules.push(declaration.value);
-  }
+  // The trusted declarations are read from the base tree's module roots, wherever that tree kept its modules.
+  for (const modulesRoot of MODULE_ROOTS)
+    for (const file of git('ls-tree', '-r', '--name-only', baseRef ?? 'HEAD', '--', modulesRoot)
+      .split('\n')
+      .filter(
+        file => file.startsWith(`${modulesRoot}/`) && /^[^/]+\/module\.ts$/.test(file.slice(modulesRoot.length + 1)),
+      )) {
+      const declaration = readDeclaration(git('show', `${baseRef ?? 'HEAD'}:${file}`));
+      if (!('error' in declaration)) beforeModules.push(declaration.value);
+    }
 } catch {
   /* No trusted declarations grant no section authority. */
 }
@@ -178,7 +182,7 @@ console.log(`Scope check (${who}): ${inScope.length} in scope, ${platform.length
 if (!key) console.log('  Not registered in contributors/, so every file counts as out of scope.');
 for (const f of platform)
   console.log(
-    `  ${SYSTEM_ROOTS.some(systemsRoot => f.startsWith(systemsRoot + '/')) ? 'system' : f.startsWith('src/modules/') ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`,
+    `  ${SYSTEM_ROOTS.some(systemsRoot => f.startsWith(systemsRoot + '/')) ? 'system' : MODULE_ROOTS.some(modulesRoot => f.startsWith(modulesRoot + '/')) ? 'module' : f.startsWith('src/prototypes/') ? 'prototype' : 'platform'}: ${f}`,
   );
 
 if (platform.length && review)

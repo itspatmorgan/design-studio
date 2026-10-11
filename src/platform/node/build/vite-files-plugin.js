@@ -1,4 +1,4 @@
-import { SYSTEM_SOURCES } from '../../../modules/systems/node/systems.js';
+import { SYSTEM_SOURCES } from '../../modules/systems/node/systems.js';
 import { editorFile, openEditor } from './files/editor.js';
 import { watchMoves } from './files/watch-moves.js';
 import { moveUpdates } from './files/move-updates.js';
@@ -22,7 +22,7 @@ import { documentationSources, sourceFile } from './files/source.js';
 //        reorder  { path, to?, before? }         put a file or folder before another in its folder ("before" empty: last), moving it to folder "to" first if given; saved in meta.json "order"
 //        meta     { title?, status? }  edit meta.json (status is "active" or "archived")
 //        create-skill { name, description }       system content skills only: skills/<name>/SKILL.md, in the Agent Skills format
-//      (In the system content, anyone can change files, but only in its fixed shape: src/modules/systems/content/rules.ts.)
+//      (In the system content, anyone can change files, but only in its fixed shape: src/platform/modules/systems/content/rules.ts.)
 //      (contributor "systems" opens a system's components, <system folder>/components/ in either system root. Anyone can
 //      read and save its text files, and it has one operation of its own:
 //        add-docs { component }                    the examples and page a component is missing)
@@ -46,8 +46,8 @@ import path from 'node:path';
 import { ROOT } from './files/paths.js';
 import { pathToFileURL } from 'node:url';
 import { buildManifest } from './build-manifest.js';
-import { createPrototype, renamePrototype } from '../../../modules/prototypes/node/create.js';
-import { duplicatePrototype } from '../../../modules/prototypes/node/duplicate.js';
+import { createPrototype, renamePrototype } from '../../modules/prototypes/node/create.js';
+import { duplicatePrototype } from '../../modules/prototypes/node/duplicate.js';
 import { publishManifest } from './vite-manifest-watch-plugin.js';
 import { resolveContributor } from '../cli/resolve-contributor.js';
 import { FILE_TYPES, fileTypeOf, systemContentTypeOf } from '../lib/file-types.js';
@@ -62,7 +62,7 @@ import {
 } from '../../core/roots.ts';
 import { PROTOTYPE_SECTIONS, SERVER_FILES } from '../lib/modules.js';
 import { CONTRIBUTORS_DIR, loadContributors } from '../lib/contributors.js';
-import { SKILL_FILE, skillProblems } from '../../../modules/systems/content/skills.ts';
+import { SKILL_FILE, skillProblems } from '../../modules/systems/content/skills.ts';
 import { frontmatter } from '../lib/frontmatter.js';
 import {
   BATCH_MS,
@@ -88,7 +88,7 @@ export default function filesPlugin() {
     apply: 'serve',
     // When a prototype file is moved, created, or deleted, Vite would try to hot-reload it
     // (at its old path, or at a path the page loaded before), fail, and reload the page. The
-    // manifest and the item lists (src/modules/<type>/loader.ts) already handle these, so drop Vite's copy of
+    // manifest and the item lists (<module folder>/loader.ts) already handle these, so drop Vite's copy of
     // the file itself and let its importers, like those lists, update as usual. Edits to a
     // file are left to Vite's normal hot reload.
     hotUpdate: {

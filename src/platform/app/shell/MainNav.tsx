@@ -68,7 +68,7 @@ function RailButton({ label, onClick, children }: { label: string; onClick: () =
 // Main navigation: a narrow icon rail, visible on every page.
 // Top: the logo (the front page), search, Prototypes, Systems, and Documentation. Bottom: navigation
 // visibility and the color mode toggle. Module entries come from
-// src/modules/<id>/app.tsx, so the rail has exactly the ones installed and on. sectionNav is set only
+// <module folder>/app.tsx, so the rail has exactly the ones installed and on. sectionNav is set only
 // while a page has a section navigation (shell/nav/), to show or hide it.
 type MainNavProps = {
   colorMode: string;

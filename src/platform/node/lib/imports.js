@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
+import { moduleDirOf } from './module-folders.js';
 
 export const inside = (file, dir) => file === dir || file.startsWith(dir + path.sep);
 export const realFile = file => {
@@ -75,7 +76,7 @@ export function dependencyResolver(root) {
     const clean = source.split('?')[0];
     let local;
     if (clean.startsWith('@/')) local = path.join(root, 'src', clean.slice(2));
-    else if (clean.startsWith('@module/')) local = path.join(root, 'src/modules', clean.slice(8), 'lib/index');
+    else if (clean.startsWith('@module/')) local = path.join(root, moduleDirOf(root, clean.slice(8)), 'lib/index');
     else if (clean.startsWith('/')) local = inside(clean, root) ? clean : path.join(root, 'src', clean.slice(1));
     else if (clean.startsWith('.')) local = path.resolve(path.dirname(importer), clean);
     if (local) {
@@ -104,7 +105,7 @@ export function* sourceFiles(dir) {
 }
 
 export function moduleConsumers(root, id) {
-  const dir = path.join(root, 'src/modules', id);
+  const dir = path.join(root, moduleDirOf(root, id));
   const resolve = dependencyResolver(root);
   return [...sourceFiles(path.join(root, 'src')), path.join(root, 'vite.config.ts')]
     .filter(

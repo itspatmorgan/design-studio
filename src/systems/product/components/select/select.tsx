@@ -62,7 +62,7 @@ function SelectContent({
   align = "center",
   alignOffset = 0,
   // Off by default. Lining the list up with the selected item positions it with `position: fixed`, and
-  // inside a prototype's frame (src/modules/view/ViewFrame.tsx, which contains layout) that
+  // inside a prototype's frame (src/platform/modules/view/ViewFrame.tsx, which contains layout) that
   // puts it in the wrong place. The list then opens below the trigger like a menu.
   alignItemWithTrigger = false,
   ...props

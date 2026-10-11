@@ -28,7 +28,7 @@ item they show, so Excalidraw paints its link icon on every one. The icon is dra
 canvas (CSS can't hide it) and there's no option to turn it off. Hiding the icon isn't
 enough: its spot still answers hovers and clicks, so hovering it showed a tooltip with the
 raw URL, the cursor turned to a pointer, and clicking opened the URL. Items on a canvas set
-`customData.hideLinkIcon` (`normalizeEmbeds` in `src/modules/canvas/embeds.ts`),
+`customData.hideLinkIcon` (`normalizeEmbeds` in `src/platform/modules/canvas/embeds.ts`),
 and their title bar is the link instead.
 
 **Upgrading Excalidraw:** pnpm refuses to install if the patch no longer applies.

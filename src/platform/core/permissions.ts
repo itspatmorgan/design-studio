@@ -2,7 +2,7 @@
 // require resource authority through canPerform. Local identity is workflow policy,
 // not filesystem authentication. Runtime import boundaries are independent.
 export { studioRole } from './config.ts';
-import { SYSTEM_CONTENT_KEY, systemIdOfPath } from './roots.ts';
+import { MODULE_ROOTS, SYSTEM_CONTENT_KEY, systemIdOfPath } from './roots.ts';
 import type { ModuleSpec } from './modules/index.ts';
 
 export type Policy = 'owner' | 'maintainers' | 'open' | 'none';
@@ -84,7 +84,13 @@ export function pathResource(
   if (parts[0] === 'prototypes' && parts[1]) return { kind: 'prototype', owner: parts[1] };
   const system = systemIdOfPath(file);
   if (system && systems[system]) return { kind: 'system', id: system, ...systems[system] };
-  return { kind: parts[0] === 'modules' ? 'module' : 'platform' };
+  // Module code is a module's, in the supplied root (src/platform/modules) as in the team's, though the supplied one is under src/platform.
+  const path = parts.join('/');
+  const inModuleRoot = MODULE_ROOTS.some(root => {
+    const base = root.replace(/^src\//, '');
+    return path === base || path.startsWith(`${base}/`);
+  });
+  return { kind: inModuleRoot ? 'module' : 'platform' };
 }
 
 // Availability and identity changes must go through managed lifecycle operations.

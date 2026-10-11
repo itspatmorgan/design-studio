@@ -1,4 +1,4 @@
-import type { SystemSpec } from '../../../modules/systems/spec.ts';
+import type { SystemSpec } from '../../modules/systems/spec.ts';
 
 // Studio's supplied toolkit and operating guidance. Prototype systems remain independent.
 export default {

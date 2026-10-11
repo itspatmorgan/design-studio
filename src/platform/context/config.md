@@ -12,7 +12,7 @@ Open **Studio settings** from the gear icon or search while running Studio local
 
 Saving writes repository files, synchronizes module-owned agent instructions, and restarts the development server. Stale configuration or contributor snapshots are rejected. Reload settings before retrying a conflicting save. Settings and its editing API are excluded from the published viewing site.
 
-Welcome records its first display on the resolved contributor’s profile with `welcomeDismissed: true`. When Onboarding is enabled, every contributor must explicitly declare this boolean. Registration writes `false`. Missing declarations are validation errors. Each contributor gets the introduction independently; progress updates do not change studio settings or restart the server. See the [Onboarding contract](../../modules/onboarding/README.md) for progress behavior.
+Welcome records its first display on the resolved contributor’s profile with `welcomeDismissed: true`. When Onboarding is enabled, every contributor must explicitly declare this boolean. Registration writes `false`. Missing declarations are validation errors. Each contributor gets the introduction independently; progress updates do not change studio settings or restart the server. See the [Onboarding contract](../modules/onboarding/README.md) for progress behavior.
 
 You can also ask your agent to configure the studio. The configuration command previews changes before applying them. The CLI and settings API share validation, source editing, assignment preservation, and module instruction synchronization.
 
@@ -55,6 +55,6 @@ For capabilities and removal behavior, see [Module contract](/documentation/cont
 
 ## Team management ownership
 
-Contributors & Permissions owns the management interface and assignment workflows. When installed, its contract is `src/modules/contributors/README.md`. The platform owns profiles, central grants, settings transactions, and permission decisions. Optional management surfaces cannot disable enforcement. The public `useStudioSettings` client supports field-scoped saves with conflict detection and unsaved-change protection.
+Contributors & Permissions owns the management interface and assignment workflows. When installed, its contract is `src/platform/modules/contributors/README.md`. The platform owns profiles, central grants, settings transactions, and permission decisions. Optional management surfaces cannot disable enforcement. The public `useStudioSettings` client supports field-scoped saves with conflict detection and unsaved-change protection.
 
 In Studio settings, switching to team use enables the installed Contributors & Permissions module. Existing Admin assignments remain. If there are none, the current registered contributor becomes the first Admin. CLI setup declares Admins and module availability explicitly.

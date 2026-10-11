@@ -1,7 +1,7 @@
 // Supported framework entrypoints for module implementations. Keep this inventory
 // explicit: importing another platform implementation file is a boundary violation.
 // These source APIs are 0.x; changes require release guidance and module verification.
-import { SUPPLIED_SYSTEMS_ROOT } from '../roots.ts';
+import { MODULE_ROOTS, SUPPLIED_SYSTEMS_ROOT } from '../roots.ts';
 
 export const MODULE_PLATFORM_ENTRIES: readonly string[] = [
   'src/platform/app/artifacts/ArtifactCard',
@@ -54,8 +54,15 @@ export const MODULE_PLATFORM_ENTRIES: readonly string[] = [
   'src/platform/core/source/useSourceView',
 ];
 
+// Module code is bound by the entry list above wherever its folder is: in the supplied root (src/platform/modules/<id>/,
+// which sits under src/platform/ but is module code, not platform code) or in the team's (<module folder>/). Another
+// module's files are not platform code either, so importing across modules is not judged here.
+const inModuleRoot = (file: string) => MODULE_ROOTS.some(root => file.startsWith(`${root}/`));
+const inModule = (file: string) =>
+  MODULE_ROOTS.some(root => /^[^/]+\//.test(file.slice(root.length + 1)) && file.startsWith(`${root}/`));
+
 export function modulePlatformProblem(importer: string, target: string, raw = false): string | null {
-  if (!/^src\/modules\/[^/]+\//.test(importer) || !target.startsWith('src/platform/')) return null;
+  if (!inModule(importer) || !target.startsWith('src/platform/') || inModuleRoot(target)) return null;
   // Node tooling is not part of the module API surface; a module's Node-side files import it directly.
   if (target.startsWith('src/platform/node/')) return null;
   // The supplied system root holds Studio's own interface system, whose components modules use (like any system's).
@@ -65,8 +72,8 @@ export function modulePlatformProblem(importer: string, target: string, raw = fa
   const knowledge = /^src\/platform\/(?:context|skills)\//.test(target);
   if (
     knowledge &&
-    ((importer === 'src/modules/systems/loader.ts' && target.endsWith('.md')) ||
-      (importer === 'src/modules/text/loader.ts' && raw))
+    ((importer === 'src/platform/modules/systems/loader.ts' && target.endsWith('.md')) ||
+      (importer === 'src/platform/modules/text/loader.ts' && raw))
   )
     return null;
   const entry = target.replace(/\.[cm]?[jt]sx?$/, '');

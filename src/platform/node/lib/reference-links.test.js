@@ -7,24 +7,42 @@ import titleFromHeading from '../build/remark-title-from-heading.js';
 
 test('owner README and relative context links use the same browser', () => {
   const resolve = (href, base) => markdownPath(new URL(href, `http://doc${base}/`).pathname);
+  // A module is addressed by its id wherever its folder is: the supplied root, the team's, or a saved link from before
+  // the supplied modules moved to src/platform/modules.
+  assert.equal(
+    resolve('../../../../platform/modules/systems/README.md', '/systems/studio/context'),
+    '/documentation/context/module.systems',
+  );
   assert.equal(
     resolve('../../../../modules/systems/README.md', '/systems/studio/context'),
     '/documentation/context/module.systems',
   );
-  assert.equal(resolve('README.md', '/modules/systems'), '/documentation/context/module.systems');
   assert.equal(
-    resolve('../../systems/studio/context/writing.md', '/modules/systems'),
+    resolve('../../../../modules/research/README.md', '/systems/studio/context'),
+    '/documentation/context/module.research',
+  );
+  assert.equal(resolve('README.md', '/platform/modules/systems'), '/documentation/context/module.systems');
+  assert.equal(resolve('README.md', '/modules/research'), '/documentation/context/module.research');
+  assert.equal(
+    resolve('../../systems/studio/context/writing.md', '/platform/modules/systems'),
     '/systems/studio/context/writing',
+  );
+  assert.equal(
+    resolve('../../systems/product/context/writing.md', '/modules/research'),
+    '/systems/product/context/writing',
   );
   // Studio's own system is in the supplied root but is addressed like any system.
   assert.equal(
-    resolve('../../platform/systems/studio/context/writing.md', '/modules/systems'),
+    resolve('../../platform/systems/studio/context/writing.md', '/modules/research'),
     '/systems/studio/context/writing',
   );
-  assert.equal(resolve('../../platform/systems/studio/README.md', '/modules/systems'), '/systems/studio');
+  assert.equal(resolve('../../platform/systems/studio/README.md', '/modules/research'), '/systems/studio');
   assert.equal(resolve('./main.tsx', '/prototypes/patrick/example'), '/prototypes/patrick/example/main.tsx');
+  assert.equal(markdownPath('/platform/modules/documentation/pages/prototypes.md'), '/documentation/manual/prototypes');
+  assert.equal(markdownPath('/platform/modules/documentation/pages/index.md'), '/documentation/manual');
   assert.equal(markdownPath('/modules/documentation/pages/prototypes.md'), '/documentation/manual/prototypes');
-  assert.equal(markdownPath('/modules/documentation/pages/index.md'), '/documentation/manual');
+  assert.equal(markdownPath('/platform/modules/README.md'), '/documentation/context/platform.core/context/modules');
+  assert.equal(markdownPath('/modules/README.md'), '/documentation/context/platform.core/context/modules');
   assert.equal(markdownPath('/systems/product/README.md'), '/systems/product');
   assert.equal(markdownPath('/platform/README.md'), '/documentation/context/platform.core');
 });
@@ -36,7 +54,7 @@ test('overview discovery uses original owner READMEs and enabled module document
   );
   assert.ok(result);
   const patterns = JSON.parse(result.code.slice('const pages = import.meta.glob('.length, -1));
-  assert.deepEqual(patterns, ['/platform/README.md', ...ENABLED_MODULES.map(m => `/modules/${m.id}/*.md`)]);
+  assert.deepEqual(patterns, ['/platform/README.md', ...ENABLED_MODULES.map(m => `/platform/modules/${m.id}/*.md`)]);
 });
 
 test('contracts render every section and extract only the opening title', () => {
@@ -109,7 +127,7 @@ test('technical context and skill source links resolve without a duplicate Refer
     '/documentation/context/platform.core/context/file-types',
   );
   assert.equal(
-    markdownPath('/modules/prototypes/skills/build-prototype/SKILL.md'),
+    markdownPath('/platform/modules/prototypes/skills/build-prototype/SKILL.md'),
     '/documentation/context/module.prototypes/skills/build-prototype/SKILL',
   );
 });
@@ -128,6 +146,8 @@ test('saved Reference, Knowledge, and system guidance links follow both migratio
     '/documentation/reference/modules/systems/reference.md': '/documentation/context/module.systems',
     '/documentation/reference/platform/core/fileTypes.md': '/documentation/context/platform.core/context/file-types',
     '/documentation/reference/modules/README.md': '/documentation/context/platform.core/context/modules',
+    '/documentation/reference/platform/modules/systems/reference.md': '/documentation/context/module.systems',
+    '/documentation/reference/platform/modules/README.md': '/documentation/context/platform.core/context/modules',
     '/documentation/reference': '/documentation/context/platform.core',
     '/knowledge/platform.core/context/personas': '/documentation/context/platform.core/context/personas',
     '/documentation/context/product/context/accessibility': '/systems/product/context/accessibility',

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { FILE_TYPES } from '../../node/lib/file-types.js';
 import { assertUniqueExtensions, systemContentType, matchFileType } from '../fileTypes.ts';
 import { globsFor } from './globs.ts';
+import { setModuleFolders } from '../roots.ts';
 import type { ModuleSpec } from './index.ts';
 
 const types = FILE_TYPES;
@@ -18,13 +19,26 @@ const module = (id: string, section?: ModuleSpec['section']): ModuleSpec => ({
   version: '0.1.0',
   section,
 });
+// The supplied modules are found in the supplied root and the team's examples in the team root, where discovery
+// registers them (src/platform/node/lib/modules.js).
+setModuleFolders([
+  ['prototypes', 'src/platform/modules/prototypes'],
+  ['documentation', 'src/platform/modules/documentation'],
+  ['systems', 'src/platform/modules/systems'],
+]);
 const examples = module('examples', { key: 'examples', folder: 'src/examples', items: 'prototypes' });
 const modules = [
   module('prototypes', { key: 'prototypes', folder: 'src/prototypes', items: 'prototypes', byPerson: true }),
-  module('documentation', { key: 'documentation', folder: 'src/modules/documentation/pages' }),
+  module('documentation', { key: 'documentation', folder: 'src/platform/modules/documentation/pages' }),
   module('systems', { key: 'systems', folder: 'src/systems' }),
   examples,
 ];
+
+// Written out, not derived from the registry: the supplied modules in /platform/modules, the team's examples in /modules.
+const moduleContentRoots = modules.flatMap(m => {
+  const base = m.id === 'examples' ? '/modules' : '/platform/modules';
+  return [`${base}/${m.id}/context`, `${base}/${m.id}/skills`];
+});
 
 // These are the lists the loaders were written with by hand, before they were worked out from the modules.
 const sorted = (list: string[]) => [...list].sort();
@@ -81,7 +95,7 @@ test('the fallback type lists the SystemContent files no other type opens', need
       '/systems/*/skills',
       '/platform/context',
       '/platform/skills',
-      ...modules.flatMap(m => [`/modules/${m.id}/context`, `/modules/${m.id}/skills`]),
+      ...moduleContentRoots,
     ].flatMap(root => [root + '/**/*', '!' + root + '/**/*.md']),
   );
 });
@@ -127,7 +141,7 @@ test('SystemContent Markdown stays readable and validated without prototype Docu
       '/systems/*/skills',
       '/platform/context',
       '/platform/skills',
-      ...modules.flatMap(m => [`/modules/${m.id}/context`, `/modules/${m.id}/skills`]),
+      ...moduleContentRoots,
     ].map(root => root + '/**/*.md'),
   );
   assert.deepEqual(
@@ -139,7 +153,7 @@ test('SystemContent Markdown stays readable and validated without prototype Docu
       '/systems/*/skills',
       '/platform/context',
       '/platform/skills',
-      ...modules.flatMap(m => [`/modules/${m.id}/context`, `/modules/${m.id}/skills`]),
+      ...moduleContentRoots,
     ].flatMap(root => [root + '/**/*', '!' + root + '/**/*.md']),
   );
   assert.match(withoutDocuments.systems.template!('team-context.md'), /title: Team Context/);
@@ -186,4 +200,17 @@ test('file types cannot gain a scope or capabilities by omission', async () => {
     assert.throws(() => defineFileType(incomplete), new RegExp(field));
   }
   assert.equal(matchFileType({ fixture: spec }, 'file.fixture'), null);
+});
+
+test('a module lists its context and skills from the root it is in', needs('text'), () => {
+  const globs = globsFor('text', types, modules);
+  for (const root of [
+    '/platform/modules/prototypes',
+    '/platform/modules/documentation',
+    '/platform/modules/systems',
+    '/modules/examples',
+  ])
+    for (const folder of ['context', 'skills']) assert.ok(globs.includes(`${root}/${folder}/**/*`), root);
+  assert.ok(!globs.includes('/modules/systems/context/**/*'));
+  assert.ok(!globs.includes('/platform/modules/examples/context/**/*'));
 });

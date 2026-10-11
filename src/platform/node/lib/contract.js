@@ -48,7 +48,7 @@ export function exportNames(source) {
 }
 
 export function computeContract(root = ROOT) {
-  const spec = parse(root, 'src/modules/systems/spec.ts');
+  const spec = parse(root, 'src/platform/modules/systems/spec.ts');
   return {
     platformVersion: PLATFORM_VERSION,
     moduleEntries: [...MODULE_PLATFORM_ENTRIES],

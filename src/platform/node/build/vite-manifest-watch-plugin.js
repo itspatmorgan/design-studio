@@ -1,6 +1,6 @@
 // Keeps the manifest live during `pnpm dev`, without reloading the page.
 //
-// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, the system roots (src/platform/systems/ and src/systems/), src/modules/documentation/pages/, or a module contract
+// Vite already watches every file. When something under src/prototypes/, a module's content folder, src/platform/, the system roots (src/platform/systems/ and src/systems/), the module roots (src/platform/modules/ and src/modules/, Markdown only), the Manual's pages (src/platform/modules/documentation/pages/), or a module contract
 // changes (from the app, an agent, or your editor), this rebuilds the manifest in-process
 // and pushes it to the app over Vite's dev connection. The app swaps it in and refreshes
 // only the routes that use it (see router.tsx), so the open view and scroll position stay.
@@ -8,8 +8,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-skills.js';
-import { SYSTEM_ROOTS } from '../../core/roots.ts';
-import { SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
+import { MODULE_ROOTS, SYSTEM_ROOTS } from '../../core/roots.ts';
+import { SYSTEM_SPECS } from '../../modules/systems/node/systems.js';
 import { fileURLToPath } from 'node:url';
 import { buildManifest } from './build-manifest.js';
 import { FILE_TYPES, fileTypeOf } from '../lib/file-types.js';
@@ -24,7 +24,9 @@ const documentationModule = ENABLED_MODULES.find(m => m.id === 'documentation');
 const MANUAL = documentationModule?.section?.folder ? path.join(ROOT, documentationModule.section.folder) : null;
 // Where systems live: the supplied root (inside src/platform) and the team's.
 const SYSTEMS = SYSTEM_ROOTS.map(systemsRoot => path.join(ROOT, systemsRoot));
-// The system content's map reads it (src/modules/systems/content/map.ts).
+// Where modules live: the supplied root (inside src/platform) and the team's.
+const MODULE_ROOT_DIRS = MODULE_ROOTS.map(modulesRoot => path.join(ROOT, modulesRoot));
+// The system content's map reads it (src/platform/modules/systems/content/map.ts).
 const AGENTS = path.join(ROOT, 'AGENTS.md');
 const BATCH_MS = 50;
 
@@ -50,8 +52,11 @@ function relevant(file, kind) {
     return (
       kind !== 'change' || /\.(md|examples\.[jt]sx)$|styles[\\/]theme\.css$|(?:system\.ts|package\.json)$/.test(file)
     );
+  // Module code is a module's, not the platform's, in either root: only its Markdown (context, skills, contracts) is
+  // read by the manifest. The supplied root is inside src/platform, so this comes before the platform check.
+  if (MODULE_ROOT_DIRS.some(dir => inside(dir, file))) return file.endsWith('.md');
   if (inside(SYSTEM_CONTENT, file)) return kind !== 'change' || file.endsWith('.md');
-  if (file.endsWith('.md') && /src[\\/](?:platform[\\/]core|modules)[\\/]/.test(file)) return true;
+  if (file.endsWith('.md') && /src[\\/]platform[\\/]core[\\/]/.test(file)) return true;
   if (![PROTOS, ...PROTOTYPE_DIRS].some(dir => inside(dir, file))) return false;
   return kind !== 'change' || path.basename(file) === 'meta.json' || hasFidelity(file);
 }

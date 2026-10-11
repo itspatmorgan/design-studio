@@ -1,4 +1,4 @@
-// Gives each file type's loader (src/modules/<type>/loader.ts) the list of files it opens, and
+// Gives each file type's loader (<module folder>/loader.ts) the list of files it opens, and
 // leaves archived prototypes and views out of the production build (src/platform/core/archive.ts).
 //
 // Vite needs a glob written out literally, so a loader says import.meta.glob(['/__studio_globs__/*']), a placeholder
@@ -10,11 +10,11 @@
 // leaves the same things out (src/platform/node/build/build-manifest.js --deploy).
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
+import { SYSTEM_SPECS } from '../../modules/systems/node/systems.js';
 import { unavailablePrototypeRoots } from '../lib/system-lifecycle.js';
 import { buildManifest } from './build-manifest.js';
 import { FILE_TYPES } from '../lib/file-types.js';
-import { ENABLED_MODULES } from '../lib/modules.js';
+import { ENABLED_MODULES, MODULE_DIRS } from '../lib/modules.js';
 import { globsFor } from '../../core/modules/globs.ts';
 
 // A path as a literal glob: characters that mean something to a glob are escaped. A trailing /**
@@ -73,7 +73,10 @@ export default function globs() {
         updated = true;
       }
       if (/[\\/]app[\\/]docs[\\/]loadReference\.ts$/.test(id.split('?')[0])) {
-        const references = ['/platform/README.md', ...ENABLED_MODULES.map(m => `/modules/${m.id}/*.md`)];
+        const references = [
+          '/platform/README.md',
+          ...ENABLED_MODULES.map(m => `/${MODULE_DIRS[m.id].replace(/^src\//, '')}*.md`),
+        ];
         return { code: code.replace("['/__studio_references__/*']", JSON.stringify(references)), map: null };
       }
       const match = LOADER.exec(id.split('?')[0]);
@@ -92,7 +95,7 @@ export default function globs() {
     buildEnd() {
       if (negations.length && replaced === 0) {
         this.error(
-          "Archived views and prototypes could not be left out of the build: no file type loader (src/modules/<type>/loader.ts) lists its files with the ['/__studio_globs__/*'] placeholder.",
+          "Archived views and prototypes could not be left out of the build: no file type loader (<module folder>/loader.ts) lists its files with the ['/__studio_globs__/*'] placeholder.",
         );
       }
     },

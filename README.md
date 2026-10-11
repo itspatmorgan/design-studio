@@ -22,7 +22,7 @@ The guide also covers [direct setup without a plugin](https://github.com/itspatm
 
 Design Studio is in early beta. Explore the examples, then ask your agent to help build your first prototype.
 
-- [Manual](src/modules/documentation/pages/index.md) — using and customizing your studio.
+- [Manual](src/platform/modules/documentation/pages/index.md) — using and customizing your studio.
 - [Modules](src/platform/context/modules.md) — extending its capabilities.
 - [Contributing](CONTRIBUTING.md) — feedback, issues, and pull requests.
 - [Changelog](CHANGELOG.md) — what's changed.

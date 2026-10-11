@@ -151,10 +151,10 @@ test('create and rename preserve addresses, file errors recover, and system remo
       import assert from 'node:assert/strict';
       import { pathToFileURL } from 'node:url';
       const load = (file) => import(pathToFileURL(path.resolve(file)).href);
-      const { createPrototype, renamePrototype } = await load('src/modules/' + 'prototypes/node/create.js');
+      const { createPrototype, renamePrototype } = await load('src/platform/modules/' + 'prototypes/node/create.js');
       const { slug } = createPrototype({ title: 'Beta Journey', key: 'patrick' });
       const original = path.resolve('src/prototypes/patrick', slug);
-      const { DEFAULT_SYSTEM, PROTOTYPE_SYSTEMS } = await load('src/modules/systems/node/systems.js');
+      const { DEFAULT_SYSTEM, PROTOTYPE_SYSTEMS } = await load('src/platform/modules/systems/node/systems.js');
       const defaultIdentity = PROTOTYPE_SYSTEMS[DEFAULT_SYSTEM].studioId;
       const { createResourceId } = await load('src/platform/core/resourceIdentity.ts');
       const { readDeclaration } = await load('src/platform/core/declarations.ts');
@@ -174,14 +174,14 @@ test('create and rename preserve addresses, file errors recover, and system remo
       const selectedSystem = Object.keys(PROTOTYPE_SYSTEMS).find(id => id !== DEFAULT_SYSTEM) ?? DEFAULT_SYSTEM;
       const selected = createPrototype({title:'Selected System',key:'patrick',system:selectedSystem});
       assert.equal(selected.manifest.prototypes.find(p => p.id === selected.slug).system, selectedSystem);
-      const cliCreate = (await import('node:child_process')).spawnSync(process.execPath, ['src/modules/prototypes/node/create.js', 'CLI Custom', '--no-system'], {encoding:'utf8'});
+      const cliCreate = (await import('node:child_process')).spawnSync(process.execPath, ['src/platform/modules/prototypes/node/create.js', 'CLI Custom', '--no-system'], {encoding:'utf8'});
       assert.equal(cliCreate.status, 0, cliCreate.stderr);
       assert.equal(JSON.parse(fs.readFileSync('src/prototypes/patrick/cli-custom/meta.json')).systemId, null);
       const viewIdentity = fs.readFileSync(path.join(original, 'prototype.tsx'), 'utf8').match(/@studio-id ([0-9a-z]+)/)[1];
       const originalUrl = '/prototypes/' + originalMeta.studioId + '/artifacts/' + viewIdentity;
       fs.writeFileSync(path.join(original, 'notes.md'), '---\\nstudioId: ' + createResourceId() + '\\n---\\n[View](' + originalUrl + ') [Source](./prototype.tsx)');
       fs.writeFileSync(path.join(original, 'flow.excalidraw'), JSON.stringify({ studioId: createResourceId(), type: 'excalidraw', version: 2, elements: [], appState: {}, files: {} }));
-      const { duplicatePrototype } = await load('src/modules/prototypes/node/duplicate.js');
+      const { duplicatePrototype } = await load('src/platform/modules/prototypes/node/duplicate.js');
       const before = fs.readFileSync(path.join(original, 'meta.json'), 'utf8');
       const copy = duplicatePrototype({key:'patrick',id:slug,title:'Beta Copy',system:DEFAULT_SYSTEM});
       const copiedMeta = JSON.parse(fs.readFileSync('src/prototypes/patrick/' + copy.id + '/meta.json'));
@@ -458,17 +458,17 @@ test('shared documentation catalog covers Manual and Reference and keeps damaged
   const { documentationSources, sourceFile } = await import('../build/files/source.js');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-documentation-catalog-'));
   try {
-    const chapter = 'src/modules/documentation/pages/index.md';
-    const readme = 'src/modules/prototypes/README.md';
+    const chapter = 'src/platform/modules/documentation/pages/index.md';
+    const readme = 'src/platform/modules/prototypes/README.md';
     for (const file of [chapter, readme]) {
       fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
       fs.writeFileSync(path.join(root, file), '# Source');
     }
     const manifest = {
-      manual: [{ slug: 'index', source: '/modules/documentation/pages/index.md' }],
+      manual: [{ slug: 'index', source: '/platform/modules/documentation/pages/index.md' }],
       platformReferences: [
         { id: 'documentation', enabled: true, references: [] },
-        { id: 'prototypes', enabled: true, references: [{ source: '/modules/prototypes/README.md' }] },
+        { id: 'prototypes', enabled: true, references: [{ source: '/platform/modules/prototypes/README.md' }] },
       ],
     };
     const allowed = documentationSources(root, manifest);
@@ -551,7 +551,7 @@ test('shared source operations allow cataloged Markdown and system code with sta
 });
 
 test('standalone diagrams are discovered by both extensions and disabling preserves Markdown', {
-  skip: !fs.existsSync('src/modules/diagrams/type.ts'),
+  skip: !fs.existsSync('src/platform/modules/diagrams/type.ts'),
 }, async () => {
   const { execFileSync } = await import('node:child_process');
   const root = path.resolve('.');
@@ -564,7 +564,7 @@ test('standalone diagrams are discovered by both extensions and disabling preser
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
     linkSystemDependencies(root, dir);
     // Availability is a metadata contract, independent of the Manual's editorial structure.
-    const pages = path.join(dir, 'src/modules/documentation/pages');
+    const pages = path.join(dir, 'src/platform/modules/documentation/pages');
     if (fs.existsSync(pages))
       fs.writeFileSync(
         path.join(pages, 'diagrams.md'),
@@ -603,12 +603,12 @@ test('standalone diagrams are discovered by both extensions and disabling preser
       assert.equal(prototype.artifacts[0].path,'test-folder/entry.mermaid');
       assert.equal('start' in prototype,false);
       assert.equal('description' in prototype,false);
-      if (fs.existsSync('src/modules/document/type.ts')) assert.ok(prototype.artifacts.some(i=>i.fileType==='document'));
+      if (fs.existsSync('src/platform/modules/document/type.ts')) assert.ok(prototype.artifacts.some(i=>i.fileType==='document'));
       else assert.equal(prototype.artifacts.some(i=>i.fileType==='document'), false);
       assert.ok(manifest.platformReferences.find(g=>g.id==='diagrams')?.references.length);
       if (manifest.manual.length) {
-        assert.ok(manifest.manual.some(p=>p.slug==='diagrams' && p.source==='/modules/documentation/pages/diagrams.md'));
-        assert.ok(manifest.manual.every(p=>p.source?.startsWith('/modules/documentation/pages/')));
+        assert.ok(manifest.manual.some(p=>p.slug==='diagrams' && p.source==='/platform/modules/documentation/pages/diagrams.md'));
+        assert.ok(manifest.manual.every(p=>p.source?.startsWith('/platform/modules/documentation/pages/')));
       }
       fs.writeFileSync(config,editModulesFlag(fs.readFileSync(config,'utf8'),'diagrams',false));
     `,
@@ -627,9 +627,9 @@ test('standalone diagrams are discovered by both extensions and disabling preser
       const {manifest,errors}=buildManifest({write:false,quiet:true}); assert.equal(errors,0);
       const prototype=manifest.prototypes.find(p=>p.contributorKey==='patrick'&&p.id==='feedback-inbox');
       assert.equal(prototype.artifacts.some(i=>i.fileType==='diagrams'),false);
-      if (fs.existsSync('src/modules/document/type.ts')) assert.equal(prototype.artifacts[0].path,'about-this-prototype.md');
+      if (fs.existsSync('src/platform/modules/document/type.ts')) assert.equal(prototype.artifacts[0].path,'about-this-prototype.md');
       assert.ok(fs.existsSync('src/prototypes/patrick/feedback-inbox/about-this-prototype.md'));
-      if (fs.existsSync('src/modules/document/type.ts')) assert.ok(prototype.artifacts.some(i=>i.fileType==='document'));
+      if (fs.existsSync('src/platform/modules/document/type.ts')) assert.ok(prototype.artifacts.some(i=>i.fileType==='document'));
       else assert.equal(prototype.artifacts.some(i=>i.fileType==='document'), false);
       assert.ok(fs.existsSync('src/prototypes/patrick/feedback-inbox/test-flow.mermaid'));
       assert.equal(manifest.platformReferences.find(g=>g.id==='diagrams')?.references.length,0);

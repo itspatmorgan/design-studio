@@ -51,7 +51,7 @@
     },
     ".agents/skills/studio-module-canvas-use-canvas/SKILL.md": {
       "kind": "file",
-      "hash": "a84e3b427c1410290cd07bd0261ffa9c90eb5129485f9e329c5c5d2f9e29adc8"
+      "hash": "33c4ab05d86e3fd1d6ba041f65cea0b8d9cfec4fc01a07a93dbbb707e8092079"
     },
     ".claude/skills/studio-module-canvas-use-canvas": {
       "kind": "link",
@@ -59,7 +59,7 @@
     },
     ".agents/skills/studio-module-contributors-use-contributors/SKILL.md": {
       "kind": "file",
-      "hash": "9a8fd12adedc80c8c6d7a85170c4688cfdb19ad46d3af32323f747746f87b647"
+      "hash": "b18f310e2b5fec29278ef52f3360453f5fe52941fc9e8dbc175f9b3bc7810988"
     },
     ".claude/skills/studio-module-contributors-use-contributors": {
       "kind": "link",
@@ -67,7 +67,7 @@
     },
     ".agents/skills/studio-module-diagrams-create-diagram/SKILL.md": {
       "kind": "file",
-      "hash": "84c597fab39ca276af2dfa294161f9a9753c8693a19e829d9fcd1692d7972f86"
+      "hash": "b60dd4da011696c3c7965a8c78e6772a4b73d8a8ee5bec4c6d296374688dcca8"
     },
     ".claude/skills/studio-module-diagrams-create-diagram": {
       "kind": "link",
@@ -75,7 +75,7 @@
     },
     ".agents/skills/studio-module-document-write-document/SKILL.md": {
       "kind": "file",
-      "hash": "656cea21f1753979e613d1b10bb084077b12d96372b7cee557f379960cd0d6db"
+      "hash": "c925990008d086e416557359935972646e395ebace3b8e5fff1ad26157c71c09"
     },
     ".claude/skills/studio-module-document-write-document": {
       "kind": "link",
@@ -83,7 +83,7 @@
     },
     ".agents/skills/studio-module-documentation-write-manual/SKILL.md": {
       "kind": "file",
-      "hash": "08c962bbd6e14754769b80ca903274a32b00adf0955e4015087bd8b21f5587e7"
+      "hash": "9784004750c74c7ed4e2c9c898b9fc1ace5c0730a69361b0876df49cc9ed5f37"
     },
     ".claude/skills/studio-module-documentation-write-manual": {
       "kind": "link",
@@ -91,7 +91,7 @@
     },
     ".agents/skills/studio-module-onboarding-use-onboarding/SKILL.md": {
       "kind": "file",
-      "hash": "ac5d5852af56bd1bfb698cc4454359cfbd378cc373938e0a962b07d17929d771"
+      "hash": "3122e11e4cf024723bea034e3cf53915437c59832a12a7542f4823e548206aad"
     },
     ".claude/skills/studio-module-onboarding-use-onboarding": {
       "kind": "link",
@@ -99,7 +99,7 @@
     },
     ".agents/skills/studio-module-prototypes-build-prototype/SKILL.md": {
       "kind": "file",
-      "hash": "3cff5f959b9357bfc23f251594854f7b3109384d7c570b06a05345f82774ead2"
+      "hash": "753e2e686e3277119dc35a29542e2d8181e95e94b40664d82c4db6a274a65256"
     },
     ".claude/skills/studio-module-prototypes-build-prototype": {
       "kind": "link",
@@ -107,7 +107,7 @@
     },
     ".agents/skills/studio-module-prototypes-organize-prototype/SKILL.md": {
       "kind": "file",
-      "hash": "afc8010801485c60a9bf29adf49e4bf06116207dce4e26580763ad065054c6f2"
+      "hash": "3c0feccb07ccd2731b4c08834e0a83b092bc56d59d8e52a68a329eeab13fc60c"
     },
     ".claude/skills/studio-module-prototypes-organize-prototype": {
       "kind": "link",
@@ -115,7 +115,7 @@
     },
     ".agents/skills/studio-module-systems-document-component/SKILL.md": {
       "kind": "file",
-      "hash": "24f412ab8ca8308c8ec9d71377640dd7d3a27ce0b34b98532c918a28967193af"
+      "hash": "8f6a7adefe4c804776c40cf6585c8f4119b6ec90b118354f3bee579e3ff9917f"
     },
     ".claude/skills/studio-module-systems-document-component": {
       "kind": "link",
@@ -123,7 +123,7 @@
     },
     ".agents/skills/studio-module-systems-setup-design-system/SKILL.md": {
       "kind": "file",
-      "hash": "79621655104eb752de555089cb9595ec1ceb4b774a7757eef2c50dd7b7fa0cca"
+      "hash": "cc84359d3eaf30c8a2940d76920abdac06d4d219a40de9da7effb863019e8367"
     },
     ".claude/skills/studio-module-systems-setup-design-system": {
       "kind": "link",

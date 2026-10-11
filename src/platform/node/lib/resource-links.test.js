@@ -12,7 +12,7 @@ import {
   resourceId,
   parsePrototypeAddress,
 } from '../../core/resourceIdentity.ts';
-import { prototypeArtifactHref } from '../../../modules/prototypes/lib/index.ts';
+import { prototypeArtifactHref } from '../../modules/prototypes/lib/index.ts';
 
 const parent = resourceId('0123456789abcdef'),
   child = resourceId('abcdefghjkmnpqrs'),

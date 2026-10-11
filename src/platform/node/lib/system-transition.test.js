@@ -26,7 +26,7 @@ function transition(baseUrl = '/') {
     },
   });
   const source = fs
-    .readFileSync('src/modules/systems/pages/creationTransition.ts', 'utf8')
+    .readFileSync('src/platform/modules/systems/pages/creationTransition.ts', 'utf8')
     .replace(/export /g, '')
     .replaceAll('import.meta.env.BASE_URL', JSON.stringify(baseUrl));
   vm.runInContext(stripTypeScriptTypes(source), context);

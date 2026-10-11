@@ -42,7 +42,7 @@ import {
   parseSource,
   readDeclaration,
 } from '../../core/modules/pack.ts';
-import { systemProblems } from '../../../modules/systems/spec.ts';
+import { systemProblems } from '../../modules/systems/spec.ts';
 import { MODULES, ENABLED_MODULES, CONFIG } from '../lib/modules.js';
 import {
   PLATFORM_ID,
@@ -50,7 +50,7 @@ import {
   PROTOTYPE_SYSTEMS,
   DEFAULT_SYSTEM,
   SYSTEM_IDS,
-} from '../../../modules/systems/node/systems.js';
+} from '../../modules/systems/node/systems.js';
 import { canPerform, studioRole } from '../../core/permissions.ts';
 import { configProblems } from '../../core/config.ts';
 import { applySetupChanges, editStudioConfig } from '../lib/studio-setup.js';
@@ -58,7 +58,13 @@ import { planSettings } from '../lib/studio-settings.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { fetchSource, walk } from '../lib/fetch-source.js';
 import { loadContributors } from '../lib/contributors.js';
-import { SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
+import {
+  SUPPLIED_MODULES_ROOT,
+  SUPPLIED_SYSTEMS_ROOT,
+  TEAM_MODULES_ROOT,
+  TEAM_SYSTEMS_ROOT,
+} from '../../core/roots.ts';
+import { moduleDirOf, moduleFolderTaken, newModuleDir } from '../lib/module-folders.js';
 import { newSystemDir, systemDirOf, systemFolderTaken } from '../lib/system-folders.js';
 import { changesFromLock, hashFile, readLock, writeLock } from '../lib/lock.js';
 
@@ -130,7 +136,8 @@ const slug = text =>
 const PROTECTED = new Set([
   'src',
   'src/platform',
-  'src/modules',
+  SUPPLIED_MODULES_ROOT,
+  TEAM_MODULES_ROOT,
   'src/prototypes',
   'src/lib',
   SUPPLIED_SYSTEMS_ROOT,
@@ -313,10 +320,12 @@ async function add() {
       problems.push(
         `It needs platform ${spec.requires} or newer, and this is ${PLATFORM_VERSION}. Update the platform first.`,
       );
-    const installed = kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : systemFolderTaken(ROOT, id);
+    const installed = kind === 'module' ? moduleFolderTaken(ROOT, id) : systemFolderTaken(ROOT, id);
     if (installed)
       problems.push(
-        `There's already a ${kind === 'module' ? 'module' : 'design system'} called "${id}". Remove it first (pnpm studio remove ${id}), or add this one with another id.`,
+        kind === 'module' && fs.existsSync(rel(SUPPLIED_MODULES_ROOT, id))
+          ? `There's already a module called "${id}", and it ships with the starter in ${SUPPLIED_MODULES_ROOT}/. A team module can't reuse a supplied module's id: add this one with another id.`
+          : `There's already a ${kind === 'module' ? 'module' : 'design system'} called "${id}". Remove it first (pnpm studio remove ${id}), or add this one with another id.`,
       );
     if (kind === 'module')
       problems.push(
@@ -567,9 +576,11 @@ function remove() {
     if (id === 'contributors' && CONFIG.usage === 'team')
       fail('Team use requires Contributors & Permissions. Switch to personal use before removing it.');
     if (!spec.optional) fail(`The ${id} module can't be removed yet; other parts of the app still use it.`);
-    paths.push(`src/modules/${id}`);
+    // The module's folder, in whichever root holds it.
+    const dir = moduleDirOf(ROOT, id);
+    paths.push(dir);
 
-    if (spec.section?.folder && !spec.section.folder.startsWith(`src/modules/${id}`)) {
+    if (spec.section?.folder && !spec.section.folder.startsWith(dir)) {
       if (flags.content) paths.push(spec.section.folder);
       else if (fs.existsSync(rel(spec.section.folder)))
         notes.push(`Its content in ${spec.section.folder} stays. Add --content to delete that too.`);
@@ -714,8 +725,12 @@ function create(kind) {
   const spec = readDeclaration(
     fill(fs.readFileSync(path.join(template, kind === 'module' ? 'module.ts' : 'system.ts'), 'utf8')),
   ).value;
-  if (kind === 'module' ? fs.existsSync(rel('src', 'modules', id)) : systemFolderTaken(ROOT, id))
-    fail(`There's already a ${kind} called "${id}".`);
+  if (kind === 'module' ? moduleFolderTaken(ROOT, id) : systemFolderTaken(ROOT, id))
+    fail(
+      kind === 'module' && fs.existsSync(rel(SUPPLIED_MODULES_ROOT, id))
+        ? `There's already a module called "${id}", and it ships with the starter in ${SUPPLIED_MODULES_ROOT}/. A team module can't reuse a supplied module's id.`
+        : `There's already a ${kind} called "${id}".`,
+    );
   if (kind === 'module' && SECTION_TAKEN(id))
     fail(`"${id}" is already the address of another module, or a contributor's folder. Choose another id.`);
   const plan = packPlan(kind, id, spec, files, PLATFORM_ID);
@@ -774,7 +789,7 @@ function create(kind) {
   }
   syncInFreshProcess();
   say(
-    `Made the ${kind} "${id}" in ${kind === 'module' ? `src/modules/${id}/` : `${newSystemDir(id)}/`}. Restart the dev server to see it.`,
+    `Made the ${kind} "${id}" in ${kind === 'module' ? newModuleDir(id) : newSystemDir(id)}/. Restart the dev server to see it.`,
   );
 }
 

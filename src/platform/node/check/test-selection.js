@@ -2,14 +2,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { MODULE_ROOTS } from '../../core/roots.ts';
 
+// Tests in the platform, in the module roots (the supplied one is inside src/platform, whose .js tests are found
+// here too) and in the Node tooling.
 const patterns = [
   'src/platform/**/*.test.ts',
-  'src/modules/**/*.test.ts',
-  'src/modules/**/*.test.js',
+  ...MODULE_ROOTS.flatMap(root => [`${root}/**/*.test.ts`, `${root}/**/*.test.js`]),
   'src/platform/node/**/*.test.js',
 ];
-export const discoverTests = (root = process.cwd()) => [...fs.globSync(patterns, { cwd: root })].sort();
+export const discoverTests = (root = process.cwd()) => [...new Set(fs.globSync(patterns, { cwd: root }))].sort();
 export function matches(file, glob) {
   const escaped = glob
     .split('**')

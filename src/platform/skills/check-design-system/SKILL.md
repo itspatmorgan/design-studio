@@ -11,7 +11,7 @@ Review the requested surface against its actual system, combining source checks 
 
 Start with the supplied URL, screenshot, file, module, or prototype. Trace it to its implementation. If the target cannot be identified from the request and current context, ask for the surface to review.
 
-Read the [system contract](../../../modules/systems/README.md) and [authoring context](../../../modules/systems/context/authoring.md). Resolve registration and declarations from `studio.config.ts` and each relevant `system.ts`; do not assume the platform system's folder is named `studio`. Systems are in `src/platform/systems/` (Studio's own) and `src/systems/` (the team's); use the folder where each was found.
+Read the [system contract](../../modules/systems/README.md) and [authoring context](../../modules/systems/context/authoring.md). Resolve registration and declarations from `studio.config.ts` and each relevant `system.ts`; do not assume the platform system's folder is named `studio`. Systems are in `src/platform/systems/` (Studio's own) and `src/systems/` (the team's); use the folder where each was found.
 
 | Surface | Applicable system |
 | --- | --- |

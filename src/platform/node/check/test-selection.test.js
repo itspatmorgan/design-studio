@@ -30,21 +30,31 @@ test('authoring keeps publishing validation without platform regressions; Studio
 });
 test('shared dependencies and mixed changes include setup and publishing only when affected', () => {
   assert.deepEqual(select(['src/platform/app/router.tsx']).groups, ['runtime', 'publishing']);
-  assert.deepEqual(select(['src/modules/onboarding/progress.ts']).groups, ['runtime', 'setup']);
+  assert.deepEqual(select(['src/platform/modules/onboarding/progress.ts']).groups, ['runtime', 'setup']);
   assert.deepEqual(select(['src/platform/core/config.ts']).groups, ['runtime', 'setup', 'publishing']);
-  const result = select(['src/platform/app/shell/MainNav.tsx', 'src/modules/onboarding/progress.ts']);
+  const result = select(['src/platform/app/shell/MainNav.tsx', 'src/platform/modules/onboarding/progress.ts']);
   assert.deepEqual(result.groups, ['runtime', 'setup']);
   assert.equal(new Set(result.tests).size, result.tests.length);
 });
-test('module test discovery includes JavaScript and TypeScript procedures', () => {
+test('a module declaration or file type selects publishing validation in either module root', () => {
+  for (const root of ['src/platform/modules/canvas', 'src/modules/research'])
+    for (const file of ['module.ts', 'type.ts', 'node/create.js'])
+      assert.ok(select([`${root}/${file}`]).groups.includes('publishing'), `${root}/${file}`);
+  for (const root of ['src/platform/modules/canvas', 'src/modules/research'])
+    assert.deepEqual(select([`${root}/Canvas.tsx`]).groups, ['runtime'], root);
+});
+test('module test discovery includes JavaScript and TypeScript procedures in both module roots', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'module-tests-'));
   try {
-    const directory = path.join(root, 'src/modules/example');
-    fs.mkdirSync(directory, { recursive: true });
-    for (const file of ['prepare.test.js', 'runtime.test.ts']) fs.writeFileSync(path.join(directory, file), '');
+    for (const directory of ['src/modules/example', 'src/platform/modules/supplied']) {
+      fs.mkdirSync(path.join(root, directory), { recursive: true });
+      for (const file of ['prepare.test.js', 'runtime.test.ts']) fs.writeFileSync(path.join(root, directory, file), '');
+    }
     assert.deepEqual(discoverTests(root), [
       'src/modules/example/prepare.test.js',
       'src/modules/example/runtime.test.ts',
+      'src/platform/modules/supplied/prepare.test.js',
+      'src/platform/modules/supplied/runtime.test.ts',
     ]);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -70,8 +80,11 @@ test('unknown paths, dependencies, missing comparison, and new tests fail closed
   );
 });
 test('dependency glob matching respects path separators', () => {
-  assert.equal(matches('src/modules/canvas/module.ts', 'src/modules/*/module.ts'), true);
-  assert.equal(matches('src/modules/canvas/other/module.ts', 'src/modules/*/module.ts'), false);
+  assert.equal(matches('src/modules/research/module.ts', 'src/modules/*/module.ts'), true);
+  assert.equal(matches('src/modules/research/other/module.ts', 'src/modules/*/module.ts'), false);
+  assert.equal(matches('src/platform/modules/canvas/module.ts', 'src/platform/modules/*/module.ts'), true);
+  assert.equal(matches('src/platform/modules/canvas/other/module.ts', 'src/platform/modules/*/module.ts'), false);
+  assert.equal(matches('src/platform/modules/canvas/module.ts', 'src/modules/*/module.ts'), false);
   assert.equal(matches('src/platform/core/modules/index.ts', 'src/platform/core/**'), true);
 });
 test('transitive imports supplement declared dependencies for shared helper changes', t => {

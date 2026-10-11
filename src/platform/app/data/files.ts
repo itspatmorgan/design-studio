@@ -1,5 +1,5 @@
 import { CONFIG } from './config';
-import { SYSTEM_SPECS } from '@/modules/systems/data/systems';
+import { SYSTEM_SPECS } from '@/platform/modules/systems/data/systems';
 import { SourceChanged } from '@/platform/core/source/access';
 // A prototype's files, from the dev server (src/platform/node/build/vite-files-plugin.js). Dev only: on the
 // deployed site these return null, and the prototype navigation lists views from the manifest.

@@ -1,8 +1,9 @@
 import { modulePlatformProblem } from '../../core/modules/boundaries.ts';
 import { scopePolicy } from '../lib/scope.js';
 import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
-// Checks the modules in src/modules/ (src/platform/core/modules/index.ts):
+// Checks the modules in the module roots, src/platform/modules/ and src/modules/ (src/platform/core/roots.ts, src/platform/core/modules/index.ts):
 //   - each module.ts is well formed, and its id is its folder's name
+//   - no id is in both roots: a team module can't reuse a supplied module's id
 //   - no two modules claim the same section key or folder
 //   - a module's section folder exists
 //   - studio.config.ts is well formed, and only turns off modules that can be turned off
@@ -12,20 +13,28 @@ import { dependencyResolver, importsOf, sourceFiles } from '../lib/imports.js';
 //     optional one, so deleting its folder leaves nothing broken (a required module is part of the platform,
 //     so the platform and the other modules may import it)
 //   - a file type (a module with a type.ts, src/platform/context/file-types.md) has an open.tsx, its type.ts imports
-//     only ../../core/fileTypes.ts (the build loads it directly in Node), and its loader.ts lists its files with the
+//     only src/platform/core/fileTypes.ts (the build loads it directly in Node), and its loader.ts lists its files with the
 //     ['/__studio_globs__/*'] placeholder, so a new section and archived files reach it (src/platform/node/build/vite-globs-plugin.js)
 // Usage: node src/platform/node/check/check-modules.js
 import fs from 'node:fs';
 import { themeUsageProblems } from '../lib/theme-usage.js';
 import { inventories } from '../build/vite-css-plugin.js';
-import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
+import { TEAM_MODULES_ROOT, TEAM_SYSTEMS_ROOT, moduleIdOfPath } from '../../core/roots.ts';
 import { tailwindThemeProblems } from '../lib/tailwind-theme.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pathToFileURL } from 'node:url';
 import { PLATFORM_VERSION, compatible, listProblems } from '../../core/modules/index.ts';
 import { adminProblems, configProblems } from '../../core/config.ts';
-import { CONFIG, MODULES, ENABLED_MODULES, SECTION_KEYS, PROTOTYPE_DIRS, declarationProblems } from '../lib/modules.js';
+import {
+  CONFIG,
+  MODULES,
+  MODULE_DIRS,
+  ENABLED_MODULES,
+  SECTION_KEYS,
+  PROTOTYPE_DIRS,
+  declarationProblems,
+} from '../lib/modules.js';
 import {
   PLATFORM_ID,
   SYSTEM_SPECS,
@@ -33,7 +42,7 @@ import {
   DEFAULT_SYSTEM,
   SYSTEM_IDS,
   systemDeclarationProblems,
-} from '../../../modules/systems/node/systems.js';
+} from '../../modules/systems/node/systems.js';
 import { changesFromLock } from '../lib/lock.js';
 import { readContributors } from '../lib/contributors.js';
 import { ownershipReport } from '../lib/ownership.js';
@@ -91,7 +100,7 @@ problems.push(
       return prototypeThemeFiles.filter(file => themePrototypePolicy.scopeOf(file)?.system === null);
     const dirs =
       system.role === 'platform'
-        ? ['src/platform', 'src/modules', system.dir + 'components']
+        ? ['src/platform', TEAM_MODULES_ROOT, system.dir + 'components']
         : [system.dir + 'components'];
     // The platform system's components are inside src/platform, so a file can be listed by two folders.
     const files = [...new Set(dirs.flatMap(dir => [...sourceFiles(path.join(ROOT, dir))]))].filter(
@@ -140,12 +149,16 @@ const runtimePolicy = scopePolicy({
   modules: ENABLED_MODULES,
   prototypeDirs: PROTOTYPE_DIRS,
 });
-const MODULES_DIR = path.join(ROOT, 'src', 'modules');
 const ids = Object.keys(MODULES);
+const moduleDir = id => path.join(ROOT, MODULE_DIRS[id]);
+// The module a file belongs to when it is inside a module root and that module is installed there.
+const moduleOf = file => {
+  const id = moduleIdOfPath(path.relative(ROOT, file).split(path.sep).join('/'));
+  return id !== undefined && ids.includes(id) && file.startsWith(moduleDir(id) + path.sep) ? id : null;
+};
 
 for (const file of [...sourceFiles(path.join(ROOT, 'src')), path.join(ROOT, 'vite.config.ts')]) {
-  const own = path.relative(MODULES_DIR, file).split(path.sep);
-  const inside = ids.includes(own[0]) ? own[0] : null;
+  const inside = moduleOf(file);
   const rel = path.relative(ROOT, file);
   if (runtimePolicy.scopeOf(file)?.missing) continue;
   const dependencies = importsOf(fs.readFileSync(file, 'utf8'), file);
@@ -167,30 +180,30 @@ for (const file of [...sourceFiles(path.join(ROOT, 'src')), path.join(ROOT, 'vit
     if (platformProblem) problems.push(platformProblem);
     const problem = runtimePolicy.problem(specifier, file, resolved);
     if (problem) problems.push(problem);
-    const target = path.relative(MODULES_DIR, resolved).split(path.sep);
-    if (target[0].startsWith('..') || !ids.includes(target[0]) || target[0] === inside) continue;
+    const targetId = moduleOf(resolved);
+    if (targetId === null || targetId === inside) continue;
     const publicEntry =
-      MODULES[target[0]].lib &&
-      ENABLED_MODULES.some(m => m.id === target[0]) &&
-      specifier === `@module/${target[0]}` &&
-      /^index\.[jt]sx?$/.test(path.relative(path.join(MODULES_DIR, target[0], 'lib'), resolved));
-    const isDeclaration = target.length === 2 && /^module(\.ts)?$/.test(target[1]);
+      MODULES[targetId].lib &&
+      ENABLED_MODULES.some(m => m.id === targetId) &&
+      specifier === `@module/${targetId}` &&
+      /^index\.[jt]sx?$/.test(path.relative(path.join(moduleDir(targetId), 'lib'), resolved));
+    const isDeclaration = /^module(\.ts)?$/.test(path.relative(moduleDir(targetId), resolved));
     if (inside) {
-      if (MODULES[target[0]].optional)
+      if (MODULES[targetId].optional)
         problems.push(
-          `${rel} imports the ${target[0]} module. A module can depend only on a required module, not on one that can be turned off: ${target[0]}/ has to be removable.`,
+          `${rel} imports the ${targetId} module. A module can depend only on a required module, not on one that can be turned off: ${targetId}/ has to be removable.`,
         );
-    } else if (!isDeclaration && !publicEntry && MODULES[target[0]].optional)
+    } else if (!isDeclaration && !publicEntry && MODULES[targetId].optional)
       problems.push(
-        `${rel} imports into the ${target[0]} module ("${specifier}"). Code outside a module can read only its module.ts, or the app wouldn't run without it.`,
+        `${rel} imports into the ${targetId} module ("${specifier}"). Code outside a module can read only its module.ts, or the app wouldn't run without it.`,
       );
   }
 }
 
 // File types: modules with a type.ts.
-const typeIds = ids.filter(id => fs.existsSync(path.join(MODULES_DIR, id, 'type.ts')));
+const typeIds = ids.filter(id => fs.existsSync(path.join(moduleDir(id), 'type.ts')));
 for (const id of typeIds) {
-  const dir = path.join(MODULES_DIR, id);
+  const dir = moduleDir(id);
   const where = path.relative(ROOT, dir);
   if (!fs.existsSync(path.join(dir, 'open.tsx')))
     problems.push(`${where}/ has a type.ts, so it is a file type, but no open.tsx saying how the app opens it.`);
@@ -198,9 +211,11 @@ for (const id of typeIds) {
   for (const [, specifier] of fs
     .readFileSync(path.join(dir, 'type.ts'), 'utf8')
     .matchAll(/^import\b[^\n]*?\bfrom\s*['"]([^'"]+)['"]/gm)) {
-    if (specifier !== '../../platform/core/fileTypes.ts')
+    // The same file from either root: ../../core/fileTypes.ts in the supplied root, ../../platform/core/fileTypes.ts in the team's.
+    const allowed = path.relative(dir, path.join(ROOT, 'src/platform/core/fileTypes.ts')).split(path.sep).join('/');
+    if (specifier !== allowed)
       problems.push(
-        `${where}/type.ts imports "${specifier}". A type.ts can import only ../../core/fileTypes.ts, because the build loads it directly in Node.`,
+        `${where}/type.ts imports "${specifier}". A type.ts can import only ${allowed}, because the build loads it directly in Node.`,
       );
   }
   const loader = path.join(dir, 'loader.ts');
@@ -213,7 +228,7 @@ for (const id of typeIds) {
 
 // Each module's own check (check.ts), for the modules that are on.
 for (const m of specs) {
-  const file = path.join(ROOT, 'src', 'modules', m.id, 'check.ts');
+  const file = path.join(moduleDir(m.id), 'check.ts');
   if (!fs.existsSync(file) || !compatible(m) || CONFIG.modules?.[m.id] === false) continue;
   try {
     const run = (await import(pathToFileURL(file).href)).default;

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import postcss from 'postcss';
 import { tailwindThemeProblems, themeInventory, themeAdapter, scopeThemeUtilities } from '../lib/tailwind-theme.js';
-import { SYSTEM_SPECS, refreshSystems } from '../../../modules/systems/node/systems.js';
+import { SYSTEM_SPECS, refreshSystems } from '../../modules/systems/node/systems.js';
 import { cssProblems } from '../lib/css-scope.js';
 import { scopePolicy } from '../lib/scope.js';
 // Fills in the two lists in the app's stylesheet (src/platform/app/styles.css) that depend on what is installed,
@@ -13,7 +13,7 @@ import { scopePolicy } from '../lib/scope.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CONFIG, PROTOTYPE_DIRS } from '../lib/modules.js';
-import { PROTOTYPE_SYSTEMS } from '../../../modules/systems/node/systems.js';
+import { PROTOTYPE_SYSTEMS } from '../../modules/systems/node/systems.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const STYLESHEET = path.join(ROOT, 'src', 'platform', 'app', 'styles.css');

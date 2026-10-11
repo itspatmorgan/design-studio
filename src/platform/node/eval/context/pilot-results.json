@@ -241,7 +241,7 @@
         "launchSystem": "marketing",
         "gitRemotes": "",
         "status": "",
-        "changed": ["src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
+        "changed": ["src/platform/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",
@@ -289,8 +289,8 @@
         "checkoutSystem": null,
         "launchSystem": "marketing",
         "gitRemotes": "",
-        "status": " M src/modules/prototypes/viewer/RenamePrototypeDialog.tsx\n",
-        "changed": ["src/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
+        "status": " M src/platform/modules/prototypes/viewer/RenamePrototypeDialog.tsx\n",
+        "changed": ["src/platform/modules/prototypes/viewer/RenamePrototypeDialog.tsx"]
       },
       "independentUI": {
         "method": "Evaluator CUA, outside measured trial",

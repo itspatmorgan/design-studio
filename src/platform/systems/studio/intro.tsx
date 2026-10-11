@@ -25,7 +25,7 @@ import {
   Upload01Icon,
   UserIcon,
 } from '@hugeicons/core-free-icons';
-import { IconGrid } from '@/modules/systems/pages/foundations';
+import { IconGrid } from '@/platform/modules/systems/pages/foundations';
 import type { SystemIntro } from '@/platform/app/data/types';
 
 const ICONS = {

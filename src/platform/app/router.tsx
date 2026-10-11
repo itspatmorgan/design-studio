@@ -18,7 +18,7 @@ import { shortcutLabel } from '@/platform/app/shell/artifactShortcuts';
 import { Button } from '@/platform/systems/studio/components/button';
 import App, { NotFound } from '@/platform/app/shell/App';
 import Home from '@/platform/app/pages/home/Home';
-import PrototypeLayout from '@/modules/prototypes/viewer/PrototypeLayout';
+import PrototypeLayout from '@/platform/modules/prototypes/viewer/PrototypeLayout';
 import { isSectionKey, rootOf, SYSTEM_CONTENT_KEY } from '@/platform/core/roots';
 import { resourceId } from '@/platform/core/resourceIdentity';
 import {
@@ -41,7 +41,7 @@ import { APP_NAME } from '@/platform/app/data/config';
 import { loadReference } from '@/platform/app/docs/loadReference';
 import MarkdownPage from '@/platform/app/docs/MarkdownPage';
 import { contentId } from '@/platform/core/roots';
-import { prepareContent } from '@/modules/systems/content/SystemContentPage';
+import { prepareContent } from '@/platform/modules/systems/content/SystemContentPage';
 import { AboutReference } from '@/platform/app/docs/References';
 
 function LoadError({ error, reset }: { error: unknown; reset: () => void }) {
@@ -241,7 +241,7 @@ const contextItemRoute = createRoute({
 type ItemSearch = { mode?: 'source' };
 
 // Loads an item before the route renders, so the current one stays on screen until the next
-// one is ready. Its file type (src/modules/<type>/) loads the file. An unknown address, or a type
+// one is ready. Its file type (<module folder>/) loads the file. An unknown address, or a type
 // that isn't installed, shows the not-found page.
 async function itemLoader(
   {
@@ -472,7 +472,7 @@ const sectionItemSplatRoute = createRoute({
 });
 
 // The app's own routes are typed, so links to them are checked. The modules' routes (Systems, the
-// system content, the Manual, in src/modules/<id>/app.tsx) are added at run time, and the types leave
+// system content, the Manual, in <module folder>/app.tsx) are added at run time, and the types leave
 // them out: a link to one is written loosely.
 const coreRoutes = [
   homeRoute,

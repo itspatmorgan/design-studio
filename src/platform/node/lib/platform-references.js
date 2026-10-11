@@ -1,10 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { frontmatter } from './frontmatter.js';
-import { rootOf, addressOf, contentParts } from '../../core/roots.ts';
-import { skillTitle } from '../../../modules/systems/content/skills.ts';
-// Discovering the systems registers where each system's folder is, which rootOf reads.
-import '../../../modules/systems/node/systems.js';
+import { rootOf, addressOf, contentParts, moduleFolder } from '../../core/roots.ts';
+import { skillTitle } from '../../modules/systems/content/skills.ts';
+// Discovering the systems registers where each system's folder is, which rootOf reads; discovering the modules
+// registers where each module's folder is.
+import '../../modules/systems/node/systems.js';
+import './module-catalog.js';
 
 // Match the shared reader's deliberately limited top-level Markdown set.
 export function platformReferences({ root, modules, enabled, systemContent, systemIdentities = {} }) {
@@ -60,8 +62,8 @@ export function platformReferences({ root, modules, enabled, systemContent, syst
                   (entry.name === 'README.md' &&
                     declared.some(
                       d =>
-                        item.source === `/modules/${id}/${d.path}` ||
-                        item.source.startsWith(`/modules/${id}/${d.path.endsWith('/') ? d.path : d.path + '/'}`),
+                        item.source === `${folder}/${d.path}` ||
+                        item.source.startsWith(`${folder}/${d.path.endsWith('/') ? d.path : d.path + '/'}`),
                     )),
               );
               return {
@@ -76,8 +78,8 @@ export function platformReferences({ root, modules, enabled, systemContent, syst
         item.targets.some(target => references.some(ref => target === ref.source)) ||
         declared.some(
           d =>
-            item.source === `/modules/${id}/${d.path}` ||
-            item.source.startsWith(`/modules/${id}/${d.path.endsWith('/') ? d.path : d.path + '/'}`),
+            item.source === `${folder}/${d.path}` ||
+            item.source.startsWith(`${folder}/${d.path.endsWith('/') ? d.path : d.path + '/'}`),
         ),
     );
     return { id, label, enabled: on, references, related: links.map(({ title, href }) => ({ title, href })) };
@@ -87,6 +89,6 @@ export function platformReferences({ root, modules, enabled, systemContent, syst
     ...modules
       .slice()
       .sort((a, b) => a.label.localeCompare(b.label))
-      .map(m => group(m.id, m.label, `/modules/${m.id}`, enabled.includes(m.id), m.instructions)),
+      .map(m => group(m.id, m.label, `/${moduleFolder(m.id)}`, enabled.includes(m.id), m.instructions)),
   ];
 }

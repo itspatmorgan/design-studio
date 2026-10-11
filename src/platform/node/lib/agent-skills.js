@@ -3,14 +3,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { frontmatter } from './frontmatter.js';
-import { skillProblems } from '../../../modules/systems/content/skills.ts';
+import { skillProblems } from '../../modules/systems/content/skills.ts';
 import { canonicalDirectory } from './safe-paths.js';
+import { moduleFolder } from '../../core/roots.ts';
+// Discovering the modules registers where each module's folder is, which moduleFolder reads.
+import './module-catalog.js';
 
 // `systems` is the discovered systems (SYSTEM_SPECS or SYSTEM_SOURCES), each with the `dir` it was found in.
+// `modules` is the enabled modules; each is found in whichever module root holds it (moduleFolder).
 export function knowledgeOwners(modules, systems) {
   return [
     { id: 'platform.core', kind: 'platform', label: 'Platform', root: 'src/platform' },
-    ...modules.map(m => ({ id: `module.${m.id}`, kind: 'module', label: m.label, root: `src/modules/${m.id}` })),
+    ...modules.map(m => ({ id: `module.${m.id}`, kind: 'module', label: m.label, root: `src/${moduleFolder(m.id)}` })),
     ...Object.entries(systems).map(([id, s]) => ({
       id,
       kind: 'system',

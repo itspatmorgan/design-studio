@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { modulePlatformProblem } from '../../core/modules/boundaries.ts';
+import { moduleIdOfPath } from '../../core/roots.ts';
 import { fileURLToPath } from 'node:url';
-import { PROTOTYPE_SYSTEMS, DEFAULT_SYSTEM } from '../../../modules/systems/node/systems.js';
+import { PROTOTYPE_SYSTEMS, DEFAULT_SYSTEM } from '../../modules/systems/node/systems.js';
 import { ENABLED_MODULES, PROTOTYPE_DIRS } from '../lib/modules.js';
 import { scopePolicy } from '../lib/scope.js';
 import { importsOf } from '../lib/imports.js';
@@ -28,7 +29,7 @@ export default function importGuard({
       // Theme imports are recursively validated by the CSS plugin before loading.
       if (/\.css$/.test(file) && !/\.module\.css$/.test(file)) return null;
       const scope = policy.scopeOf(file);
-      if (!scope && !path.relative(root, file).startsWith('src/modules/')) return null;
+      if (!scope && moduleIdOfPath(path.relative(root, file).split(path.sep).join('/')) === undefined) return null;
       if (scope && /\.css($|\?)/.test(source) && !/\.module\.css($|\?)/.test(source))
         this.error(
           `${scope.kind} scope: ${file} imports global CSS. Use CSS Modules for runtime styles; design-system themes are loaded by the platform.`,
@@ -53,7 +54,7 @@ export default function importGuard({
           if (problem) this.error(problem);
         }
       const scope = policy.scopeOf(file);
-      if (!scope && !path.relative(root, file).startsWith('src/modules/')) return null;
+      if (!scope && moduleIdOfPath(path.relative(root, file).split(path.sep).join('/')) === undefined) return null;
       if (scope && /\.module\.css$/.test(file)) {
         const problems = cssProblems(code, { file, mode: 'module' });
         if (problems.length) this.error(problems.join('\n'));

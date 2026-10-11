@@ -10,4 +10,4 @@ A design system for prototypes assigned to `__ID__`.
 - `package.json` owns dependencies; `libraries/` exposes selected APIs to assigned prototypes.
 - `system.ts` declares the system; `intro.tsx` describes it in the app.
 
-Add context and skills only when needed. This system’s UI reads its original Context and Skills files alongside Theme and Components. See the [Systems module](../../modules/systems/README.md) for the authoring contract.
+Add context and skills only when needed. This system’s UI reads its original Context and Skills files alongside Theme and Components. See the [Systems module](../../platform/modules/systems/README.md) for the authoring contract.

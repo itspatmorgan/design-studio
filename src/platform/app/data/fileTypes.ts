@@ -1,5 +1,5 @@
 import { compatible } from '@/platform/core/modules';
-// The file types installed in src/modules/ (the modules that have a type.ts): one folder each, found with a glob, so the app
+// The file types installed in the module roots (the modules that have a type.ts): one folder each, found with a glob, so the app
 // runs with any of them removed. (src/platform/node/lib/file-types.js finds the same folders for the
 // build.) Core code reads types here and never imports a type's folder (src/platform/node/check/check-modules.js).
 import { assertUniqueExtensions, matchFileType, type FileTypeSpec } from '@/platform/core/fileTypes';
@@ -7,7 +7,7 @@ import { assertFileTypeModule, type FileTypeModule } from '@/platform/app/data/f
 import { MODULES } from '@/platform/app/data/modules';
 import { isEnabled } from '@/platform/app/data/config';
 
-// The folder name is the type's id: /modules/view/type.ts → "view".
+// The folder name is the type's id: /platform/modules/view/type.ts → "view".
 const idOf = (path: string) => path.split('/').at(-2)!;
 
 const specs = import.meta.glob<FileTypeSpec>('/__studio_modules__/type.ts', { eager: true, import: 'default' });

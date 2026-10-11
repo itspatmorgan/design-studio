@@ -19,7 +19,7 @@ const modules: ModuleSpec[] = [
     id: 'documentation',
     label: 'Manual',
     version: '0.1.0',
-    section: { key: 'documentation', folder: 'src/modules/documentation/pages' },
+    section: { key: 'documentation', folder: 'src/platform/modules/documentation/pages' },
   },
   { optional: false, lib: false, id: 'extra', label: 'Extra', version: '0.1.0' },
 ];
@@ -140,5 +140,9 @@ test('a file belongs to the system whose folder holds it, in either system root'
   assert.deepEqual(pathResource('src/systems/unknown/system.ts', systems), { kind: 'platform' });
   assert.deepEqual(pathResource('src/platform/systems/unknown/system.ts', systems), { kind: 'platform' });
   assert.deepEqual(pathResource('src/platform/app/styles.css', systems), { kind: 'platform' });
-  assert.deepEqual(pathResource('src/modules/systems/spec.ts', systems), { kind: 'module' });
+  // Module code is a module's in either module root, even though the supplied root is under src/platform.
+  assert.deepEqual(pathResource('src/platform/modules/systems/spec.ts', systems), { kind: 'module' });
+  assert.deepEqual(pathResource('src/modules/research/app.tsx', systems), { kind: 'module' });
+  assert.deepEqual(pathResource('/src/platform/modules/canvas/Canvas.tsx', systems), { kind: 'module' });
+  assert.deepEqual(pathResource('src/platform/modulesque/x.ts', systems), { kind: 'platform' });
 });

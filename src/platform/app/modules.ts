@@ -1,5 +1,5 @@
 // How a module appears in the app: the button on the rail, the routes it adds, and what it adds to the
-// ⌘K palette. A module with these has an app.tsx in its folder (src/modules/<id>/app.tsx) that
+// ⌘K palette. A module with these has an app.tsx in its folder (<module folder>/app.tsx) that
 // exports a ModuleApp as its default. The shell finds them with a glob, so the app runs with any of
 // them removed, and reads them in `order`: the rail, the palette and the routes all follow the list.
 import type { ComponentType } from 'react';

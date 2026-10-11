@@ -1,4 +1,4 @@
-import { discoverComponents } from '../../../modules/systems/docs.ts';
+import { discoverComponents } from '../../modules/systems/docs.ts';
 import { snapshotFiles } from './artifact-moves.js';
 import fs from 'node:fs';
 import path from 'node:path';

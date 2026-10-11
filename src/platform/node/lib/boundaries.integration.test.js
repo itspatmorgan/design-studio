@@ -57,6 +57,19 @@ test('private module consumers and symlink scopes are rejected; disabled app and
       });
     const attempt = (file, ...args) =>
       spawnSync(process.execPath, [file, ...args], { cwd: root, encoding: 'utf8', env });
+    // A team module can't reuse a supplied module's id: checks and builds stop and say which folders clash.
+    write(
+      root,
+      'src/modules/canvas/module.ts',
+      "export default {id:'canvas',label:'Canvas again',version:'0.1.0',optional:true,lib:false};",
+    );
+    const reused = attempt('src/platform/node/check/check-modules.js');
+    assert.equal(reused.status, 1, reused.stdout + reused.stderr);
+    assert.match(reused.stderr, /canvas: found in src\/platform\/modules\/canvas\/ and src\/modules\/canvas\//);
+    const reusedBuild = attempt('node_modules/vite/bin/vite.js', 'build');
+    assert.notEqual(reusedBuild.status, 0);
+    assert.match(reusedBuild.stdout + reusedBuild.stderr, /canvas: found in src\/platform\/modules\/canvas\//);
+    fs.rmSync(path.join(root, 'src/modules/canvas'), { recursive: true });
     write(
       root,
       'src/modules/extra/module.ts',

@@ -2,14 +2,21 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
+  MODULE_GLOB_ROOTS,
+  MODULE_ROOTS,
+  SUPPLIED_MODULES_ROOT,
   SUPPLIED_SYSTEMS_ROOT,
   SYSTEM_GLOB_ROOTS,
   SYSTEM_ROOTS,
+  TEAM_MODULES_ROOT,
   TEAM_SYSTEMS_ROOT,
   addressOf,
   isSectionKey,
+  moduleFolder,
+  moduleIdOfPath,
   parseAddress,
   rootOf,
+  setModuleFolders,
   setSections,
   setSystemFolders,
   systemFolder,
@@ -97,7 +104,6 @@ test("registered folders decide where a system's files are", () => {
     assert.equal(systemRoot('studio'), 'platform/systems/studio');
     assert.equal(systemRoot('product'), 'systems/product');
     assert.equal(systemRoot('platform.core'), 'platform');
-    assert.equal(systemRoot('module.canvas'), 'modules/canvas');
     assert.equal(rootOf('system-content', 'studio:context'), 'platform/systems/studio/context');
     assert.equal(rootOf('system-content', 'product:skills'), 'systems/product/skills');
     assert.equal(rootOf('systems', 'studio'), 'platform/systems/studio/components');
@@ -121,4 +127,52 @@ test('a path inside a system root belongs to that system', () => {
   assert.equal(systemIdOfPath('src/platform/app/styles.css'), undefined);
   assert.equal(systemIdOfPath('src/platform/systems'), undefined);
   assert.equal(systemIdOfPath('src/prototypes/pat/systems/x/y.ts'), undefined);
+});
+
+test('the module roots are listed once, supplied first', () => {
+  assert.deepEqual(MODULE_ROOTS, [SUPPLIED_MODULES_ROOT, TEAM_MODULES_ROOT]);
+  assert.equal(SUPPLIED_MODULES_ROOT, 'src/platform/modules');
+  assert.equal(TEAM_MODULES_ROOT, 'src/modules');
+  assert.deepEqual(MODULE_GLOB_ROOTS, ['/platform/modules', '/modules']);
+});
+
+test('a module without a registered folder is taken to be in the team root', () => {
+  setModuleFolders([]);
+  assert.equal(moduleFolder('research'), 'modules/research');
+  assert.equal(systemRoot('module.research'), 'modules/research');
+  assert.equal(rootOf('system-content', 'module.research:skills'), 'modules/research/skills');
+});
+
+test("registered folders decide where a module's files are", () => {
+  setModuleFolders([
+    ['canvas', 'src/platform/modules/canvas/'],
+    ['research', 'src/modules/research'],
+  ]);
+  try {
+    assert.equal(moduleFolder('canvas'), 'platform/modules/canvas');
+    assert.equal(systemRoot('module.canvas'), 'platform/modules/canvas');
+    assert.equal(systemRoot('module.research'), 'modules/research');
+    assert.equal(rootOf('system-content', 'module.canvas:context'), 'platform/modules/canvas/context');
+    assert.equal(rootOf('system-content', 'module.research:skills'), 'modules/research/skills');
+    // Addresses are the same wherever the folder is.
+    assert.equal(addressOf('system-content', 'module.canvas:context'), '/documentation/context/module.canvas/context');
+    assert.deepEqual(parseAddress('/documentation/context/module.canvas/context/guide'), {
+      contributor: 'system-content',
+      id: 'module.canvas:context',
+      rest: ['guide'],
+    });
+  } finally {
+    setModuleFolders([]);
+  }
+});
+
+test('a path inside a module root belongs to that module', () => {
+  assert.equal(moduleIdOfPath('src/modules/research/module.ts'), 'research');
+  assert.equal(moduleIdOfPath('/src/platform/modules/canvas/Canvas.tsx'), 'canvas');
+  assert.equal(moduleIdOfPath('platform/modules/canvas/lib/index.ts'), 'canvas');
+  assert.equal(moduleIdOfPath('modules/research/skills'), 'research');
+  assert.equal(moduleIdOfPath('src/platform/app/styles.css'), undefined);
+  assert.equal(moduleIdOfPath('src/platform/modules'), undefined);
+  assert.equal(moduleIdOfPath('src/modules'), undefined);
+  assert.equal(moduleIdOfPath('src/prototypes/pat/modules/x/y.ts'), undefined);
 });

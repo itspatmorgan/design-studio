@@ -76,6 +76,9 @@ export function prototypeContext({ root, folder, config, systems, modules, contr
             target: entry(assignment.rebuild.targetSystemKey),
           },
     modules: { enabled: modules.map(module => module.id) },
-    guidance: { working: 'src/platform/context/working-in-studio.md', prototype: 'src/modules/prototypes/README.md' },
+    guidance: {
+      working: 'src/platform/context/working-in-studio.md',
+      prototype: 'src/platform/modules/prototypes/README.md',
+    },
   };
 }

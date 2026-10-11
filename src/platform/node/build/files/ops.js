@@ -8,15 +8,15 @@ import { FILE_TYPES, INSTALLED_FILE_TYPES, fileTypeOf, systemContentTypeOf } fro
 import { retainedResourceIds, allocateResourceIdentity } from '../../lib/resource-identity-lifecycle.js';
 import { STATUSES, parseStatus } from '../../../core/archive.ts';
 import { afterChange, parentOf, parseOrder, place, withFolderOrder } from '../../../core/order.ts';
-import { scaffold } from '../../../../modules/systems/node/scaffold-docs.js';
-import { opProblem } from '../../../../modules/systems/content/rules.ts';
-import { SKILL_FILE, descriptionProblem, nameProblem } from '../../../../modules/systems/content/skills.ts';
+import { scaffold } from '../../../modules/systems/node/scaffold-docs.js';
+import { opProblem } from '../../../modules/systems/content/rules.ts';
+import { SKILL_FILE, descriptionProblem, nameProblem } from '../../../modules/systems/content/skills.ts';
 import { ROOT, TRASH, readOrder, readTree, resolveInside, validName } from './paths.js';
 import { prototypeAddress, repairReferences, snapshotFiles } from '../../lib/artifact-moves.js';
 import { prototypeAssignment } from '../../lib/prototype-assignment.js';
-import { PROTOTYPE_SYSTEMS } from '../../../../modules/systems/node/systems.js';
+import { PROTOTYPE_SYSTEMS } from '../../../modules/systems/node/systems.js';
 
-// The contents of a new file: its file type's template, by extension (src/modules/<type>/type.ts).
+// The contents of a new file: its file type's template, by extension (<module folder>/type.ts).
 // Files of no type start empty.
 export const templateFor = (name, systemContent = false) => {
   const spec = FILE_TYPES[(systemContent ? systemContentTypeOf : fileTypeOf)(name)];
@@ -25,7 +25,7 @@ export const templateFor = (name, systemContent = false) => {
 
 // The system content's files are platform files: anyone can change their copy here, and the changes go
 // through review before they reach everyone. So it's open to whoever runs the app; what it does
-// enforce is the system content's shape (src/modules/systems/content/rules.ts).
+// enforce is the system content's shape (src/platform/modules/systems/content/rules.ts).
 export const SYSTEM_CONTENT_NOTE = "Knowledge sections (Context, Skills) can't be renamed or deleted.";
 
 // "code-review" → "Code review"
@@ -99,7 +99,7 @@ export function runOp(
 ) {
   const inside = r => resolveInside(dir, r);
   const relOf = abs => path.relative(fs.realpathSync(dir), abs).split(path.sep).join('/');
-  // The system content has a fixed shape: check the change against it first (src/modules/systems/content/rules.ts).
+  // The system content has a fixed shape: check the change against it first (src/platform/modules/systems/content/rules.ts).
   if (section) {
     if (op === 'create-skill') {
       if (section !== 'skills') throw new Error('Skills are made in the Skills tab.');
@@ -180,7 +180,7 @@ export function runOp(
     return {};
   }
   if (op === 'reorder') {
-    // Arranging is for prototypes: the system content has a fixed shape (src/modules/systems/content/rules.ts).
+    // Arranging is for prototypes: the system content has a fixed shape (src/platform/modules/systems/content/rules.ts).
     if (section) throw new Error('System sections keep their own order.');
     const from = inside(rel);
     if (!from || from === fs.realpathSync(dir) || rel === 'meta.json')

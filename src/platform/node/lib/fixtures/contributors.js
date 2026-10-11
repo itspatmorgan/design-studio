@@ -21,7 +21,7 @@ export function writeProfiles(root, entries) {
 
 // Platform integration tests own their team capability fixture, even in removal baselines.
 export function ensureTeamManagement(root) {
-  const file = path.join(root, 'src/modules/contributors/module.ts');
+  const file = path.join(root, 'src/platform/modules/contributors/module.ts');
   if (!fs.existsSync(file)) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(

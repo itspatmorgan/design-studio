@@ -2,7 +2,9 @@
 title: "Modules and extensions"
 ---
 
-A module is a folder in `src/modules/<id>/` with a `module.ts` declaration. The platform discovers declarations without a separate registry.
+A module is a folder with a `module.ts` declaration. The platform discovers declarations without a separate registry.
+
+Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`: `src/platform/modules/<id>/` holds the modules the starter ships, and `<module folder>/` holds the team's own. A module's ID is its folder name in either root, so an ID can exist in only one: a team module must not reuse a supplied module's ID, and `pnpm check` and the build reject it. Creating a module (`pnpm studio create-module`) and adding one from a source write only to `src/modules/`. Supplied modules sit under `src/platform/` but are module code: the boundary rules below, enable and disable, and removal work the same in either root.
 
 Modules are copied into the repository. They are not downloaded or loaded as plugins at runtime.
 
@@ -66,7 +68,7 @@ The core page key `settings` is reserved. Modules and contributors cannot use it
 
 Use the TypeScript declaration for exact fields. See the [file-type contract](file-types.md) for artifact capability declarations, browser implementations, availability, and module-owned file actions.
 
-Design systems are content in `src/systems/` (and Studio's own interface system in `src/platform/systems/`), not platform modules. Their [contract](../../modules/systems/README.md) defines system structure.
+Design systems are content in `src/systems/` (and Studio's own interface system in `src/platform/systems/`), not platform modules. Their [contract](../modules/systems/README.md) defines system structure.
 
 ## Configuration and commands
 
@@ -108,7 +110,7 @@ Installation is not a sandbox. Installed code has the privileges of repository c
 
 ## Discovery and verification
 
-Node tooling discovers modules through `src/platform/node/lib/modules.js`. Browser discovery uses `src/platform/app/data/modules.ts`.
+Node tooling discovers modules in both roots through `src/platform/node/lib/modules.js` (folder helpers in `src/platform/node/lib/module-folders.js`). Browser discovery uses `src/platform/app/data/modules.ts`, whose glob patterns spell both roots. Each registers where a module's folder is (`moduleFolder` in `src/platform/core/roots.ts`), so context, skills, routing links, and build globs find a module in the root that holds it.
 
 The manifest scans declared content sections. Vite supplies file globs and themes. The shell combines module navigation and routes.
 
@@ -116,10 +118,10 @@ The manifest scans declared content sections. Vite supplies file globs and theme
 
 `pnpm baseline removal <id>` checks physical removal. Optional-module verification should also cover disabling and retained content.
 
-A module owns one canonical technical contract in its README.md. Human workflows live in `src/modules/documentation/pages/`, where a chapter declares `module: <id>` to follow that capability’s availability. Context includes standing requirements. Skills describe tasks. Link to contracts instead of copying them.
+A module owns one canonical technical contract in its README.md. Human workflows live in `src/platform/modules/documentation/pages/`, where a chapter declares `module: <id>` to follow that capability’s availability. Context includes standing requirements. Skills describe tasks. Link to contracts instead of copying them.
 
 ## Customization and updates
 
-Supplied and locally authored modules use the same contract. Installed external capabilities record their source and file hashes in `studio.lock.json`; locally authored modules remain team-owned. The lock does not track supplied starter code or perform upgrades.
+Supplied and locally authored modules use the same contract, in different roots. Installed external capabilities record their source and file hashes in `studio.lock.json`; locally authored modules remain team-owned. The lock does not track supplied starter code or perform upgrades.
 
 You own all repository code. Editing supplied modules or platform internals can create conflicts when merging upstream releases; [Ownership and updates](ownership.md) maps which paths are upstream, generated, seed, or team-owned. Review updates on a branch, reconcile local changes, and run `pnpm build`. The [customization Manual](/documentation/manual/customize) explains the progression from prototype work to platform changes.

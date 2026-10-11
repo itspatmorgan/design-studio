@@ -8,7 +8,7 @@ import { classify, mapProblems, ownershipReport, tierOf, trackedFiles } from './
 const map = {
   schema: 1,
   rules: [
-    { tier: 'upstream', paths: ['src/platform/**', 'src/modules/canvas/**'] },
+    { tier: 'upstream', paths: ['src/platform/**', 'src/platform/modules/canvas/**'] },
     { tier: 'team', paths: ['src/modules/**'] },
     { tier: 'seed', paths: ['src/prototypes/patrick/**'] },
     { tier: 'team', paths: ['src/prototypes/**'] },
@@ -19,7 +19,7 @@ const map = {
 test('a clean map covers every file, preferring the most specific rule', () => {
   const r = classify(map, [
     'src/platform/a.ts',
-    'src/modules/canvas/x.ts',
+    'src/platform/modules/canvas/x.ts',
     'src/modules/mine/x.ts',
     'src/prototypes/patrick/a.tsx',
     'src/prototypes/sam/a.tsx',
@@ -31,9 +31,13 @@ test('a clean map covers every file, preferring the most specific rule', () => {
 
 test('one path resolves to its tier, mixed, or unknown', () => {
   assert.deepEqual(
-    ['src/modules/canvas/x.ts', 'src/modules/mine/x.ts', 'src/prototypes/patrick/a.tsx', 'AGENTS.md', 'notes.txt'].map(
-      file => tierOf(map, file),
-    ),
+    [
+      'src/platform/modules/canvas/x.ts',
+      'src/modules/mine/x.ts',
+      'src/prototypes/patrick/a.tsx',
+      'AGENTS.md',
+      'notes.txt',
+    ].map(file => tierOf(map, file)),
     ['upstream', 'team', 'seed', 'mixed', 'unknown'],
   );
 });

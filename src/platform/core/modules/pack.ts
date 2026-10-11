@@ -2,7 +2,7 @@
 // where each file of a pack goes, whether a license is one a team can build on, and the edits to studio.config.ts
 // and AGENTS.md. Nothing here touches files or the network, so every rule is tested. Has only type imports, and the import-free roots.ts.
 import type { ModuleSpec } from './index.ts';
-import { TEAM_SYSTEMS_ROOT } from '../roots.ts';
+import { TEAM_MODULES_ROOT, TEAM_SYSTEMS_ROOT, moduleFolder } from '../roots.ts';
 
 export type Source =
   | { kind: 'path'; path: string }
@@ -61,8 +61,8 @@ export const plainPath = (p: string) =>
   !BAD_CHARS.test(p) &&
   p.split('/').every(s => s !== '' && s !== '.' && s !== '..');
 
-// Where each file of a pack goes. `files` are paths inside the pack. A module pack's files go to src/modules/<id>/,
-// except instructions/ (strip its prefix for declared module-owned guidance) and content/ (to the section's folder,
+// Where each file of a pack goes. `files` are paths inside the pack. A module pack's files go to the team's module
+// root, <module folder>/ (the supplied root is upstream's), except instructions/ (strip its prefix for declared module-owned guidance) and content/ (to the section's folder,
 // which the module must declare). A design system pack goes to the team's system root, src/systems/<id>/ (the supplied root is upstream's). Hidden files are left behind.
 export function packPlan(
   kind: Kind,
@@ -98,20 +98,20 @@ export function packPlan(
         problems.push(
           `instructions/${inside} isn't listed in the module's instructions, so it won't be installed. List it in module.ts, or remove it.`,
         );
-      else moves.push({ from: file, to: `src/modules/${id}/${inside}` });
+      else moves.push({ from: file, to: `${TEAM_MODULES_ROOT}/${id}/${inside}` });
     } else if (parts[0] === 'content') {
       const inside = parts.slice(1).join('/');
       if (!inside) continue;
       if (!spec?.section) problems.push(`content/${inside}: a module with no section has nowhere for content to go.`);
       else moves.push({ from: file, to: `${spec.section.folder}/${inside}` });
     } else {
-      moves.push({ from: file, to: `src/modules/${id}/${file}` });
+      moves.push({ from: file, to: `${TEAM_MODULES_ROOT}/${id}/${file}` });
     }
   }
   // Everything the module says it brings has to be in the pack.
   for (const h of systemContent) {
     const present = moves.some(m =>
-      h.endsWith('/') ? m.to.startsWith(`src/modules/${id}/${h}`) : m.to === `src/modules/${id}/${h}`,
+      h.endsWith('/') ? m.to.startsWith(`${TEAM_MODULES_ROOT}/${id}/${h}`) : m.to === `${TEAM_MODULES_ROOT}/${id}/${h}`,
     );
     if (!present) problems.push(`module.ts lists instructions/${h}, which isn't in the pack.`);
   }
@@ -182,13 +182,14 @@ export const AGENTS_START = '<!-- studio:modules -->';
 export const AGENTS_END = '<!-- /studio:modules -->';
 
 // The lines AGENTS.md gets for the modules that are on: "When the person ..., read [rule](path)." for each systemContent
-// entry with a `when`. They are what routes an agent to a module's context and skills, so a module that's off isn't mentioned.
+// entry with a `when`, linked at the module's folder in whichever root holds it (moduleFolder). They are what routes an
+// agent to a module's context and skills, so a module that's off isn't mentioned.
 export function agentsBlock(modules: readonly Partial<ModuleSpec>[], _platformId: string = 'studio'): string {
   const lines = modules.flatMap(m =>
     (m.instructions ?? [])
       .filter(h => h.when)
       .map(h => {
-        const target = `src/modules/${m.id}/${h.path}`;
+        const target = `src/${moduleFolder(m.id!)}/${h.path}`;
         const link = h.path.endsWith('/') ? `${target}SKILL.md` : target;
         return `When the person ${h.when}, read [${link}](${link}).`;
       }),

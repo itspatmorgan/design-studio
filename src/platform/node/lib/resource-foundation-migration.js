@@ -11,7 +11,7 @@ import { planResourceLinkMigration } from './resource-link-migration.js';
 import { auditResourceIdentities } from './resource-identity-audit.js';
 import { applySetupChanges } from './studio-setup.js';
 import { readDeclaration } from '../../core/declarations.ts';
-import { SYSTEM_ROOTS } from '../../core/roots.ts';
+import { MODULE_ROOTS, SYSTEM_ROOTS } from '../../core/roots.ts';
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const slash = value => value.split(path.sep).join('/');
@@ -46,19 +46,21 @@ function capture(root) {
   visit('studio.config.ts');
   for (const directory of ['contributors', ...SYSTEM_ROOTS, 'src/prototypes'])
     if (fs.existsSync(path.join(root, directory))) visit(directory);
-  const modules = path.join(root, 'src/modules');
-  if (fs.existsSync(modules)) {
+  // Module declarations are read from both module roots (src/platform/core/roots.ts).
+  for (const modulesRoot of MODULE_ROOTS) {
+    const modules = path.join(root, modulesRoot);
+    if (!fs.existsSync(modules)) continue;
     if (!canonicalDirectory(modules, root))
       throw new Error('Module declarations require an ordinary source directory.');
-    snapshot.push({ path: 'src/modules', kind: 'directory' });
+    snapshot.push({ path: modulesRoot, kind: 'directory' });
     for (const name of fs.readdirSync(modules).sort()) {
       if (name.startsWith('.')) continue;
       const directory = path.join(modules, name);
       if (fs.lstatSync(directory).isSymbolicLink())
-        throw new Error(`src/modules/${name}: migration cannot follow symbolic links.`);
+        throw new Error(`${modulesRoot}/${name}: migration cannot follow symbolic links.`);
       if (!fs.lstatSync(directory).isDirectory()) continue;
-      snapshot.push({ path: `src/modules/${name}`, kind: 'directory' });
-      if (fs.existsSync(path.join(directory, 'module.ts'))) visit(`src/modules/${name}/module.ts`);
+      snapshot.push({ path: `${modulesRoot}/${name}`, kind: 'directory' });
+      if (fs.existsSync(path.join(directory, 'module.ts'))) visit(`${modulesRoot}/${name}/module.ts`);
     }
   }
   return { snapshot, contents };
@@ -72,7 +74,7 @@ export function planResourceFoundationMigration(root, types, { ids = {}, updated
   const source = planSourceIdentityMigration(root, types, { ids, ...(generate && { generate }) });
   const captured = capture(root);
   for (const [file, bytes] of captured.contents)
-    if (/^src\/modules\/[^/]+\/module\.ts$/.test(file)) {
+    if (MODULE_ROOTS.some(modulesRoot => new RegExp(`^${modulesRoot}/[^/]+/module\\.ts$`).test(file))) {
       const declaration = readDeclaration(bytes.toString('utf8'));
       if ('error' in declaration) throw new Error(`${file}: ${declaration.error}`);
       const section = declaration.value.section;

@@ -10,7 +10,7 @@ Documentation is part of the platform. Keep it accurate as behavior changes. Thi
 
 Choose the authoritative location using [Responsibilities](contracts-and-instructions.md). Use [Agent context routing](agent-context.md) for discovery and generated harness entries.
 
-Documentation has two reading choices: Manual provides a compact product reference, and Context and Skills displays original platform and module files. Systems exposes system context and skills alongside its toolkit. Human chapters live only in `src/modules/documentation/pages/`. Platform, module, and system context preserve knowledge under their respective owners. Context and Skills access remains available when the optional Documentation module is disabled.
+Documentation has two reading choices: Manual provides a compact product reference, and Context and Skills displays original platform and module files. Systems exposes system context and skills alongside its toolkit. Human chapters live only in `src/platform/modules/documentation/pages/`. Platform, module, and system context preserve knowledge under their respective owners. Context and Skills access remains available when the optional Documentation module is disabled.
 
 Give each contract one authoritative location. Other documents can summarize its purpose, then link to it. Do not copy requirements, schemas, or procedures into multiple locations.
 

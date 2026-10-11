@@ -11,7 +11,7 @@ import { byOrder, parseOrder } from '../../../core/order.ts';
 import { SYSTEM_CONTENT_KEY, SYSTEMS_KEY, isSystemContentSection, contentParts, rootOf } from '../../../core/roots.ts';
 import { knowledgeOwners } from '../../lib/agent-skills.js';
 import { ENABLED_MODULES, PROTOTYPE_SECTIONS } from '../../lib/modules.js';
-import { SYSTEM_SOURCES } from '../../../../modules/systems/node/systems.js';
+import { SYSTEM_SOURCES } from '../../../modules/systems/node/systems.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
 export const PROTOS = path.join(ROOT, 'src', 'prototypes');

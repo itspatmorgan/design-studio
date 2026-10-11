@@ -25,10 +25,10 @@ import previewTheme from './src/platform/node/build/vite-preview-theme-plugin.js
 import files from './src/platform/node/build/vite-files-plugin.js';
 import settings from './src/platform/node/build/vite-settings-plugin.js';
 import markdownRefresh from './src/platform/node/build/vite-markdown-refresh-plugin.js';
-import systemProps from './src/modules/systems/node/props-plugin.js';
+import systemProps from './src/platform/modules/systems/node/props-plugin.js';
 import globs from './src/platform/node/build/vite-globs-plugin.js';
 import css, { scopedUtilities } from './src/platform/node/build/vite-css-plugin.js';
-import { ENABLED_MODULES } from './src/platform/node/lib/modules.js';
+import { ENABLED_MODULES, MODULE_DIRS } from './src/platform/node/lib/modules.js';
 
 // References use the same plain-Markdown pipeline, without hiding any document sections.
 function markdown(reference = false) {
@@ -61,7 +61,7 @@ function markdown(reference = false) {
 // A module with `lib: true` gives prototypes one door in: `import ... from '@module/<id>'` is its lib/index.
 const moduleLibs = ENABLED_MODULES.filter((m: { lib?: boolean }) => m.lib).map((m: { id: string }) => ({
   find: `@module/${m.id}`,
-  replacement: fileURLToPath(new URL(`./src/modules/${m.id}/lib/index`, import.meta.url)),
+  replacement: fileURLToPath(new URL(`./${MODULE_DIRS[m.id as string]}lib/index`, import.meta.url)),
 }));
 
 export default defineConfig({
@@ -119,7 +119,7 @@ export default defineConfig({
   },
   plugins: [
     ...artifactRevisions(),
-    // Markdown pages (Manual pages in src/modules/documentation/pages/, and prototype documents), as plain
+    // Markdown pages (Manual pages in src/platform/modules/documentation/pages/, and prototype documents), as plain
     // Markdown (no JSX or expressions, so any .md file compiles; raw HTML shows as text): frontmatter (a first heading is the title when there's no `title`), GitHub-style Markdown, heading ids, and code highlighting with Shiki in both color modes.
     markdown(),
     markdown(true),

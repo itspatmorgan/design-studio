@@ -28,20 +28,20 @@
     "checkJs": false,
 
     /* shadcn/ui import alias */
-    "paths": { "@/*": ["./src/*"], "@module/*": ["./src/modules/*/lib/index"] }
+    "paths": { "@/*": ["./src/*"], "@module/*": ["./src/platform/modules/*/lib/index", "./src/modules/*/lib/index"] }
   },
   "include": ["src", "studio.config.ts"],
   "exclude": [
-    "src/modules/canvas/liveViews.test.ts",
-    "src/modules/canvas/opening.test.ts",
+    "src/platform/modules/canvas/liveViews.test.ts",
+    "src/platform/modules/canvas/opening.test.ts",
     "src/platform/core/artifact-lifecycle/compiled.test.ts",
     "src/platform/core/artifact-lifecycle/state.test.ts",
-    "src/modules/view/preview/protocol.test.ts",
+    "src/platform/modules/view/preview/protocol.test.ts",
     "src/platform/core/fileTypes.test.ts",
     "src/platform/core/resourceReferences.test.ts",
     "src/platform/core/resourceIdentity.test.ts",
-    "src/modules/view/identity.test.ts",
-    "src/modules/onboarding/progress.test.ts",
+    "src/platform/modules/view/identity.test.ts",
+    "src/platform/modules/onboarding/progress.test.ts",
     "src/platform/app/data/prototypeUsage.test.ts",
     "src/platform/node/build",
     "src/platform/node/check",
@@ -50,12 +50,13 @@
     "src/platform/node/lib",
     "src/platform/node/templates/module",
     "src/platform/node/templates/system",
+    "src/platform/modules/*/server.ts",
     "src/modules/*/server.ts",
-    "src/modules/canvas/cli.ts",
-    "src/modules/canvas/tools.test.ts",
-    "src/modules/view/lofi.test.ts",
-    "src/modules/systems/content/content.test.ts",
-    "src/modules/systems/docs.test.ts",
+    "src/platform/modules/canvas/cli.ts",
+    "src/platform/modules/canvas/tools.test.ts",
+    "src/platform/modules/view/lofi.test.ts",
+    "src/platform/modules/systems/content/content.test.ts",
+    "src/platform/modules/systems/docs.test.ts",
     "src/platform/core/archive.test.ts",
     "src/platform/core/order.test.ts",
     "src/platform/core/modules/modules.test.ts",
@@ -63,7 +64,7 @@
     "src/platform/core/permissions.test.ts",
     "src/platform/core/roots.test.ts",
     "src/platform/core/config.test.ts",
-    "src/modules/systems/spec.test.ts",
+    "src/platform/modules/systems/spec.test.ts",
     "src/platform/core/modules/pack.test.ts"
   ]
 }

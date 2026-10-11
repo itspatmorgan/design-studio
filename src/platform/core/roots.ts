@@ -18,7 +18,7 @@ export const SYSTEM_ROOTS = [SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT] as const;
 export const SYSTEM_GLOB_ROOTS = SYSTEM_ROOTS.map(root => root.replace(/^src/, ''));
 
 // Where each discovered system's folder is under src/ ("platform/systems/studio"), by id. The app and the build
-// register it at startup from discovery (src/modules/systems/data/systems.ts and src/modules/systems/node/systems.js),
+// register it at startup from discovery (src/platform/modules/systems/data/systems.ts and src/platform/modules/systems/node/systems.js),
 // since this file can't read the filesystem. A system that isn't registered is taken to be in the team root.
 let systemFolders: ReadonlyMap<string, string> = new Map();
 export const setSystemFolders = (folders: Iterable<readonly [string, string]>) => {
@@ -40,11 +40,47 @@ export const systemIdOfPath = (file: string) => {
   }
   return undefined;
 };
+
+// The two folders that hold modules, supplied first, the same way as the system roots. The supplied root belongs to
+// the upstream project and holds the modules the starter ships (required or optional); the team root holds the
+// team's own. A module's id is its folder name in either. Everything that lists or locates modules reads this list
+// instead of naming a folder. (Vite globs must be written out literally, so the app's import.meta.glob patterns
+// spell both roots; the build derives the same patterns from this list.)
+export const SUPPLIED_MODULES_ROOT = 'src/platform/modules';
+export const TEAM_MODULES_ROOT = 'src/modules';
+export const MODULE_ROOTS = [SUPPLIED_MODULES_ROOT, TEAM_MODULES_ROOT] as const;
+
+// The roots as folders under src/ with a leading slash, the shape glob keys and patterns use: "/platform/modules".
+export const MODULE_GLOB_ROOTS = MODULE_ROOTS.map(root => root.replace(/^src/, ''));
+
+// Where each discovered module's folder is under src/ ("platform/modules/canvas"), by id. The app and the build register
+// it at startup from discovery (src/platform/app/data/modules.ts and src/platform/node/lib/modules.js), since this file
+// can't read the filesystem. A module that isn't registered is taken to be in the team root.
+let moduleFolders: ReadonlyMap<string, string> = new Map();
+export const setModuleFolders = (folders: Iterable<readonly [string, string]>) => {
+  moduleFolders = new Map(
+    [...folders].map(([id, folder]) => [id, folder.replace(/^src\//, '').replace(/\/+$/, '')] as const),
+  );
+};
+// A module's folder under src/ for its id.
+export const moduleFolder = (module: string) =>
+  moduleFolders.get(module) ?? `${TEAM_MODULES_ROOT.replace(/^src\//, '')}/${module}`;
+// The id of the module a path belongs to when it is inside a module root ("src/modules/research/app.tsx" → "research",
+// "src/platform/modules/canvas/Canvas.tsx" → "canvas"), or undefined for any other path. A leading "/" and the
+// "src/" prefix are optional.
+export const moduleIdOfPath = (file: string) => {
+  const path = file.replace(/^\/?(?:src\/)?/, '');
+  for (const root of MODULE_ROOTS) {
+    const base = `${root.replace(/^src\//, '')}/`;
+    if (path.startsWith(base)) return path.slice(base.length).split('/')[0] || undefined;
+  }
+  return undefined;
+};
 export const systemRoot = (system: string) =>
   system === 'platform.core'
     ? 'platform'
     : system.startsWith('module.')
-      ? `modules/${system.slice(7)}`
+      ? moduleFolder(system.slice(7))
       : systemFolder(system);
 export const contentId = (system: string, section: string) => `${system}:${section}`;
 export const contentParts = (id: string) => {
@@ -68,7 +104,7 @@ export const setSections = (keys: Iterable<string>) => {
 };
 
 // The system content's sections: the folders in each system, in the order they're shown. The shape of
-// each is checked by src/modules/systems/content/node/content-check.js.
+// each is checked by src/platform/modules/systems/content/node/content-check.js.
 export const SYSTEM_CONTENT_SECTIONS = {
   context: {
     title: 'Context',

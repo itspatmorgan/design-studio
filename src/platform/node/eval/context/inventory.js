@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 const root = fileURLToPath(new URL('../../../../../', import.meta.url));
 const baseline = [
   'AGENTS.md',
-  'src/modules/prototypes/skills/build-prototype/SKILL.md',
+  'src/platform/modules/prototypes/skills/build-prototype/SKILL.md',
   'src/platform/context/contributor-scope.md',
 ];
 const profiles = {
@@ -21,9 +21,9 @@ const profiles = {
   ],
   prototypeRuntime: [
     ...baseline,
-    'src/modules/prototypes/README.md',
-    'src/modules/systems/context/authoring.md',
-    'src/modules/systems/README.md',
+    'src/platform/modules/prototypes/README.md',
+    'src/platform/modules/systems/context/authoring.md',
+    'src/platform/modules/systems/README.md',
     'src/systems/product/AGENTS.md',
   ],
   marketingKnowledge: [

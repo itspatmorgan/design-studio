@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import revisions, { digest, inputDigest, sourceInputs } from './vite-artifact-revisions-plugin.js';
-import { PROTOTYPE_SYSTEMS } from '../../../modules/systems/node/systems.js';
+import { PROTOTYPE_SYSTEMS } from '../../modules/systems/node/systems.js';
 import { ROOT } from './files/paths.js';
 test('entry and transitive dependency edits independently change the input digest', () => {
   const directory = fs.mkdtempSync(path.join(ROOT, 'src', '.lifecycle-test-'));

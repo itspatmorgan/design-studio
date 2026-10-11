@@ -2,14 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { canonicalDirectory } from '../../lib/safe-paths.js';
 import { MAX_SOURCE_BYTES, versionOf } from './paths.js';
+import { moduleFolder } from '../../../core/roots.ts';
+import '../../lib/modules.js'; // discovering the modules registers where each module's folder is
 
 export function documentationSources(root, manifest) {
+  // The Manual's pages, in the Documentation module's folder wherever that is (src/platform/core/roots.ts).
+  const folder = `src/${moduleFolder('documentation')}/pages`;
   const allowed = [
     ...manifest.platformReferences.flatMap(group => group.references.map(ref => 'src' + ref.source)),
-    ...manifest.manual.map(page => 'src' + (page.source ?? '/modules/documentation/pages/' + page.slug + '.md')),
+    ...manifest.manual.map(page => 'src' + (page.source ?? `/${folder.slice(4)}/${page.slug}.md`)),
   ];
   // Keep standalone chapters repairable when their metadata is temporarily invalid.
-  const folder = 'src/modules/documentation/pages';
   if (
     manifest.platformReferences.some(group => group.id === 'documentation' && group.enabled) &&
     fs.existsSync(path.join(root, folder))

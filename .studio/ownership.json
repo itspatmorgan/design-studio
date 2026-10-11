@@ -4,29 +4,12 @@
     {
       "tier": "upstream",
       "paths": ["src/platform/**", "src/index.html", "src/lib/**", "src/types/**"],
-      "note": "Shell, core APIs, Node tooling, platform context and skills, and Studio's own interface system (src/platform/systems/studio/)."
-    },
-    {
-      "tier": "upstream",
-      "paths": [
-        "src/modules/README.md",
-        "src/modules/canvas/**",
-        "src/modules/contributors/**",
-        "src/modules/diagrams/**",
-        "src/modules/document/**",
-        "src/modules/documentation/**",
-        "src/modules/onboarding/**",
-        "src/modules/prototypes/**",
-        "src/modules/systems/**",
-        "src/modules/text/**",
-        "src/modules/view/**"
-      ],
-      "note": "Supplied modules, listed by id. Required or optional."
+      "note": "Shell, core APIs, Node tooling, platform context and skills, Studio's own interface system (src/platform/systems/studio/), and the supplied modules (src/platform/modules/), required or optional."
     },
     {
       "tier": "team",
       "paths": ["src/modules/**"],
-      "note": "The team's own modules. Less specific than the supplied ids above."
+      "note": "The team's own modules (src/modules/)."
     },
     {
       "tier": "seed",

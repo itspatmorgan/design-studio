@@ -36,7 +36,7 @@ Asset imports follow the same boundaries as code: a prototype can import its own
 
 Define system font usage in its scoped theme or components. When systems ship different fonts, use distinct font-family names; font-face registration is global even when the theme's use of it is scoped.
 
-Assets support artifacts; they do not become navigable artifacts themselves. Follow the repository's [prototype workflow](../../modules/prototypes/skills/build-prototype/SKILL.md) for asset-size checks and the [system contract](../../modules/systems/README.md) for theme scoping.
+Assets support artifacts; they do not become navigable artifacts themselves. Follow the repository's [prototype workflow](../modules/prototypes/skills/build-prototype/SKILL.md) for asset-size checks and the [system contract](../modules/systems/README.md) for theme scoping.
 
 ## Asset Guard
 

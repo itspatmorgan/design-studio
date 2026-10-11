@@ -7,7 +7,7 @@ import { scopePolicy } from './scope.js';
 import { importsOf, dependencyResolver, moduleConsumers } from './imports.js';
 import { cssProblems } from './css-scope.js';
 import { canonicalDirectory } from './safe-paths.js';
-import { themeClassProblems } from '../../../modules/systems/spec.ts';
+import { themeClassProblems } from '../../modules/systems/spec.ts';
 
 const temporary = () => fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'studio-boundaries-')));
 const write = (root, file, code) => {
@@ -106,6 +106,82 @@ test('the shared AST resolver finds aliases, root paths, exports and dynamic imp
         { source: null, typeOnly: false },
       ],
     );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('a module in the supplied root has the same library scope and public entry as one in the team root', () => {
+  const root = temporary();
+  try {
+    write(
+      root,
+      'tsconfig.app.json',
+      JSON.stringify({ compilerOptions: { paths: { '@module/*': ['./src/platform/modules/*/lib/index'] } } }),
+    );
+    write(root, 'src/prototypes/sam/flow/meta.json', JSON.stringify({ title: 'Flow', systemId: '0123456789abcdef' }));
+    write(root, 'src/platform/modules/shipped/module.ts', 'export default {};');
+    const entry = write(root, 'src/platform/modules/shipped/lib/index.ts', 'export const value = 1');
+    write(root, 'src/platform/modules/shipped/lib/private.ts', 'export const hidden = 1');
+    write(root, 'src/modules/mine/module.ts', 'export default {};');
+    const mine = write(root, 'src/modules/mine/lib/index.ts', 'export const value = 1');
+    const policy = scopePolicy({
+      root,
+      systems: { product: { studioId: '0123456789abcdef', role: 'prototype', dir: 'src/systems/product' } },
+      defaultSystem: 'product',
+      modules: [
+        { id: 'shipped', lib: true, optional: true },
+        { id: 'mine', lib: true, optional: true },
+      ],
+    });
+    const file = p => path.join(root, p);
+    for (const [dir, importer] of [
+      ['src/platform/modules/shipped', 'shipped'],
+      ['src/modules/mine', 'mine'],
+    ]) {
+      assert.deepEqual(policy.scopeOf(file(`${dir}/lib/index.ts`))?.kind, 'Module library', importer);
+      assert.equal(policy.scopeOf(file(`${dir}/app.tsx`)), null, 'only lib/ is runtime library code');
+      for (const [to, allowed] of [
+        ['src/platform/app/router.tsx', false],
+        [`${dir}/lib/helper.ts`, true],
+        ['src/lib/shared.ts', true],
+      ])
+        assert.equal(
+          policy.problem('./target', file(`${dir}/lib/index.ts`), file(to)) === null,
+          allowed,
+          `${dir} → ${to}`,
+        );
+    }
+    const proto = file('src/prototypes/sam/flow/main.tsx');
+    assert.equal(policy.problem('@module/shipped', proto, entry), null);
+    assert.equal(policy.problem('@module/mine', proto, mine), null);
+    assert.match(
+      policy.problem(
+        '@/platform/modules/shipped/lib/private',
+        proto,
+        file('src/platform/modules/shipped/lib/private.ts'),
+      ),
+      /scope/,
+    );
+    assert.match(policy.problem('@/platform/modules/shipped/lib/index', proto, entry), /scope/);
+    assert.match(policy.problem('@/modules/mine/lib/index', proto, mine), /scope/);
+    // The resolver and the consumers of a module find it in whichever root holds it.
+    const consumer = write(
+      root,
+      'src/lib/consumer.ts',
+      "import {value} from '@module/shipped'; import {value as other} from '@module/mine'; export {value, other};",
+    );
+    const resolve = dependencyResolver(root);
+    for (const source of [
+      '@module/shipped',
+      '@/platform/modules/shipped/lib/index',
+      '/platform/modules/shipped/lib/index.ts',
+      '../platform/modules/shipped/lib/index',
+    ])
+      assert.equal(resolve(source, consumer), entry, source);
+    assert.equal(resolve('@module/mine', consumer), mine);
+    assert.deepEqual(moduleConsumers(root, 'shipped'), ['src/lib/consumer.ts']);
+    assert.deepEqual(moduleConsumers(root, 'mine'), ['src/lib/consumer.ts']);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
@@ -352,22 +428,48 @@ test('group and peer markers do not inherit another utility request', async () =
   }
 });
 
-test('module implementations use supported platform entries and cannot reach private shell code', async () => {
+test('module implementations use supported platform entries and cannot reach private shell code, in either module root', async () => {
   const { modulePlatformProblem } = await import('../../core/modules/boundaries.ts');
-  const module = 'src/modules/research/app.tsx';
-  assert.equal(modulePlatformProblem(module, 'src/platform/core/api.ts'), null);
-  assert.equal(modulePlatformProblem(module, 'src/platform/node/lib/modules.js'), null);
-  assert.equal(modulePlatformProblem(module, 'src/platform/app/shell/nav/index.ts'), null);
-  assert.match(modulePlatformProblem(module, 'src/platform/app/router.tsx'), /private platform/);
-  assert.match(modulePlatformProblem(module, 'src/platform/app/shell/nav/private.ts'), /private platform/);
+  // Supplied modules sit under src/platform/ but are module code, bound by the same entries as the team's.
+  for (const module of ['src/modules/research/app.tsx', 'src/platform/modules/canvas/app.tsx']) {
+    assert.equal(modulePlatformProblem(module, 'src/platform/core/api.ts'), null, module);
+    assert.equal(modulePlatformProblem(module, 'src/platform/node/lib/modules.js'), null, module);
+    assert.equal(modulePlatformProblem(module, 'src/platform/app/shell/nav/index.ts'), null, module);
+    assert.equal(
+      modulePlatformProblem(module, 'src/platform/systems/studio/components/button/button.tsx'),
+      null,
+      module,
+    );
+    assert.match(modulePlatformProblem(module, 'src/platform/app/router.tsx'), /private platform/, module);
+    assert.match(modulePlatformProblem(module, 'src/platform/app/shell/nav/private.ts'), /private platform/, module);
+    assert.match(modulePlatformProblem(module, 'src/platform/core/modules/pack.ts'), /private platform/, module);
+    // Other modules' files, in either root, are not platform code; the module-to-module rules are check-modules.js's.
+    assert.equal(modulePlatformProblem(module, 'src/platform/modules/view/EmptyView.tsx'), null, module);
+    assert.equal(modulePlatformProblem(module, 'src/modules/research/lib/index.ts'), null, module);
+    assert.equal(modulePlatformProblem(module, 'src/platform/modules/README.md'), null, module);
+  }
+  // Platform code and other src/platform folders are not module code, whatever they import.
   assert.equal(modulePlatformProblem('src/platform/app/router.tsx', 'src/platform/app/shell/App.tsx'), null);
+  assert.equal(modulePlatformProblem('src/platform/app/router.tsx', 'src/platform/modules/canvas/Canvas.tsx'), null);
+  assert.equal(modulePlatformProblem('src/platform/modulesque/x.ts', 'src/platform/app/router.tsx'), null);
+  assert.equal(modulePlatformProblem('src/platform/modules/README.md', 'src/platform/app/router.tsx'), null);
+  assert.equal(modulePlatformProblem('src/lib/shared.ts', 'src/platform/app/router.tsx'), null);
 });
 
 test('knowledge readers can inspect support files without executing private platform code', async () => {
   const { modulePlatformProblem } = await import('../../core/modules/boundaries.ts');
   const script = 'src/platform/skills/create/scripts/helper.js';
-  assert.equal(modulePlatformProblem('src/modules/text/loader.ts', script, true), null);
-  assert.match(modulePlatformProblem('src/modules/text/loader.ts', script), /private platform/);
-  assert.match(modulePlatformProblem('src/modules/canvas/lib/index.ts', script, true), /private platform/);
-  assert.equal(modulePlatformProblem('src/modules/systems/loader.ts', 'src/platform/context/principles.md'), null);
+  assert.equal(modulePlatformProblem('src/platform/modules/text/loader.ts', script, true), null);
+  assert.match(modulePlatformProblem('src/platform/modules/text/loader.ts', script), /private platform/);
+  assert.match(modulePlatformProblem('src/platform/modules/canvas/lib/index.ts', script, true), /private platform/);
+  assert.equal(
+    modulePlatformProblem('src/platform/modules/systems/loader.ts', 'src/platform/context/principles.md'),
+    null,
+  );
+  // The reader exemptions name the supplied loaders exactly; a team module gets no knowledge access by its name.
+  assert.match(modulePlatformProblem('src/modules/text/loader.ts', script, true), /private platform/);
+  assert.match(
+    modulePlatformProblem('src/modules/systems/loader.ts', 'src/platform/context/principles.md'),
+    /private platform/,
+  );
 });

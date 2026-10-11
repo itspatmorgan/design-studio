@@ -95,3 +95,20 @@ test('an already merged revision changes nothing', () => {
   assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: true, changed: false });
   assert.equal(git('rev-parse', 'HEAD'), before);
 });
+
+test('a conflict inside the generated module block of AGENTS.md takes upstream and is regenerated; elsewhere it is reported', () => {
+  const block = lines => `intro\n<!-- studio:modules -->\n${lines}<!-- /studio:modules -->\noutro\n`;
+  const { dir, read } = studio({
+    studio: { 'AGENTS.md': block('a old\nteam module\n') },
+    upstream: { 'AGENTS.md': block('a new\nb new\n') },
+  });
+  const result = mergeUpstream(dir, 'upstream', { run });
+  assert.equal(result.merged, true);
+  assert.equal(read('AGENTS.md'), block('a new\nb new\n'));
+
+  const outside = studio({
+    studio: { 'AGENTS.md': 'team intro\n' },
+    upstream: { 'AGENTS.md': 'release intro\n' },
+  });
+  assert.deepEqual(mergeUpstream(outside.dir, 'upstream', { run }), { merged: false, conflicts: ['AGENTS.md'] });
+});

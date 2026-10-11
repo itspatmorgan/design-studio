@@ -1,19 +1,18 @@
-// The modules installed in src/modules/ (one folder each, with a module.ts), for the build and
-// the dev server. Delete a folder and its module is gone from here too. The app finds the same
-// folders with a glob (src/platform/app/data/modules.ts).
+// The modules installed in the module roots, src/platform/modules/ (supplied) and src/modules/ (the team's), one
+// folder each with a module.ts, for the build and the dev server. Delete a folder and its module is gone from here
+// too. The app finds the same folders with a glob (src/platform/app/data/modules.ts).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { isEnabled } from '../../core/config.ts';
 import { compatible } from '../../core/modules/index.ts';
-import { MODULES } from './module-catalog.js';
-export { MODULES, SECTION_KEYS, declarationProblems } from './module-catalog.js';
+import { MODULES, MODULE_DIRS } from './module-catalog.js';
+export { MODULES, MODULE_DIRS, SECTION_KEYS, declarationProblems } from './module-catalog.js';
 import { setSections } from '../../core/roots.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const { config: CONFIG } = readPersistedStudioConfig(ROOT);
-const DIR = path.join(ROOT, 'src', 'modules');
 
 // The modules studio.config.ts explicitly enables and that work with this platform (`requires`). A module that is off keeps its files but is skipped everywhere.
 export const ENABLED_MODULES = Object.values(MODULES).filter(m => m && isEnabled(CONFIG, m.id) && compatible(m));
@@ -43,7 +42,6 @@ export const PROTOTYPE_SECTIONS = ENABLED_MODULES.filter(oneFolderPerId).map(m =
 
 // The server.ts files of the enabled modules (routes they add to the dev server), as [id, file]. The dev
 // server loads them itself, since they use the build scripts that use this file.
-export const SERVER_FILES = ENABLED_MODULES.filter(m => fs.existsSync(path.join(DIR, m.id, 'server.ts'))).map(m => [
-  m.id,
-  path.join(DIR, m.id, 'server.ts'),
-]);
+export const SERVER_FILES = ENABLED_MODULES.filter(m =>
+  fs.existsSync(path.join(ROOT, MODULE_DIRS[m.id], 'server.ts')),
+).map(m => [m.id, path.join(ROOT, MODULE_DIRS[m.id], 'server.ts')]);

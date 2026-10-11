@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { MODULES, ENABLED_MODULES } from '../lib/modules.js';
-import { PLATFORM_ID, SYSTEM_IDS, SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
+import { PLATFORM_ID, SYSTEM_IDS, SYSTEM_SPECS } from '../../modules/systems/node/systems.js';
 import { loadContributors } from '../lib/contributors.js';
 import { resolveContributor } from '../cli/resolve-contributor.js';
 import { compatible } from '../../core/modules/index.ts';
@@ -30,7 +30,7 @@ export default function settings() {
       // Runs before the module graph loads, so a configuration restart cannot flash a blank page.
       const scripts = ['src/platform/app/settings/restart-transition.js'];
       if (ENABLED_MODULES.some(module => module.id === 'systems'))
-        scripts.push('src/modules/systems/pages/creation-transition.js');
+        scripts.push('src/platform/modules/systems/pages/creation-transition.js');
       return scripts.map(file => ({
         tag: 'script',
         children: fs.readFileSync(path.join(ROOT, file), 'utf8'),

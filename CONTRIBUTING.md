@@ -2,7 +2,7 @@
 
 Design Studio Starter is an early beta. The current priority is a reliable local workflow: studio initialization, contributor onboarding, prototypes and their file types, design systems, and the system content. Portable static publishing is part of the workflow; each studio chooses and configures its own host.
 
-For local setup, follow [manual installation](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#manual-installation) and the [Manual](src/modules/documentation/pages/index.md). Coding agents should start with [AGENTS.md](AGENTS.md), which points to platform context, principles, personas, and task skills.
+For local setup, follow [manual installation](https://github.com/itspatmorgan/design-studio-plugin/blob/main/SETUP.md#manual-installation) and the [Manual](src/platform/modules/documentation/pages/index.md). Coding agents should start with [AGENTS.md](AGENTS.md), which points to platform context, principles, personas, and task skills.
 
 ## Proposing a change
 

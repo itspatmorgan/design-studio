@@ -13,7 +13,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { DocBase } from '@/platform/app/docs/DocBase';
 import { DocLayout } from '@/platform/app/docs/DocLayout';
 import type { DocFrontmatter } from '@/platform/app/docs/types';
-import ViewError from '@/modules/prototypes/viewer/ViewError';
+import ViewError from '@/platform/modules/prototypes/viewer/ViewError';
 
 // docKey (contributor/prototype/path) resets the error boundary when the document changes,
 // and so does a new Component (the file was fixed, in dev).

@@ -1,8 +1,9 @@
-// Modules: the parts of Design Studio you can add or remove. A module is a folder in
-// src/modules/<id>/ with a module.ts that says what it is and what it adds, so the build,
-// the dev server and the app all read one list instead of each knowing about every module.
+// Modules: the parts of Design Studio you can add or remove. A module is a folder in a module root, supplied
+// (src/platform/modules/<id>/) or the team's (<module folder>/), with a module.ts that says what it is and what it
+// adds, so the build, the dev server and the app all read one list instead of each knowing about every module.
 // A file type is a module that has a type.ts and an open.tsx (src/platform/context/file-types.md).
-// This file has no imports, so Node scripts can load it directly.
+// This file has no imports but the import-free roots.ts, so Node scripts can load it directly.
+import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../roots.ts';
 
 // The version of the module contract this copy of the platform offers: what a module's module.ts, app.tsx and
 // server.ts may rely on. It is 0.x while the contract can still change; a module says the oldest one it works
@@ -54,7 +55,7 @@ export type ModuleSpec = {
   upstream?: { repo: string; version: string; license: string };
 };
 
-// A module can add routes to the dev server (src/modules/<id>/server.ts, served by
+// A module can add routes to the dev server (<module folder>/server.ts, served by
 // src/platform/node/build/vite-files-plugin.js at POST /__studio/<id>/<route>). A handler gets who is asking (their
 // contributor key, or null) and the request's JSON, and returns what to send back; a manifest it returns
 // is sent to the open app. It throws an Error to answer with that message. Dev only: the deployed site has no server.
@@ -66,7 +67,7 @@ export type ServerRoute = (request: {
   | Promise<{ status?: number; body: object; manifest?: unknown }>;
 export type ModuleServer = Record<string, ServerRoute>;
 
-// A module can add its own check to `pnpm check` (src/modules/<id>/check.ts, default export): it gets the repo's
+// A module can add its own check to `pnpm check` (<module folder>/check.ts, default export): it gets the repo's
 // root folder and returns a sentence for each problem it finds, or an empty list. It runs only while the module is on.
 export type ModuleCheck = (context: { root: string }) => string[] | Promise<string[]>;
 
@@ -78,9 +79,10 @@ const NPM_NAME = /^(@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/;
 const NPM_VERSION = /^[\^~]?\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
 
 // What is wrong with a module's declaration, each as a sentence that says what to fix. `folder` is the
-// name of the folder it was found in.
-export function moduleProblems(spec: unknown, folder: string): string[] {
-  const where = `src/modules/${folder}/module.ts`;
+// name of the folder it was found in, which is also its id; `dir` is that folder's path ("src/modules/research/"),
+// in the team root unless said otherwise.
+export function moduleProblems(spec: unknown, folder: string, dir = `${TEAM_MODULES_ROOT}/${folder}/`): string[] {
+  const where = `${dir}module.ts`;
   if (!spec || typeof spec !== 'object') return [`${where} must export a module as its default.`];
   const m = spec as Partial<ModuleSpec>;
   const problems: string[] = [];
@@ -160,6 +162,20 @@ export function moduleProblems(spec: unknown, folder: string): string[] {
       problems.push(`${where}: section.standalone is true, and only for a section with items: "prototypes".`);
   }
   return problems;
+}
+
+// Where a module may live. A module's id is its folder name in whichever root holds it, so an id found in both roots
+// is ambiguous: a team module must not reuse the id of a supplied one. `found` lists every folder with a module.ts,
+// including a duplicate that discovery would otherwise overwrite; `dir` is the folder ("src/modules/research/").
+export function moduleRootProblems(found: readonly { id: string; dir: string }[]): string[] {
+  const dirs = new Map<string, string[]>();
+  for (const { id, dir } of found) dirs.set(id, [...(dirs.get(id) ?? []), dir]);
+  return [...dirs]
+    .filter(([, where]) => where.length > 1)
+    .map(
+      ([id, where]) =>
+        `${id}: found in ${where.join(' and ')}. A module's id is its folder name, so it can exist in only one of ${MODULE_ROOTS.join(' and ')}. A team module can't reuse a supplied module's id: rename the one in ${TEAM_MODULES_ROOT}/.`,
+    );
 }
 
 // Problems across the whole list: two modules claiming the same section key or folder.

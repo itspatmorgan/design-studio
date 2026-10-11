@@ -10,7 +10,7 @@ import { artifactLabel, artifactLink } from '@/platform/app/data/manifest';
 import { SectionNav, NavList } from '@/platform/app/shell/nav';
 import FileNavItem from '@/platform/app/shell/FileNavItem';
 import { repoPath, revealInFinder } from '@/platform/app/data/files';
-import SystemContentPage from '@/modules/systems/content/SystemContentPage';
+import SystemContentPage from '@/platform/modules/systems/content/SystemContentPage';
 import DocumentationHeader from './DocumentationHeader';
 import DocumentationNavItem from './DocumentationNavItem';
 import { markdownPath } from './referenceLinks';
@@ -249,7 +249,7 @@ export function KnowledgeDocument() {
   const owner = manifest.systemContent.find(p => p.owner?.id === id)?.owner;
   const sections = manifest.systemContent.filter(p => p.owner?.id === id);
   const data = useRouterState({ select: state => state.matches.at(-1)?.loaderData }) as
-    | { contentData?: import('@/modules/systems/content/SystemContentPage').ContentData }
+    | { contentData?: import('@/platform/modules/systems/content/SystemContentPage').ContentData }
     | undefined;
   const selected = sections.find(p => p.id === contentId(id ?? '', page ?? ''));
   if (!owner || (page && page !== 'reference' && !selected)) return <NotFound />;

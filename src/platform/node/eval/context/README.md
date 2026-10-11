@@ -21,7 +21,7 @@ The [agent context contract](../../../context/agent-context.md) owns current rou
 | Prototype work | Metadata plus studio configuration, then assigned system entry point | Explicit None, default, named system, and rebuild target require different reads. The browser selector is irrelevant to this resolution. |
 | Task procedures | Rules and linked skills | Conditional routing exists. A skill description should select a procedure before its full supporting material is opened. |
 | Module availability | `agentsBlock()` in `src/platform/core/modules/pack.ts`, CLI synchronization | Enabled modules contribute task conditions, rather than all their instruction contents. Manual configuration changes require sync; a build does not sync. |
-| Diagnostic map | `src/modules/systems/content/map.ts`, `content/node/instructions.js` | Inventories routes and missing links. It is neither a semantic task resolver nor a trace of what was read. |
+| Diagnostic map | `src/platform/modules/systems/content/map.ts`, `content/node/instructions.js` | Inventories routes and missing links. It is neither a semantic task resolver nor a trace of what was read. |
 | Verification | Boundary checks, tests, build, rendered inspection | Enforces selected technical properties. Does not establish instruction selection or quality of the resulting experience. |
 
 The current generated map reports two always-read Studio rules, nine on-demand rules, one rule reached through another rule, five skills, and no missing or unrouted rules. That is structural evidence, not proof of successful task routing. Product currently has no product knowledge beyond its entry point; Marketing routes Brand, Library, and Marketing Design.

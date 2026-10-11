@@ -3,7 +3,7 @@
 // a file or folder whose name starts with an underscore (_components/, _data.ts) is a helper, not an artifact. Every other file (images,
 // meta.json) is a plain file: the nav hides it unless you choose Show all files in the prototype's … menu.
 //
-// Each type belongs to a module folder, src/modules/<type>/ (view/, document/).
+// Each type belongs to a module folder, <module folder>/ (view/, document/).
 // Optional types can be removed: delete the folder and its files become plain files. A type has
 //   type.ts     what the build and the app both need to know (this file's FileTypeSpec)
 //   open.tsx    how the app opens it: its icon, how it loads, and its page

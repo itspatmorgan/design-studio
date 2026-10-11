@@ -8,10 +8,11 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { readDeclaration } from '../../core/modules/pack.ts';
+import { moduleIdsIn } from './module-folders.js';
 
 test('local personal setup resumes, then a second clone joins a team without changing configuration', () => {
   const root = path.resolve('.');
-  const hasDocumentation = fs.existsSync(path.join(root, 'src/modules/documentation/module.ts'));
+  const hasDocumentation = fs.existsSync(path.join(root, 'src/platform/modules/documentation/module.ts'));
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-onboarding-'));
   const clone = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-contributor-'));
   const copy = (from, to) => {
@@ -65,12 +66,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
       usage: 'team',
       admins: ['patrick'],
       tagline: 'Fixture',
-      modules: Object.fromEntries(
-        fs
-          .readdirSync(path.join(dir, 'src/modules'))
-          .filter(id => fs.existsSync(path.join(dir, 'src/modules', id, 'module.ts')))
-          .map(id => [id, id !== 'documentation']),
-      ),
+      modules: Object.fromEntries(moduleIdsIn(dir).map(id => [id, id !== 'documentation'])),
       systems: ['studio', 'bootstrap'],
       systemMaintainers: { bootstrap: [] },
       defaultSystem: 'bootstrap',
@@ -94,7 +90,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
       assert.equal(denied.status, 1);
       assert.match(denied.stderr, /[Tt]eam use requires/);
       assert.equal(fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8'), teamConfig);
-      assert.ok(fs.existsSync(path.join(dir, 'src/modules/contributors/module.ts')));
+      assert.ok(fs.existsSync(path.join(dir, 'src/platform/modules/contributors/module.ts')));
     }
     const required = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', 'remove', 'studio', '--yes'], {
       cwd: dir,
@@ -107,12 +103,24 @@ test('local personal setup resumes, then a second clone joins a team without cha
     // separate from prototype authoring rather than duplicating full builds.
     run(dir, 'src/platform/node/cli/studio.js', 'create-module', 'lifecycle-fixture', '--yes');
     assert.equal(declared().modules['lifecycle-fixture'], true);
+    // New modules are made in the team root, never beside the supplied ones.
+    assert.ok(fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture/module.ts')));
+    assert.ok(!fs.existsSync(path.join(dir, 'src/platform/modules/lifecycle-fixture')));
+    // A team module can't take a supplied module's id, and a supplied module is removed from its own root.
+    const reused = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', 'create-module', 'view', '--yes'], {
+      cwd: dir,
+      encoding: 'utf8',
+    });
+    assert.equal(reused.status, 1);
+    assert.match(reused.stderr, /already a module called "view"/);
+    assert.ok(!fs.existsSync(path.join(dir, 'src/modules/view')));
     run(dir, 'src/platform/node/cli/studio.js', 'disable', 'lifecycle-fixture');
     assert.equal(declared().modules['lifecycle-fixture'], false);
     run(dir, 'src/platform/node/cli/studio.js', 'enable', 'lifecycle-fixture');
     assert.equal(declared().modules['lifecycle-fixture'], true);
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'lifecycle-fixture', '--yes');
     assert.equal(Object.hasOwn(declared().modules, 'lifecycle-fixture'), false);
+    assert.ok(!fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture')));
     const beforeFailedInstall = fs.readFileSync(path.join(dir, 'studio.config.ts'), 'utf8');
     const pack = path.join(dir, 'failing-pack');
     fs.mkdirSync(pack);
@@ -130,7 +138,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     run(dir, 'src/platform/node/cli/studio.js', 'remove', 'failing-fixture', '--yes');
     fs.rmSync(pack, { recursive: true });
     assert.equal(run(dir, 'src/platform/node/cli/resolve-contributor.js').trim(), 'patrick');
-    run(dir, 'src/modules/prototypes/node/create.js', 'Sample');
+    run(dir, 'src/platform/modules/prototypes/node/create.js', 'Sample');
     git(dir, 'config', 'user.name', 'Sam Solo');
     git(dir, 'config', 'user.email', 'sam@gmail.com');
     assert.equal(
@@ -178,7 +186,7 @@ test('local personal setup resumes, then a second clone joins a team without cha
     const components = path.join(dir, 'src/systems/acme/components/button');
     fs.mkdirSync(components, { recursive: true });
     fs.writeFileSync(path.join(components, 'index.tsx'), 'export function Button(){return <button>Continue</button>}');
-    const script = `import {createPrototype} from './src/modules/prototypes/node/create.js'; import fs from 'node:fs'; const {slug}=createPrototype({title:'First Flow',key:'sam'}); const dir='src/prototypes/sam/'+slug; const header=fs.readFileSync(dir+'/prototype.tsx','utf8').split('\\n')[0]; fs.writeFileSync(dir+'/prototype.tsx',header+'\\nimport { Button } from \"@/systems/acme/components/button\"; export default function View(){return <Button/>}'); fs.writeFileSync(dir+'/context.md','# First flow\\nA local setup example.'); fs.writeFileSync(dir+'/flow.excalidraw',JSON.stringify({type:'excalidraw',version:2,elements:[],appState:{},files:{}}));`;
+    const script = `import {createPrototype} from './src/platform/modules/prototypes/node/create.js'; import fs from 'node:fs'; const {slug}=createPrototype({title:'First Flow',key:'sam'}); const dir='src/prototypes/sam/'+slug; const header=fs.readFileSync(dir+'/prototype.tsx','utf8').split('\\n')[0]; fs.writeFileSync(dir+'/prototype.tsx',header+'\\nimport { Button } from \"@/systems/acme/components/button\"; export default function View(){return <Button/>}'); fs.writeFileSync(dir+'/context.md','# First flow\\nA local setup example.'); fs.writeFileSync(dir+'/flow.excalidraw',JSON.stringify({type:'excalidraw',version:2,elements:[],appState:{},files:{}}));`;
     execFileSync(process.execPath, ['--input-type=module', '--eval', script], {
       cwd: dir,
       encoding: 'utf8',

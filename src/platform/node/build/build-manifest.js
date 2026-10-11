@@ -11,16 +11,18 @@ import { knowledgeOwners, skillCatalog } from '../lib/agent-skills.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import {
-  PROTOTYPE_SYSTEMS,
-  SYSTEM_SOURCES,
-  SYSTEM_SPECS,
-  refreshSystems,
-} from '../../../modules/systems/node/systems.js';
-import { PLATFORM_ID } from '../../../modules/systems/node/systems.js';
+import { PROTOTYPE_SYSTEMS, SYSTEM_SOURCES, SYSTEM_SPECS, refreshSystems } from '../../modules/systems/node/systems.js';
+import { PLATFORM_ID } from '../../modules/systems/node/systems.js';
 import { isHelper, artifactSlug } from '../../core/fileTypes.ts';
 import { jsonIdentity } from '../../core/resourceIdentity.ts';
-import { SYSTEM_CONTENT_KEY, SYSTEM_CONTENT_SECTIONS, TEAM_SYSTEMS_ROOT, rootOf, contentId } from '../../core/roots.ts';
+import {
+  SYSTEM_CONTENT_KEY,
+  SYSTEM_CONTENT_SECTIONS,
+  TEAM_SYSTEMS_ROOT,
+  rootOf,
+  contentId,
+  moduleFolder,
+} from '../../core/roots.ts';
 import { STATUSES, forDeploy, linksToArchived, parseStatus } from '../../core/archive.ts';
 import { byOrder, parseOrder } from '../../core/order.ts';
 import { parseMaintainers } from '../../core/permissions.ts';
@@ -30,12 +32,12 @@ import { ENABLED_MODULES, MODULES, PROTOTYPE_SECTIONS, SECTION_KEYS } from '../l
 import { frontmatter } from '../lib/frontmatter.js';
 import { manualChapterEnabled } from '../lib/manual-pages.js';
 import { contributorsSignature, loadContributors } from '../lib/contributors.js';
-import { systemContentProblems } from '../../../modules/systems/content/node/content-check.js';
-import { systemDocs } from '../../../modules/systems/node/docs.js';
-import { themeTokens } from '../../../modules/systems/themeTokens.ts';
+import { systemContentProblems } from '../../modules/systems/content/node/content-check.js';
+import { systemDocs } from '../../modules/systems/node/docs.js';
+import { themeTokens } from '../../modules/systems/themeTokens.ts';
 import { platformReferences } from '../lib/platform-references.js';
-import { systemInstructions } from '../../../modules/systems/content/node/instructions.js';
-import { systemContentMap } from '../../../modules/systems/content/map.ts';
+import { systemInstructions } from '../../modules/systems/content/node/instructions.js';
+import { systemContentMap } from '../../modules/systems/content/map.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const PROTOS = path.join(ROOT, 'src', 'prototypes');
@@ -96,7 +98,7 @@ const inSystemContent = {
 };
 
 // Problems with a folder's artifacts: two sharing a URL, or a file its type rejects (a view needs a
-// default export, and so on: src/modules/<type>/type.ts). Printed; returns how many.
+// default export, and so on: <module folder>/type.ts). Printed; returns how many.
 function checkArtifacts(dir, artifacts, out = console, prototype) {
   let errors = 0;
   const seen = new Set();
@@ -325,7 +327,7 @@ function writeManifest(manifest) {
   writeIfChanged(OUT, JSON.stringify({ ...manifest, prototypes, sections }) + '\n');
 }
 
-// Scans src/prototypes/, src/platform/, and src/modules/documentation/pages/, writes public/prototypes/ (manifest.json, and artifacts/), and returns the whole manifest.
+// Scans src/prototypes/, src/platform/, and src/platform/modules/documentation/pages/, writes public/prototypes/ (manifest.json, and artifacts/), and returns the whole manifest.
 // Problems are printed; errors counts them. The dev server calls this on every change
 // (vite-manifest-watch-plugin.js), so it's kept fast: one pass, no subprocesses.
 // Options: `deploy` leaves archived prototypes and views out (see src/platform/core/archive.ts), `write: false`
@@ -510,7 +512,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   }
 
   // Each system's components and tokens, for the Systems pages, and what its component pages lack
-  // (src/modules/systems/docs.ts, themeTokens.ts). The app's own system (Platform) is one of them. By
+  // (src/platform/modules/systems/docs.ts, themeTokens.ts). The app's own system (Platform) is one of them. By
   // default a gap is a warning, and the first few are listed; docs: 'strict' fails the build and
   // 'off' says nothing.
   if (PLATFORM_ID in PROTOTYPE_SYSTEMS) {
@@ -558,7 +560,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
       : [];
   const pages = manualFiles.map(file => ({
     file: path.join(MANUAL, file),
-    where: `src/modules/documentation/pages/${file}`,
+    where: `src/${moduleFolder('documentation')}/pages/${file}`,
     slug: file.replace(/\.md$/, ''),
   }));
   const taken = new Map();
@@ -607,7 +609,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
       description: fm.description ?? '',
       section: fm.section || null,
       order: fm.order,
-      source: '/modules/documentation/pages/' + slug + '.md',
+      source: `/${moduleFolder('documentation')}/pages/${slug}.md`,
     });
   }
   manual.sort((a, b) => a.order - b.order);

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { inside, realFile } from './imports.js';
+import { moduleDirOf } from './module-folders.js';
 import { prototypeAssignment } from './prototype-assignment.js';
 import { packageName, systemPackage, SHARED_RUNTIME_PACKAGES, SYSTEM_RUNTIME_PACKAGES } from './system-dependencies.js';
 
@@ -15,7 +16,9 @@ export function scopePolicy({ root, systems, modules, prototypeDirs = [] }) {
   const protos = path.join(src, 'prototypes');
   const shared = path.join(src, 'lib');
   const entries = Object.entries(systems).map(([id, spec]) => ({ id, dir: path.resolve(root, spec.dir) }));
-  const libraries = modules.filter(m => m.lib).map(m => ({ ...m, dir: path.join(src, 'modules', m.id, 'lib') }));
+  const libraries = modules
+    .filter(m => m.lib)
+    .map(m => ({ ...m, dir: path.join(root, moduleDirOf(root, m.id), 'lib') }));
   const prototypeRoot = file => {
     for (const dir of [protos, ...prototypeDirs.map(realFile)]) {
       if (!inside(file, dir)) continue;

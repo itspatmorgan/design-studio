@@ -6,7 +6,7 @@ import path from 'node:path';
 import postcss from 'postcss';
 import { canonicalDirectory } from '../lib/safe-paths.js';
 import { ROOT, prototypeDir, itemFile } from './files/paths.js';
-import { PLATFORM_ID, PROTOTYPE_SYSTEMS, SYSTEM_SPECS } from '../../../modules/systems/node/systems.js';
+import { PLATFORM_ID, PROTOTYPE_SYSTEMS, SYSTEM_SPECS } from '../../modules/systems/node/systems.js';
 import { sameOrigin, send } from './files/http.js';
 
 export const digest = value => crypto.createHash('sha256').update(value).digest('hex');

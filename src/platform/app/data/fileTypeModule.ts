@@ -10,7 +10,7 @@ import {
 export type { EmbedSurface } from '../../core/fileTypes.ts';
 import type { Artifact, Prototype } from '@/platform/app/data/types';
 
-// How the app opens a file type (src/modules/<type>/open.tsx). What the build needs to know
+// How the app opens a file type (<module folder>/open.tsx). What the build needs to know
 // about the type is in its type.ts.
 export type ArtifactContext = { proto: Prototype; item: Artifact };
 

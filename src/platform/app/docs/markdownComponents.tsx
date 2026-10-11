@@ -1,4 +1,4 @@
-import { SYSTEM_SPECS } from '@/modules/systems/data/systems';
+import { SYSTEM_SPECS } from '@/platform/modules/systems/data/systems';
 import { useContext, type ComponentProps } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { MDXComponents } from 'mdx/types';

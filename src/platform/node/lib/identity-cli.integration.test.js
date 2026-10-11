@@ -96,7 +96,7 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
       stdio: 'pipe',
     });
     const canvas = (...args) =>
-      execFileSync(process.execPath, ['src/modules/canvas/cli.ts', folder + '/board.excalidraw', ...args], {
+      execFileSync(process.execPath, ['src/platform/modules/canvas/cli.ts', folder + '/board.excalidraw', ...args], {
         ...options,
         stdio: 'pipe',
       });
@@ -115,7 +115,12 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
     const canvasAfter = fs.readFileSync(boardFile, 'utf8');
     const denied = spawnSync(
       process.execPath,
-      ['src/modules/canvas/cli.ts', folder + '/board.excalidraw', 'create', '{"type":"note","text":"Unauthorized"}'],
+      [
+        'src/platform/modules/canvas/cli.ts',
+        folder + '/board.excalidraw',
+        'create',
+        '{"type":"note","text":"Unauthorized"}',
+      ],
       {
         ...options,
         env: { ...options.env, GIT_CONFIG_VALUE_0: 'Unknown Person', GIT_CONFIG_VALUE_1: 'unknown@example.invalid' },

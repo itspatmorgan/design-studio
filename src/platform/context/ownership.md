@@ -23,8 +23,8 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | --- | --- | --- |
 | `src/platform/` | Upstream | Shell, core APIs, Node tooling, platform context and skills. |
 | `src/platform/systems/studio/` | Upstream | Studio's own interface system, in the supplied system root. |
-| `src/modules/<id>/` for supplied modules | Upstream | Every module the starter ships, required or optional. |
-| `src/modules/<id>/` for the team's modules | Team | Created through [Manage modules](../skills/manage-modules/SKILL.md). |
+| `src/platform/modules/<id>/` | Upstream | Every module the starter ships, required or optional, in the supplied module root. |
+| `<module folder>/` | Team | The team's own modules, in the team module root. Created through [Manage modules](../skills/manage-modules/SKILL.md). |
 | `src/systems/<id>/` | Team | The team's systems, in the team system root. Includes their `package.json` and dependencies. |
 | `src/systems/product/`, `src/systems/marketing/` | Seed | Example systems; adapt or replace them. |
 | `src/prototypes/<contributor>/` | Team | The sample prototypes are seed. |
@@ -38,18 +38,21 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `AGENTS.md` module routing block | Generated | `pnpm studio sync` |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
-`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a team rule such as `src/modules/**` can sit beside the supplied module IDs.
+`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
 
 ## System roots
 
 Design systems are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`. `src/platform/systems/` is supplied and upstream-owned; it holds only Studio's own interface system. `src/systems/` is the team's. A system's ID is its folder name, an ID can exist in only one root, and the platform system lives only in the supplied root, so a team system never shares a folder with upstream files.
+
+## Module roots
+
+Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`. `src/platform/modules/` is supplied and upstream-owned; it holds the modules the starter ships, required or optional. `src/modules/` is the team's and starts with only a README. A module's ID is its folder name and an ID can exist in only one root, so a team module never reuses a supplied module's ID. Creating and adding modules writes only to the team root. Supplied modules are under `src/platform/`, but they are module code: the module boundary rules apply to them as they do to the team's.
 
 ## Mixed paths
 
 Some paths hold more than one tier. Change only your part of each:
 
 - `AGENTS.md`: the module routing block is generated. Other lines are upstream guidance; add team guidance in your systems' context instead.
-- `src/modules/`: supplied and team modules share this folder. A team module must not reuse a supplied module's ID.
 - `package.json`: a team module's dependencies are added to the root manifest. Systems keep their dependencies in their own `package.json`.
 
 ## Related contracts

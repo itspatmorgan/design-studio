@@ -16,18 +16,18 @@ Skills are owned by the platform, enabled modules, and registered systems. Inspe
 - For an explicit design-system review, use [check-design-system](src/platform/skills/check-design-system/SKILL.md).
 
 <!-- studio:modules -->
-When the person asks for a canvas (a page of views, documents, and notes arranged together), read [src/modules/canvas/skills/use-canvas/SKILL.md](src/modules/canvas/skills/use-canvas/SKILL.md).
-When the person asks to assign or review team Admins, system maintainers, or contributor permissions, read [src/modules/contributors/skills/use-contributors/SKILL.md](src/modules/contributors/skills/use-contributors/SKILL.md).
-When the person asks for a standalone diagram inside a prototype, read [src/modules/diagrams/skills/create-diagram/SKILL.md](src/modules/diagrams/skills/create-diagram/SKILL.md).
-When the person asks for a document inside a prototype, read [src/modules/document/skills/write-document/SKILL.md](src/modules/document/skills/write-document/SKILL.md).
-When the person asks to add or change the human Manual, read [src/modules/documentation/skills/write-manual/SKILL.md](src/modules/documentation/skills/write-manual/SKILL.md).
-When the person asks for a first tour of the studio or help getting started after installation, read [src/modules/onboarding/skills/use-onboarding/SKILL.md](src/modules/onboarding/skills/use-onboarding/SKILL.md).
-When the person asks to create or edit interactive prototype views, read [src/modules/prototypes/skills/build-prototype/SKILL.md](src/modules/prototypes/skills/build-prototype/SKILL.md).
-When the person asks to rename, move, duplicate, archive, restore, or remove a prototype, read [src/modules/prototypes/skills/organize-prototype/SKILL.md](src/modules/prototypes/skills/organize-prototype/SKILL.md).
-When the person asks to curate, assess, import, replace, or adapt a design system, read [src/modules/systems/skills/setup-design-system/SKILL.md](src/modules/systems/skills/setup-design-system/SKILL.md).
-When the person asks to import or document a system component, read [src/modules/systems/skills/document-component/SKILL.md](src/modules/systems/skills/document-component/SKILL.md).
+When the person asks for a canvas (a page of views, documents, and notes arranged together), read [src/platform/modules/canvas/skills/use-canvas/SKILL.md](src/platform/modules/canvas/skills/use-canvas/SKILL.md).
+When the person asks to assign or review team Admins, system maintainers, or contributor permissions, read [src/platform/modules/contributors/skills/use-contributors/SKILL.md](src/platform/modules/contributors/skills/use-contributors/SKILL.md).
+When the person asks for a standalone diagram inside a prototype, read [src/platform/modules/diagrams/skills/create-diagram/SKILL.md](src/platform/modules/diagrams/skills/create-diagram/SKILL.md).
+When the person asks for a document inside a prototype, read [src/platform/modules/document/skills/write-document/SKILL.md](src/platform/modules/document/skills/write-document/SKILL.md).
+When the person asks to add or change the human Manual, read [src/platform/modules/documentation/skills/write-manual/SKILL.md](src/platform/modules/documentation/skills/write-manual/SKILL.md).
+When the person asks for a first tour of the studio or help getting started after installation, read [src/platform/modules/onboarding/skills/use-onboarding/SKILL.md](src/platform/modules/onboarding/skills/use-onboarding/SKILL.md).
+When the person asks to create or edit interactive prototype views, read [src/platform/modules/prototypes/skills/build-prototype/SKILL.md](src/platform/modules/prototypes/skills/build-prototype/SKILL.md).
+When the person asks to rename, move, duplicate, archive, restore, or remove a prototype, read [src/platform/modules/prototypes/skills/organize-prototype/SKILL.md](src/platform/modules/prototypes/skills/organize-prototype/SKILL.md).
+When the person asks to curate, assess, import, replace, or adapt a design system, read [src/platform/modules/systems/skills/setup-design-system/SKILL.md](src/platform/modules/systems/skills/setup-design-system/SKILL.md).
+When the person asks to import or document a system component, read [src/platform/modules/systems/skills/document-component/SKILL.md](src/platform/modules/systems/skills/document-component/SKILL.md).
 <!-- /studio:modules -->
 
 Use pnpm for project commands. Reuse instructions already read while available and unchanged; retrieve missing or stale instructions after compaction or file changes. Re-read source files before editing them. Use targeted searches and bounded reads; read applicable skill procedures in full. Save verbose check output to a temporary log, inspect final exit status and warnings, and report concise results with its path.
 
-The human Manual lives in `src/modules/documentation/pages/`; technical requirements live in owner READMEs and context documents. Update affected guidance with platform behavior changes. For routing work, consult [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).
+The human Manual lives in `src/platform/modules/documentation/pages/`; technical requirements live in owner READMEs and context documents. Update affected guidance with platform behavior changes. For routing work, consult [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).

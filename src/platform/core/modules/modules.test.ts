@@ -1,7 +1,7 @@
 // The checks on a module's declaration (index.ts). Run with `pnpm test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { compatible, listProblems, moduleProblems, sectionKeys, type ModuleSpec } from './index.ts';
+import { compatible, listProblems, moduleProblems, moduleRootProblems, sectionKeys, type ModuleSpec } from './index.ts';
 
 const examples: ModuleSpec = {
   optional: false,
@@ -146,4 +146,31 @@ test('module capability decisions require explicit booleans', () => {
     delete (declaration as Record<string, unknown>)[field];
     assert.ok(moduleProblems(declaration, 'examples').some(problem => problem.includes(field)));
   }
+});
+
+test('problems name the folder the declaration is in, the team root unless said otherwise', () => {
+  assert.match(moduleProblems({ ...examples, id: 'other' }, 'examples')[0], /^src\/modules\/examples\/module\.ts:/);
+  assert.match(
+    moduleProblems({ ...examples, id: 'other' }, 'examples', 'src/platform/modules/examples/')[0],
+    /^src\/platform\/modules\/examples\/module\.ts:/,
+  );
+});
+
+test('a module id can exist in only one root', () => {
+  assert.deepEqual(
+    moduleRootProblems([
+      { id: 'canvas', dir: 'src/platform/modules/canvas/' },
+      { id: 'research', dir: 'src/modules/research/' },
+    ]),
+    [],
+  );
+  const problems = moduleRootProblems([
+    { id: 'canvas', dir: 'src/platform/modules/canvas/' },
+    { id: 'research', dir: 'src/modules/research/' },
+    { id: 'canvas', dir: 'src/modules/canvas/' },
+  ]);
+  assert.equal(problems.length, 1);
+  assert.match(problems[0], /^canvas: found in src\/platform\/modules\/canvas\/ and src\/modules\/canvas\//);
+  assert.match(problems[0], /only one of src\/platform\/modules and src\/modules/);
+  assert.match(problems[0], /can't reuse a supplied module's id/);
 });

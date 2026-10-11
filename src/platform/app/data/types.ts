@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
-import type { SystemContentMap } from '@/modules/systems/content/map';
-import type { SystemComponentDoc } from '@/modules/systems/docs';
-import type { ThemeToken } from '@/modules/systems/themeTokens';
-import type { DocsMode } from '@/modules/systems/sources';
-import type { SystemLibrary } from '@/modules/systems/spec';
+import type { SystemContentMap } from '@/platform/modules/systems/content/map';
+import type { SystemComponentDoc } from '@/platform/modules/systems/docs';
+import type { ThemeToken } from '@/platform/modules/systems/themeTokens';
+import type { DocsMode } from '@/platform/modules/systems/sources';
+import type { SystemLibrary } from '@/platform/modules/systems/spec';
 
 // public/prototypes/manifest.json, written by src/platform/node/build/build-manifest.js, with each prototype's artifacts
 // in public/prototypes/artifacts/<contributor>/<prototype>.json.
@@ -54,13 +54,13 @@ export type PrototypeRef = PrototypeInfo & {
   artifactsHash?: string; // changes when the items do, so a changed list is fetched again
 };
 
-// One human chapter from src/modules/documentation/pages/<slug>.md.
+// One human chapter from src/platform/modules/documentation/pages/<slug>.md.
 export type ManualPage = {
   slug: string; // its address, /documentation/manual/<slug>: the file name without .md, e.g. "prototypes"
   title: string;
   description: string;
   section: string | null; // sidebar heading, e.g. "Core concepts"
-  source?: string; // the chapter’s source, like "/modules/documentation/pages/prototypes.md"
+  source?: string; // the chapter’s source, like "/platform/modules/documentation/pages/prototypes.md"
 };
 
 // `sections` holds the artifacts of the modules' sections of prototype-shaped folders, by section key: the
