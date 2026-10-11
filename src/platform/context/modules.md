@@ -121,4 +121,4 @@ A module owns one canonical technical contract in its README.md. Human workflows
 
 Supplied and locally authored modules use the same contract. Installed external capabilities record their source and file hashes in `studio.lock.json`; locally authored modules remain team-owned. The lock does not track supplied starter code or perform upgrades.
 
-You own all repository code. Editing supplied modules or platform internals can create conflicts when merging upstream releases. Review updates on a branch, reconcile local changes, and run `pnpm build`. The [customization Manual](/documentation/manual/customize) explains the progression from prototype work to platform changes.
+You own all repository code. Editing supplied modules or platform internals can create conflicts when merging upstream releases; [Ownership and updates](ownership.md) maps which paths are upstream, generated, seed, or team-owned. Review updates on a branch, reconcile local changes, and run `pnpm build`. The [customization Manual](/documentation/manual/customize) explains the progression from prototype work to platform changes.

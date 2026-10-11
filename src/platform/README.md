@@ -14,6 +14,7 @@ All platform knowledge and requirements live together in `context/`:
 | Subject | Source |
 | --- | --- |
 | Configuration and roles | [Studio configuration](context/config.md) |
+| Ownership and updates | [Ownership and updates](context/ownership.md) |
 | Modules and extensions | [Modules and extensions](context/modules.md) |
 | File formats and lifecycle | [File types](context/file-types.md) |
 | Permanent resource identity | [Resource identity](context/resource-identity.md) |
