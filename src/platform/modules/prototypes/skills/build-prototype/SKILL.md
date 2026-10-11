@@ -25,6 +25,8 @@ Follow the [static asset convention](../../../../context/assets.md) when adding 
 
 Follow the prototype contract's [dependency boundaries](../../README.md#dependency-boundaries). Use permitted dependencies and local styles; fix boundary errors instead of bypassing checks.
 
+A prototype imports only React and React DOM by package name. Icons come from the assigned system's icon library entry (for example `import { Plus } from '@/systems/<system>/libraries/icons'`; read the system's `system.ts` `libraries` for its entries). Links and navigation come from `@module/prototypes`: `<Link to="app/main">` and `navigate('app/main')` from `useNavigate()` take a prototype-relative path. Never import `lucide-react` or `@tanstack/react-router` directly. If the system has no icon entry, ask for one to be added to the system rather than importing the package.
+
 Keep experiments local until an authorized shared change moves them into the system.
 
 After writing new prototype artifact files directly, run `pnpm studio identify src/prototypes/<key>/<prototype> --json` to preview missing identity assignments, then `--yes` to apply. Preserve existing identity metadata when editing. System context and helpers do not need artifact IDs.

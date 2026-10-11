@@ -53,7 +53,7 @@ export * from 'recharts';
 
 Assigned prototypes import through this declared entry. Additional files under `libraries/` remain internal. Prefer themed system components when available; direct library APIs still need the system's tokens, providers, and popup conventions.
 
-Prototype bare-package imports are limited to the shared runtime: React, React DOM, Lucide React, and TanStack React Router. Additional packages belong to an assigned system and are exposed through its libraries. A prototype with `systemId: null` has no system library access. Shared utilities cannot borrow system dependencies.
+Prototype bare-package imports are limited to the shared runtime: React and React DOM. Icons and every other package belong to an assigned system and are exposed through its libraries; navigation comes from `@module/prototypes`. A prototype imports a library entry by its path, such as `import { Plus } from '@/systems/product/libraries/icons'`. A prototype with `systemId: null` has no system library access. Shared utilities cannot borrow system dependencies.
 
 Package access checks cover static imports, re-exports, type imports, literal dynamic imports, and require calls before resolution. Importing a `node_modules` filesystem path cannot bypass ownership. Theme package imports follow the same ownership policy and existing scoped CSS validation.
 

@@ -10,6 +10,14 @@ export const systemDocumentation = (file, dir) =>
   /^intro\.[jt]sx?$/.test(path.relative(dir, file)) ||
   /\.(?:examples\.[jt]sx?|md)$/.test(file);
 
+// Where a prototype gets what it cannot import by bare name.
+const prototypeImportAdvice = (name, system) =>
+  name === '@tanstack/react-router'
+    ? "Import Link and useNavigate from '@module/prototypes'."
+    : system
+      ? `Import it through a declared library entry of the assigned system (${system}), such as '@/systems/${system}/libraries/<entry>' (icons come from its icons library).`
+      : 'A prototype with no system can import only React and React DOM; assign a system to use its libraries.';
+
 export function scopePolicy({ root, systems, modules, prototypeDirs = [] }) {
   root = realFile(root);
   const src = path.join(root, 'src');
@@ -80,7 +88,7 @@ export function scopePolicy({ root, systems, modules, prototypeDirs = [] }) {
       return `Design system scope: ${source} is not declared in ${path.relative(root, owner.dir)}/package.json. Add it to this system's dependencies.`;
     }
     if (scope?.kind === 'Prototype' && /\.[cm]?[jt]sx?$/.test(importer) && !SHARED_RUNTIME_PACKAGES.includes(name))
-      return `Prototype scope: ${source} is not shared runtime. Use a declared library entry from the assigned system${scope.system ? ` (${scope.system})` : ''}.`;
+      return `Prototype scope: ${source} is not shared runtime. ${prototypeImportAdvice(name, scope.system)}`;
     if (scope?.kind === 'Shared utility' && ![...SHARED_RUNTIME_PACKAGES, 'cn'].includes(name))
       return `Shared utility scope: ${source} belongs in a system, not a shared utility.`;
     return null;
