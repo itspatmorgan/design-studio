@@ -29,7 +29,7 @@ A file with no `formatVersion`, or a value other than the current version, is a 
 
 Writers keep the field. Settings writes are read-modify-write of the parsed file, so the field stays where it is. Creation writes the current version: `pnpm new` and the New prototype button (from the template), `pnpm join`, and fixtures. Registering a system changes `studio.config.json` and keeps its version.
 
-Before the first release, every checked-in file and fixture is stamped and there is no migration. A pre-release studio adds `"formatVersion": 1` by hand; the upgrade test does the same in its `PRE_RELEASE_TRANSITIONS` (`src/platform/node/check/upgrade-test.js`).
+Before the first release, every checked-in file and fixture is stamped and there is no migration. A pre-release studio adds `"formatVersion": 1` by hand.
 
 ## Where a migration goes
 

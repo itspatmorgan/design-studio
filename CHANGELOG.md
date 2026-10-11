@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The upgrade test now starts from the latest release.
+
 ## 0.2.0 (2026-10-11)
 
 - `studio.config.json`, each prototype's `meta.json`, and each contributor's profile declare `"formatVersion": 1`, kept in `FORMAT_VERSIONS` and the contract snapshot, so the first format change after release can migrate from a known version. A missing or unknown version is an error naming the file; `pnpm new`, `pnpm join`, and settings writes stamp or keep it. A pre-release studio adds `"formatVersion": 1` to its settings, contributors, and `meta.json` files. The ownership map must have no conflicting rules (`pnpm check`), and the upstream project's CI also requires every path to be named; in a studio an unlisted path is team-owned. Every test file is type-checked under `tsconfig.test.json`.

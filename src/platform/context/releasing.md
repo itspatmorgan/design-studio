@@ -48,7 +48,7 @@ The release commit goes to `main` directly, so the person pushing needs the righ
 
 ## After pushing
 
-The upgrade test in CI starts from the latest `v*` tag once one exists ([Checks and fixes](checks.md)), so every later pull request proves that a studio on the last release can take it. `PRE_RELEASE_TRANSITIONS` in `src/platform/node/check/upgrade-test.js` stands in for the manual steps a pre-release studio needed; remove it in the first pull request after `v0.2.0` is tagged.
+The upgrade test in CI starts from the latest `v*` tag ([Checks and fixes](checks.md)), so every later pull request proves that a studio on the last release can take it.
 
 If a release is wrong after it is pushed, cut a new patch release rather than moving or deleting the tag: studios may already have updated to it.
 
