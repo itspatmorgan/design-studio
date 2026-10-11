@@ -23,7 +23,7 @@ function fixture(t) {
   });
   const folder = 'src/prototypes/pat/example';
   fs.mkdirSync(path.join(root, folder), { recursive: true });
-  fs.writeFileSync(path.join(root, folder, 'meta.json'), '{"title":"Example","systemId":null}');
+  fs.writeFileSync(path.join(root, folder, 'meta.json'), '{"formatVersion":1,"title":"Example","systemId":null}');
   fs.writeFileSync(path.join(root, folder, 'notes.md'), '# Notes\n');
   return { root, folder };
 }

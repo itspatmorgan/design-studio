@@ -1,5 +1,10 @@
 {
   "platformVersion": "0.2.0",
+  "formatVersions": {
+    "config": 1,
+    "prototype": 1,
+    "contributor": 1
+  },
   "api": {
     "#studio/module": {
       "APP_NAME": "stable",

@@ -25,6 +25,7 @@ For agent inspection, run `pnpm studio context src/prototypes/<contributor>/<pro
 
 | Field | Contract |
 | --- | --- |
+| `formatVersion` | Required version of the `meta.json` format, `1` ([Format versions](../../context/formats.md)). Creation writes it; a missing or unknown value skips the prototype with an error naming the file. |
 | `studioId` | Permanent prototype identity, allocated on creation and retained through rename, move, archive, and restore. |
 | `ownerContributorId` | Permanent contributor identity matching the contributor folder. Moving files cannot silently change ownership. |
 | `title` | Required display title. |

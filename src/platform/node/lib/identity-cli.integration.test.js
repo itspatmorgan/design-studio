@@ -36,7 +36,7 @@ test('public CLI migrates an old studio from a saved preview and strict runtime 
     const folder = 'src/prototypes/samples/example',
       dir = path.join(root, folder);
     fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(path.join(dir, 'meta.json'), '{"title":"Example","systemId":null}');
+    fs.writeFileSync(path.join(dir, 'meta.json'), '{"formatVersion":1,"title":"Example","systemId":null}');
     fs.writeFileSync(path.join(dir, 'main.tsx'), 'export default function View(){ return <div>Example</div> }');
     fs.writeFileSync(
       path.join(dir, 'notes.md'),

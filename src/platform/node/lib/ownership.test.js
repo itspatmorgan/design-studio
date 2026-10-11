@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { ownershipFails, printOwnership } from '../check/check-ownership.js';
 import { classify, mapProblems, ownershipReport, tierOf, trackedFiles } from './ownership.js';
 
 const map = {
@@ -81,4 +82,22 @@ test('the repository map has no unknown or conflicting tracked paths', () => {
   const root = path.resolve(import.meta.dirname, '../../../..'),
     r = ownershipReport(root, trackedFiles(root));
   assert.deepEqual([r.problems, r.unknown, r.conflicts], [[], [], []]);
+});
+
+test('unknown paths, conflicts and an unreadable map fail; mixed files do not', () => {
+  const report = (extra = {}) => ({
+    files: 1,
+    problems: [],
+    unknown: [],
+    conflicts: [],
+    mixed: ['package.json'],
+    ...extra,
+  });
+  assert.equal(ownershipFails(report()), false);
+  assert.equal(ownershipFails(report({ unknown: ['stray.txt'] })), true);
+  assert.equal(ownershipFails(report({ conflicts: [{ path: 'a', tiers: ['seed', 'team'], globs: [] }] })), true);
+  assert.equal(ownershipFails(report({ problems: ['The ownership map could not be checked.'] })), true);
+  const lines = [];
+  printOwnership(report({ unknown: ['stray.txt'] }), line => lines.push(line));
+  assert.match(lines[0], /^\[ownership\] error: 1 tracked path/);
 });

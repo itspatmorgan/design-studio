@@ -16,6 +16,7 @@ import {
   identifyPrototypeArtifacts,
 } from '../../../node/lib/resource-identity-lifecycle.js';
 import { KEY, loadContributors } from '../../../node/lib/contributors.js';
+import { FORMAT_VERSIONS } from '../../../core/formats.ts';
 import { prototypeAddress, resourceId } from '../../../core/fileTypes.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../..');
@@ -53,6 +54,7 @@ export function createPrototype({ title, key, system = DEFAULT_SYSTEM }) {
     const d = new Date();
     const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     Object.assign(meta, {
+      formatVersion: FORMAT_VERSIONS.prototype,
       studioId,
       ownerContributorId: resourceId(contributors[key].studioId),
       title,

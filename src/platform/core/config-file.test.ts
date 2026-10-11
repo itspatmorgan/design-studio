@@ -5,6 +5,7 @@ import type { StudioConfig } from './config.ts';
 
 const base: StudioConfig = {
   $schema: './src/platform/core/studio.config.schema.json',
+  formatVersion: 1,
   name: 'Studio',
   usage: 'personal',
   modules: { canvas: true, text: false },
@@ -46,6 +47,7 @@ test('changing a setting keeps its place, and a new setting goes where readers e
   const withTagline = withSettings(base, { tagline: 'Hello' });
   assert.deepEqual(Object.keys(withTagline), [
     '$schema',
+    'formatVersion',
     'name',
     'usage',
     'tagline',
@@ -78,4 +80,10 @@ test('turning a module on, off, or out edits only the modules list', () => {
   assert.deepEqual(withModule({ ...base, modules: undefined } as unknown as StudioConfig, 'text', true).modules, {
     text: true,
   });
+});
+
+test('a setting change keeps formatVersion in place', () => {
+  const changed = withSettings(base, { name: 'Renamed', usage: 'team' });
+  assert.equal(changed.formatVersion, 1);
+  assert.equal(Object.keys(changed)[1], 'formatVersion');
 });

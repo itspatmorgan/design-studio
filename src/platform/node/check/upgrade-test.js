@@ -16,7 +16,8 @@ import { mergeUpstream } from '../lib/upstream-merge.js';
 import { TEAM_SYSTEMS_ROOT } from '../../core/roots.ts';
 import { CONFIG_KEYS } from '../../core/config.ts';
 import { readDeclaration } from '../../core/declarations.ts';
-import { serializeConfig } from '../../core/config-file.ts';
+import { serializeConfig, withSettings } from '../../core/config-file.ts';
+import { FORMAT_VERSIONS } from '../../core/formats.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const [base, head, ...options] = process.argv.slice(2);
@@ -44,6 +45,7 @@ const edit = (file, change) => {
 // a pre-release studio needs after taking such a change. It runs after the merge, and only when its condition holds,
 // so an update from a base that already has the change runs none of them. Nothing here is part of the update rules
 // (src/platform/node/lib/upstream-merge.js). Remove this list when the upgrade test starts from the first release tag.
+// An entry with phase: 'merge' runs inside the merge, before regeneration, for a step that regeneration needs first.
 // The team's fixture module and system, as the steps below create them.
 const FIXTURE_MODULE = 'src/modules/fixture-notes';
 const FIXTURE_SYSTEM = `${TEAM_SYSTEMS_ROOT}/fixture-kit`;
@@ -75,6 +77,18 @@ const PUBLIC_API_FILES = [
   `${FIXTURE_SYSTEM}/intro.tsx`,
 ];
 const platformVersion = () => textOf('src/platform/core/modules/index.ts').match(/PLATFORM_VERSION = '([^']+)'/)?.[1];
+// The team's content files that declare a formatVersion (src/platform/core/formats.ts), by the format each holds. The
+// studio's own tracked files decide, so the sample prototypes and contributor are included when the update left them.
+const teamFormatFiles = () => {
+  const tracked = read('git', ['ls-files', '-z']).split('\0').filter(Boolean);
+  const files = [];
+  if (tracked.includes('studio.config.json')) files.push(['studio.config.json', 'config']);
+  for (const file of tracked) {
+    if (/^contributors\/[^/]+\.json$/.test(file)) files.push([file, 'contributor']);
+    else if (/^src\/(?!platform\/)(?:[^/]+\/)*meta\.json$/.test(file)) files.push([file, 'prototype']);
+  }
+  return files.filter(([file]) => !('formatVersion' in JSON.parse(textOf(file))));
+};
 
 const PRE_RELEASE_TRANSITIONS = [
   {
@@ -134,6 +148,25 @@ const PRE_RELEASE_TRANSITIONS = [
         );
     },
   },
+  {
+    // Stored formats carry a formatVersion (src/platform/core/formats.ts). A studio made before that has none in its
+    // config, contributor profiles, or prototype meta.json files, and a file the team edited keeps the team's copy
+    // through the update. A person adds `"formatVersion": 1` to each, as the creation commands now do.
+    name: 'stamp formatVersion in the team config and content files',
+    // Runs inside the merge: regenerating AGENTS.md and the skills reads the contributor profiles, which must be valid.
+    phase: 'merge',
+    applies: () => fs.existsSync(path.join(dir, 'src/platform/core/formats.ts')) && teamFormatFiles().length > 0,
+    apply: () => {
+      for (const [file, format] of teamFormatFiles()) {
+        const value = JSON.parse(textOf(file));
+        const stamped =
+          format === 'config'
+            ? withSettings(value, { formatVersion: FORMAT_VERSIONS.config })
+            : { formatVersion: FORMAT_VERSIONS[format], ...value };
+        fs.writeFileSync(path.join(dir, file), serializeConfig(stamped));
+      }
+    },
+  },
 ];
 
 let ok = false;
@@ -188,14 +221,25 @@ try {
   run('git', ['commit', '-q', '--no-verify', '-m', 'Team changes']);
 
   step(`Update to ${head} (${headSha.slice(0, 7)})`);
-  const result = mergeUpstream(dir, headSha, { message: `Update to ${headSha.slice(0, 7)}`, run });
+  const inMerge = PRE_RELEASE_TRANSITIONS.filter(transition => transition.phase === 'merge');
+  const result = mergeUpstream(dir, headSha, {
+    message: `Update to ${headSha.slice(0, 7)}`,
+    run,
+    beforeRegenerate: () => {
+      for (const transition of inMerge) {
+        if (!transition.applies()) continue;
+        step(`Pre-release transition (during the merge): ${transition.name}`);
+        transition.apply();
+      }
+    },
+  });
   if (!result.merged)
     throw new Error(
       `Updating conflicts with team changes in:\n${result.conflicts.map(file => `  ${file}`).join('\n')}`,
     );
 
   for (const transition of PRE_RELEASE_TRANSITIONS) {
-    if (!transition.applies()) continue;
+    if (transition.phase === 'merge' || !transition.applies()) continue;
     step(`Pre-release transition: ${transition.name}`);
     transition.apply();
     // A transition whose condition held but that found nothing to change commits nothing.

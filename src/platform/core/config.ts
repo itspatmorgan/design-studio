@@ -3,12 +3,16 @@
 // src/platform/core/studio.config.schema.json, lets editors validate and complete it; configProblems below stays the
 // source of truth for the rules, and config.test.ts keeps the two in agreement.
 
+import { formatVersionProblem } from './formats.ts';
+
 // The configuration file, relative to the repository root.
 export const CONFIG_FILE = 'studio.config.json';
 
 export type StudioConfig = {
   // The schema the file declares for editors. Only the file carries it; it has no effect at run time.
   $schema?: string;
+  // The version of this file's format (FORMAT_VERSIONS.config, formats.ts). Required.
+  formatVersion: number;
   // What the app calls itself: the rail's tooltip and every page's title.
   name: string;
   // Explicit onboarding mode; contributor ownership is identical in both modes.
@@ -32,6 +36,7 @@ export type StudioConfig = {
 // Every property the file accepts, in the order a file lists them. The schema's `properties` must name exactly these.
 export const CONFIG_KEYS = [
   '$schema',
+  'formatVersion',
   'name',
   'usage',
   'tagline',
@@ -71,6 +76,8 @@ export function configProblems(
       problems.push(`${where}: "${key}" is not a setting. Settings are ${CONFIG_KEYS.slice(1).join(', ')}.`);
   if (c.$schema !== undefined && typeof c.$schema !== 'string')
     problems.push(`${where}: $schema should be the path of the schema, as text.`);
+  const version = formatVersionProblem(c.formatVersion, 'config', where);
+  if (version) problems.push(version);
   if (typeof c.name !== 'string' || !c.name.trim()) problems.push(`${where}: add a name, what the app calls itself.`);
   if (!c.usage || !(USAGES as readonly string[]).includes(c.usage))
     problems.push(`${where}: usage should be personal or team.`);

@@ -20,6 +20,7 @@ const modules = [
   { id: 'prototypes', optional: false },
 ];
 const config: StudioConfig = {
+  formatVersion: 1,
   name: 'Studio',
   usage: 'team',
   admins: ['sam'],
@@ -245,6 +246,7 @@ test('the schema names exactly the settings the validator and the type accept', 
   // Every key is listed by CONFIG_KEYS in the type's own terms (the compile-time guard is in config.ts).
   const everything: Record<keyof StudioConfig, true> = {
     $schema: true,
+    formatVersion: true,
     name: true,
     usage: true,
     admins: true,
@@ -335,4 +337,15 @@ test(`the checked-in ${CONFIG_FILE} satisfies its schema and declares it`, () =>
     Object.keys(seed).filter(key => !(CONFIG_KEYS as readonly string[]).includes(key)),
     [],
   );
+});
+
+test('a missing or unknown formatVersion is a problem that names the file', () => {
+  const { formatVersion: _omitted, ...unstamped } = config;
+  assert.match(
+    configProblems(unstamped, modules, ['product']).join('\n'),
+    /studio\.config\.json: add "formatVersion": 1/,
+  );
+  assert.match(problems({ formatVersion: 2 }), /studio\.config\.json: formatVersion is 2.*newer studio/);
+  assert.match(problems({ formatVersion: '1' }), /studio\.config\.json: formatVersion is "1"/);
+  assert.equal(problems({ formatVersion: 1 }), '');
 });

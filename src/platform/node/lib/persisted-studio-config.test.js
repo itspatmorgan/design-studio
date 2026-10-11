@@ -12,7 +12,7 @@ test('fresh persisted configuration reads survive source renames without changin
   fs.mkdirSync(path.join(root, 'src/systems/product'), { recursive: true });
   fs.writeFileSync(
     path.join(root, 'contributors/pat.json'),
-    JSON.stringify({ name: 'Pat', email: '', github: '', studioId: '0123456789abcdef' }),
+    JSON.stringify({ formatVersion: 1, name: 'Pat', email: '', github: '', studioId: '0123456789abcdef' }),
   );
   fs.writeFileSync(
     path.join(root, 'src/systems/product/system.ts'),

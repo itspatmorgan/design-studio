@@ -4,11 +4,15 @@
   "description": "studio.config.json: the small set of choices a studio's team shares. Start personal; switch to team use in Studio settings when you are ready to collaborate. Installed capabilities (modules) and design-system registration are explicit, never inferred from what is on disk. The rules that matter are enforced by `pnpm check` (src/platform/core/config.ts); this schema lets editors validate and complete the file, and a test keeps the two in agreement.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "usage", "modules", "systems", "systemMaintainers", "defaultSystem"],
+  "required": ["formatVersion", "name", "usage", "modules", "systems", "systemMaintainers", "defaultSystem"],
   "properties": {
     "$schema": {
       "type": "string",
       "description": "Where editors find this schema, relative to this file. It has no effect on the studio."
+    },
+    "formatVersion": {
+      "const": 1,
+      "description": "The version of this file's format. Required. A future change to the format raises it and ships a migration; a missing or unknown version is an error."
     },
     "name": {
       "type": "string",

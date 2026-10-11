@@ -1,7 +1,7 @@
 // The platform's public contract as plain JSON, read from source, so a change to it can't skip a PLATFORM_VERSION bump.
 // Covers every export of the public API (src/platform/api/, imported as #studio/<entry>) with its stability, the
-// fields of the stable declaration types, and the runtime package lists.
-// A stable export, a declaration type's fields or a runtime package list changes only with a PLATFORM_VERSION bump.
+// fields of the stable declaration types, the runtime package lists, and the stored format versions (src/platform/core/formats.ts).
+// A stable export, a declaration type's fields, a runtime package list or a format version changes only with a PLATFORM_VERSION bump.
 // An experimental export may change in any 0.x release, but the snapshot still records it, so the change is visible.
 // Snapshot: src/platform/core/contract.snapshot.json, refreshed with `pnpm contract --update` (src/platform/node/check/check-contract.js).
 import fs from 'node:fs';
@@ -9,6 +9,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
 import { PLATFORM_VERSION } from '../../core/modules/index.ts';
+import { FORMAT_VERSIONS } from '../../core/formats.ts';
 import { API_ENTRIES, API_FOLDER, apiSpecifier } from '../../core/modules/boundaries.ts';
 import { SHARED_RUNTIME_PACKAGES, SYSTEM_RUNTIME_PACKAGES } from './system-dependencies.js';
 
@@ -118,6 +119,7 @@ export function apiProblems(root = ROOT) {
 export function computeContract(root = ROOT) {
   return {
     platformVersion: PLATFORM_VERSION,
+    formatVersions: { ...FORMAT_VERSIONS },
     api: Object.fromEntries(
       API_ENTRIES.filter(entry => fs.existsSync(path.join(root, API_FOLDER, `${entry}.ts`))).map(entry => [
         apiSpecifier(entry),

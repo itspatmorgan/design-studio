@@ -29,12 +29,16 @@ Keep tests for failure-prone behavior and boundaries. Use synthetic fixtures ins
 
 See [Personal & team use](/documentation/manual/team) for how these checks fit the workflow. Configure branch protection and required checks to enforce the team's merge policy.
 
+## Ownership map
+
+`pnpm check`, `pnpm ownership`, and the `scope` job in CI fail when a tracked path matches no rule in `.studio/ownership.json`, when two rules of different tiers claim it equally, or when the map cannot be read. A folder that is not a Git checkout skips it in `pnpm check`. The mixed files, which today are only `package.json`, are listed and do not fail. This check reads the map and the tracked paths, not the contributor, so the personal-studio skip below applies to the contributor scope check only. See [Ownership and updates](ownership.md).
+
 ## Platform contract
 
-The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records `PLATFORM_VERSION`, every export of the [public API](modules.md#public-api) (`src/platform/api/`, imported as `#studio/<entry>`) with its stability, the fields of the stable declaration types (`ModuleSpec`, `ModuleApp`, `SystemSpec`, `FileTypeSpec`, and the types inside them), and the runtime package lists. `pnpm contract` and the upstream regression suite fail when:
+The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records `PLATFORM_VERSION`, every export of the [public API](modules.md#public-api) (`src/platform/api/`, imported as `#studio/<entry>`) with its stability, the fields of the stable declaration types (`ModuleSpec`, `ModuleApp`, `SystemSpec`, `FileTypeSpec`, and the types inside them), and the runtime package lists, and the stored format versions (`FORMAT_VERSIONS`, [Format versions](formats.md)). `pnpm contract` and the upstream regression suite fail when:
 
 - an API export has no `@stable` or `@experimental` JSDoc tag with a one-line description;
-- a stable export, a declaration type's fields, or a runtime package list changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`;
+- a stable export, a declaration type's fields, a runtime package list, or a format version changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`;
 - an experimental export is added, removed, or changed: it needs no new version, but run `pnpm contract --update` so the change is recorded and visible in review.
 
 A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.

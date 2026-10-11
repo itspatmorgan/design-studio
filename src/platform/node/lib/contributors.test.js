@@ -68,3 +68,16 @@ test('profile identities reject malformed, duplicated and ambiguously declared p
   );
   assert.ok(readContributors(root).problems.some(problem => problem.includes('github only once')));
 });
+
+test('a profile without the current formatVersion is a problem that names the file', t => {
+  const root = fixture(t);
+  writeProfiles(root, { sam: { name: 'Sam' } });
+  assert.deepEqual(readContributors(root).problems, []);
+  const file = path.join(root, 'contributors/sam.json');
+  const profile = JSON.parse(fs.readFileSync(file, 'utf8'));
+  delete profile.formatVersion;
+  fs.writeFileSync(file, JSON.stringify(profile));
+  assert.match(readContributors(root).problems.join('\n'), /contributors\/sam\.json: add "formatVersion": 1/);
+  fs.writeFileSync(file, JSON.stringify({ ...profile, formatVersion: 2 }));
+  assert.match(readContributors(root).problems.join('\n'), /contributors\/sam\.json: formatVersion is 2/);
+});

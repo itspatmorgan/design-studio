@@ -101,7 +101,7 @@ test('default changes preserve explicit assignments, None, disabled content, and
   const options = fixture(t);
   const add = (folder, meta) => {
     fs.mkdirSync(path.join(options.root, folder), { recursive: true });
-    fs.writeFileSync(path.join(options.root, folder, 'meta.json'), JSON.stringify(meta));
+    fs.writeFileSync(path.join(options.root, folder, 'meta.json'), JSON.stringify({ formatVersion: 1, ...meta }));
   };
   add('src/prototypes/alex/implicit', { title: 'Pinned', systemId: options.directory.systemIds.product });
   add('src/prototypes/sam/custom', { title: 'Custom', systemId: null });
@@ -188,12 +188,13 @@ test('full UI snapshots change only the intended source properties', t => {
   const options = fixture(t);
   const before = fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8');
   const config = readSettings(options.root, options.contributors).config;
-  const { systems, $schema, ...changes } = config;
+  const { systems, $schema, formatVersion, ...changes } = config;
   saveSettings({ ...options, changes: { ...changes, modules: { ...changes.modules, notes: false } } });
   assert.equal(
     fs.readFileSync(path.join(options.root, 'studio.config.json'), 'utf8'),
     before.replace('"notes": true', '"notes": false'),
   );
+  assert.equal(formatVersion, 1);
 });
 
 test('Admin saves assign system maintainers without creating new studio roles', t => {

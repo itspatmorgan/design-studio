@@ -50,6 +50,7 @@ jobs:
             export STUDIO_PLATFORM_ROLE
             node src/platform/node/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF"
           fi
+          node src/platform/node/check/check-ownership.js
           node src/platform/node/check/check-asset-size.js --ci "$BASE_REF" "$HEAD_REF"
   regressions:
     name: Selected regressions

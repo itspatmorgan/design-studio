@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { jsonIdentity } from '../../core/resourceIdentity.ts';
+import { formatVersionProblem } from '../../core/formats.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 export const CONTRIBUTORS_DIR = path.join(ROOT, 'contributors');
@@ -45,6 +46,8 @@ export function readContributors(root = ROOT) {
       problems.push(`contributors/${file} should be { "name": ..., "github": ..., "email": ... }.`);
       continue;
     }
+    const version = formatVersionProblem(entry.formatVersion, 'contributor', `contributors/${file}`);
+    if (version) problems.push(version);
     if (typeof entry.name !== 'string' || !entry.name.trim())
       problems.push(`contributors/${file}: declare a nonempty name.`);
     try {

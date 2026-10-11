@@ -6,7 +6,8 @@ import { createResourceId } from '../../../core/resourceIdentity.ts';
 import { readDeclaration } from '../../../core/declarations.ts';
 import { persistStudioReferences } from '../../../core/resourceReferences.ts';
 import { CONFIG_FILE } from '../../../core/config.ts';
-import { serializeConfig } from '../../../core/config-file.ts';
+import { FORMAT_VERSIONS } from '../../../core/formats.ts';
+import { serializeConfig, withSettings } from '../../../core/config-file.ts';
 import { readResourceDirectory } from '../resource-directory.js';
 import { editDeclaration } from '../studio-setup.js';
 import { SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT } from '../../../core/roots.ts';
@@ -29,7 +30,10 @@ export function writeFixtureConfig(root, config) {
     if (!declaration.value.studioId) fs.writeFileSync(file, editDeclaration(source, { studioId: createResourceId() }));
   }
   const directory = readResourceDirectory(root);
-  const persisted = persistStudioReferences(config, directory);
+  const persisted = persistStudioReferences(
+    withSettings(config, { formatVersion: config.formatVersion ?? FORMAT_VERSIONS.config }),
+    directory,
+  );
   fs.writeFileSync(path.join(root, CONFIG_FILE), serializeConfig(persisted));
   return { directory, persisted };
 }

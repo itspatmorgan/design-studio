@@ -8,11 +8,11 @@ The starter declares personal use. Contributors & Permissions is installed but d
 
 ## The file and its schema
 
-The file declares its schema first: `"$schema": "./src/platform/core/studio.config.schema.json"`. Editors that understand JSON Schema then validate the file and complete and explain each setting. The schema is a JSON Schema (draft 2020-12) whose descriptions carry the guidance for each setting.
+The file declares its schema first: `"$schema": "./src/platform/core/studio.config.schema.json"`, then `"formatVersion": 1`, the version of the file's format ([Format versions](formats.md)). Editors that understand JSON Schema then validate the file and complete and explain each setting. The schema is a JSON Schema (draft 2020-12) whose descriptions carry the guidance for each setting.
 
 The runtime validator, `configProblems` in `src/platform/core/config.ts`, is the source of truth for the rules, and `pnpm check` reports what it finds. A test keeps the schema's setting names, required list, enums, and limits in agreement with the validator and the `StudioConfig` type, so they cannot drift. Rules that need the filesystem, such as which modules and systems are installed, are only in the validator.
 
-Every tool reads the file with `JSON.parse` and writes it back as a read-modify-write of the parsed object: 2-space JSON, a trailing newline, and the existing key order (`$schema` first), so a change to one setting changes only that setting's lines. A setting added for the first time goes where the schema lists it. Repeated keys, comments, and anything that is not plain JSON are refused with the file name.
+Every tool reads the file with `JSON.parse` and writes it back as a read-modify-write of the parsed object: 2-space JSON, a trailing newline, and the existing key order (`$schema` and `formatVersion` first), so a change to one setting changes only that setting's lines. A setting added for the first time goes where the schema lists it. Repeated keys, comments, and anything that is not plain JSON are refused with the file name.
 
 ## Change configuration
 
@@ -38,7 +38,7 @@ The settings server checks the current role before applying each save. Only exis
 
 Use `pnpm studio configure --admins sam,alex --yes` to assign team Admins. Applied shared CLI changes require the current Admin. For explicitly authorized initial setup or recovery, use `configure --recovery --admins sam --yes`. This visible repository-level recovery bypass is limited to configuration and does not bypass Git review. Direct file edits remain possible.
 
-Keep shared choices in `studio.config.json`. Contributor profiles live in `contributors/<key>.json`; `pnpm join` creates these files. Each file declares one contributor, with a permanent `studioId` and its filename as the current source key. There is no combined roster file. Profiles declare a permanent `studioId`, a nonempty `name`, plus `email` and `github` strings. An empty string explicitly means that identity is unavailable. Nonempty emails and GitHub usernames must be unique, ignoring case. When Onboarding is enabled, profiles also declare `welcomeDismissed`. The shipped sample author's profile also declares `"sample": true`, the only way code recognizes it; the field must be `true` when present, and real contributors omit it. Other preference fields stay with the profile. Profiles do not declare authority. Use `pnpm studio configure --maintainers product=sam,alex --yes` to assign one system. Use `product=` to clear it. The command preserves other system assignments.
+Keep shared choices in `studio.config.json`. Contributor profiles live in `contributors/<key>.json`; `pnpm join` creates these files. Each file declares one contributor, with a permanent `studioId` and its filename as the current source key. There is no combined roster file. Profiles declare `formatVersion` (`1`), a permanent `studioId`, a nonempty `name`, plus `email` and `github` strings. An empty string explicitly means that identity is unavailable. Nonempty emails and GitHub usernames must be unique, ignoring case. When Onboarding is enabled, profiles also declare `welcomeDismissed`. The shipped sample author's profile also declares `"sample": true`, the only way code recognizes it; the field must be `true` when present, and real contributors omit it. Other preference fields stay with the profile. Profiles do not declare authority. Use `pnpm studio configure --maintainers product=sam,alex --yes` to assign one system. Use `product=` to clear it. The command preserves other system assignments.
 
 CLI and settings controls use current readable source keys for selection. Managed saves serialize relationships as permanent IDs. The `systems` registration list describes source locations; it is intentionally separate from `defaultSystem`, Admin IDs, and maintainer grants. Unknown IDs are errors. See [Resource identity](resource-identity.md).
 
@@ -47,6 +47,7 @@ CLI and settings controls use current readable source keys for selection. Manage
 | Setting | Declaration |
 | --- | --- |
 | `$schema` | Optional path of the JSON Schema for editors, `./src/platform/core/studio.config.schema.json`. It has no effect at run time. |
+| `formatVersion` | Required version of this file's format, `1`. A missing or unknown version is a validation error. |
 | `name` | Required studio name, used by the app. |
 | `usage` | Required `personal` or `team`. Personal derives local Admin authority and skips team Git scope checks. Team requires Contributors & Permissions enabled and explicit Admin assignments. |
 | `admins` | Unique permanent registered contributor IDs. Required and nonempty in team use; personal use derives Admin access from local identity. |

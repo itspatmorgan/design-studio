@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 import { resolveContributor, loadContributors } from './resolve-contributor.js';
 import { SECTION_KEYS } from '../lib/modules.js';
 import { CONFIG } from '../lib/modules.js';
+import { FORMAT_VERSIONS } from '../../core/formats.ts';
 import { contributorFile } from '../lib/contributors.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -103,6 +104,7 @@ if (problems.length) {
 }
 
 const entry = {
+  formatVersion: FORMAT_VERSIONS.contributor,
   studioId: allocateResourceIdentity(retainedResourceIds(ROOT, INSTALLED_FILE_TYPES)),
   name,
   github,

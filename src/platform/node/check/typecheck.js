@@ -20,6 +20,9 @@ if (diagnostics.length) {
   );
   process.exit(1);
 }
-execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.node.json'], {
-  stdio: 'inherit',
-});
+// Node-run tooling and its tests (nodenext resolution), then every test file under the app's settings plus Node types.
+// The app config excludes src/**/*.test.ts: its types are Vite's, so node:test and node:assert do not resolve there.
+for (const project of ['tsconfig.node.json', 'tsconfig.test.json'])
+  execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '-p', project], {
+    stdio: 'inherit',
+  });

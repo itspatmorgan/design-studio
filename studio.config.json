@@ -1,5 +1,6 @@
 {
   "$schema": "./src/platform/core/studio.config.schema.json",
+  "formatVersion": 1,
   "name": "Design Studio",
   "usage": "personal",
   "tagline": "A prototype sandbox for you and your team",

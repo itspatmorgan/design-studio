@@ -234,13 +234,22 @@ function fixture(count) {
   for (let p = 0; p < people; p++)
     fs.writeFileSync(
       path.join(dir, 'contributors', `person${p}.json`),
-      JSON.stringify({ name: `Person ${p}`, github: `person${p}`, email: '', welcomeDismissed: false }),
+      JSON.stringify({
+        formatVersion: 1,
+        name: `Person ${p}`,
+        github: `person${p}`,
+        email: '',
+        welcomeDismissed: false,
+      }),
     );
   for (let i = 0; i < count; i++) {
     const who = `person${i % people}`;
     const proto = path.join(dir, 'src', 'prototypes', who, `proto-${i}`);
     fs.mkdirSync(proto, { recursive: true });
-    fs.writeFileSync(path.join(proto, 'meta.json'), JSON.stringify({ title: `Prototype ${i}`, created: '2026-01-01' }));
+    fs.writeFileSync(
+      path.join(proto, 'meta.json'),
+      JSON.stringify({ formatVersion: 1, title: `Prototype ${i}`, created: '2026-01-01' }),
+    );
     fs.writeFileSync(
       path.join(proto, 'screen.tsx'),
       `export default function Screen() {\n  return <div className="p-4">Prototype ${i}</div>;\n}\n`,

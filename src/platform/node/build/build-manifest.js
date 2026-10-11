@@ -35,6 +35,7 @@ import { contributorsSignature, loadContributors } from '../lib/contributors.js'
 import { systemContentProblems } from '../../modules/systems/content/node/content-check.js';
 import { systemDocs } from '../../modules/systems/node/docs.js';
 import { themeTokens } from '../../modules/systems/themeTokens.ts';
+import { FORMAT_VERSIONS } from '../../core/formats.ts';
 import { platformReferences } from '../lib/platform-references.js';
 import { systemInstructions } from '../../modules/systems/content/node/instructions.js';
 import { systemContentMap } from '../../modules/systems/content/map.ts';
@@ -176,6 +177,13 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
   } catch (e) {
     return skip(`is not valid JSON (${e.message})`);
   }
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) return skip('must be a JSON object');
+  if (meta.formatVersion !== FORMAT_VERSIONS.prototype)
+    return skip(
+      meta.formatVersion === undefined
+        ? `needs "formatVersion": ${FORMAT_VERSIONS.prototype}`
+        : `has "formatVersion": ${JSON.stringify(meta.formatVersion)}, but this studio reads version ${FORMAT_VERSIONS.prototype}`,
+    );
   if (typeof meta?.title !== 'string' || !meta.title.trim()) return skip('needs a "title"');
   // "maintainers" (required where the section's policy is maintainers): the contributor keys of the people who may change it.
   let maintainers;

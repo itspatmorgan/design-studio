@@ -175,3 +175,22 @@ test('a deleted file that the studio’s own map does not list as seed is still 
   git('checkout', '-q', 'studio');
   assert.deepEqual(mergeUpstream(dir, 'upstream', { run }), { merged: false, conflicts: ['notes.old.txt'] });
 });
+
+test('beforeRegenerate runs after conflicts are resolved and before regeneration, and its edits are committed', () => {
+  const { dir, git, read } = studio({
+    studio: { 'src/prototypes/sam/p/view.tsx': 'team\n' },
+    upstream: { 'src/platform/a.ts': 'release\n' },
+  });
+  const order = [];
+  const result = mergeUpstream(dir, 'upstream', {
+    run: (command, args) => order.push([command, ...args].join(' ')),
+    beforeRegenerate: () => {
+      order.push('before');
+      fs.writeFileSync(path.join(dir, 'src/prototypes/sam/p/view.tsx'), 'stamped\n');
+    },
+  });
+  assert.equal(result.merged, true);
+  assert.deepEqual(order, ['before', 'pnpm install --no-frozen-lockfile', 'pnpm studio sync']);
+  assert.equal(read('src/prototypes/sam/p/view.tsx'), 'stamped\n');
+  assert.equal(git('status', '--porcelain'), '');
+});

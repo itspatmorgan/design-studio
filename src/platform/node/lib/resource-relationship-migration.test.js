@@ -21,7 +21,10 @@ function fixture(t) {
     fs.mkdirSync(path.dirname(absolute), { recursive: true });
     fs.writeFileSync(absolute, content);
   };
-  write('contributors/pat.json', JSON.stringify({ studioId: personId, name: 'Pat', email: '', github: '' }));
+  write(
+    'contributors/pat.json',
+    JSON.stringify({ formatVersion: 1, studioId: personId, name: 'Pat', email: '', github: '' }),
+  );
   write('src/platform/systems/studio/system.ts', `export default { studioId: '${platformId}', role: 'platform' };`);
   write('src/systems/product/system.ts', `export default { studioId: '${systemId}', role: 'prototype' };`);
   write(

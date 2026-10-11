@@ -35,7 +35,13 @@ test('virtual directory refreshes identity mappings, rejects duplicates, and rem
     system = path.join(root, 'src/systems/product/system.ts');
   fs.writeFileSync(
     person,
-    JSON.stringify({ studioId: '0123456789abcdef', name: 'Pat', email: 'private@example.com', github: '' }),
+    JSON.stringify({
+      formatVersion: 1,
+      studioId: '0123456789abcdef',
+      name: 'Pat',
+      email: 'private@example.com',
+      github: '',
+    }),
   );
   fs.writeFileSync(system, "export default { studioId: 'abcdefghjkmnpqrs' };");
   const plugin = resourceDirectoryPlugin(root),
@@ -89,6 +95,7 @@ test('Vite resolves the generated directory without importing contributor profil
   fs.writeFileSync(
     person,
     JSON.stringify({
+      formatVersion: 1,
       studioId: '0123456789abcdef',
       name: 'Private Name',
       email: 'private@example.com',

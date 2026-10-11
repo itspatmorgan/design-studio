@@ -17,6 +17,7 @@ const makeDirectory = (contributor = 'pat', system = 'product') =>
     { studio: { studioId: platformId }, [system]: { studioId: systemId } },
   );
 const source: StudioConfig = {
+  formatVersion: 1,
   name: 'Studio',
   usage: 'team',
   modules: {},

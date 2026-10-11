@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CONFIG_FILE } from '../../../core/config.ts';
 import { parseConfigFile, serializeConfig, withModule } from '../../../core/config-file.ts';
+import { FORMAT_VERSIONS } from '../../../core/formats.ts';
 import { createResourceId } from '../../../core/resourceIdentity.ts';
 
 export function writeProfiles(root, entries) {
@@ -12,7 +13,14 @@ export function writeProfiles(root, entries) {
     fs.writeFileSync(
       profileFile,
       JSON.stringify(
-        { studioId: previous.studioId ?? createResourceId(), github: '', email: '', welcomeDismissed: false, ...entry },
+        {
+          formatVersion: FORMAT_VERSIONS.contributor,
+          studioId: previous.studioId ?? createResourceId(),
+          github: '',
+          email: '',
+          welcomeDismissed: false,
+          ...entry,
+        },
         null,
         2,
       ) + '\n',

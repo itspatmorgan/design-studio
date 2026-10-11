@@ -42,7 +42,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `AGENTS.team.md` | Seed | The team's own guidance for coding agents. `src/platform/AGENTS.md` is upstream. |
 | `.agents/skills/`, `.claude/skills/` | Generated | `pnpm studio sync`, recorded in `.agents/studio-skills.json`. Team-authored adapter entries are kept. |
 
-`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check`) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. It only warns for now. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
+`.studio/ownership.json` is the machine-readable form of this path map. `pnpm ownership` (also run by `pnpm check` and by CI) lists tracked paths the map does not cover and paths two tiers claim, and names the mixed files. A studio that adds a top-level file adds a rule for it, usually as a team path. An unknown or conflicting path fails `pnpm check`, `pnpm ownership`, and CI; the mixed files are listed for information only. Updates read the same map to resolve conflicts: generated files take the new revision, seed and team files keep the studio's copy, and other conflicts are left for review. The most specific rule wins, so a seed rule such as `src/systems/product/**` can sit beside the team rule `src/systems/**`.
 
 ## System roots
 

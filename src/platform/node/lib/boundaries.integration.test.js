@@ -129,6 +129,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
       root,
       'src/prototypes/boundary-fixture/production/meta.json',
       JSON.stringify({
+        formatVersion: 1,
         title: 'Production fixture',
         systemId: readDeclaration(fs.readFileSync(path.join(root, 'src/systems/boundary-system/system.ts'), 'utf8'))
           .value.studioId,

@@ -11,6 +11,8 @@ import { tierOf } from './ownership.js';
 
 const resolution = (map, file) => ({ generated: '--theirs', seed: '--ours', team: '--ours' })[tierOf(map, file)];
 
+// `beforeRegenerate()` runs after the conflicts are resolved and before regeneration, in the merged tree, for a step the
+// regeneration commands need first. Pre-release studios use it to stamp format versions (upgrade-test.js).
 // Returns { merged: true, changed } or { merged: false, conflicts: [paths] }, leaving the merge in progress when it fails.
 // `run(command, args)` runs a command in the studio; regeneration needs pnpm.
 export function mergeUpstream(
@@ -20,6 +22,7 @@ export function mergeUpstream(
     message = `Update from ${ref}`,
     map,
     run = (command, args) => execFileSync(command, args, { cwd, stdio: 'inherit' }),
+    beforeRegenerate = () => {},
   } = {},
 ) {
   const git = (...args) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
@@ -62,6 +65,7 @@ export function mergeUpstream(
   }
   const unresolved = git('diff', '--name-only', '--diff-filter=U').split('\n').filter(Boolean);
   if (unresolved.length) return { merged: false, conflicts: unresolved };
+  beforeRegenerate();
   // Regenerate what was taken from upstream or merged as text.
   run('pnpm', ['install', '--no-frozen-lockfile']);
   run('pnpm', ['studio', 'sync']);

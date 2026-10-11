@@ -20,7 +20,7 @@ function fixture(t) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
     fs.writeFileSync(file, content);
   };
-  write('contributors/pat.json', JSON.stringify({ name: 'Pat', email: '', github: 'pat' }));
+  write('contributors/pat.json', JSON.stringify({ formatVersion: 1, name: 'Pat', email: '', github: 'pat' }));
   write('src/platform/systems/studio/system.ts', "export default { role: 'platform', label: 'Studio' };");
   write('src/systems/product/system.ts', "// Source contract\nexport default { role: 'prototype', label: 'Product' };");
   write('src/systems/product/components/button.md', '# Button');

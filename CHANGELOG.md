@@ -2,6 +2,7 @@
 
 ## Foundation
 
+- `studio.config.json`, each prototype's `meta.json`, and each contributor's profile declare `"formatVersion": 1`, kept in `FORMAT_VERSIONS` and the contract snapshot, so the first format change after release can migrate from a known version. A missing or unknown version is an error naming the file; `pnpm new`, `pnpm join`, and settings writes stamp or keep it. A pre-release studio adds `"formatVersion": 1` to its settings, contributors, and `meta.json` files. The ownership check now fails `pnpm check` and CI for an unknown or conflicting path, and every test file is type-checked under `tsconfig.test.json`.
 - The setup plugin, its host catalogs, and SETUP.md moved to [design-studio-plugin](https://github.com/itspatmorgan/design-studio-plugin). The starter no longer ships plugin files, and `pnpm harness:sync` and `pnpm harness:check` are replaced by `pnpm studio sync` and `pnpm studio sync --check`.
 - Upstream code is formatted with Biome; `pnpm format:check` runs in CI.
 - `.studio/ownership.json` and `pnpm ownership` map every path to an owner tier, and an upgrade test proves a customized studio can take a newer upstream revision.
