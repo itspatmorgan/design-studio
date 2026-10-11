@@ -14,6 +14,26 @@ export default {
   libraries: [
     {
       "kind": "source",
+      "id": "tailwind",
+      "label": "Tailwind CSS",
+      "description": "Styling utilities and theme integration, supplied by Studio",
+      "docs": "https://tailwindcss.com/docs"
+    },
+    {
+      "kind": "source",
+      "id": "tw-animate-css",
+      "label": "tw-animate-css",
+      "description": "Component entry and exit animations, supplied by Studio",
+      "docs": "https://github.com/Wombosvideo/tw-animate-css",
+      "components": [
+        "dialog",
+        "dropdown-menu",
+        "select",
+        "tooltip"
+      ]
+    },
+    {
+      "kind": "source",
       "id": "shadcn",
       "label": "shadcn/ui",
       "description": "Component source and styles",

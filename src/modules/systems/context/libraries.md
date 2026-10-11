@@ -57,6 +57,8 @@ Prototype bare-package imports are limited to the shared runtime: React, React D
 
 Package access checks cover static imports, re-exports, type imports, literal dynamic imports, and require calls before resolution. Importing a `node_modules` filesystem path cannot bypass ownership. Theme package imports follow the same ownership policy and existing scoped CSS validation.
 
+Shared styling tools such as Tailwind can be listed as sources, with their Studio-supplied role made explicit. Include animation extensions only where the system actually uses them. This records meaningful choices without creating new per-system package ownership or implying that every installed tool is in use.
+
 ## Review and discovery
 
 Libraries follows Overview in navigation and presents what the system is built from on one page. Compact bordered entries show a name, contribution, resolved version when applicable, documentation, and links to typography, assets, or component examples. Asset pages distinguish library catalogs from local files. Fonts and icons do not need to be copied into assets/ to be available. Runtime entries remain in the declaration for agents; the human page omits import paths.

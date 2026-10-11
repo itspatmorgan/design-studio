@@ -12,6 +12,13 @@ export default {
   libraries: [
     {
       "kind": "source",
+      "id": "tailwind",
+      "label": "Tailwind CSS",
+      "description": "Styling utilities and theme integration, supplied by Studio",
+      "docs": "https://tailwindcss.com/docs"
+    },
+    {
+      "kind": "source",
       "id": "shadcn",
       "label": "shadcn/ui",
       "description": "Component source and styles",
