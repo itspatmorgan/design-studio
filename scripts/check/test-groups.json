@@ -34,6 +34,7 @@
         "scripts/lib/source-permissions.test.js",
         "scripts/lib/system-actions.test.js",
         "scripts/lib/system-transition.test.js",
+        "scripts/lib/upstream-merge.test.js",
         "src/modules/canvas/tools.test.ts",
         "src/modules/systems/content/content.test.ts",
         "src/modules/systems/docs.test.ts",
