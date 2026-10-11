@@ -1,21 +1,21 @@
 // Usage: pnpm new "Prototype Name"
-// Also used by the app's "New prototype" button in dev (scripts/build/vite-files-plugin.js).
+// Also used by the app's "New prototype" button in dev (src/platform/node/build/vite-files-plugin.js).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildManifest } from '../../../../scripts/build/build-manifest.js';
+import { buildManifest } from '../../../platform/node/build/build-manifest.js';
 import { rootOf } from '../../../platform/core/roots.ts';
-import { PROTOTYPE_SECTIONS } from '../../../../scripts/lib/modules.js';
-import { resolveContributor } from '../../../../scripts/cli/resolve-contributor.js';
-import { moveWithLinks, personAddress } from '../../../../scripts/lib/prototype-links.js';
+import { PROTOTYPE_SECTIONS } from '../../../platform/node/lib/modules.js';
+import { resolveContributor } from '../../../platform/node/cli/resolve-contributor.js';
+import { moveWithLinks, personAddress } from '../../../platform/node/lib/prototype-links.js';
 import { DEFAULT_SYSTEM, PROTOTYPE_SYSTEMS } from '../../../modules/systems/node/systems.js';
-import { INSTALLED_FILE_TYPES } from '../../../../scripts/lib/file-types.js';
+import { INSTALLED_FILE_TYPES } from '../../../platform/node/lib/file-types.js';
 import {
   retainedResourceIds,
   allocateResourceIdentity,
   identifyPrototypeArtifacts,
-} from '../../../../scripts/lib/resource-identity-lifecycle.js';
-import { KEY, loadContributors } from '../../../../scripts/lib/contributors.js';
+} from '../../../platform/node/lib/resource-identity-lifecycle.js';
+import { KEY, loadContributors } from '../../../platform/node/lib/contributors.js';
 import { prototypeAddress, resourceId } from '../../../platform/core/fileTypes.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -28,7 +28,7 @@ export const slugify = title =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 
-// Copies scripts/templates/prototype/ into src/prototypes/<key>/<slug>/,
+// Copies src/platform/node/templates/prototype/ into src/prototypes/<key>/<slug>/,
 // fills in meta.json, and rebuilds the manifest. Returns { slug, manifest }, or throws a message.
 export function createPrototype({ title, key, system = DEFAULT_SYSTEM }) {
   title = (title ?? '').trim();
@@ -47,7 +47,7 @@ export function createPrototype({ title, key, system = DEFAULT_SYSTEM }) {
 
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   try {
-    fs.cpSync(path.join(ROOT, 'scripts', 'templates', 'prototype'), dest, { recursive: true });
+    fs.cpSync(path.join(ROOT, 'src', 'platform', 'node', 'templates', 'prototype'), dest, { recursive: true });
     const metaPath = path.join(dest, 'meta.json');
     const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
     const d = new Date();

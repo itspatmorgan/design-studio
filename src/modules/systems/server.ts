@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import type { ModuleServer } from '../../platform/core/modules/index.ts';
 import { createSystem } from './node/create-system.js';
-import { systemAction } from '../../../scripts/lib/system-actions.js';
+import { systemAction } from '../../platform/node/lib/system-actions.js';
 const root = fileURLToPath(new URL('../../../', import.meta.url));
 export default {
   action: async ({ me, body }) => {

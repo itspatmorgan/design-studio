@@ -30,7 +30,7 @@
     /* shadcn/ui import alias */
     "paths": { "@/*": ["./src/*"], "@module/*": ["./src/modules/*/lib/index"] }
   },
-  "include": ["src", "scripts/templates", "studio.config.ts"],
+  "include": ["src", "studio.config.ts"],
   "exclude": [
     "src/modules/canvas/liveViews.test.ts",
     "src/modules/canvas/opening.test.ts",
@@ -43,8 +43,13 @@
     "src/modules/view/identity.test.ts",
     "src/modules/onboarding/progress.test.ts",
     "src/platform/app/data/prototypeUsage.test.ts",
-    "scripts/templates/module",
-    "scripts/templates/system",
+    "src/platform/node/build",
+    "src/platform/node/check",
+    "src/platform/node/cli",
+    "src/platform/node/eval",
+    "src/platform/node/lib",
+    "src/platform/node/templates/module",
+    "src/platform/node/templates/system",
     "src/modules/*/server.ts",
     "src/modules/canvas/cli.ts",
     "src/modules/canvas/tools.test.ts",

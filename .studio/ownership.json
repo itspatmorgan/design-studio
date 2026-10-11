@@ -4,7 +4,7 @@
     {
       "tier": "upstream",
       "paths": ["src/platform/**", "src/index.html", "src/lib/**", "src/types/**"],
-      "note": "Shell, core APIs, platform context and skills."
+      "note": "Shell, core APIs, Node tooling, platform context and skills."
     },
     {
       "tier": "upstream",
@@ -52,8 +52,8 @@
     },
     {
       "tier": "upstream",
-      "paths": ["scripts/**", "patches/**", "public/**"],
-      "note": "Tooling, setup, dependency patches, shared static files."
+      "paths": ["patches/**", "public/**"],
+      "note": "Dependency patches, shared static files."
     },
     {
       "tier": "upstream",

@@ -512,7 +512,7 @@ declare module '@tanstack/react-router' {
   }
 }
 
-// In dev, the manifest updates live as files change (scripts/build/vite-manifest-watch-plugin.js).
+// In dev, the manifest updates live as files change (src/platform/node/build/vite-manifest-watch-plugin.js).
 // invalidate() reruns the loaders, so lists and navigation update without a page reload.
 // https://tanstack.com/router/latest/docs/framework/react/manual/data-loading#using-routerinvalidate
 if (import.meta.hot) {

@@ -3,17 +3,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { slugify } from './create.js';
 import { PROTOTYPE_SYSTEMS } from '../../systems/node/systems.js';
-import { canonicalDirectory } from '../../../../scripts/lib/safe-paths.js';
-import { moveWithLinks, personAddress } from '../../../../scripts/lib/prototype-links.js';
-import { buildManifest } from '../../../../scripts/build/build-manifest.js';
-import { INSTALLED_FILE_TYPES } from '../../../../scripts/lib/file-types.js';
+import { canonicalDirectory } from '../../../platform/node/lib/safe-paths.js';
+import { moveWithLinks, personAddress } from '../../../platform/node/lib/prototype-links.js';
+import { buildManifest } from '../../../platform/node/build/build-manifest.js';
+import { INSTALLED_FILE_TYPES } from '../../../platform/node/lib/file-types.js';
 import {
   retainedResourceIds,
   allocateResourceIdentity,
   identifyPrototypeArtifacts,
-} from '../../../../scripts/lib/resource-identity-lifecycle.js';
-import { prototypeAssignment } from '../../../../scripts/lib/prototype-assignment.js';
-import { loadContributors } from '../../../../scripts/lib/contributors.js';
+} from '../../../platform/node/lib/resource-identity-lifecycle.js';
+import { prototypeAssignment } from '../../../platform/node/lib/prototype-assignment.js';
+import { loadContributors } from '../../../platform/node/lib/contributors.js';
 import { resourceId } from '../../../platform/core/fileTypes.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');

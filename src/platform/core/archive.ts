@@ -1,6 +1,6 @@
 // Archiving: a prototype can be set aside. Everything shows while you work locally; the deployed
-// site leaves an archived prototype out entirely (scripts/build/build-manifest.js --deploy, and
-// scripts/build/vite-globs-plugin.js), so it isn't built, listed, or shipped.
+// site leaves an archived prototype out entirely (src/platform/node/build/build-manifest.js --deploy, and
+// src/platform/node/build/vite-globs-plugin.js), so it isn't built, listed, or shipped.
 //
 // A prototype's status is meta.json "status": "archived". Active is the default and is never
 // written. Imports only roots.ts, which has none, so Node scripts and the app can both load it.
@@ -14,7 +14,7 @@ export const parseStatus = (value: unknown): Status | null =>
 
 // What the deployed site keeps: every prototype that isn't archived. `archived` lists what was left
 // out as paths in the app's file globs ("/prototypes/patrick/checkout/**"), for
-// scripts/build/vite-globs-plugin.js.
+// src/platform/node/build/vite-globs-plugin.js.
 type Proto = { id: string; contributorKey: string; status?: Status; systemMissing?: unknown };
 export function forDeploy<P extends Proto>(prototypes: P[]) {
   const kept = prototypes.filter(p => p.status !== 'archived' && !p.systemMissing);

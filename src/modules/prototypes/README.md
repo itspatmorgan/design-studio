@@ -110,7 +110,7 @@ Individual artifacts and folders have no separate archival status. Organizing th
 
 ## Validation
 
-Module checks enforce runtime dependency boundaries through `scripts/lib/scope.js` and validate prototype styles. Manifest checks validate metadata and artifact structure. These checks do not enforce every agent operating instruction.
+Module checks enforce runtime dependency boundaries through `src/platform/node/lib/scope.js` and validate prototype styles. Manifest checks validate metadata and artifact structure. These checks do not enforce every agent operating instruction.
 
 The [build-prototype skill](skills/build-prototype/SKILL.md) requires verification before committing. The [Asset Guard](../../platform/context/assets.md#asset-guard) owns the staged-file size limit.
 

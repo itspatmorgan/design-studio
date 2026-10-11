@@ -1,6 +1,6 @@
-import artifactRevisions from './scripts/build/vite-artifact-revisions-plugin.js';
-import moduleEntries from './scripts/build/vite-module-entries-plugin.js';
-import resourceDirectoryPlugin from './scripts/build/vite-resource-directory-plugin.js';
+import artifactRevisions from './src/platform/node/build/vite-artifact-revisions-plugin.js';
+import moduleEntries from './src/platform/node/build/vite-module-entries-plugin.js';
+import resourceDirectoryPlugin from './src/platform/node/build/vite-resource-directory-plugin.js';
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
@@ -9,26 +9,26 @@ import mdx from '@mdx-js/rollup';
 import remarkFrontmatter from 'remark-frontmatter';
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 import remarkGfm from 'remark-gfm';
-import remarkHtmlAsText from './scripts/build/remark-html-as-text.js';
-import remarkTitleFromHeading from './scripts/build/remark-title-from-heading.js';
+import remarkHtmlAsText from './src/platform/node/build/remark-html-as-text.js';
+import remarkTitleFromHeading from './src/platform/node/build/remark-title-from-heading.js';
 import rehypeSlug from 'rehype-slug';
 import rehypePrettyCode from 'rehype-pretty-code';
-import rehypeMermaid from './scripts/build/rehype-mermaid.js';
-import rehypeFileEmbeds from './scripts/build/rehype-file-embeds.js';
+import rehypeMermaid from './src/platform/node/build/rehype-mermaid.js';
+import rehypeFileEmbeds from './src/platform/node/build/rehype-file-embeds.js';
 import { documentCodeTheme } from './src/systems/studio/styles/contentPalette.js';
 import tailwindcss from '@tailwindcss/vite';
-import importGuard from './scripts/build/vite-import-guard-plugin.js';
-import manifestWatch from './scripts/build/vite-manifest-watch-plugin.js';
-import spa404 from './scripts/build/vite-spa-404-plugin.js';
-import deploymentRecovery from './scripts/build/vite-deployment-recovery-plugin.js';
-import previewTheme from './scripts/build/vite-preview-theme-plugin.js';
-import files from './scripts/build/vite-files-plugin.js';
-import settings from './scripts/build/vite-settings-plugin.js';
-import markdownRefresh from './scripts/build/vite-markdown-refresh-plugin.js';
+import importGuard from './src/platform/node/build/vite-import-guard-plugin.js';
+import manifestWatch from './src/platform/node/build/vite-manifest-watch-plugin.js';
+import spa404 from './src/platform/node/build/vite-spa-404-plugin.js';
+import deploymentRecovery from './src/platform/node/build/vite-deployment-recovery-plugin.js';
+import previewTheme from './src/platform/node/build/vite-preview-theme-plugin.js';
+import files from './src/platform/node/build/vite-files-plugin.js';
+import settings from './src/platform/node/build/vite-settings-plugin.js';
+import markdownRefresh from './src/platform/node/build/vite-markdown-refresh-plugin.js';
 import systemProps from './src/modules/systems/node/props-plugin.js';
-import globs from './scripts/build/vite-globs-plugin.js';
-import css, { scopedUtilities } from './scripts/build/vite-css-plugin.js';
-import { ENABLED_MODULES } from './scripts/lib/modules.js';
+import globs from './src/platform/node/build/vite-globs-plugin.js';
+import css, { scopedUtilities } from './src/platform/node/build/vite-css-plugin.js';
+import { ENABLED_MODULES } from './src/platform/node/lib/modules.js';
 
 // References use the same plain-Markdown pipeline, without hiding any document sections.
 function markdown(reference = false) {
@@ -123,7 +123,7 @@ export default defineConfig({
     // Markdown (no JSX or expressions, so any .md file compiles; raw HTML shows as text): frontmatter (a first heading is the title when there's no `title`), GitHub-style Markdown, heading ids, and code highlighting with Shiki in both color modes.
     markdown(),
     markdown(true),
-    // Markdown readers refresh through scripts/build/vite-markdown-refresh-plugin.js instead.
+    // Markdown readers refresh through src/platform/node/build/vite-markdown-refresh-plugin.js instead.
     react({ include: /\.[jt]sx$/ }),
     markdownRefresh(),
     importGuard(),

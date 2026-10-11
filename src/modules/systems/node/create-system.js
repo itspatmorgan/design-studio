@@ -4,8 +4,8 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { readContributors } from '../../../../scripts/lib/contributors.js';
-import { readSettings } from '../../../../scripts/lib/studio-settings.js';
+import { readContributors } from '../../../platform/node/lib/contributors.js';
+import { readSettings } from '../../../platform/node/lib/studio-settings.js';
 import { studioRole } from '../../../platform/core/permissions.ts';
 const execute = promisify(execFile);
 
@@ -40,7 +40,7 @@ export function createSystem(root, me, body) {
       const fd = fs.openSync(marker, 'wx');
       fs.closeSync(fd);
       locked = true;
-      const args = [path.join(root, 'scripts/cli/studio.js'), 'create-system', id, '--label', name];
+      const args = [path.join(root, 'src/platform/node/cli/studio.js'), 'create-system', id, '--label', name];
       const options = { cwd: root, encoding: 'utf8', timeout: 30000 };
       await execute(process.execPath, args, options);
       await execute(process.execPath, [...args, '--yes'], options);

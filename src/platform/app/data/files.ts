@@ -1,7 +1,7 @@
 import { CONFIG } from './config';
 import { SYSTEM_SPECS } from '@/modules/systems/data/systems';
 import { SourceChanged } from '@/platform/core/source/access';
-// A prototype's files, from the dev server (scripts/build/vite-files-plugin.js). Dev only: on the
+// A prototype's files, from the dev server (src/platform/node/build/vite-files-plugin.js). Dev only: on the
 // deployed site these return null, and the prototype navigation lists views from the manifest.
 import { useEffect, useState } from 'react';
 import type { Manifest, Prototype, PrototypeInfo } from '@/platform/app/data/types';
@@ -188,7 +188,7 @@ export const systemFiles = (system: string): Prototype => ({
   artifacts: [],
 });
 
-// Changes a file in your prototype (scripts/build/vite-files-plugin.js). Throws the server's message.
+// Changes a file in your prototype (src/platform/node/build/vite-files-plugin.js). Throws the server's message.
 export async function fileOp(p: PrototypeInfo, op: FileOp): Promise<FileOpResult> {
   const res = await fetch('/__studio/op', {
     method: 'POST',

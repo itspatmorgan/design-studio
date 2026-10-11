@@ -2,7 +2,7 @@
 
 Read [working context](src/platform/context/working-in-studio.md) at the start of each session. Preserve existing work and respect the person's explicit choices and authorization. Before changing upstream-owned paths, read [Ownership and updates](src/platform/context/ownership.md).
 
-Before editing an existing contributor-owned prototype, use `pnpm studio context src/prototypes/<key>/<id> --json` to resolve contributor scope, assignment, and pending rebuild. For creation or other content, resolve the contributor with `node scripts/cli/resolve-contributor.js`. Explicit `systemId: null` means no system; missing assignments are invalid. The default is written explicitly at creation. Read the assigned system's `AGENTS.md` and relevant context. For a pending rebuild, read the target system too and preserve the original.
+Before editing an existing contributor-owned prototype, use `pnpm studio context src/prototypes/<key>/<id> --json` to resolve contributor scope, assignment, and pending rebuild. For creation or other content, resolve the contributor with `node src/platform/node/cli/resolve-contributor.js`. Explicit `systemId: null` means no system; missing assignments are invalid. The default is written explicitly at creation. Read the assigned system's `AGENTS.md` and relevant context. For a pending rebuild, read the target system too and preserve the original.
 
 Start with the [platform README](src/platform/README.md) to locate shared context, skills, and implementation. For platform product or architecture decisions, read [Principles](src/platform/context/principles.md) and [Personas](src/platform/context/personas.md). For Studio interface work, read [Studio instructions](src/systems/studio/AGENTS.md).
 

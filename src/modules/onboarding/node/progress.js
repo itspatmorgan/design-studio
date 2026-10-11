@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { KEY } from '../../../../scripts/lib/contributors.js';
-import { applySetupChanges } from '../../../../scripts/lib/studio-setup.js';
+import { KEY } from '../../../platform/node/lib/contributors.js';
+import { applySetupChanges } from '../../../platform/node/lib/studio-setup.js';
 
 // The server supplies the resolved contributor; requests cannot select a profile.
 export function claimWelcome(root, contributor) {

@@ -1,7 +1,7 @@
 import { compatible } from '@/platform/core/modules';
 // The file types installed in src/modules/ (the modules that have a type.ts): one folder each, found with a glob, so the app
-// runs with any of them removed. (scripts/lib/file-types.js finds the same folders for the
-// build.) Core code reads types here and never imports a type's folder (scripts/check/check-modules.js).
+// runs with any of them removed. (src/platform/node/lib/file-types.js finds the same folders for the
+// build.) Core code reads types here and never imports a type's folder (src/platform/node/check/check-modules.js).
 import { assertUniqueExtensions, matchFileType, type FileTypeSpec } from '@/platform/core/fileTypes';
 import { assertFileTypeModule, type FileTypeModule } from '@/platform/app/data/fileTypeModule';
 import { MODULES } from '@/platform/app/data/modules';

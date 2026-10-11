@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { componentProblems, discoverComponents, duplicateProblems } from '../docs.ts';
 import { titleOf } from '../scaffold.ts';
-import { frontmatter } from '../../../../scripts/lib/frontmatter.js';
+import { frontmatter } from '../../../platform/node/lib/frontmatter.js';
 
 // Every file under dir as a "/"-separated path, skipping hidden files and node_modules.
 // Links are never followed: a symlink is neither a file nor a folder here.

@@ -8,7 +8,7 @@ For local setup, follow [manual installation](https://github.com/itspatmorgan/de
 
 Open an issue for a substantial feature or architectural change before investing in an implementation. Small fixes can go straight to a pull request. Describe the problem, the resulting behavior, and how you verified it. Include screenshots for visible changes.
 
-Create a branch in your fork and submit a pull request to `main`. Changes to the platform, systems, system content, scripts, and configuration need maintainer review. Prototype changes follow the contributor ownership requirements in [Contributor scope](src/platform/context/contributor-scope.md); when building a new prototype, use `pnpm new "Prototype Name"`.
+Create a branch in your fork and submit a pull request to `main`. Changes to the platform, systems, system content, tooling, and configuration need maintainer review. Prototype changes follow the contributor ownership requirements in [Contributor scope](src/platform/context/contributor-scope.md); when building a new prototype, use `pnpm new "Prototype Name"`.
 
 ## Checking your work
 

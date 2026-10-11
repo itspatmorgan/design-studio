@@ -11,7 +11,7 @@ This optional module owns prototype Markdown. Follow the [manage-modules skill](
 - `type.ts`: what the build reads: the `.md` extension, a template (a title and an empty-document line), and the checks on frontmatter.
 - `open.tsx`: the icon, how a document loads, and its page.
 - `src/platform/app/docs/`: the shared Markdown reader and page style. The system context uses this reader independently.
-- `scripts/build/rehype-mermaid.js`: preserves Mermaid fences before code highlighting. The shared reader maps them to `MermaidDiagram.tsx` for lazy SVG rendering.
+- `src/platform/node/build/rehype-mermaid.js`: preserves Mermaid fences before code highlighting. The shared reader maps them to `MermaidDiagram.tsx` for lazy SVG rendering.
 - `loader.ts`: the glob of document files for the deployed site.
 
 Agent contract: `src/modules/document/skills/write-document/SKILL.md`.

@@ -143,7 +143,7 @@ Delete permanently removes the source and registration without retaining a Studi
 
 The configuration command preserves existing prototypes' system choices before changing the default. Migration must update imports and metadata together.
 
-See `scripts/lib/studio-setup.js` for preservation and the setup-design-system skill for migration and placeholder cleanup.
+See `src/platform/node/lib/studio-setup.js` for preservation and the setup-design-system skill for migration and placeholder cleanup.
 
 Studio is maintained with Studio and excluded from prototype choices, default-system configuration, and system removal. Its runtime UI stays unavailable to prototypes and other systems.
 

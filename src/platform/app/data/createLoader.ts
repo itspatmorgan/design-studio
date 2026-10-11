@@ -112,7 +112,7 @@ export function createLoader<M>(glob: Glob<M>, hot: ImportMeta['hot']) {
         window.dispatchEvent(new Event('studio:views'));
       }
     }
-    // A file that updates itself (a prototype document, scripts/build/vite-markdown-refresh-plugin.js)
+    // A file that updates itself (a prototype document, src/platform/node/build/vite-markdown-refresh-plugin.js)
     // hands over its new version: use it, and have the router load the open item again. Added
     // once; it reads the shared state, so it stays current across runs.
     // Vite replaces custom listeners when this loader hot-updates, so register each run.

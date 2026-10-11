@@ -2,12 +2,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CONFIG } from '../../../../scripts/lib/modules.js';
-import { readPersistedStudioConfig } from '../../../../scripts/lib/persisted-studio-config.js';
+import { CONFIG } from '../../../platform/node/lib/modules.js';
+import { readPersistedStudioConfig } from '../../../platform/node/lib/persisted-studio-config.js';
 import { readDeclaration } from '../../../platform/core/declarations.ts';
 import { platformSourceOf, sourceOf } from '../sources.ts';
 import { platformSystemId, systemProblems, themeClassProblems } from '../spec.ts';
-import { systemDependencyProblems, systemPeerProblems } from '../../../../scripts/lib/system-dependencies.js';
+import { systemDependencyProblems, systemPeerProblems } from '../../../platform/node/lib/system-dependencies.js';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const DIR = path.join(ROOT, 'src', 'systems');
 export let SYSTEM_SPECS = {};

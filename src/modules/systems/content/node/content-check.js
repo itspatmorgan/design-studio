@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { SYSTEM_CONTENT_SECTIONS } from '../../../../platform/core/roots.ts';
 import { SKILL_FILE, skillProblems } from '../skills.ts';
-import { frontmatter } from '../../../../../scripts/lib/frontmatter.js';
+import { frontmatter } from '../../../../platform/node/lib/frontmatter.js';
 
 const visible = dir => fs.readdirSync(dir, { withFileTypes: true }).filter(e => !e.name.startsWith('.'));
 const sections = Object.keys(SYSTEM_CONTENT_SECTIONS);

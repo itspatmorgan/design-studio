@@ -54,6 +54,8 @@ export const MODULE_PLATFORM_ENTRIES: readonly string[] = [
 
 export function modulePlatformProblem(importer: string, target: string, raw = false): string | null {
   if (!/^src\/modules\/[^/]+\//.test(importer) || !target.startsWith('src/platform/')) return null;
+  // Node tooling is not part of the module API surface; a module's Node-side files import it directly.
+  if (target.startsWith('src/platform/node/')) return null;
   // The shared knowledge readers may render Markdown or inspect support files as raw text.
   // This does not permit executing platform skill scripts or importing runtime implementation.
   const knowledge = /^src\/platform\/(?:context|skills)\//.test(target);

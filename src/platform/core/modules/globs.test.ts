@@ -1,7 +1,7 @@
 // The patterns each file type's loader lists its files with (globs.ts). Run with `pnpm test`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { FILE_TYPES } from '../../../../scripts/lib/file-types.js';
+import { FILE_TYPES } from '../../node/lib/file-types.js';
 import { assertUniqueExtensions, systemContentType, matchFileType } from '../fileTypes.ts';
 import { globsFor } from './globs.ts';
 import type { ModuleSpec } from './index.ts';

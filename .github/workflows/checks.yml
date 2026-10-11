@@ -44,13 +44,13 @@ jobs:
         run: |
           if [ "$EVENT" = "pull_request" ]; then
             BASE_REF=$(git merge-base "$BASE_REF" "$HEAD_REF")
-            node scripts/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF" --review
+            node src/platform/node/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF" --review
           else
             STUDIO_PLATFORM_ROLE=$(gh api "repos/$REPOSITORY/collaborators/$PUSH_ACTOR/permission" --jq '.role_name')
             export STUDIO_PLATFORM_ROLE
-            node scripts/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF"
+            node src/platform/node/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF"
           fi
-          node scripts/check/check-asset-size.js --ci "$BASE_REF" "$HEAD_REF"
+          node src/platform/node/check/check-asset-size.js --ci "$BASE_REF" "$HEAD_REF"
   regressions:
     name: Selected regressions
     runs-on: ubuntu-24.04
@@ -69,7 +69,7 @@ jobs:
       - uses: jdx/mise-action@v5
       - name: Select affected regression groups
         id: plan
-        run: node scripts/check/test.js --changed "$BASE_REF" "$HEAD_REF" --plan-only
+        run: node src/platform/node/check/test.js --changed "$BASE_REF" "$HEAD_REF" --plan-only
       - name: Locate dependency store
         if: steps.plan.outputs.tests_needed == 'true'
         id: store
@@ -83,7 +83,7 @@ jobs:
         if: steps.plan.outputs.tests_needed == 'true'
       - name: Run selected regressions
         if: steps.plan.outputs.tests_needed == 'true'
-        run: node scripts/check/test.js --changed "$BASE_REF" "$HEAD_REF"
+        run: node src/platform/node/check/test.js --changed "$BASE_REF" "$HEAD_REF"
   bundle:
     name: Production build
     runs-on: ubuntu-24.04
@@ -147,7 +147,7 @@ jobs:
         env:
           BASE_REF: ${{ github.event.pull_request.base.sha }}
           HEAD_REF: ${{ github.event.pull_request.head.sha }}
-        run: node scripts/check/upgrade-test.js "$(git merge-base "$BASE_REF" "$HEAD_REF")" "$HEAD_REF"
+        run: node src/platform/node/check/upgrade-test.js "$(git merge-base "$BASE_REF" "$HEAD_REF")" "$HEAD_REF"
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
     needs: [bundle, regressions]

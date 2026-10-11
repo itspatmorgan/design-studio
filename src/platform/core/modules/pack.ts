@@ -1,4 +1,4 @@
-// The pure parts of adding a module or design system from a source (scripts/cli/studio.js): what a source can be,
+// The pure parts of adding a module or design system from a source (src/platform/node/cli/studio.js): what a source can be,
 // where each file of a pack goes, whether a license is one a team can build on, and the edits to studio.config.ts
 // and AGENTS.md. Nothing here touches files or the network, so every rule is tested. Has only type imports.
 import type { ModuleSpec } from './index.ts';

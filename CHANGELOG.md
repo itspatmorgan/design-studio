@@ -5,6 +5,7 @@
 - The setup plugin, its host catalogs, and SETUP.md moved to [design-studio-plugin](https://github.com/itspatmorgan/design-studio-plugin). The starter no longer ships plugin files, and `pnpm harness:sync` and `pnpm harness:check` are replaced by `pnpm studio sync` and `pnpm studio sync --check`.
 - Upstream code is formatted with Biome; `pnpm format:check` runs in CI.
 - `.studio/ownership.json` and `pnpm ownership` map every path to an owner tier, and an upgrade test proves a customized studio can take a newer upstream revision.
+- The Node tooling moved from `scripts/` to `src/platform/node/`, so `src/platform/` is the single upstream-owned root. Paths in `package.json`, hooks, and workflows changed; behavior did not.
 
 ## Portable setup preparation
 

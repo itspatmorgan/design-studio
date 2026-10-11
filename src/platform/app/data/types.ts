@@ -5,7 +5,7 @@ import type { ThemeToken } from '@/modules/systems/themeTokens';
 import type { DocsMode } from '@/modules/systems/sources';
 import type { SystemLibrary } from '@/modules/systems/spec';
 
-// public/prototypes/manifest.json, written by scripts/build/build-manifest.js, with each prototype's artifacts
+// public/prototypes/manifest.json, written by src/platform/node/build/build-manifest.js, with each prototype's artifacts
 // in public/prototypes/artifacts/<contributor>/<prototype>.json.
 // A navigable artifact backed by a file. Shared readers use the same record shape (see src/platform/context/file-types.md).
 export type Artifact = {

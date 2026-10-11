@@ -40,7 +40,7 @@ Assets support artifacts; they do not become navigable artifacts themselves. Fol
 
 ## Asset Guard
 
-Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `scripts/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds 750 KB, unless explicitly allowlisted. CI runs the same guard against committed changes.
+Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `src/platform/node/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds 750 KB, unless explicitly allowlisted. CI runs the same guard against committed changes.
 
 The guard applies to all files, including assets in `public/`. Existing oversized files are checked when modified.
 

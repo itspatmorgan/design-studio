@@ -1,6 +1,6 @@
 // A component's files in the Source editor, one tab each: its page (Markdown), its examples, and
 // the component itself. Shown in place of the component's page through navigation's Edit source action; the page updates as you save. A file the component doesn't have yet is offered as
-// a template. Dev only: it reads and saves through the file layer (scripts/build/vite-files-plugin.js).
+// a template. Dev only: it reads and saves through the file layer (src/platform/node/build/vite-files-plugin.js).
 import { useMemo, useState } from 'react';
 import { useRouter } from '@tanstack/react-router';
 import SourceEditor from '@/platform/core/source/SourceEditor';

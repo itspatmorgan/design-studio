@@ -17,7 +17,7 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | `pnpm build:release` | Full regression suite followed by the production build. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |
 | `pnpm format` / `pnpm format:check` | Format upstream code, JSON and CSS with Biome, or check that it is formatted. Team and seed paths, generated files and `studio.config.ts` are excluded. CI runs the check. |
-| `node scripts/check/upgrade-test.js <base> <head>` | Create a studio from `<base>`, make typical team changes, update it to `<head>`, and require a clean merge, `pnpm check`, and `pnpm build`. Add `--keep` to inspect the result. |
+| `node src/platform/node/check/upgrade-test.js <base> <head>` | Create a studio from `<base>`, make typical team changes, update it to `<head>`, and require a clean merge, `pnpm check`, and `pnpm build`. Add `--keep` to inspect the result. |
 | GitHub pull request | Scope review, asset sizes, selected regressions, production build, and the upgrade test. Platform proposals are flagged for review. |
 | Push to `main` | Scope authorization, asset sizes, selected regressions, and production build. Platform changes require an admin or maintainer role. |
 
@@ -35,7 +35,7 @@ The platform contract snapshot (`src/platform/core/contract.snapshot.json`) reco
 
 Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or distribution tests for ordinary authoring. Scope, ownership, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
 
-The reviewed dependency map is `scripts/check/test-groups.json`. Each retained test belongs to a group. `scripts/check/test-selection.js` follows local transitive imports and supplements them with explicit source patterns for subprocesses, fixture reads, and globs. Patterns describe dependencies, not just the folder containing a test.
+The reviewed dependency map is `src/platform/node/check/test-groups.json`. Each retained test belongs to a group. `src/platform/node/check/test-selection.js` follows local transitive imports and supplements them with explicit source patterns for subprocesses, fixture reads, and globs. Patterns describe dependencies, not just the folder containing a test.
 
 | Group | Purpose and indirect dependencies |
 | --- | --- |

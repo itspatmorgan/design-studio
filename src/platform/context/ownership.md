@@ -21,7 +21,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 
 | Path | Tier | Notes |
 | --- | --- | --- |
-| `src/platform/` | Upstream | Shell, core APIs, platform context and skills. |
+| `src/platform/` | Upstream | Shell, core APIs, Node tooling, platform context and skills. |
 | `src/modules/<id>/` for supplied modules | Upstream | Every module the starter ships, required or optional. |
 | `src/modules/<id>/` for the team's modules | Team | Created through [Manage modules](../skills/manage-modules/SKILL.md). |
 | `src/systems/studio/` | Upstream | Studio's own interface system. |
@@ -31,7 +31,7 @@ Prefer team and seed paths for studio-specific work. If an upstream path must ch
 | `contributors/` | Team | The sample contributor is seed. |
 | `studio.config.ts` | Seed | The team's settings after creation. |
 | `README.md` | Seed | The starter's README; rewrite it for the team. |
-| `scripts/`, `patches/`, `public/` | Upstream | Tooling, dependency patches, and shared static files. |
+| `patches/`, `public/` | Upstream | Dependency patches and shared static files. |
 | `package.json`, `pnpm-workspace.yaml`, `biome.json`, `vite.config.ts`, `tsconfig*.json`, `mise.toml`, `.github/`, `.husky/` | Upstream | Root tooling and workflows. |
 | `.studio/ownership.json`, `CHANGELOG.md`, `CONTRIBUTING.md`, `SECURITY.md`, `LICENSE`, `CLAUDE.md`, `.gitignore`, `.git-blame-ignore-revs` | Upstream | The ownership map, project documents, and blame settings. |
 | `pnpm-lock.yaml` | Generated | `pnpm install` |

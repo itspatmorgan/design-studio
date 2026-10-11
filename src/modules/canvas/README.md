@@ -5,7 +5,7 @@ notes, text, and arrows. It's [Excalidraw](https://github.com/excalidraw/excalid
 look, and its design comes from Design Studio's canvas. Agent contract: `src/modules/canvas/skills/use-canvas/SKILL.md`.
 Human orientation: [Prototypes & systems](/documentation/manual/prototypes#what-belongs-in-a-prototype).
 
-**This folder is a self-contained file type.** Core never imports it (`scripts/check/check-modules.js`),
+**This folder is a self-contained file type.** Core never imports it (`src/platform/node/check/check-modules.js`),
 so the app runs with or without it. Canvas doesn't import another file type either: it asks the
 registry (`src/platform/app/data/fileTypes.ts`) how to show an artifact. Browser and CLI sizing use the same surface declaration.
 

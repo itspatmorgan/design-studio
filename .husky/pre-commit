@@ -1,4 +1,4 @@
-node scripts/check/check-asset-size.js --staged || exit 1
-node scripts/check/check-scope.js --staged
-node scripts/check/check-identity.js
-node scripts/check/check-modules.js || exit 1
+node src/platform/node/check/check-asset-size.js --staged || exit 1
+node src/platform/node/check/check-scope.js --staged
+node src/platform/node/check/check-identity.js
+node src/platform/node/check/check-modules.js || exit 1

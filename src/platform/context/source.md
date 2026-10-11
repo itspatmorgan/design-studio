@@ -99,4 +99,4 @@ Manual chapters and owner README documents have separate source files. Each read
 - `src/platform/core/source/sourceTheme.ts`, `markdownSource.ts`, `mermaidSource.ts`: shared Flexoki highlighting, including Mermaid fences in Markdown. CSS theme files also receive syntax highlighting.
 - `src/platform/app/source/ArtifactSource.tsx`: prototype and system context access adapter.
 - `src/platform/app/shell/FileNavItem.tsx` and `FileActionItems.tsx`: file-backed navigation and common actions. File trees use the same actions with their own structure.
-- `scripts/build/files/source.js`: versioned, size-limited access to explicitly allowlisted Documentation and Systems files. Prototype and system context access retain their existing file policies.
+- `src/platform/node/build/files/source.js`: versioned, size-limited access to explicitly allowlisted Documentation and Systems files. Prototype and system context access retain their existing file policies.

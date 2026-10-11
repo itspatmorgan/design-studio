@@ -108,7 +108,7 @@ Installation is not a sandbox. Installed code has the privileges of repository c
 
 ## Discovery and verification
 
-Node tooling discovers modules through `scripts/lib/modules.js`. Browser discovery uses `src/platform/app/data/modules.ts`.
+Node tooling discovers modules through `src/platform/node/lib/modules.js`. Browser discovery uses `src/platform/app/data/modules.ts`.
 
 The manifest scans declared content sections. Vite supplies file globs and themes. The shell combines module navigation and routes.
 

@@ -46,7 +46,9 @@ if (!fs.existsSync(file))
 const real = fs.realpathSync(file);
 // A prototype is src/prototypes/<contributor>/<prototype>/; an artifact of a module's section of prototype-shaped
 // folders (a section artifact, src/examples/<id>/) is opened under the section's key (src/platform/core/roots.ts).
-const { PROTOTYPE_SECTIONS } = (await import(pathToFileURL(path.join(ROOT, 'scripts', 'lib', 'modules.js')).href)) as {
+const { PROTOTYPE_SECTIONS } = (await import(
+  pathToFileURL(path.join(ROOT, 'src', 'platform', 'node', 'lib', 'modules.js')).href
+)) as {
   PROTOTYPE_SECTIONS: { key: string; dir: string }[];
 };
 const inSection = PROTOTYPE_SECTIONS.map(s => ({
@@ -85,19 +87,21 @@ if ((scene!.studioVersion ?? 1) > FORMAT_VERSION)
 
 // What the tools need to know about the app: the artifacts in this canvas's prototype, from the manifest.
 const manifestFile = path.join(ROOT, 'public', 'prototypes', 'manifest.json');
-if (!fs.existsSync(manifestFile)) fail('There is no manifest yet. Run: node scripts/build/build-manifest.js');
+if (!fs.existsSync(manifestFile)) fail('There is no manifest yet. Run: node src/platform/node/build/build-manifest.js');
 type PrototypeRef = { contributorKey: string; id: string; studioId?: string };
 const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8')) as {
   prototypes: PrototypeRef[];
   sections?: Record<string, PrototypeRef[]>;
 };
 const everything = [...manifest.prototypes, ...Object.values(manifest.sections ?? {}).flat()];
-// A prototype's artifacts are in a file of their own (scripts/build/build-manifest.js).
+// A prototype's artifacts are in a file of their own (src/platform/node/build/build-manifest.js).
 const itemsOf = (x: PrototypeRef): { path: string; fileType: string; studioId?: string }[] => {
   const file = path.join(ROOT, 'public', 'prototypes', 'artifacts', x.contributorKey, `${x.id}.json`);
   return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
 };
-const { FILE_TYPES } = (await import(pathToFileURL(path.join(ROOT, 'scripts', 'lib', 'file-types.js')).href)) as {
+const { FILE_TYPES } = (await import(
+  pathToFileURL(path.join(ROOT, 'src', 'platform', 'node', 'lib', 'file-types.js')).href
+)) as {
   FILE_TYPES: Record<string, FileTypeSpec>;
 };
 
@@ -166,9 +170,9 @@ try {
   const result = run(scene!.elements!, tool, args, ctx);
   if (!['describe', 'help', 'artifacts'].includes(tool)) {
     const { resolveContributor } = await import(
-      pathToFileURL(path.join(ROOT, 'scripts/cli/resolve-contributor.js')).href
+      pathToFileURL(path.join(ROOT, 'src/platform/node/cli/resolve-contributor.js')).href
     );
-    const { canChange } = await import(pathToFileURL(path.join(ROOT, 'scripts/build/files/policy.js')).href);
+    const { canChange } = await import(pathToFileURL(path.join(ROOT, 'src/platform/node/build/files/policy.js')).href);
     const prototypeRoot = inSection
       ? path.join(PROTOTYPE_SECTIONS.find(section => section.key === contributor)!.dir, prototype)
       : path.join(PROTOS, contributor, prototype);

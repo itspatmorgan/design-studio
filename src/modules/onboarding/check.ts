@@ -1,5 +1,5 @@
 import type { ModuleCheck } from '../../platform/core/modules/index.ts';
-import { readContributors } from '../../../scripts/lib/contributors.js';
+import { readContributors } from '../../platform/node/lib/contributors.js';
 
 // Runs only while Onboarding is enabled. Disabled modules retain their profile state.
 export default (({ root }) => {

@@ -17,7 +17,7 @@ When called by configure-studio or an installation workflow, use **registration-
 2. For GitHub sharing, determine the person's username. Let the person complete interactive authentication if needed.
 3. Preview `pnpm join`. Supply explicit `--key`, `--name`, `--email`, and optional `--github` flags when detection is unsuitable.
 4. Apply confirmed registration with `--yes`. Do not overwrite another entry to resolve a collision.
-5. Run `node scripts/cli/resolve-contributor.js` and verify the expected key. Registration writes initial onboarding progress; preserve existing progress. Correct any profile declarations reported by validation rather than assuming defaults.
+5. Run `node src/platform/node/cli/resolve-contributor.js` and verify the expected key. Registration writes initial onboarding progress; preserve existing progress. Correct any profile declarations reported by validation rather than assuming defaults.
 
 Personal local use accepts a personal email and needs no GitHub account. GitHub CI needs the contributor's username before sharing there.
 

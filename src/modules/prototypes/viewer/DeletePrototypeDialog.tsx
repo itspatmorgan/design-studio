@@ -1,5 +1,5 @@
 // Confirms deleting a prototype you own, in dev. The whole folder goes to the Trash
-// (scripts/build/vite-files-plugin.js), and the app goes back to the Prototypes page.
+// (src/platform/node/build/vite-files-plugin.js), and the app goes back to the Prototypes page.
 import { useState } from 'react';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { deletePrototype } from '@/platform/app/data/files';

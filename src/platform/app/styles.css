@@ -11,12 +11,13 @@
 /* Tailwind scans the project for class names and reloads the page when a scanned file
    that isn't code changes. These are data, never classes, so skip them: editing a
    prototype's meta.json then updates the app live instead of reloading it. (The two markers below are filled in
-   by scripts/build/vite-css-plugin.js: a theme for each design system in src/systems/, and a line for each folder of
+   by src/platform/node/build/vite-css-plugin.js: a theme for each design system in src/systems/, and a line for each folder of
    prototypes.) */
 /* @studio:data-files */
 @source not "../../../contributors/**";
-/* Test fixtures and maintainer scripts do not supply runtime utility classes. */
+/* Test fixtures do not supply runtime utility classes, and neither does the Node tooling (src/platform/node). */
 @source not "../../**/*.test.*";
+@source not "../node/**";
 
 /* Local light scopes block the global mode; local dark scopes work in light Studio too. */
 @custom-variant dark (

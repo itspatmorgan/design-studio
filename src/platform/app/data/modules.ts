@@ -1,5 +1,5 @@
 // The modules installed in src/modules/: one folder each, found with a glob, so the app runs
-// with any of them removed. (scripts/lib/modules.js finds the same folders for the build.)
+// with any of them removed. (src/platform/node/lib/modules.js finds the same folders for the build.)
 import type { ModuleSpec } from '@/platform/core/modules';
 import { setSections } from '@/platform/core/roots';
 

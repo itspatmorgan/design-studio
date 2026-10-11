@@ -55,7 +55,7 @@ export type ModuleSpec = {
 };
 
 // A module can add routes to the dev server (src/modules/<id>/server.ts, served by
-// scripts/build/vite-files-plugin.js at POST /__studio/<id>/<route>). A handler gets who is asking (their
+// src/platform/node/build/vite-files-plugin.js at POST /__studio/<id>/<route>). A handler gets who is asking (their
 // contributor key, or null) and the request's JSON, and returns what to send back; a manifest it returns
 // is sent to the open app. It throws an Error to answer with that message. Dev only: the deployed site has no server.
 export type ServerRoute = (request: {

@@ -9,8 +9,8 @@ import { descriptionProblem, nameProblem, skillProblems } from './skills.ts';
 import { creatableIn, opProblem } from './rules.ts';
 import { systemContentMap } from './map.ts';
 import { systemContentProblems } from './node/content-check.js';
-import { templateFor } from '../../../../scripts/build/files/ops.js';
-import { frontmatter } from '../../../../scripts/lib/frontmatter.js';
+import { templateFor } from '../../../platform/node/build/files/ops.js';
+import { frontmatter } from '../../../platform/node/lib/frontmatter.js';
 import { skillBundlePaths, skillFolder } from './skillBundle.ts';
 
 test('skill bundles include only their own files with SKILL.md first', () => {
@@ -211,7 +211,7 @@ test('SystemContent creation uses its own Markdown template', () => {
 });
 
 test('platform reference discovery preserves ownership and excludes unavailable module content', async () => {
-  const { platformReferences } = await import('../../../../scripts/lib/platform-references.js');
+  const { platformReferences } = await import('../../../platform/node/lib/platform-references.js');
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-references-'));
   const write = (file: string, text: string) => {
     fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
