@@ -77,6 +77,7 @@ const platformVersion = cwd =>
   fs.readFileSync(path.join(cwd, versionFile), 'utf8').match(/PLATFORM_VERSION = '([^']+)'/)[1];
 const stack = 'src/platform/context/stack.md',
   seed = 'src/systems/product/_update-seed.txt',
+  deletedSeed = 'src/systems/product/_deleted-update-seed.txt',
   newSeed = 'src/systems/product/_new-update-seed.txt';
 const commit = (cwd, message) => {
   run(cwd, 'git', ['add', '-A']);
@@ -123,6 +124,7 @@ try {
   run(upstream, 'git', ['init', '-q', '-b', 'main']);
   edit(upstream, stack, text => `${text}\nUpdate fixture choice: base.\n`);
   write(upstream, seed, 'Installed seed bytes.\n');
+  write(upstream, deletedSeed, 'Seed the team will delete.\n');
   const baseVersion = platformVersion(upstream),
     baseCommit = commit(upstream, 'Synthetic installed release');
   run(upstream, 'git', ['tag', '-a', `v${baseVersion}`, '-m', 'Synthetic installed release']);
@@ -148,6 +150,7 @@ try {
   edit(upstream, 'README.md', text => text + '\nIncoming README bytes.\n');
   fs.rmSync(path.join(upstream, seed), { force: true });
   write(upstream, newSeed, 'New incoming seed bytes.\n');
+  write(upstream, deletedSeed, 'Incoming edit must not resurrect the deleted seed.\n');
   edit(upstream, 'package.json', text => {
     const pkg = JSON.parse(text);
     pkg.scripts['update-fixture-proof'] = 'node -e "process.exit(0)"';
@@ -186,6 +189,10 @@ try {
   edit(studio, 'README.md', text => text + '\nComplete team README customization.\n');
   edit(studio, 'AGENTS.team.md', text => text + '\nFixture team agent guidance.\n');
   write(studio, 'team-binary.bin', Buffer.from([0, 255, 1, 9]));
+  write(studio, 'team-script.sh', '#!/bin/sh\nexit 0\n');
+  fs.chmodSync(path.join(studio, 'team-script.sh'), 0o755);
+  fs.symlinkSync('team-binary.bin', path.join(studio, 'team-link'));
+  fs.rmSync(path.join(studio, deletedSeed));
   const modules = {
     'fixture-notes': {
       source: 'fixture-notes',
@@ -267,6 +274,7 @@ try {
       if (dependencies[name] !== value) throw new Error(`Changed dependency ${name}`);
     if (fs.readFileSync(path.join(studio, newSeed), 'utf8') !== 'New incoming seed bytes.\n')
       throw new Error('The new incoming seed was not installed.');
+    if (fs.existsSync(path.join(studio, deletedSeed))) throw new Error('The update resurrected a deleted seed.');
     if (!fs.readFileSync(path.join(studio, 'AGENTS.md'), 'utf8').includes('Fixture team agent guidance.'))
       throw new Error('Generated team guidance was lost.');
     if (git(studio, 'status', '--porcelain')) throw new Error('The updated studio is not clean.');
