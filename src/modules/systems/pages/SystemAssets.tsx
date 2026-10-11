@@ -1,7 +1,7 @@
 import { systemPath } from '../data/systems';
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ExternalLink, Image, Smile, Type } from 'lucide-react';
+import { ArrowRight, Image, Smile, Type } from 'lucide-react';
 import { useManifest } from '@/platform/app/data/useManifest';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { NotFound } from '@/platform/app/shell/App';
@@ -63,11 +63,11 @@ export default function SystemAssets({ system, sys, kind, path }: { system: stri
   return <>
     <PageHeader title={kind} description={description} />
     {libraries.length > 0 && <ul aria-label={`${kind} libraries`} className="mb-6 space-y-2">{libraries.map(library => <li key={library.id}>
-      <a href={library.docs} target="_blank" rel="noreferrer" className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted">
+      <Link to={`${systemPath(system)}/libraries` as never} hash={library.id} aria-label={`${library.label} in Libraries`} className="flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted">
         <Icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1"><span className="font-medium">{library.label}</span><span className="ml-2 text-muted-foreground">{kind === 'Icons' ? 'Icon library' : kind === 'Fonts' ? 'Font library' : 'Image library'}</span></span>
-        <ExternalLink aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
-      </a>
+        <ArrowRight aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground" />
+      </Link>
     </li>)}</ul>}
     {kind === 'Icons' && sys.icons && <ThemeScope themeClass={sys.scopeClass}><IconsPage icons={sys.icons} /></ThemeScope>}
     {items.length ? <>
