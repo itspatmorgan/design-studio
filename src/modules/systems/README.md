@@ -76,7 +76,7 @@ Optional `source` frontmatter supplies a short provenance sentence, such as the 
 
 Each capitalized export from the examples file is one live example. The platform frames examples with the system's theme.
 
-Props tables come from TypeScript. They summarize inputs rather than replacing upstream API documentation.
+Component pages show guidance, then Examples, then Source with the local file path. Props comes last in a disclosure, collapsed initially and labeled with component and documented-prop counts. Props tables come from TypeScript. They summarize inputs rather than replacing upstream API documentation.
 
 `origin: 'shadcn'` adds upstream component links. A Markdown page can provide its own `docs` URL. Declare `origin: null` when replacing the starter kit with another library.
 
