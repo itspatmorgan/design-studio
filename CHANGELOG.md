@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Contract snapshots now record semantic export signatures, generic parameters, nested and referenced types, readonly/optional fields, class constructors, and Node/pnpm/React runtime requirements. CI reports PR-base changes and independently compares against supported public tags; the release command uses the same comparison. Public compatibility begins at v0.3.0, with no legacy snapshot reader or historical pre-release gate. Refreshing a future snapshot cannot hide a stable change requiring a 0.x minor release.
+
 - `#studio/module` now loads the platform version safely in Node. Browser app contribution types (`ModuleApp`, `PaletteContext`, `PrototypeAction`) move to `#studio/ui`. Studio identity values (`APP_NAME`, `TAGLINE`, read-only `CONFIG`) move to browser-only `#studio/data`, which also exports the documented experimental `contribution()` reader. Shipped callers and scaffolds use the new entry. `ModuleApp.landing` is stable, and supplied modules require platform 0.3.0 for their current declarations and APIs.
 
 - Physical module removal now excludes instruction links into absent module owners while retaining missing-file errors for installed owners. Availability baselines use registered fixture authority, independent Git history, and linked workspace dependencies. Release regressions build the enabled control and all six optional modules disabled and removed; Manual repair coverage lives with Documentation.

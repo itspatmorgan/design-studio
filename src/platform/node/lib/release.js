@@ -100,7 +100,7 @@ export function applyRelease(cwd, plan, { run, log = console.log }) {
     edit(CHANGELOG_FILE, text => releasedChangelog(text, plan.version, plan.date));
     for (const script of ['check', 'contract', 'build']) {
       log(`Run pnpm ${script}.`);
-      run('pnpm', [script]);
+      run('pnpm', script === 'contract' ? [script, '--released'] : [script]);
     }
     const stray = execFileSync('git', ['status', '--porcelain', '-z', '--untracked-files=all'], {
       cwd,

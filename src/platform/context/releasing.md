@@ -8,7 +8,7 @@ A release is a tagged commit on the upstream `main`, named `v<version>`. Studios
 
 ## Versions
 
-`PLATFORM_VERSION` (`src/platform/core/modules/index.ts`) is the version of the public contract, and the tag uses the same number. While the version is `0.x`, raise the minor version when a stable export, a declaration type, a runtime package list, or a stored format version changes (the contract check requires it), and the patch version otherwise. A module's `requires` names the oldest version it works with; a module created with `pnpm studio create-module` requires the version it was created with, so a release never edits the module template. The supplied modules keep the `requires` they declare.
+`PLATFORM_VERSION` (`src/platform/core/modules/index.ts`) is the version of the public contract, and the tag uses the same number. The first supported public baseline is `v0.3.0`; historical pre-release versions impose no compatibility requirement. After that baseline, while the version is `0.x`, raise the minor version when a stable signature or referenced type, runtime requirement/package list, or stored format version changes, and the patch version otherwise. `pnpm contract --released` compares against the preceding supported release independently of the editable snapshot. A module's `requires` names the oldest version it works with; a module created with `pnpm studio create-module` requires the version it was created with, so a release never edits the module template. The supplied modules keep the `requires` they declare.
 
 ## Cut a release
 
@@ -42,7 +42,7 @@ The release commit goes to `main` directly, so the person pushing needs the righ
 - Refuses unless the checkout is on `main` with no uncommitted or untracked changes and matches `origin/main` after a fetch, the `## Unreleased` section exists and has notes, and neither the checkout nor `origin` has the tag yet.
 - Sets `PLATFORM_VERSION` and runs `pnpm contract --update`, so the contract snapshot records the version.
 - Renames `## Unreleased` to `## <version> (<YYYY-MM-DD>)`, using the local date, and starts a new empty `## Unreleased` section above it.
-- Runs `pnpm check`, `pnpm contract`, and `pnpm build`. If any step fails, or a step changes a file other than the three the release edits, it restores those files and stops with nothing committed.
+- Runs `pnpm check`, `pnpm contract --released`, and `pnpm build`. If any step fails, or a step changes a file other than the three the release edits, it restores those files and stops with nothing committed.
 - Commits `Release v<version>` and creates the annotated tag `v<version>`, whose message is the release notes.
 - Never pushes. It prints the push command.
 

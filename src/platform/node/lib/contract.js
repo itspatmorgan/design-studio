@@ -1,15 +1,10 @@
-// The platform's public contract as plain JSON, read from source, so a change to it can't skip a PLATFORM_VERSION bump.
-// Covers every export of the public API (src/platform/api/, imported as #studio/<entry>) with its stability, the
-// fields of the stable declaration types, the runtime package lists, and the stored format versions (src/platform/core/formats.ts).
-// A stable export, a declaration type's fields, a runtime package list or a format version changes only with a PLATFORM_VERSION bump.
-// An experimental export may change in any 0.x release, but the snapshot still records it, so the change is visible.
-// Snapshot: src/platform/core/contract.snapshot.json, refreshed with `pnpm contract --update` (src/platform/node/check/check-contract.js).
+// Semantic public contract and snapshot freshness. Released compatibility is enforced independently by
+// released-contract.js, beginning with the public launch baseline (context/checks.md).
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
-import { PLATFORM_VERSION } from '../../core/modules/index.ts';
-import { FORMAT_VERSIONS } from '../../core/formats.ts';
+import { publicTypes } from './contract-types.js';
 import { API_ENTRIES, API_FOLDER, apiSpecifier } from '../../core/modules/boundaries.ts';
 import { SHARED_RUNTIME_PACKAGES, SYSTEM_RUNTIME_PACKAGES } from './system-dependencies.js';
 
@@ -17,36 +12,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../.
 export const SNAPSHOT_FILE = 'src/platform/core/contract.snapshot.json';
 export const STABILITY = ['stable', 'experimental'];
 
-// The stable declaration types whose fields the snapshot records, by the file that defines each.
-const DECLARATION_TYPES = {
-  ModuleSpec: 'src/platform/core/modules/index.ts',
-  ModuleApp: 'src/platform/app/modules.ts',
-  PaletteContext: 'src/platform/app/modules.ts',
-  PrototypeAction: 'src/platform/app/modules.ts',
-  SystemSpec: 'src/platform/modules/systems/spec.ts',
-  SystemLibrary: 'src/platform/modules/systems/spec.ts',
-  SystemIntro: 'src/platform/app/data/types.ts',
-  SystemOverviewSummary: 'src/platform/app/data/types.ts',
-  SystemCuration: 'src/platform/app/data/types.ts',
-  FileTypeSpec: 'src/platform/core/fileTypes.ts',
-  ArtifactCapabilities: 'src/platform/core/fileTypes.ts',
-  IdentityMetadata: 'src/platform/core/resourceIdentity.ts',
-};
-
 const parse = (root, file) =>
   ts.createSourceFile(file, fs.readFileSync(path.join(root, file), 'utf8'), ts.ScriptTarget.Latest, true);
-const sorted = list => [...list].sort();
-
-// Field names of a type alias with an object literal type, `?` marking optional ones.
-export function typeFields(source, name) {
-  const alias = source.statements.find(node => ts.isTypeAliasDeclaration(node) && node.name.text === name);
-  if (!alias || !ts.isTypeLiteralNode(alias.type))
-    throw new Error(`Cannot find the object type ${name} in ${source.fileName}.`);
-  return alias.type.members
-    .filter(m => ts.isPropertySignature(m) || ts.isMethodSignature(m))
-    .map(member => member.name.getText(source) + (member.questionToken ? '?' : ''))
-    .sort();
-}
 
 // The names one export statement adds; `export * from` is refused, since its names would not be listed here.
 function statementExports(node, source) {
@@ -116,20 +83,44 @@ export function apiProblems(root = ROOT) {
   ];
 }
 
+export const SNAPSHOT_VERSION = 2;
+export const FIRST_PUBLIC_RELEASE = '0.3.0';
+
 export function computeContract(root = ROOT) {
+  const names = Object.fromEntries(
+    API_ENTRIES.map(entry => [apiSpecifier(entry), apiExports(parse(root, `${API_FOLDER}/${entry}.ts`)).names]),
+  );
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+  const version = fs
+    .readFileSync(path.join(root, 'src/platform/core/modules/index.ts'), 'utf8')
+    .match(/export const PLATFORM_VERSION = '([^']+)'/)?.[1];
+  if (!version) throw new Error('Cannot read PLATFORM_VERSION.');
+  const formats = parse(root, 'src/platform/core/formats.ts');
+  const declaration = formats.statements
+    .flatMap(node => (ts.isVariableStatement(node) ? [...node.declarationList.declarations] : []))
+    .find(node => node.name.getText(formats) === 'FORMAT_VERSIONS');
+  let value = declaration?.initializer;
+  if (value && ts.isAsExpression(value)) value = value.expression;
+  if (!value || !ts.isObjectLiteralExpression(value)) throw new Error('FORMAT_VERSIONS must declare literal versions.');
+  const formatVersions = Object.fromEntries(
+    value.properties.map(property => {
+      if (!ts.isPropertyAssignment(property) || !ts.isNumericLiteral(property.initializer))
+        throw new Error('FORMAT_VERSIONS must declare literal numeric versions.');
+      return [property.name.getText(formats), Number(property.initializer.text)];
+    }),
+  );
   return {
-    platformVersion: PLATFORM_VERSION,
-    formatVersions: { ...FORMAT_VERSIONS },
-    api: Object.fromEntries(
-      API_ENTRIES.filter(entry => fs.existsSync(path.join(root, API_FOLDER, `${entry}.ts`))).map(entry => [
-        apiSpecifier(entry),
-        apiExports(parse(root, `${API_FOLDER}/${entry}.ts`)).names,
-      ]),
-    ),
-    types: Object.fromEntries(
-      Object.entries(DECLARATION_TYPES).map(([name, file]) => [name, typeFields(parse(root, file), name)]),
-    ),
+    snapshotVersion: SNAPSHOT_VERSION,
+    platformVersion: version,
+    formatVersions,
+    ...publicTypes(root, names),
     runtimePackages: { shared: [...SHARED_RUNTIME_PACKAGES], system: [...SYSTEM_RUNTIME_PACKAGES] },
+    runtimeRequirements: {
+      node: pkg.engines.node,
+      pnpm: pkg.engines.pnpm,
+      react: pkg.dependencies.react,
+      reactDom: pkg.dependencies['react-dom'],
+    },
   };
 }
 
@@ -160,45 +151,34 @@ function changes(a, b, at = '') {
   return JSON.stringify(a) === JSON.stringify(b) ? [] : [`${at}: ${JSON.stringify(a)} -> ${JSON.stringify(b)}`];
 }
 
-// The changes an experimental export may make in any 0.x release: added, removed or changed while it is (and
-// stays, or becomes) experimental. Anything that is or was stable needs a new version.
-function apiChanges(then = {}, now = {}) {
-  const lines = { stable: [], experimental: [] };
-  for (const entry of new Set([...Object.keys(then), ...Object.keys(now)])) {
-    const [a = {}, b = {}] = [then[entry], now[entry]];
+// Changes are classified against both sides so removing or demoting a stable export remains stable.
+export function contractChanges(current, previous) {
+  const { platformVersion: _a, api: before = {}, types: oldTypes = {}, ...then } = previous;
+  const { platformVersion: _b, api: after = {}, types: newTypes = {}, ...now } = current;
+  const result = { stable: changes(then, now), experimental: [] };
+  const classified = (a, b, prefix) => {
     for (const name of new Set([...Object.keys(a), ...Object.keys(b)])) {
-      if (a[name] === b[name]) continue;
-      const line = `api.${entry}.${name}: ${a[name] ?? 'absent'} -> ${b[name] ?? 'absent'}`;
-      lines[a[name] === 'stable' || b[name] === 'stable' ? 'stable' : 'experimental'].push(line);
+      const lines = changes(a[name], b[name], `${prefix}.${name}`);
+      result[a[name]?.stability === 'stable' || b[name]?.stability === 'stable' ? 'stable' : 'experimental'].push(
+        ...lines,
+      );
     }
-  }
-  return lines;
+  };
+  classified(oldTypes, newTypes, 'types');
+  for (const entry of new Set([...Object.keys(before), ...Object.keys(after)]))
+    classified(before[entry] ?? {}, after[entry] ?? {}, `api.${entry}`);
+  return result;
 }
 
-// What is wrong with the contract compared with its snapshot, as sentences that say what to do. `tags` are the
-// problems apiProblems found in the API folder, reported first.
 export function contractProblems(current, snapshot, tags = []) {
-  if (!snapshot) return [...tags, `${SNAPSHOT_FILE} is missing or unreadable. Run pnpm contract --update.`];
-  const { platformVersion: nowVersion, api: nowApi, ...now } = current;
-  const { platformVersion: thenVersion, api: thenApi, ...then } = snapshot;
-  const api = apiChanges(thenApi, nowApi);
-  const stable = [...changes(then, now), ...api.stable];
-  const all = [...stable, ...api.experimental];
-  const list = lines => lines.map(line => `  ${line}`).join('\n');
-  if (nowVersion !== thenVersion)
+  if (!snapshot || snapshot.snapshotVersion !== SNAPSHOT_VERSION)
+    return [...tags, `${SNAPSHOT_FILE} is missing or uses an unsupported schema. Run pnpm contract --update.`];
+  const changed = contractChanges(current, snapshot);
+  const lines = [...changed.stable, ...changed.experimental];
+  if (current.platformVersion !== snapshot.platformVersion || lines.length)
     return [
       ...tags,
-      `PLATFORM_VERSION is ${nowVersion} but ${SNAPSHOT_FILE} records ${thenVersion}, so the snapshot is stale${all.length ? `:\n${list(all)}\n` : '. '}Run pnpm contract --update.`,
-    ];
-  if (stable.length)
-    return [
-      ...tags,
-      `The platform contract changed without a PLATFORM_VERSION change (still ${nowVersion}):\n${list(all)}\nBump PLATFORM_VERSION in src/platform/core/modules/index.ts, then run pnpm contract --update.`,
-    ];
-  if (api.experimental.length)
-    return [
-      ...tags,
-      `Experimental API exports changed:\n${list(api.experimental)}\nThey may change without a PLATFORM_VERSION bump; run pnpm contract --update to record them.`,
+      `The contract snapshot is stale:\n${lines.map(line => `  ${line}`).join('\n')}\nRun pnpm contract --update. Released-baseline verification independently enforces the version policy.`,
     ];
   return tags;
 }

@@ -6,8 +6,9 @@
 import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../roots.ts';
 
 // The version of the public contract this copy of the platform offers: the declaration types and the #studio/*
-// API (src/platform/api/) a module or system is written against. A stable export changes only with a new version;
-// experimental ones may change in any 0.x release. A module says the oldest version it works with in `requires`.
+// API (src/platform/api/) a module or system is written against. After the first public baseline, stable changes
+// require a minor increase under the 0.x policy; experimental changes remain recorded. A module names the oldest
+// version it works with in `requires`. See context/checks.md for snapshot and released-baseline verification.
 export const PLATFORM_VERSION = '0.3.0';
 export const CORE_PAGE_KEYS = ['settings'] as const;
 

@@ -22,7 +22,7 @@ console.log(`  PLATFORM_VERSION: ${plan.current ?? 'unknown'} -> ${plan.version 
 console.log(
   `  CHANGELOG: "## Unreleased" becomes "## ${plan.version ?? '?'} (${plan.date})", with a new empty Unreleased above it`,
 );
-console.log('  Then: pnpm contract --update, pnpm check, pnpm contract, pnpm build');
+console.log('  Then: pnpm contract --update, pnpm check, pnpm contract --released, pnpm build');
 console.log(`  Commit "Release ${plan.tag ?? '?'}" and annotated tag ${plan.tag ?? '?'}, both local`);
 if (plan.notes) console.log(`\nRelease notes:\n${plan.notes}`);
 if (plan.problems.length) {

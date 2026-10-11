@@ -1,4 +1,5 @@
 {
+  "snapshotVersion": 2,
   "platformVersion": "0.3.0",
   "formatVersions": {
     "config": 1,
@@ -7,313 +8,1739 @@
   },
   "api": {
     "#studio/module": {
-      "ModuleBuild": "experimental",
-      "ModuleCheck": "stable",
-      "ModuleServer": "stable",
-      "ModuleSpec": "stable",
-      "PLATFORM_VERSION": "stable",
-      "ServerRoute": "stable"
+      "ModuleBuild": {
+        "stability": "experimental",
+        "signature": "<Data = unknown> { manifest?(context: { root: string; enabled: string[]; out: { log(...args: unknown[]): void; warn(...args: unknown[]): void; error(...args: unknown[]): void; }; }): { data: Data; errors: number; }; watch?: string[]; sourceFiles?(data: Data | undefined, context: { root: string; }): string[]; }"
+      },
+      "ModuleCheck": {
+        "stability": "stable",
+        "signature": "(context: { root: string; }) => string[] | Promise<string[]>"
+      },
+      "ModuleServer": {
+        "stability": "stable",
+        "signature": "{ [x: string]: ServerRoute; }"
+      },
+      "ModuleSpec": {
+        "stability": "stable",
+        "signature": "{ id: string; label: string; version: string; description?: string; requires: string; optional: boolean; settings?: { group: \"prototyping\" | \"systems\" | \"team\"; order: number; }; section?: { key: string; folder?: string; items?: \"prototypes\"; policy?: \"maintainers\" | \"open\"; standalone?: boolean; byPerson?: boolean; }; lib: boolean; instructions?: { path: string; when?: string; }[]; dependencies?: Record<string, string>; upstream?: { repo: string; version: string; license: string; }; }"
+      },
+      "PLATFORM_VERSION": {
+        "stability": "stable",
+        "signature": "string"
+      },
+      "ServerRoute": {
+        "stability": "stable",
+        "signature": "(request: { me: string | null; body: unknown; }) => { status?: number; body: object; manifest?: unknown; } | Promise<{ status?: number; body: object; manifest?: unknown; }>"
+      }
     },
     "#studio/system": {
-      "ColorMode": "stable",
-      "DocsMode": "stable",
-      "SystemCuration": "stable",
-      "SystemIntro": "stable",
-      "SystemLibrary": "stable",
-      "SystemOverviewSummary": "stable",
-      "SystemSpec": "stable"
+      "ColorMode": {
+        "stability": "stable",
+        "signature": "\"light\" | \"dark\""
+      },
+      "DocsMode": {
+        "stability": "stable",
+        "signature": "\"warn\" | \"strict\" | \"off\""
+      },
+      "SystemCuration": {
+        "stability": "stable",
+        "signature": "{ stage: \"direction\" | \"foundations\" | \"components\" | \"prototype\" | \"ready\" | \"assessment\"; summary: string; nextStep: string; sources: { label: string; url: string; }[]; record?: string; prototypeId?: string; }"
+      },
+      "SystemIntro": {
+        "stability": "stable",
+        "signature": "{ summary?: string; overview?: SystemOverviewSummary; intro?: ReactNode; icons?: DesignSystem[\"icons\"]; }"
+      },
+      "SystemLibrary": {
+        "stability": "stable",
+        "signature": "{ kind: \"package\" | \"source\"; id: string; label: string; package?: string; version?: string; description: string; entry?: string; docs: string; assets?: readonly (\"fonts\" | \"icons\" | \"images\")[]; components?: readonly string[]; }"
+      },
+      "SystemOverviewSummary": {
+        "stability": "stable",
+        "signature": "{ guidance?: string; code?: string; starter?: boolean; curation?: SystemCuration; }"
+      },
+      "SystemSpec": {
+        "stability": "stable",
+        "signature": "{ studioId?: string; role: \"platform\" | \"prototype\"; status: \"active\" | \"archived\"; renameReview?: readonly string[]; label: string; themeClass: string; styling: \"tailwind\" | \"custom\"; colorModes: readonly ColorMode[]; docs: DocsMode; origin: \"shadcn\" | null; libraries: readonly SystemLibrary[]; }"
+      }
     },
     "#studio/files": {
-      "ArtifactCapabilities": "stable",
-      "EmbedSurface": "stable",
-      "FileTypeSpec": "stable",
-      "IdentityMetadata": "stable",
-      "ResourceId": "stable",
-      "artifactSlug": "experimental",
-      "defineFileType": "experimental",
-      "markdownFileType": "experimental",
-      "markdownIdentity": "experimental"
+      "ArtifactCapabilities": {
+        "stability": "stable",
+        "signature": "{ source: boolean; create: boolean; fidelity: boolean; embeds: readonly EmbedSurface[]; actions: readonly string[]; }"
+      },
+      "EmbedSurface": {
+        "stability": "stable",
+        "signature": "\"document\" | \"canvas\""
+      },
+      "FileTypeSpec": {
+        "stability": "stable",
+        "signature": "{ label: string; identity?: IdentityMetadata; extensions: readonly string[]; language?: \"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\"; capabilities: ArtifactCapabilities; inSystemContent: boolean; inPrototype: boolean; fallback: boolean; fidelity?: { isLofi(source: string): boolean; setLofi(source: string, on: boolean): string; }; template?: (name: string) => string; check?: (file: { source: string; frontmatter: Record<string, unknown> | null; prototype?: { contributor: string; id: string; studioId?: string; }; }) => string[]; }"
+      },
+      "IdentityMetadata": {
+        "stability": "stable",
+        "signature": "{ read(source: string): ResourceId | null; write(source: string, id: ResourceId): string; }"
+      },
+      "ResourceId": {
+        "stability": "stable",
+        "signature": "string & { readonly __resourceId: unique symbol; }"
+      },
+      "artifactSlug": {
+        "stability": "experimental",
+        "signature": "(path: string) => string"
+      },
+      "defineFileType": {
+        "stability": "experimental",
+        "signature": "(spec: FileTypeSpec) => FileTypeSpec"
+      },
+      "markdownFileType": {
+        "stability": "experimental",
+        "signature": "{ label: string; identity?: IdentityMetadata; extensions: readonly string[]; language?: \"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\"; capabilities: ArtifactCapabilities; inSystemContent: boolean; inPrototype: boolean; fallback: boolean; fidelity?: { isLofi(source: string): boolean; setLofi(source: string, on: boolean): string; }; template?: (name: string) => string; check?: (file: { source: string; frontmatter: Record<string, unknown> | null; prototype?: { contributor: string; id: string; studioId?: string; }; }) => string[]; }"
+      },
+      "markdownIdentity": {
+        "stability": "experimental",
+        "signature": "{ read(source: string): ResourceId | null; write(source: string, id: ResourceId): string; }"
+      }
     },
     "#studio/data": {
-      "APP_NAME": "stable",
-      "Artifact": "experimental",
-      "ArtifactAction": "experimental",
-      "ArtifactContext": "experimental",
-      "CONFIG": "stable",
-      "DocFrontmatter": "experimental",
-      "EmbedProps": "experimental",
-      "FileTypeModule": "experimental",
-      "Manifest": "experimental",
-      "MarkdownModule": "experimental",
-      "Prototype": "experimental",
-      "PrototypeInfo": "experimental",
-      "SourceChanged": "experimental",
-      "TAGLINE": "stable",
-      "allPrototypes": "experimental",
-      "artifactLabel": "experimental",
-      "artifactLink": "experimental",
-      "callModule": "experimental",
-      "canChangePrototype": "experimental",
-      "canEditSource": "experimental",
-      "contribution": "experimental",
-      "createLoader": "experimental",
-      "createMarkdownLoader": "experimental",
-      "findArtifact": "experimental",
-      "loadManifest": "experimental",
-      "markdownFileModule": "experimental",
-      "prototypeLink": "experimental",
-      "readSource": "experimental",
-      "useManifest": "experimental",
-      "useMe": "experimental",
-      "writeSource": "experimental"
+      "APP_NAME": {
+        "stability": "stable",
+        "signature": "string"
+      },
+      "Artifact": {
+        "stability": "experimental",
+        "signature": "{ studioId?: string; path: string; fileType: string; title?: string; lofi?: true; }"
+      },
+      "ArtifactAction": {
+        "stability": "experimental",
+        "signature": "{ id: string; label: string; icon?: typeof CodeIcon; localOnly: boolean; mutates: boolean; unavailable?: (context: ArtifactActionContext) => string | null; run(context: ArtifactActionContext): void | Promise<unknown>; }"
+      },
+      "ArtifactContext": {
+        "stability": "experimental",
+        "signature": "{ proto: Prototype; item: Artifact; }"
+      },
+      "CONFIG": {
+        "stability": "stable",
+        "signature": "{ readonly $schema?: string | undefined; readonly formatVersion: number; readonly name: string; readonly usage: \"personal\" | \"team\"; readonly admins?: readonly string[] | undefined; readonly systemMaintainers: { readonly [x: string]: readonly string[]; }; readonly tagline?: string | undefined; readonly modules: { readonly [x: string]: boolean; }; readonly systems: readonly string[]; readonly defaultSystem: string; }"
+      },
+      "DocFrontmatter": {
+        "stability": "experimental",
+        "signature": "{ title?: string; description?: string; toc?: boolean; }"
+      },
+      "EmbedProps": {
+        "stability": "experimental",
+        "signature": "{ proto: Prototype; item: Artifact; width: number; height: number; loadingStartedAt?: number; }"
+      },
+      "FileTypeModule": {
+        "stability": "experimental",
+        "signature": "<Props extends object = any> { icon: typeof CodeIcon; load(context: ArtifactContext): Promise<Props | undefined>; Page: ComponentType<Props> & { preload?: () => Promise<unknown> | undefined; }; Embed?: ComponentType<EmbedProps>; EmbedPending?: ComponentType<{ loadingStartedAt: number; }>; actions?: readonly ArtifactAction[]; }"
+      },
+      "Manifest": {
+        "stability": "experimental",
+        "signature": "{ prototypes: PrototypeRef[]; sections: Record<string, PrototypeRef[]>; contributions: Record<string, unknown>; systemContent: Prototype[]; systemContentMaps: Record<string, SystemContentMap>; platformReferences: PlatformReferenceGroup[]; skillCatalog: { owner: NonNullable<PrototypeInfo[\"owner\"]>; folder: string; name: string; description: string; source: string; }[]; systems: Record<string, { docs: DocsMode; origin: \"shadcn\" | null; components: SystemComponentDoc[]; tokens: ThemeToken[]; libraries?: (Omit<SystemLibrary, \"version\"> & { requirement: string | null; version: string | null; })[]; }>; }"
+      },
+      "MarkdownModule": {
+        "stability": "experimental",
+        "signature": "{ default: MDXContent; frontmatter?: DocFrontmatter; }"
+      },
+      "Prototype": {
+        "stability": "experimental",
+        "signature": "PrototypeInfo & { artifacts: Artifact[]; }"
+      },
+      "PrototypeInfo": {
+        "stability": "experimental",
+        "signature": "{ studioId?: string; ownerContributorId?: string; id: string; contributorKey: string; title: string; description?: string; contributor: string; contributorSample?: true; contributorGithub?: string; created: string | null; system: string | null; systemId?: string | null; owner?: { id: string; kind: \"platform\" | \"module\" | \"system\"; label: string; root: string; }; systemMissing?: { systemId: string; label: string; }; rebuild?: { targetSystemKey: string | null; targetSystemId: string | null; sourcePrototypeId: string; sourcePath: string; }; status?: \"archived\"; maintainers?: string[]; }"
+      },
+      "SourceChanged": {
+        "stability": "experimental",
+        "signature": "new (message?: string): SourceChanged; new (message?: string, options?: ErrorOptions): SourceChanged { \"cause\"?: unknown; \"message\": string; \"name\": string; \"stack\"?: string | undefined } static {  }"
+      },
+      "TAGLINE": {
+        "stability": "stable",
+        "signature": "string | undefined"
+      },
+      "allPrototypes": {
+        "stability": "experimental",
+        "signature": "(m: Manifest) => PrototypeRef[]"
+      },
+      "artifactLabel": {
+        "stability": "experimental",
+        "signature": "(path: string, proto?: Pick<PrototypeInfo, \"contributorKey\" | \"id\"> & { artifacts?: Artifact[]; }) => string"
+      },
+      "artifactLink": {
+        "stability": "experimental",
+        "signature": "(p: PrototypeInfo, item: Artifact) => { readonly to: \"/$contributor/$prototype/$\"; readonly params: { readonly contributor: string; readonly prototype: string; readonly _splat: string; }; } | { readonly to: \"/prototypes/$prototype/artifacts/$artifact\"; readonly params: { readonly prototype: ResourceId; readonly artifact: ResourceId; }; }"
+      },
+      "callModule": {
+        "stability": "experimental",
+        "signature": "<T>(module: string, route: string, body: object) => Promise<T>"
+      },
+      "canChangePrototype": {
+        "stability": "experimental",
+        "signature": "(p: PrototypeInfo, me: string | null) => boolean"
+      },
+      "canEditSource": {
+        "stability": "experimental",
+        "signature": "(path: string, me: string | null) => boolean"
+      },
+      "contribution": {
+        "stability": "experimental",
+        "signature": "<T>(m: Manifest, id: string) => T | undefined"
+      },
+      "createLoader": {
+        "stability": "experimental",
+        "signature": "<M>(glob: Glob<M>, hot: ImportMeta[\"hot\"]) => { load: (file: ItemFile, { inManifest }?: { inManifest?: boolean | undefined; }) => Promise<M | undefined>; incomplete: Set<string>; }"
+      },
+      "createMarkdownLoader": {
+        "stability": "experimental",
+        "signature": "<M>(glob: Record<string, () => Promise<M>>, hot: ImportMeta[\"hot\"], reference?: boolean) => (path: string) => Promise<M> | undefined"
+      },
+      "findArtifact": {
+        "stability": "experimental",
+        "signature": "(p: Prototype, slug: string) => Artifact | undefined"
+      },
+      "loadManifest": {
+        "stability": "experimental",
+        "signature": "() => Promise<Manifest>"
+      },
+      "markdownFileModule": {
+        "stability": "experimental",
+        "signature": "(documents: ReturnType<typeof createLoader<MarkdownModule>>) => FileTypeModule"
+      },
+      "prototypeLink": {
+        "stability": "experimental",
+        "signature": "(p: Pick<PrototypeInfo, \"contributorKey\" | \"id\" | \"studioId\">) => { readonly to: \"/$contributor/$prototype\"; readonly params: { readonly contributor: string; readonly prototype: string; }; } | { readonly to: \"/prototypes/$prototype\"; readonly params: { readonly prototype: ResourceId; }; }"
+      },
+      "readSource": {
+        "stability": "experimental",
+        "signature": "(p: PrototypeInfo, path: string) => Promise<{ content: string; version: string; }>"
+      },
+      "useManifest": {
+        "stability": "experimental",
+        "signature": "() => { prototypes: PrototypeRef[]; sections: Record<string, PrototypeRef[]>; contributions: Record<string, unknown>; systemContent: Prototype[]; systemContentMaps: Record<string, SystemContentMap>; platformReferences: PlatformReferenceGroup[]; skillCatalog: { owner: NonNullable<PrototypeInfo[\"owner\"]>; folder: string; name: string; description: string; source: string; }[]; systems: Record<string, { docs: DocsMode; origin: \"shadcn\" | null; components: SystemComponentDoc[]; tokens: ThemeToken[]; libraries?: (Omit<SystemLibrary, \"version\"> & { requirement: string | null; version: string | null; })[]; }>; }"
+      },
+      "useMe": {
+        "stability": "experimental",
+        "signature": "() => string | null"
+      },
+      "writeSource": {
+        "stability": "experimental",
+        "signature": "(p: PrototypeInfo, path: string, content: string, base: string) => Promise<{ version: string; warnings?: string[]; }>"
+      }
     },
     "#studio/ui": {
-      "ArchivedHeading": "experimental",
-      "ArtifactSource": "experimental",
-      "Collection": "experimental",
-      "CollectionCard": "experimental",
-      "ContributorAvatar": "experimental",
-      "DocBase": "experimental",
-      "DocLayout": "experimental",
-      "HomeHint": "experimental",
-      "HomeSection": "experimental",
-      "ItemRow": "experimental",
-      "ModuleApp": "stable",
-      "NavGroup": "experimental",
-      "NavHeader": "experimental",
-      "NavList": "experimental",
-      "NavTitle": "experimental",
-      "NotFound": "experimental",
-      "PaletteContext": "stable",
-      "Prose": "experimental",
-      "PrototypeAction": "stable",
-      "SectionNav": "experimental",
-      "SourceAccess": "experimental",
-      "SourceEditor": "experimental",
-      "SourceLanguage": "experimental",
-      "ViewToggle": "experimental",
-      "menuGroups": "experimental",
-      "navLinkClass": "experimental",
-      "navLinkStyle": "experimental",
-      "useSourceView": "experimental"
+      "ArchivedHeading": {
+        "stability": "experimental",
+        "signature": "() => import(\"react\").JSX.Element"
+      },
+      "ArtifactSource": {
+        "stability": "experimental",
+        "signature": "({ proto, item, label, actions, onDirty, }: { proto: Prototype; item: Artifact; label?: ReactNode; actions?: ReactNode; onDirty?: (dirty: boolean) => void; }) => import(\"react\").JSX.Element"
+      },
+      "Collection": {
+        "stability": "experimental",
+        "signature": "<T>({ items, keyOf, card, row, }: { items: T[]; keyOf: (item: T) => string; card: (item: T) => ReactNode; row: (item: T) => ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "CollectionCard": {
+        "stability": "experimental",
+        "signature": "({ link, icon, title, description, meta, archived, menu, }: { link: object; icon: IconSvgElement; title: ReactNode; description?: string; meta?: ReactNode; archived?: boolean; menu?: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "ContributorAvatar": {
+        "stability": "experimental",
+        "signature": "({ name, github, size, }: { name?: string; github?: string; size?: \"sm\" | \"default\" | \"lg\"; }) => import(\"react\").JSX.Element"
+      },
+      "DocBase": {
+        "stability": "experimental",
+        "signature": "import(\"react\").Context<string | null>"
+      },
+      "DocLayout": {
+        "stability": "experimental",
+        "signature": "({ Component, title, description, toc, scrollKey, footer, actions }: DocLayoutProps) => import(\"react\").JSX.Element"
+      },
+      "HomeHint": {
+        "stability": "experimental",
+        "signature": "({ children }: { children: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "HomeSection": {
+        "stability": "experimental",
+        "signature": "({ title, to, children }: { title: string; to: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "ItemRow": {
+        "stability": "experimental",
+        "signature": "({ link, icon, title, meta, archived, menu, }: { link: object; icon: IconSvgElement; title: string; meta?: ReactNode; archived?: boolean; menu?: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "ModuleApp": {
+        "stability": "stable",
+        "signature": "{ localOnly?: boolean; navLabel?: string; icon: IconSvgElement; rail: \"top\" | \"bottom\" | \"none\"; order: number; routes?: (root: AnyRoute) => AnyRoute[]; useActions?: (proto: PrototypeInfo, can: { editable: boolean; }) => PrototypeAction[]; overview?: ComponentType<{ manifest: Manifest; }>; homeOrder?: { local?: number; deployed?: number; }; places?: ComponentType<PaletteContext>; palette?: ComponentType<PaletteContext>; paletteOrder?: number; landing?: (manifest: Manifest) => string | undefined; }"
+      },
+      "NavGroup": {
+        "stability": "experimental",
+        "signature": "({ heading, children }: { heading?: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "NavHeader": {
+        "stability": "experimental",
+        "signature": "({ className, children }: { className?: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "NavList": {
+        "stability": "experimental",
+        "signature": "({ children }: { children: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "NavTitle": {
+        "stability": "experimental",
+        "signature": "({ children, actions }: { children: ReactNode; actions?: ReactNode; }) => import(\"react\").JSX.Element"
+      },
+      "NotFound": {
+        "stability": "experimental",
+        "signature": "() => import(\"react\").JSX.Element"
+      },
+      "PaletteContext": {
+        "stability": "stable",
+        "signature": "{ manifest: Manifest; current: Prototype | undefined; isOpen: (item: Artifact) => boolean; go: (to: NavigateOptions) => void; }"
+      },
+      "Prose": {
+        "stability": "experimental",
+        "signature": "({ children, className }: { children: ReactNode; className?: string; }) => import(\"react\").JSX.Element"
+      },
+      "PrototypeAction": {
+        "stability": "stable",
+        "signature": "{ label: string; icon: IconSvgElement; onSelect: () => void; destructive?: boolean; }"
+      },
+      "SectionNav": {
+        "stability": "experimental",
+        "signature": "({ label, children }: { label: string; children: ReactNode; }) => import(\"react\").JSX.Element | null"
+      },
+      "SourceAccess": {
+        "stability": "experimental",
+        "signature": "{ path: string; editable: boolean; read: () => Promise<{ content: string; version: string; }>; write: (content: string, base: string) => Promise<{ version: string; warnings?: string[]; }>; }"
+      },
+      "SourceEditor": {
+        "stability": "experimental",
+        "signature": "({ label, actions, onDirty, source, language: syntax }: SourceEditorProps) => import(\"react\").JSX.Element"
+      },
+      "SourceLanguage": {
+        "stability": "experimental",
+        "signature": "\"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\""
+      },
+      "ViewToggle": {
+        "stability": "experimental",
+        "signature": "() => import(\"react\").JSX.Element"
+      },
+      "menuGroups": {
+        "stability": "experimental",
+        "signature": "<T>(groups: (T | false | null | undefined)[][]) => T[][]"
+      },
+      "navLinkClass": {
+        "stability": "experimental",
+        "signature": "string"
+      },
+      "navLinkStyle": {
+        "stability": "experimental",
+        "signature": "CSSProperties"
+      },
+      "useSourceView": {
+        "stability": "experimental",
+        "signature": "(enabled: boolean, source: boolean) => { toggle: () => void; rendered: import(\"react\").RefObject<HTMLDivElement | null>; }"
+      }
     },
     "#studio/components": {
-      "Alert": "experimental",
-      "AlertAction": "experimental",
-      "AlertDescription": "experimental",
-      "AlertTitle": "experimental",
-      "Badge": "experimental",
-      "Button": "experimental",
-      "Checkbox": "experimental",
-      "Collapsible": "experimental",
-      "CollapsibleContent": "experimental",
-      "CollapsibleTrigger": "experimental",
-      "Command": "experimental",
-      "CommandDialog": "experimental",
-      "CommandEmpty": "experimental",
-      "CommandGroup": "experimental",
-      "CommandInput": "experimental",
-      "CommandItem": "experimental",
-      "CommandList": "experimental",
-      "CommandSeparator": "experimental",
-      "CommandShortcut": "experimental",
-      "ContextMenu": "experimental",
-      "ContextMenuCheckboxItem": "experimental",
-      "ContextMenuContent": "experimental",
-      "ContextMenuGroup": "experimental",
-      "ContextMenuItem": "experimental",
-      "ContextMenuLabel": "experimental",
-      "ContextMenuPortal": "experimental",
-      "ContextMenuRadioGroup": "experimental",
-      "ContextMenuRadioItem": "experimental",
-      "ContextMenuSeparator": "experimental",
-      "ContextMenuShortcut": "experimental",
-      "ContextMenuSub": "experimental",
-      "ContextMenuSubContent": "experimental",
-      "ContextMenuSubTrigger": "experimental",
-      "ContextMenuTrigger": "experimental",
-      "Dialog": "experimental",
-      "DialogClose": "experimental",
-      "DialogContent": "experimental",
-      "DialogDescription": "experimental",
-      "DialogFooter": "experimental",
-      "DialogHeader": "experimental",
-      "DialogOverlay": "experimental",
-      "DialogPortal": "experimental",
-      "DialogTitle": "experimental",
-      "DialogTrigger": "experimental",
-      "DropdownMenu": "experimental",
-      "DropdownMenuCheckboxItem": "experimental",
-      "DropdownMenuContent": "experimental",
-      "DropdownMenuGroup": "experimental",
-      "DropdownMenuItem": "experimental",
-      "DropdownMenuLabel": "experimental",
-      "DropdownMenuPortal": "experimental",
-      "DropdownMenuRadioGroup": "experimental",
-      "DropdownMenuRadioItem": "experimental",
-      "DropdownMenuSeparator": "experimental",
-      "DropdownMenuShortcut": "experimental",
-      "DropdownMenuSub": "experimental",
-      "DropdownMenuSubContent": "experimental",
-      "DropdownMenuSubTrigger": "experimental",
-      "DropdownMenuTrigger": "experimental",
-      "Empty": "experimental",
-      "EmptyContent": "experimental",
-      "EmptyDescription": "experimental",
-      "EmptyHeader": "experimental",
-      "EmptyMedia": "experimental",
-      "EmptyTitle": "experimental",
-      "Input": "experimental",
-      "InputGroup": "experimental",
-      "InputGroupAddon": "experimental",
-      "InputGroupButton": "experimental",
-      "InputGroupInput": "experimental",
-      "InputGroupText": "experimental",
-      "InputGroupTextarea": "experimental",
-      "Select": "experimental",
-      "SelectContent": "experimental",
-      "SelectGroup": "experimental",
-      "SelectItem": "experimental",
-      "SelectLabel": "experimental",
-      "SelectScrollDownButton": "experimental",
-      "SelectScrollUpButton": "experimental",
-      "SelectSeparator": "experimental",
-      "SelectTrigger": "experimental",
-      "SelectValue": "experimental",
-      "Table": "experimental",
-      "TableBody": "experimental",
-      "TableCaption": "experimental",
-      "TableCell": "experimental",
-      "TableFooter": "experimental",
-      "TableHead": "experimental",
-      "TableHeader": "experimental",
-      "TableRow": "experimental",
-      "Tabs": "experimental",
-      "TabsContent": "experimental",
-      "TabsList": "experimental",
-      "TabsTrigger": "experimental",
-      "Textarea": "experimental",
-      "Tooltip": "experimental",
-      "TooltipContent": "experimental",
-      "TooltipProvider": "experimental",
-      "TooltipTrigger": "experimental",
-      "badgeVariants": "experimental",
-      "buttonVariants": "experimental",
-      "tabsListVariants": "experimental",
-      "toast": "experimental"
+      "Alert": {
+        "stability": "experimental",
+        "signature": "({ className, variant, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof alertVariants>) => React.JSX.Element"
+      },
+      "AlertAction": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+      },
+      "AlertDescription": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+      },
+      "AlertTitle": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+      },
+      "Badge": {
+        "stability": "experimental",
+        "signature": "({ className, variant, render, ...props }: useRender.ComponentProps<\"span\"> & VariantProps<typeof badgeVariants>) => import(\"react\").ReactElement<unknown, string | import(\"react\").JSXElementConstructor<any>>"
+      },
+      "Button": {
+        "stability": "experimental",
+        "signature": "({ className, variant, size, ...props }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) => import(\"react\").JSX.Element"
+      },
+      "Checkbox": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: CheckboxPrimitive.Root.Props) => import(\"react\").JSX.Element"
+      },
+      "Collapsible": {
+        "stability": "experimental",
+        "signature": "({ ...props }: CollapsiblePrimitive.Root.Props) => import(\"react\").JSX.Element"
+      },
+      "CollapsibleContent": {
+        "stability": "experimental",
+        "signature": "({ ...props }: CollapsiblePrimitive.Panel.Props) => import(\"react\").JSX.Element"
+      },
+      "CollapsibleTrigger": {
+        "stability": "experimental",
+        "signature": "({ ...props }: CollapsiblePrimitive.Trigger.Props) => import(\"react\").JSX.Element"
+      },
+      "Command": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) => React.JSX.Element"
+      },
+      "CommandDialog": {
+        "stability": "experimental",
+        "signature": "({ title, description, children, className, showCloseButton, finalFocus, ...props }: Omit<React.ComponentProps<typeof Dialog>, \"children\"> & { title?: string; description?: string; className?: string; showCloseButton?: boolean; finalFocus?: React.ComponentProps<typeof DialogContent>[\"finalFocus\"]; children: React.ReactNode; }) => React.JSX.Element"
+      },
+      "CommandEmpty": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) => React.JSX.Element"
+      },
+      "CommandGroup": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Group>) => React.JSX.Element"
+      },
+      "CommandInput": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Input>) => React.JSX.Element"
+      },
+      "CommandItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) => React.JSX.Element"
+      },
+      "CommandList": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) => React.JSX.Element"
+      },
+      "CommandSeparator": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Separator>) => React.JSX.Element"
+      },
+      "CommandShortcut": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+      },
+      "ContextMenu": {
+        "stability": "experimental",
+        "signature": "({ ...props }: ContextMenuPrimitive.Root.Props) => React.JSX.Element"
+      },
+      "ContextMenuCheckboxItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, checked, inset, ...props }: ContextMenuPrimitive.CheckboxItem.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "ContextMenuContent": {
+        "stability": "experimental",
+        "signature": "({ className, align, alignOffset, side, sideOffset, ...props }: ContextMenuPrimitive.Popup.Props & Pick<ContextMenuPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => React.JSX.Element"
+      },
+      "ContextMenuGroup": {
+        "stability": "experimental",
+        "signature": "({ ...props }: ContextMenuPrimitive.Group.Props) => React.JSX.Element"
+      },
+      "ContextMenuItem": {
+        "stability": "experimental",
+        "signature": "({ className, inset, variant, ...props }: ContextMenuPrimitive.Item.Props & { inset?: boolean; variant?: \"default\" | \"destructive\"; }) => React.JSX.Element"
+      },
+      "ContextMenuLabel": {
+        "stability": "experimental",
+        "signature": "({ className, inset, ...props }: ContextMenuPrimitive.GroupLabel.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "ContextMenuPortal": {
+        "stability": "experimental",
+        "signature": "({ ...props }: ContextMenuPrimitive.Portal.Props) => React.JSX.Element"
+      },
+      "ContextMenuRadioGroup": {
+        "stability": "experimental",
+        "signature": "({ ...props }: ContextMenuPrimitive.RadioGroup.Props) => React.JSX.Element"
+      },
+      "ContextMenuRadioItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, inset, ...props }: ContextMenuPrimitive.RadioItem.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "ContextMenuSeparator": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: ContextMenuPrimitive.Separator.Props) => React.JSX.Element"
+      },
+      "ContextMenuShortcut": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+      },
+      "ContextMenuSub": {
+        "stability": "experimental",
+        "signature": "({ ...props }: ContextMenuPrimitive.SubmenuRoot.Props) => React.JSX.Element"
+      },
+      "ContextMenuSubContent": {
+        "stability": "experimental",
+        "signature": "({ ...props }: React.ComponentProps<typeof ContextMenuContent>) => React.JSX.Element"
+      },
+      "ContextMenuSubTrigger": {
+        "stability": "experimental",
+        "signature": "({ className, inset, children, ...props }: ContextMenuPrimitive.SubmenuTrigger.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "ContextMenuTrigger": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: ContextMenuPrimitive.Trigger.Props) => React.JSX.Element"
+      },
+      "Dialog": {
+        "stability": "experimental",
+        "signature": "({ ...props }: DialogPrimitive.Root.Props) => React.JSX.Element"
+      },
+      "DialogClose": {
+        "stability": "experimental",
+        "signature": "({ ...props }: DialogPrimitive.Close.Props) => React.JSX.Element"
+      },
+      "DialogContent": {
+        "stability": "experimental",
+        "signature": "({ className, children, showCloseButton, size, ...props }: DialogPrimitive.Popup.Props & { showCloseButton?: boolean; size?: \"sm\" | \"lg\"; }) => React.JSX.Element"
+      },
+      "DialogDescription": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: DialogPrimitive.Description.Props) => React.JSX.Element"
+      },
+      "DialogFooter": {
+        "stability": "experimental",
+        "signature": "({ className, showCloseButton, children, ...props }: React.ComponentProps<\"div\"> & { showCloseButton?: boolean; }) => React.JSX.Element"
+      },
+      "DialogHeader": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+      },
+      "DialogOverlay": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: DialogPrimitive.Backdrop.Props) => React.JSX.Element"
+      },
+      "DialogPortal": {
+        "stability": "experimental",
+        "signature": "({ ...props }: DialogPrimitive.Portal.Props) => React.JSX.Element"
+      },
+      "DialogTitle": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: DialogPrimitive.Title.Props) => React.JSX.Element"
+      },
+      "DialogTrigger": {
+        "stability": "experimental",
+        "signature": "({ ...props }: DialogPrimitive.Trigger.Props) => React.JSX.Element"
+      },
+      "DropdownMenu": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.Root.Props) => React.JSX.Element"
+      },
+      "DropdownMenuCheckboxItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, checked, inset, ...props }: MenuPrimitive.CheckboxItem.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "DropdownMenuContent": {
+        "stability": "experimental",
+        "signature": "({ align, alignOffset, side, sideOffset, className, ...props }: MenuPrimitive.Popup.Props & Pick<MenuPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => React.JSX.Element"
+      },
+      "DropdownMenuGroup": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.Group.Props) => React.JSX.Element"
+      },
+      "DropdownMenuItem": {
+        "stability": "experimental",
+        "signature": "({ className, inset, variant, ...props }: MenuPrimitive.Item.Props & { inset?: boolean; variant?: \"default\" | \"destructive\"; }) => React.JSX.Element"
+      },
+      "DropdownMenuLabel": {
+        "stability": "experimental",
+        "signature": "({ className, inset, ...props }: MenuPrimitive.GroupLabel.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "DropdownMenuPortal": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.Portal.Props) => React.JSX.Element"
+      },
+      "DropdownMenuRadioGroup": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.RadioGroup.Props) => React.JSX.Element"
+      },
+      "DropdownMenuRadioItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, inset, ...props }: MenuPrimitive.RadioItem.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "DropdownMenuSeparator": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: MenuPrimitive.Separator.Props) => React.JSX.Element"
+      },
+      "DropdownMenuShortcut": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+      },
+      "DropdownMenuSub": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.SubmenuRoot.Props) => React.JSX.Element"
+      },
+      "DropdownMenuSubContent": {
+        "stability": "experimental",
+        "signature": "({ align, alignOffset, side, sideOffset, className, ...props }: React.ComponentProps<typeof DropdownMenuContent>) => React.JSX.Element"
+      },
+      "DropdownMenuSubTrigger": {
+        "stability": "experimental",
+        "signature": "({ className, inset, children, ...props }: MenuPrimitive.SubmenuTrigger.Props & { inset?: boolean; }) => React.JSX.Element"
+      },
+      "DropdownMenuTrigger": {
+        "stability": "experimental",
+        "signature": "({ ...props }: MenuPrimitive.Trigger.Props) => React.JSX.Element"
+      },
+      "Empty": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+      },
+      "EmptyContent": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+      },
+      "EmptyDescription": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"p\">) => import(\"react\").JSX.Element"
+      },
+      "EmptyHeader": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+      },
+      "EmptyMedia": {
+        "stability": "experimental",
+        "signature": "({ className, variant, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof emptyMediaVariants>) => import(\"react\").JSX.Element"
+      },
+      "EmptyTitle": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+      },
+      "Input": {
+        "stability": "experimental",
+        "signature": "({ className, type, ...props }: React.ComponentProps<\"input\">) => React.JSX.Element"
+      },
+      "InputGroup": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+      },
+      "InputGroupAddon": {
+        "stability": "experimental",
+        "signature": "({ className, align, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof inputGroupAddonVariants>) => React.JSX.Element"
+      },
+      "InputGroupButton": {
+        "stability": "experimental",
+        "signature": "({ className, type, variant, size, ...props }: Omit<React.ComponentProps<typeof Button>, \"size\" | \"type\"> & VariantProps<typeof inputGroupButtonVariants> & { type?: \"button\" | \"submit\" | \"reset\"; }) => React.JSX.Element"
+      },
+      "InputGroupInput": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"input\">) => React.JSX.Element"
+      },
+      "InputGroupText": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+      },
+      "InputGroupTextarea": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"textarea\">) => React.JSX.Element"
+      },
+      "Select": {
+        "stability": "experimental",
+        "signature": "<Value, Multiple extends boolean | undefined = false>(props: SelectPrimitive.Root.Props<Value, Multiple>) => React.JSX.Element"
+      },
+      "SelectContent": {
+        "stability": "experimental",
+        "signature": "({ className, children, side, sideOffset, align, alignOffset, alignItemWithTrigger, ...props }: SelectPrimitive.Popup.Props & Pick<SelectPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\" | \"alignItemWithTrigger\">) => React.JSX.Element"
+      },
+      "SelectGroup": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: SelectPrimitive.Group.Props) => React.JSX.Element"
+      },
+      "SelectItem": {
+        "stability": "experimental",
+        "signature": "({ className, children, ...props }: SelectPrimitive.Item.Props) => React.JSX.Element"
+      },
+      "SelectLabel": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: SelectPrimitive.GroupLabel.Props) => React.JSX.Element"
+      },
+      "SelectScrollDownButton": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollDownArrow>) => React.JSX.Element"
+      },
+      "SelectScrollUpButton": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) => React.JSX.Element"
+      },
+      "SelectSeparator": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: SelectPrimitive.Separator.Props) => React.JSX.Element"
+      },
+      "SelectTrigger": {
+        "stability": "experimental",
+        "signature": "({ className, size, children, ...props }: SelectPrimitive.Trigger.Props & { size?: \"sm\" | \"default\"; }) => React.JSX.Element"
+      },
+      "SelectValue": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: SelectPrimitive.Value.Props) => React.JSX.Element"
+      },
+      "Table": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"table\">) => React.JSX.Element"
+      },
+      "TableBody": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"tbody\">) => React.JSX.Element"
+      },
+      "TableCaption": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"caption\">) => React.JSX.Element"
+      },
+      "TableCell": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"td\">) => React.JSX.Element"
+      },
+      "TableFooter": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"tfoot\">) => React.JSX.Element"
+      },
+      "TableHead": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"th\">) => React.JSX.Element"
+      },
+      "TableHeader": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"thead\">) => React.JSX.Element"
+      },
+      "TableRow": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"tr\">) => React.JSX.Element"
+      },
+      "Tabs": {
+        "stability": "experimental",
+        "signature": "({ className, orientation, ...props }: TabsPrimitive.Root.Props) => import(\"react\").JSX.Element"
+      },
+      "TabsContent": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: TabsPrimitive.Panel.Props) => import(\"react\").JSX.Element"
+      },
+      "TabsList": {
+        "stability": "experimental",
+        "signature": "({ className, variant, ...props }: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) => import(\"react\").JSX.Element"
+      },
+      "TabsTrigger": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: TabsPrimitive.Tab.Props) => import(\"react\").JSX.Element"
+      },
+      "Textarea": {
+        "stability": "experimental",
+        "signature": "({ className, ...props }: React.ComponentProps<\"textarea\">) => React.JSX.Element"
+      },
+      "Tooltip": {
+        "stability": "experimental",
+        "signature": "({ ...props }: TooltipPrimitive.Root.Props) => import(\"react\").JSX.Element"
+      },
+      "TooltipContent": {
+        "stability": "experimental",
+        "signature": "({ className, side, sideOffset, align, alignOffset, children, ...props }: TooltipPrimitive.Popup.Props & Pick<TooltipPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => import(\"react\").JSX.Element"
+      },
+      "TooltipProvider": {
+        "stability": "experimental",
+        "signature": "({ delay, ...props }: TooltipPrimitive.Provider.Props) => import(\"react\").JSX.Element"
+      },
+      "TooltipTrigger": {
+        "stability": "experimental",
+        "signature": "({ ...props }: TooltipPrimitive.Trigger.Props) => import(\"react\").JSX.Element"
+      },
+      "badgeVariants": {
+        "stability": "experimental",
+        "signature": "(props?: ({ variant?: \"link\" | \"default\" | \"destructive\" | \"secondary\" | \"outline\" | \"ghost\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+      },
+      "buttonVariants": {
+        "stability": "experimental",
+        "signature": "(props?: ({ variant?: \"link\" | \"default\" | \"destructive\" | \"secondary\" | \"outline\" | \"ghost\" | null | undefined; size?: \"default\" | \"sm\" | \"lg\" | \"xs\" | \"icon\" | \"icon-xs\" | \"icon-sm\" | \"icon-lg\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+      },
+      "tabsListVariants": {
+        "stability": "experimental",
+        "signature": "(props?: ({ variant?: \"line\" | \"default\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+      },
+      "toast": {
+        "stability": "experimental",
+        "signature": "import(\"@base-ui/react\").ToastManager<any>"
+      }
     }
   },
   "types": {
-    "ModuleSpec": [
-      "dependencies?",
-      "description?",
-      "id",
-      "instructions?",
-      "label",
-      "lib",
-      "optional",
-      "requires",
-      "section?",
-      "settings?",
-      "upstream?",
-      "version"
-    ],
-    "ModuleApp": [
-      "homeOrder?",
-      "icon",
-      "landing?",
-      "localOnly?",
-      "navLabel?",
-      "order",
-      "overview?",
-      "palette?",
-      "paletteOrder?",
-      "places?",
-      "rail",
-      "routes?",
-      "useActions?"
-    ],
-    "PaletteContext": [
-      "current",
-      "go",
-      "isOpen",
-      "manifest"
-    ],
-    "PrototypeAction": [
-      "destructive?",
-      "icon",
-      "label",
-      "onSelect"
-    ],
-    "SystemSpec": [
-      "colorModes",
-      "docs",
-      "label",
-      "libraries",
-      "origin",
-      "renameReview?",
-      "role",
-      "status",
-      "studioId?",
-      "styling",
-      "themeClass"
-    ],
-    "SystemLibrary": [
-      "assets?",
-      "components?",
-      "description",
-      "docs",
-      "entry?",
-      "id",
-      "kind",
-      "label",
-      "package?",
-      "version?"
-    ],
-    "SystemIntro": [
-      "icons?",
-      "intro?",
-      "overview?",
-      "summary?"
-    ],
-    "SystemOverviewSummary": [
-      "code?",
-      "curation?",
-      "guidance?",
-      "starter?"
-    ],
-    "SystemCuration": [
-      "nextStep",
-      "prototypeId?",
-      "record?",
-      "sources",
-      "stage",
-      "summary"
-    ],
-    "FileTypeSpec": [
-      "capabilities",
-      "check?",
-      "extensions",
-      "fallback",
-      "fidelity?",
-      "identity?",
-      "inPrototype",
-      "inSystemContent",
-      "label",
-      "language?",
-      "template?"
-    ],
-    "ArtifactCapabilities": [
-      "actions",
-      "create",
-      "embeds",
-      "fidelity",
-      "source"
-    ],
-    "IdentityMetadata": [
-      "read",
-      "write"
-    ]
+    "#studio/components.Alert.alertVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ variant?: \"default\" | \"info\" | \"destructive\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "#studio/components.EmptyMedia.emptyMediaVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ variant?: \"default\" | \"icon\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "#studio/components.InputGroupAddon.inputGroupAddonVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ align?: \"inline-start\" | \"inline-end\" | \"block-start\" | \"block-end\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "#studio/components.InputGroupButton.inputGroupButtonVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ size?: \"sm\" | \"xs\" | \"icon-xs\" | \"icon-sm\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "#studio/data.ArtifactAction.ArtifactActionContext": {
+      "stability": "experimental",
+      "signature": "ArtifactContext & { environment: ArtifactAvailabilityContext; }"
+    },
+    "#studio/data.ArtifactAction.ArtifactAvailabilityContext": {
+      "stability": "experimental",
+      "signature": "{ local: boolean; editable: boolean; present: boolean; renderer: boolean; scope: \"prototype\" | \"systemContent\"; }"
+    },
+    "#studio/data.CONFIG.ReadOnly": {
+      "stability": "stable",
+      "signature": "<T> T extends (...args: never[]) => unknown ? T : T extends object ? { readonly [K in keyof T]: ReadOnly<T[K]>; } : T"
+    },
+    "#studio/data.CONFIG.StudioConfig": {
+      "stability": "stable",
+      "signature": "{ $schema?: string; formatVersion: number; name: string; usage: \"personal\" | \"team\"; admins?: readonly string[]; systemMaintainers: Record<string, readonly string[]>; tagline?: string; modules: Record<string, boolean>; systems: readonly string[]; defaultSystem: string; }"
+    },
+    "#studio/data.FileTypeModule.ArtifactActionContext": {
+      "stability": "experimental",
+      "signature": "ArtifactContext & { environment: ArtifactAvailabilityContext; }"
+    },
+    "#studio/data.FileTypeModule.ArtifactAvailabilityContext": {
+      "stability": "experimental",
+      "signature": "{ local: boolean; editable: boolean; present: boolean; renderer: boolean; scope: \"prototype\" | \"systemContent\"; }"
+    },
+    "#studio/data.Manifest.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/data.Manifest.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/data.Manifest.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/data.Manifest.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/data.Manifest.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/data.Manifest.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/data.Manifest.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/data.allPrototypes.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/data.allPrototypes.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/data.allPrototypes.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/data.allPrototypes.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/data.allPrototypes.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/data.allPrototypes.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/data.allPrototypes.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/data.contribution.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/data.contribution.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/data.contribution.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/data.contribution.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/data.contribution.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/data.contribution.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/data.contribution.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/data.createLoader.Glob": {
+      "stability": "experimental",
+      "signature": "<M> { [x: string]: () => Promise<M>; }"
+    },
+    "#studio/data.createLoader.ItemFile": {
+      "stability": "experimental",
+      "signature": "{ contributor: string; prototype: string; path: string; }"
+    },
+    "#studio/data.createLoader.load": {
+      "stability": "experimental",
+      "signature": "(file: ItemFile, { inManifest }?: { inManifest?: boolean | undefined; }) => Promise<M | undefined>"
+    },
+    "#studio/data.loadManifest.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/data.loadManifest.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/data.loadManifest.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/data.loadManifest.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/data.loadManifest.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/data.loadManifest.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/data.loadManifest.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/data.markdownFileModule.ArtifactActionContext": {
+      "stability": "experimental",
+      "signature": "ArtifactContext & { environment: ArtifactAvailabilityContext; }"
+    },
+    "#studio/data.markdownFileModule.ArtifactAvailabilityContext": {
+      "stability": "experimental",
+      "signature": "{ local: boolean; editable: boolean; present: boolean; renderer: boolean; scope: \"prototype\" | \"systemContent\"; }"
+    },
+    "#studio/data.markdownFileModule.ItemFile": {
+      "stability": "experimental",
+      "signature": "{ contributor: string; prototype: string; path: string; }"
+    },
+    "#studio/data.markdownFileModule.load": {
+      "stability": "experimental",
+      "signature": "(file: ItemFile, { inManifest }?: { inManifest?: boolean | undefined; }) => Promise<M | undefined>"
+    },
+    "#studio/system.SystemIntro.DesignSystem": {
+      "stability": "stable",
+      "signature": "{ overview?: SystemOverviewSummary; summary?: string; label: string; dir: string; scopeClass: string; intro?: ReactNode; icons?: { library: string; href: string; snippet: string; grid: ReactNode; }; }"
+    },
+    "#studio/ui.DocLayout.DocLayoutProps": {
+      "stability": "experimental",
+      "signature": "{ Component: MDXContent; title?: string; description?: string; toc?: boolean; scrollKey?: string; footer?: ReactNode; actions?: ReactNode; }"
+    },
+    "#studio/ui.ModuleApp.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/ui.ModuleApp.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/ui.ModuleApp.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/ui.ModuleApp.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/ui.ModuleApp.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/ui.ModuleApp.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/ui.ModuleApp.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/ui.PaletteContext.PlatformReferenceGroup": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; enabled: boolean; references: { source: string; title: string; related?: { title: string; href: string; }[]; }[]; related: { title: string; href: string; }[]; }"
+    },
+    "#studio/ui.PaletteContext.PrototypeRef": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts?: Artifact[]; artifactCount?: number; artifactsHash?: string; }"
+    },
+    "#studio/ui.PaletteContext.SystemComponent": {
+      "stability": "experimental",
+      "signature": "{ name: string; slug: string; files: { source: string | null; examples: string | null; doc: string | null; }; }"
+    },
+    "#studio/ui.PaletteContext.SystemComponentDoc": {
+      "stability": "experimental",
+      "signature": "SystemComponent & { title: string; description: string; category: string | null; docsUrl: string | null; sourceNote?: string; }"
+    },
+    "#studio/ui.PaletteContext.SystemContentMap": {
+      "stability": "experimental",
+      "signature": "{ entry: boolean; always: string[]; onDemand: { path: string; when: string; }[]; via: { path: string; from: string; }[]; unrouted: string[]; skills: { folder: string; name: string; description: string; when?: string; }[]; missing: string[]; }"
+    },
+    "#studio/ui.PaletteContext.ThemeToken": {
+      "stability": "experimental",
+      "signature": "{ name: string; value: string; group: TokenGroup; subgroup: string | null; dark: boolean; }"
+    },
+    "#studio/ui.PaletteContext.TokenGroup": {
+      "stability": "experimental",
+      "signature": "\"colors\" | \"typography\" | \"radius\" | \"shadows\" | \"spacing\" | \"motion\" | \"effects\" | \"other\""
+    },
+    "#studio/ui.SourceEditor.SourceEditorProps": {
+      "stability": "experimental",
+      "signature": "{ source: SourceAccess; language: SourceLanguage; label?: ReactNode; actions?: ReactNode; onDirty?: (dirty: boolean) => void; }"
+    },
+    "APP_NAME": {
+      "stability": "stable",
+      "signature": "string"
+    },
+    "Alert": {
+      "stability": "experimental",
+      "signature": "({ className, variant, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof alertVariants>) => React.JSX.Element"
+    },
+    "AlertAction": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+    },
+    "AlertDescription": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+    },
+    "AlertTitle": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+    },
+    "ArchivedHeading": {
+      "stability": "experimental",
+      "signature": "() => import(\"react\").JSX.Element"
+    },
+    "Artifact": {
+      "stability": "experimental",
+      "signature": "{ studioId?: string; path: string; fileType: string; title?: string; lofi?: true; }"
+    },
+    "ArtifactAction": {
+      "stability": "experimental",
+      "signature": "{ id: string; label: string; icon?: typeof CodeIcon; localOnly: boolean; mutates: boolean; unavailable?: (context: ArtifactActionContext) => string | null; run(context: ArtifactActionContext): void | Promise<unknown>; }"
+    },
+    "ArtifactCapabilities": {
+      "stability": "stable",
+      "signature": "{ source: boolean; create: boolean; fidelity: boolean; embeds: readonly EmbedSurface[]; actions: readonly string[]; }"
+    },
+    "ArtifactContext": {
+      "stability": "experimental",
+      "signature": "{ proto: Prototype; item: Artifact; }"
+    },
+    "ArtifactSource": {
+      "stability": "experimental",
+      "signature": "({ proto, item, label, actions, onDirty, }: { proto: Prototype; item: Artifact; label?: ReactNode; actions?: ReactNode; onDirty?: (dirty: boolean) => void; }) => import(\"react\").JSX.Element"
+    },
+    "Badge": {
+      "stability": "experimental",
+      "signature": "({ className, variant, render, ...props }: useRender.ComponentProps<\"span\"> & VariantProps<typeof badgeVariants>) => import(\"react\").ReactElement<unknown, string | import(\"react\").JSXElementConstructor<any>>"
+    },
+    "Button": {
+      "stability": "experimental",
+      "signature": "({ className, variant, size, ...props }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) => import(\"react\").JSX.Element"
+    },
+    "CONFIG": {
+      "stability": "stable",
+      "signature": "{ readonly $schema?: string | undefined; readonly formatVersion: number; readonly name: string; readonly usage: \"personal\" | \"team\"; readonly admins?: readonly string[] | undefined; readonly systemMaintainers: { readonly [x: string]: readonly string[]; }; readonly tagline?: string | undefined; readonly modules: { readonly [x: string]: boolean; }; readonly systems: readonly string[]; readonly defaultSystem: string; }"
+    },
+    "Checkbox": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: CheckboxPrimitive.Root.Props) => import(\"react\").JSX.Element"
+    },
+    "Collapsible": {
+      "stability": "experimental",
+      "signature": "({ ...props }: CollapsiblePrimitive.Root.Props) => import(\"react\").JSX.Element"
+    },
+    "CollapsibleContent": {
+      "stability": "experimental",
+      "signature": "({ ...props }: CollapsiblePrimitive.Panel.Props) => import(\"react\").JSX.Element"
+    },
+    "CollapsibleTrigger": {
+      "stability": "experimental",
+      "signature": "({ ...props }: CollapsiblePrimitive.Trigger.Props) => import(\"react\").JSX.Element"
+    },
+    "Collection": {
+      "stability": "experimental",
+      "signature": "<T>({ items, keyOf, card, row, }: { items: T[]; keyOf: (item: T) => string; card: (item: T) => ReactNode; row: (item: T) => ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "CollectionCard": {
+      "stability": "experimental",
+      "signature": "({ link, icon, title, description, meta, archived, menu, }: { link: object; icon: IconSvgElement; title: ReactNode; description?: string; meta?: ReactNode; archived?: boolean; menu?: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "ColorMode": {
+      "stability": "stable",
+      "signature": "\"light\" | \"dark\""
+    },
+    "Command": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive>) => React.JSX.Element"
+    },
+    "CommandDialog": {
+      "stability": "experimental",
+      "signature": "({ title, description, children, className, showCloseButton, finalFocus, ...props }: Omit<React.ComponentProps<typeof Dialog>, \"children\"> & { title?: string; description?: string; className?: string; showCloseButton?: boolean; finalFocus?: React.ComponentProps<typeof DialogContent>[\"finalFocus\"]; children: React.ReactNode; }) => React.JSX.Element"
+    },
+    "CommandEmpty": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) => React.JSX.Element"
+    },
+    "CommandGroup": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Group>) => React.JSX.Element"
+    },
+    "CommandInput": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Input>) => React.JSX.Element"
+    },
+    "CommandItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, ...props }: React.ComponentProps<typeof CommandPrimitive.Item>) => React.JSX.Element"
+    },
+    "CommandList": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.List>) => React.JSX.Element"
+    },
+    "CommandSeparator": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Separator>) => React.JSX.Element"
+    },
+    "CommandShortcut": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+    },
+    "ContextMenu": {
+      "stability": "experimental",
+      "signature": "({ ...props }: ContextMenuPrimitive.Root.Props) => React.JSX.Element"
+    },
+    "ContextMenuCheckboxItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, checked, inset, ...props }: ContextMenuPrimitive.CheckboxItem.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "ContextMenuContent": {
+      "stability": "experimental",
+      "signature": "({ className, align, alignOffset, side, sideOffset, ...props }: ContextMenuPrimitive.Popup.Props & Pick<ContextMenuPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => React.JSX.Element"
+    },
+    "ContextMenuGroup": {
+      "stability": "experimental",
+      "signature": "({ ...props }: ContextMenuPrimitive.Group.Props) => React.JSX.Element"
+    },
+    "ContextMenuItem": {
+      "stability": "experimental",
+      "signature": "({ className, inset, variant, ...props }: ContextMenuPrimitive.Item.Props & { inset?: boolean; variant?: \"default\" | \"destructive\"; }) => React.JSX.Element"
+    },
+    "ContextMenuLabel": {
+      "stability": "experimental",
+      "signature": "({ className, inset, ...props }: ContextMenuPrimitive.GroupLabel.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "ContextMenuPortal": {
+      "stability": "experimental",
+      "signature": "({ ...props }: ContextMenuPrimitive.Portal.Props) => React.JSX.Element"
+    },
+    "ContextMenuRadioGroup": {
+      "stability": "experimental",
+      "signature": "({ ...props }: ContextMenuPrimitive.RadioGroup.Props) => React.JSX.Element"
+    },
+    "ContextMenuRadioItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, inset, ...props }: ContextMenuPrimitive.RadioItem.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "ContextMenuSeparator": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: ContextMenuPrimitive.Separator.Props) => React.JSX.Element"
+    },
+    "ContextMenuShortcut": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+    },
+    "ContextMenuSub": {
+      "stability": "experimental",
+      "signature": "({ ...props }: ContextMenuPrimitive.SubmenuRoot.Props) => React.JSX.Element"
+    },
+    "ContextMenuSubContent": {
+      "stability": "experimental",
+      "signature": "({ ...props }: React.ComponentProps<typeof ContextMenuContent>) => React.JSX.Element"
+    },
+    "ContextMenuSubTrigger": {
+      "stability": "experimental",
+      "signature": "({ className, inset, children, ...props }: ContextMenuPrimitive.SubmenuTrigger.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "ContextMenuTrigger": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: ContextMenuPrimitive.Trigger.Props) => React.JSX.Element"
+    },
+    "ContributorAvatar": {
+      "stability": "experimental",
+      "signature": "({ name, github, size, }: { name?: string; github?: string; size?: \"sm\" | \"default\" | \"lg\"; }) => import(\"react\").JSX.Element"
+    },
+    "Dialog": {
+      "stability": "experimental",
+      "signature": "({ ...props }: DialogPrimitive.Root.Props) => React.JSX.Element"
+    },
+    "DialogClose": {
+      "stability": "experimental",
+      "signature": "({ ...props }: DialogPrimitive.Close.Props) => React.JSX.Element"
+    },
+    "DialogContent": {
+      "stability": "experimental",
+      "signature": "({ className, children, showCloseButton, size, ...props }: DialogPrimitive.Popup.Props & { showCloseButton?: boolean; size?: \"sm\" | \"lg\"; }) => React.JSX.Element"
+    },
+    "DialogDescription": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: DialogPrimitive.Description.Props) => React.JSX.Element"
+    },
+    "DialogFooter": {
+      "stability": "experimental",
+      "signature": "({ className, showCloseButton, children, ...props }: React.ComponentProps<\"div\"> & { showCloseButton?: boolean; }) => React.JSX.Element"
+    },
+    "DialogHeader": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+    },
+    "DialogOverlay": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: DialogPrimitive.Backdrop.Props) => React.JSX.Element"
+    },
+    "DialogPortal": {
+      "stability": "experimental",
+      "signature": "({ ...props }: DialogPrimitive.Portal.Props) => React.JSX.Element"
+    },
+    "DialogTitle": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: DialogPrimitive.Title.Props) => React.JSX.Element"
+    },
+    "DialogTrigger": {
+      "stability": "experimental",
+      "signature": "({ ...props }: DialogPrimitive.Trigger.Props) => React.JSX.Element"
+    },
+    "DocBase": {
+      "stability": "experimental",
+      "signature": "import(\"react\").Context<string | null>"
+    },
+    "DocFrontmatter": {
+      "stability": "experimental",
+      "signature": "{ title?: string; description?: string; toc?: boolean; }"
+    },
+    "DocLayout": {
+      "stability": "experimental",
+      "signature": "({ Component, title, description, toc, scrollKey, footer, actions }: DocLayoutProps) => import(\"react\").JSX.Element"
+    },
+    "DocsMode": {
+      "stability": "stable",
+      "signature": "\"warn\" | \"strict\" | \"off\""
+    },
+    "DropdownMenu": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.Root.Props) => React.JSX.Element"
+    },
+    "DropdownMenuCheckboxItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, checked, inset, ...props }: MenuPrimitive.CheckboxItem.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "DropdownMenuContent": {
+      "stability": "experimental",
+      "signature": "({ align, alignOffset, side, sideOffset, className, ...props }: MenuPrimitive.Popup.Props & Pick<MenuPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => React.JSX.Element"
+    },
+    "DropdownMenuGroup": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.Group.Props) => React.JSX.Element"
+    },
+    "DropdownMenuItem": {
+      "stability": "experimental",
+      "signature": "({ className, inset, variant, ...props }: MenuPrimitive.Item.Props & { inset?: boolean; variant?: \"default\" | \"destructive\"; }) => React.JSX.Element"
+    },
+    "DropdownMenuLabel": {
+      "stability": "experimental",
+      "signature": "({ className, inset, ...props }: MenuPrimitive.GroupLabel.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "DropdownMenuPortal": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.Portal.Props) => React.JSX.Element"
+    },
+    "DropdownMenuRadioGroup": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.RadioGroup.Props) => React.JSX.Element"
+    },
+    "DropdownMenuRadioItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, inset, ...props }: MenuPrimitive.RadioItem.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "DropdownMenuSeparator": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: MenuPrimitive.Separator.Props) => React.JSX.Element"
+    },
+    "DropdownMenuShortcut": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+    },
+    "DropdownMenuSub": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.SubmenuRoot.Props) => React.JSX.Element"
+    },
+    "DropdownMenuSubContent": {
+      "stability": "experimental",
+      "signature": "({ align, alignOffset, side, sideOffset, className, ...props }: React.ComponentProps<typeof DropdownMenuContent>) => React.JSX.Element"
+    },
+    "DropdownMenuSubTrigger": {
+      "stability": "experimental",
+      "signature": "({ className, inset, children, ...props }: MenuPrimitive.SubmenuTrigger.Props & { inset?: boolean; }) => React.JSX.Element"
+    },
+    "DropdownMenuTrigger": {
+      "stability": "experimental",
+      "signature": "({ ...props }: MenuPrimitive.Trigger.Props) => React.JSX.Element"
+    },
+    "EmbedProps": {
+      "stability": "experimental",
+      "signature": "{ proto: Prototype; item: Artifact; width: number; height: number; loadingStartedAt?: number; }"
+    },
+    "EmbedSurface": {
+      "stability": "stable",
+      "signature": "\"document\" | \"canvas\""
+    },
+    "Empty": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+    },
+    "EmptyContent": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+    },
+    "EmptyDescription": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"p\">) => import(\"react\").JSX.Element"
+    },
+    "EmptyHeader": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+    },
+    "EmptyMedia": {
+      "stability": "experimental",
+      "signature": "({ className, variant, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof emptyMediaVariants>) => import(\"react\").JSX.Element"
+    },
+    "EmptyTitle": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => import(\"react\").JSX.Element"
+    },
+    "FileTypeModule": {
+      "stability": "experimental",
+      "signature": "<Props extends object = any> { icon: typeof CodeIcon; load(context: ArtifactContext): Promise<Props | undefined>; Page: ComponentType<Props> & { preload?: () => Promise<unknown> | undefined; }; Embed?: ComponentType<EmbedProps>; EmbedPending?: ComponentType<{ loadingStartedAt: number; }>; actions?: readonly ArtifactAction[]; }"
+    },
+    "FileTypeSpec": {
+      "stability": "stable",
+      "signature": "{ label: string; identity?: IdentityMetadata; extensions: readonly string[]; language?: \"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\"; capabilities: ArtifactCapabilities; inSystemContent: boolean; inPrototype: boolean; fallback: boolean; fidelity?: { isLofi(source: string): boolean; setLofi(source: string, on: boolean): string; }; template?: (name: string) => string; check?: (file: { source: string; frontmatter: Record<string, unknown> | null; prototype?: { contributor: string; id: string; studioId?: string; }; }) => string[]; }"
+    },
+    "HomeHint": {
+      "stability": "experimental",
+      "signature": "({ children }: { children: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "HomeSection": {
+      "stability": "experimental",
+      "signature": "({ title, to, children }: { title: string; to: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "IdentityMetadata": {
+      "stability": "stable",
+      "signature": "{ read(source: string): ResourceId | null; write(source: string, id: ResourceId): string; }"
+    },
+    "Input": {
+      "stability": "experimental",
+      "signature": "({ className, type, ...props }: React.ComponentProps<\"input\">) => React.JSX.Element"
+    },
+    "InputGroup": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"div\">) => React.JSX.Element"
+    },
+    "InputGroupAddon": {
+      "stability": "experimental",
+      "signature": "({ className, align, ...props }: React.ComponentProps<\"div\"> & VariantProps<typeof inputGroupAddonVariants>) => React.JSX.Element"
+    },
+    "InputGroupButton": {
+      "stability": "experimental",
+      "signature": "({ className, type, variant, size, ...props }: Omit<React.ComponentProps<typeof Button>, \"size\" | \"type\"> & VariantProps<typeof inputGroupButtonVariants> & { type?: \"button\" | \"submit\" | \"reset\"; }) => React.JSX.Element"
+    },
+    "InputGroupInput": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"input\">) => React.JSX.Element"
+    },
+    "InputGroupText": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"span\">) => React.JSX.Element"
+    },
+    "InputGroupTextarea": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"textarea\">) => React.JSX.Element"
+    },
+    "ItemRow": {
+      "stability": "experimental",
+      "signature": "({ link, icon, title, meta, archived, menu, }: { link: object; icon: IconSvgElement; title: string; meta?: ReactNode; archived?: boolean; menu?: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "Manifest": {
+      "stability": "experimental",
+      "signature": "{ prototypes: PrototypeRef[]; sections: Record<string, PrototypeRef[]>; contributions: Record<string, unknown>; systemContent: Prototype[]; systemContentMaps: Record<string, SystemContentMap>; platformReferences: PlatformReferenceGroup[]; skillCatalog: { owner: NonNullable<PrototypeInfo[\"owner\"]>; folder: string; name: string; description: string; source: string; }[]; systems: Record<string, { docs: DocsMode; origin: \"shadcn\" | null; components: SystemComponentDoc[]; tokens: ThemeToken[]; libraries?: (Omit<SystemLibrary, \"version\"> & { requirement: string | null; version: string | null; })[]; }>; }"
+    },
+    "MarkdownModule": {
+      "stability": "experimental",
+      "signature": "{ default: MDXContent; frontmatter?: DocFrontmatter; }"
+    },
+    "ModuleApp": {
+      "stability": "stable",
+      "signature": "{ localOnly?: boolean; navLabel?: string; icon: IconSvgElement; rail: \"top\" | \"bottom\" | \"none\"; order: number; routes?: (root: AnyRoute) => AnyRoute[]; useActions?: (proto: PrototypeInfo, can: { editable: boolean; }) => PrototypeAction[]; overview?: ComponentType<{ manifest: Manifest; }>; homeOrder?: { local?: number; deployed?: number; }; places?: ComponentType<PaletteContext>; palette?: ComponentType<PaletteContext>; paletteOrder?: number; landing?: (manifest: Manifest) => string | undefined; }"
+    },
+    "ModuleBuild": {
+      "stability": "experimental",
+      "signature": "<Data = unknown> { manifest?(context: { root: string; enabled: string[]; out: { log(...args: unknown[]): void; warn(...args: unknown[]): void; error(...args: unknown[]): void; }; }): { data: Data; errors: number; }; watch?: string[]; sourceFiles?(data: Data | undefined, context: { root: string; }): string[]; }"
+    },
+    "ModuleCheck": {
+      "stability": "stable",
+      "signature": "(context: { root: string; }) => string[] | Promise<string[]>"
+    },
+    "ModuleServer": {
+      "stability": "stable",
+      "signature": "{ [x: string]: ServerRoute; }"
+    },
+    "ModuleSpec": {
+      "stability": "stable",
+      "signature": "{ id: string; label: string; version: string; description?: string; requires: string; optional: boolean; settings?: { group: \"prototyping\" | \"systems\" | \"team\"; order: number; }; section?: { key: string; folder?: string; items?: \"prototypes\"; policy?: \"maintainers\" | \"open\"; standalone?: boolean; byPerson?: boolean; }; lib: boolean; instructions?: { path: string; when?: string; }[]; dependencies?: Record<string, string>; upstream?: { repo: string; version: string; license: string; }; }"
+    },
+    "NavGroup": {
+      "stability": "experimental",
+      "signature": "({ heading, children }: { heading?: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "NavHeader": {
+      "stability": "experimental",
+      "signature": "({ className, children }: { className?: string; children: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "NavList": {
+      "stability": "experimental",
+      "signature": "({ children }: { children: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "NavTitle": {
+      "stability": "experimental",
+      "signature": "({ children, actions }: { children: ReactNode; actions?: ReactNode; }) => import(\"react\").JSX.Element"
+    },
+    "NotFound": {
+      "stability": "experimental",
+      "signature": "() => import(\"react\").JSX.Element"
+    },
+    "PLATFORM_VERSION": {
+      "stability": "stable",
+      "signature": "string"
+    },
+    "PaletteContext": {
+      "stability": "stable",
+      "signature": "{ manifest: Manifest; current: Prototype | undefined; isOpen: (item: Artifact) => boolean; go: (to: NavigateOptions) => void; }"
+    },
+    "Prose": {
+      "stability": "experimental",
+      "signature": "({ children, className }: { children: ReactNode; className?: string; }) => import(\"react\").JSX.Element"
+    },
+    "Prototype": {
+      "stability": "experimental",
+      "signature": "PrototypeInfo & { artifacts: Artifact[]; }"
+    },
+    "PrototypeAction": {
+      "stability": "stable",
+      "signature": "{ label: string; icon: IconSvgElement; onSelect: () => void; destructive?: boolean; }"
+    },
+    "PrototypeInfo": {
+      "stability": "experimental",
+      "signature": "{ studioId?: string; ownerContributorId?: string; id: string; contributorKey: string; title: string; description?: string; contributor: string; contributorSample?: true; contributorGithub?: string; created: string | null; system: string | null; systemId?: string | null; owner?: { id: string; kind: \"platform\" | \"module\" | \"system\"; label: string; root: string; }; systemMissing?: { systemId: string; label: string; }; rebuild?: { targetSystemKey: string | null; targetSystemId: string | null; sourcePrototypeId: string; sourcePath: string; }; status?: \"archived\"; maintainers?: string[]; }"
+    },
+    "ResourceId": {
+      "stability": "stable",
+      "signature": "string & { readonly __resourceId: unique symbol; }"
+    },
+    "SectionNav": {
+      "stability": "experimental",
+      "signature": "({ label, children }: { label: string; children: ReactNode; }) => import(\"react\").JSX.Element | null"
+    },
+    "Select": {
+      "stability": "experimental",
+      "signature": "<Value, Multiple extends boolean | undefined = false>(props: SelectPrimitive.Root.Props<Value, Multiple>) => React.JSX.Element"
+    },
+    "SelectContent": {
+      "stability": "experimental",
+      "signature": "({ className, children, side, sideOffset, align, alignOffset, alignItemWithTrigger, ...props }: SelectPrimitive.Popup.Props & Pick<SelectPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\" | \"alignItemWithTrigger\">) => React.JSX.Element"
+    },
+    "SelectGroup": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: SelectPrimitive.Group.Props) => React.JSX.Element"
+    },
+    "SelectItem": {
+      "stability": "experimental",
+      "signature": "({ className, children, ...props }: SelectPrimitive.Item.Props) => React.JSX.Element"
+    },
+    "SelectLabel": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: SelectPrimitive.GroupLabel.Props) => React.JSX.Element"
+    },
+    "SelectScrollDownButton": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollDownArrow>) => React.JSX.Element"
+    },
+    "SelectScrollUpButton": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) => React.JSX.Element"
+    },
+    "SelectSeparator": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: SelectPrimitive.Separator.Props) => React.JSX.Element"
+    },
+    "SelectTrigger": {
+      "stability": "experimental",
+      "signature": "({ className, size, children, ...props }: SelectPrimitive.Trigger.Props & { size?: \"sm\" | \"default\"; }) => React.JSX.Element"
+    },
+    "SelectValue": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: SelectPrimitive.Value.Props) => React.JSX.Element"
+    },
+    "ServerRoute": {
+      "stability": "stable",
+      "signature": "(request: { me: string | null; body: unknown; }) => { status?: number; body: object; manifest?: unknown; } | Promise<{ status?: number; body: object; manifest?: unknown; }>"
+    },
+    "SourceAccess": {
+      "stability": "experimental",
+      "signature": "{ path: string; editable: boolean; read: () => Promise<{ content: string; version: string; }>; write: (content: string, base: string) => Promise<{ version: string; warnings?: string[]; }>; }"
+    },
+    "SourceChanged": {
+      "stability": "experimental",
+      "signature": "new (message?: string): SourceChanged; new (message?: string, options?: ErrorOptions): SourceChanged { \"cause\"?: unknown; \"message\": string; \"name\": string; \"stack\"?: string | undefined } static {  }"
+    },
+    "SourceEditor": {
+      "stability": "experimental",
+      "signature": "({ label, actions, onDirty, source, language: syntax }: SourceEditorProps) => import(\"react\").JSX.Element"
+    },
+    "SourceLanguage": {
+      "stability": "experimental",
+      "signature": "\"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\""
+    },
+    "SystemCuration": {
+      "stability": "stable",
+      "signature": "{ stage: \"direction\" | \"foundations\" | \"components\" | \"prototype\" | \"ready\" | \"assessment\"; summary: string; nextStep: string; sources: { label: string; url: string; }[]; record?: string; prototypeId?: string; }"
+    },
+    "SystemIntro": {
+      "stability": "stable",
+      "signature": "{ summary?: string; overview?: SystemOverviewSummary; intro?: ReactNode; icons?: DesignSystem[\"icons\"]; }"
+    },
+    "SystemLibrary": {
+      "stability": "stable",
+      "signature": "{ kind: \"package\" | \"source\"; id: string; label: string; package?: string; version?: string; description: string; entry?: string; docs: string; assets?: readonly (\"fonts\" | \"icons\" | \"images\")[]; components?: readonly string[]; }"
+    },
+    "SystemOverviewSummary": {
+      "stability": "stable",
+      "signature": "{ guidance?: string; code?: string; starter?: boolean; curation?: SystemCuration; }"
+    },
+    "SystemSpec": {
+      "stability": "stable",
+      "signature": "{ studioId?: string; role: \"platform\" | \"prototype\"; status: \"active\" | \"archived\"; renameReview?: readonly string[]; label: string; themeClass: string; styling: \"tailwind\" | \"custom\"; colorModes: readonly ColorMode[]; docs: DocsMode; origin: \"shadcn\" | null; libraries: readonly SystemLibrary[]; }"
+    },
+    "TAGLINE": {
+      "stability": "stable",
+      "signature": "string | undefined"
+    },
+    "Table": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"table\">) => React.JSX.Element"
+    },
+    "TableBody": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"tbody\">) => React.JSX.Element"
+    },
+    "TableCaption": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"caption\">) => React.JSX.Element"
+    },
+    "TableCell": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"td\">) => React.JSX.Element"
+    },
+    "TableFooter": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"tfoot\">) => React.JSX.Element"
+    },
+    "TableHead": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"th\">) => React.JSX.Element"
+    },
+    "TableHeader": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"thead\">) => React.JSX.Element"
+    },
+    "TableRow": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"tr\">) => React.JSX.Element"
+    },
+    "Tabs": {
+      "stability": "experimental",
+      "signature": "({ className, orientation, ...props }: TabsPrimitive.Root.Props) => import(\"react\").JSX.Element"
+    },
+    "TabsContent": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: TabsPrimitive.Panel.Props) => import(\"react\").JSX.Element"
+    },
+    "TabsList": {
+      "stability": "experimental",
+      "signature": "({ className, variant, ...props }: TabsPrimitive.List.Props & VariantProps<typeof tabsListVariants>) => import(\"react\").JSX.Element"
+    },
+    "TabsTrigger": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: TabsPrimitive.Tab.Props) => import(\"react\").JSX.Element"
+    },
+    "Textarea": {
+      "stability": "experimental",
+      "signature": "({ className, ...props }: React.ComponentProps<\"textarea\">) => React.JSX.Element"
+    },
+    "Tooltip": {
+      "stability": "experimental",
+      "signature": "({ ...props }: TooltipPrimitive.Root.Props) => import(\"react\").JSX.Element"
+    },
+    "TooltipContent": {
+      "stability": "experimental",
+      "signature": "({ className, side, sideOffset, align, alignOffset, children, ...props }: TooltipPrimitive.Popup.Props & Pick<TooltipPrimitive.Positioner.Props, \"align\" | \"alignOffset\" | \"side\" | \"sideOffset\">) => import(\"react\").JSX.Element"
+    },
+    "TooltipProvider": {
+      "stability": "experimental",
+      "signature": "({ delay, ...props }: TooltipPrimitive.Provider.Props) => import(\"react\").JSX.Element"
+    },
+    "TooltipTrigger": {
+      "stability": "experimental",
+      "signature": "({ ...props }: TooltipPrimitive.Trigger.Props) => import(\"react\").JSX.Element"
+    },
+    "ViewToggle": {
+      "stability": "experimental",
+      "signature": "() => import(\"react\").JSX.Element"
+    },
+    "allPrototypes": {
+      "stability": "experimental",
+      "signature": "(m: Manifest) => PrototypeRef[]"
+    },
+    "artifactLabel": {
+      "stability": "experimental",
+      "signature": "(path: string, proto?: Pick<PrototypeInfo, \"contributorKey\" | \"id\"> & { artifacts?: Artifact[]; }) => string"
+    },
+    "artifactLink": {
+      "stability": "experimental",
+      "signature": "(p: PrototypeInfo, item: Artifact) => { readonly to: \"/$contributor/$prototype/$\"; readonly params: { readonly contributor: string; readonly prototype: string; readonly _splat: string; }; } | { readonly to: \"/prototypes/$prototype/artifacts/$artifact\"; readonly params: { readonly prototype: ResourceId; readonly artifact: ResourceId; }; }"
+    },
+    "artifactSlug": {
+      "stability": "experimental",
+      "signature": "(path: string) => string"
+    },
+    "badgeVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ variant?: \"link\" | \"default\" | \"destructive\" | \"secondary\" | \"outline\" | \"ghost\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "buttonVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ variant?: \"link\" | \"default\" | \"destructive\" | \"secondary\" | \"outline\" | \"ghost\" | null | undefined; size?: \"default\" | \"sm\" | \"lg\" | \"xs\" | \"icon\" | \"icon-xs\" | \"icon-sm\" | \"icon-lg\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "callModule": {
+      "stability": "experimental",
+      "signature": "<T>(module: string, route: string, body: object) => Promise<T>"
+    },
+    "canChangePrototype": {
+      "stability": "experimental",
+      "signature": "(p: PrototypeInfo, me: string | null) => boolean"
+    },
+    "canEditSource": {
+      "stability": "experimental",
+      "signature": "(path: string, me: string | null) => boolean"
+    },
+    "contribution": {
+      "stability": "experimental",
+      "signature": "<T>(m: Manifest, id: string) => T | undefined"
+    },
+    "createLoader": {
+      "stability": "experimental",
+      "signature": "<M>(glob: Glob<M>, hot: ImportMeta[\"hot\"]) => { load: (file: ItemFile, { inManifest }?: { inManifest?: boolean | undefined; }) => Promise<M | undefined>; incomplete: Set<string>; }"
+    },
+    "createMarkdownLoader": {
+      "stability": "experimental",
+      "signature": "<M>(glob: Record<string, () => Promise<M>>, hot: ImportMeta[\"hot\"], reference?: boolean) => (path: string) => Promise<M> | undefined"
+    },
+    "defineFileType": {
+      "stability": "experimental",
+      "signature": "(spec: FileTypeSpec) => FileTypeSpec"
+    },
+    "findArtifact": {
+      "stability": "experimental",
+      "signature": "(p: Prototype, slug: string) => Artifact | undefined"
+    },
+    "loadManifest": {
+      "stability": "experimental",
+      "signature": "() => Promise<Manifest>"
+    },
+    "markdownFileModule": {
+      "stability": "experimental",
+      "signature": "(documents: ReturnType<typeof createLoader<MarkdownModule>>) => FileTypeModule"
+    },
+    "markdownFileType": {
+      "stability": "experimental",
+      "signature": "{ label: string; identity?: IdentityMetadata; extensions: readonly string[]; language?: \"tsx\" | \"markdown\" | \"json\" | \"mermaid\" | \"text\"; capabilities: ArtifactCapabilities; inSystemContent: boolean; inPrototype: boolean; fallback: boolean; fidelity?: { isLofi(source: string): boolean; setLofi(source: string, on: boolean): string; }; template?: (name: string) => string; check?: (file: { source: string; frontmatter: Record<string, unknown> | null; prototype?: { contributor: string; id: string; studioId?: string; }; }) => string[]; }"
+    },
+    "markdownIdentity": {
+      "stability": "experimental",
+      "signature": "{ read(source: string): ResourceId | null; write(source: string, id: ResourceId): string; }"
+    },
+    "menuGroups": {
+      "stability": "experimental",
+      "signature": "<T>(groups: (T | false | null | undefined)[][]) => T[][]"
+    },
+    "navLinkClass": {
+      "stability": "experimental",
+      "signature": "string"
+    },
+    "navLinkStyle": {
+      "stability": "experimental",
+      "signature": "CSSProperties"
+    },
+    "prototypeLink": {
+      "stability": "experimental",
+      "signature": "(p: Pick<PrototypeInfo, \"contributorKey\" | \"id\" | \"studioId\">) => { readonly to: \"/$contributor/$prototype\"; readonly params: { readonly contributor: string; readonly prototype: string; }; } | { readonly to: \"/prototypes/$prototype\"; readonly params: { readonly prototype: ResourceId; }; }"
+    },
+    "readSource": {
+      "stability": "experimental",
+      "signature": "(p: PrototypeInfo, path: string) => Promise<{ content: string; version: string; }>"
+    },
+    "tabsListVariants": {
+      "stability": "experimental",
+      "signature": "(props?: ({ variant?: \"line\" | \"default\" | null | undefined; } & import(\"class-variance-authority/types\").ClassProp) | undefined) => string"
+    },
+    "toast": {
+      "stability": "experimental",
+      "signature": "import(\"@base-ui/react\").ToastManager<any>"
+    },
+    "useManifest": {
+      "stability": "experimental",
+      "signature": "() => { prototypes: PrototypeRef[]; sections: Record<string, PrototypeRef[]>; contributions: Record<string, unknown>; systemContent: Prototype[]; systemContentMaps: Record<string, SystemContentMap>; platformReferences: PlatformReferenceGroup[]; skillCatalog: { owner: NonNullable<PrototypeInfo[\"owner\"]>; folder: string; name: string; description: string; source: string; }[]; systems: Record<string, { docs: DocsMode; origin: \"shadcn\" | null; components: SystemComponentDoc[]; tokens: ThemeToken[]; libraries?: (Omit<SystemLibrary, \"version\"> & { requirement: string | null; version: string | null; })[]; }>; }"
+    },
+    "useMe": {
+      "stability": "experimental",
+      "signature": "() => string | null"
+    },
+    "useSourceView": {
+      "stability": "experimental",
+      "signature": "(enabled: boolean, source: boolean) => { toggle: () => void; rendered: import(\"react\").RefObject<HTMLDivElement | null>; }"
+    },
+    "writeSource": {
+      "stability": "experimental",
+      "signature": "(p: PrototypeInfo, path: string, content: string, base: string) => Promise<{ version: string; warnings?: string[]; }>"
+    }
   },
   "runtimePackages": {
     "shared": [
@@ -324,5 +1751,11 @@
       "react",
       "react-dom"
     ]
+  },
+  "runtimeRequirements": {
+    "node": ">=24 <25",
+    "pnpm": ">=12 <13",
+    "react": "^19.3.0",
+    "reactDom": "^19.3.0"
   }
 }

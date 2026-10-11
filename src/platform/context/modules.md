@@ -37,12 +37,12 @@ Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import
 
 `src/platform/api/*.ts` lists each export with a JSDoc tag:
 
-- `@stable`: the declaration types, `PLATFORM_VERSION`, and the identity values. A stable export, and a stable declaration type's fields, change only with a new `PLATFORM_VERSION`.
+- `@stable`: the declaration types, `PLATFORM_VERSION`, and the identity values. After the public baseline, stable signatures and referenced stable types require a minor version increase under the 0.x policy.
 - `@experimental`: everything else. It may change in any 0.x release; release notes name the change.
 
 Importing anything under `src/platform/` from team code by another path, including `src/platform/node/` and Studio's system files, is an error in `pnpm check` and in the development and build import guard. Imports between modules use `@module/<id>` as before. Supplied modules may import platform internals, since they ship with the platform; their imports are not examples of the public API.
 
-The [contract snapshot](checks.md#platform-contract) records every API export with its stability. `pnpm contract` fails when an export has no tag, when a stable export changes without a `PLATFORM_VERSION` bump, or when an experimental export changes without `pnpm contract --update`.
+The [contract snapshot](checks.md#platform-contract) records semantic signatures, referenced types, and stability. `pnpm contract` checks annotations and snapshot freshness; `pnpm contract --released` separately enforces compatibility against the supported public release. Referenced public types retain their declared stability; other local types inherit it from their exposing declaration.
 
 Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary.
 

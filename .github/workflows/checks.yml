@@ -100,6 +100,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          fetch-depth: 0
+          fetch-tags: true
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: jdx/mise-action@v5
       - name: Locate dependency store
@@ -112,6 +114,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm studio sync --check
       - run: pnpm format:check
+      - name: Verify public contract and report PR changes
+        if: github.repository == 'itspatmorgan/design-studio-starter'
+        env:
+          CONTRACT_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
+        run: pnpm contract --released --base "$CONTRACT_BASE"
       - name: Configure Pages
         if: github.repository == 'itspatmorgan/design-studio-starter' && github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: pages

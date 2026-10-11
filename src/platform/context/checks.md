@@ -36,13 +36,15 @@ In a studio, any tracked path the map does not name is the team's own: `pnpm che
 
 ## Platform contract
 
-The platform contract snapshot (`src/platform/core/contract.snapshot.json`) records `PLATFORM_VERSION`, every export of the [public API](modules.md#public-api) (`src/platform/api/`, imported as `#studio/<entry>`) with its stability, the fields of the stable declaration types (`ModuleSpec`, `ModuleApp`, `SystemSpec`, `FileTypeSpec`, and the types inside them), and the runtime package lists, and the stored format versions (`FORMAT_VERSIONS`, [Format versions](formats.md)). `pnpm contract` and the upstream regression suite fail when:
+The platform contract snapshot (`src/platform/core/contract.snapshot.json`, schema 2) records the public API's semantic signatures and stability, referenced local types, generic parameters, readonly modifiers, nested shapes, runtime package lists, stored format versions, and Node, pnpm, React, and React DOM requirements. TypeScript provides signatures without implementation bodies or comments. A referenced public type retains its explicit stability; other local types inherit the declaration that exposes them.
 
-- an API export has no `@stable` or `@experimental` JSDoc tag with a one-line description;
-- a stable export, a declaration type's fields, a runtime package list, or a format version changes while `PLATFORM_VERSION` stays the same: bump the version, then run `pnpm contract --update`;
-- an experimental export is added, removed, or changed: it needs no new version, but run `pnpm contract --update` so the change is recorded and visible in review.
+`pnpm contract` checks export annotations and requires the snapshot to match current source. Run `pnpm contract --update` after a reviewed surface change. This command does not decide release compatibility. Earlier pre-release APIs and snapshot schemas are not supported compatibility baselines.
 
-A studio's own `pnpm check` and `pnpm build` do not run it, so local platform edits are never asked to change the version. If the version changed but the snapshot did not, run `pnpm contract --update` alone.
+The first supported public release is `v0.3.0`, declared by `FIRST_PUBLIC_RELEASE` in `src/platform/node/lib/contract.js`. `pnpm contract --released` independently reads the preceding supported release tag's snapshot. It excludes the candidate’s own tag only when its version and clean commit match. A tagged HEAD remains the baseline during uncommitted release edits. The initial public candidate can establish its baseline without a preceding public tag; later candidates fail clearly when that history is missing. Fetch complete history and release tags for this maintainer check.
+
+After public launch, a stable signature, referenced stable type, runtime requirement/package list, or stored format version change requires a minor version increase under the 0.x policy. Experimental changes remain recorded and may change within 0.x. Updating the editable snapshot cannot authorize a change against the released baseline. `pnpm contract --released --base <revision>` also reports the PR-base snapshot differences for review; this report imposes no compatibility with historical pre-release snapshots.
+
+Upstream CI runs the released comparison and PR report. The release command runs the released comparison after refreshing its snapshot. A studio's normal `pnpm check` and `pnpm build` do not impose upstream version bumps on local platform changes.
 
 ## Minimum sufficient verification
 

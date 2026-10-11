@@ -1,7 +1,8 @@
-// Fails when an API export has no stability tag, or the platform's public contract changes without a
-// PLATFORM_VERSION change (src/platform/node/lib/contract.js).
-// Usage: node src/platform/node/check/check-contract.js [--update]   (pnpm contract --update rewrites the snapshot)
+// Snapshot freshness, public release compatibility, and PR-base review (context/checks.md).
+// Usage: check-contract.js [--update] [--released] [--base <revision>]
 import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import { releasedBaseline, releasedProblems, reviewChanges } from '../lib/released-contract.js';
 import {
   SNAPSHOT_FILE,
   apiProblems,
@@ -11,11 +12,17 @@ import {
   writeSnapshot,
 } from '../lib/contract.js';
 
-export function checkContract() {
-  return contractProblems(computeContract(), readSnapshot(), apiProblems());
+export function checkContract({ released = false } = {}) {
+  const current = computeContract();
+  const problems = contractProblems(current, readSnapshot(), apiProblems());
+  if (released)
+    problems.push(...releasedProblems(current, releasedBaseline(path.resolve('.'), current.platformVersion)));
+  return problems;
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  if (process.argv.includes('--update') && (process.argv.includes('--released') || process.argv.includes('--base')))
+    throw new Error('Run --update separately, then verify with --released or --base.');
   if (process.argv.includes('--update')) {
     const untagged = apiProblems();
     if (untagged.length) {
@@ -25,7 +32,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     writeSnapshot(computeContract());
     console.log(`[contract] Wrote ${SNAPSHOT_FILE}`);
   } else {
-    const problems = checkContract();
+    const problems = checkContract({ released: process.argv.includes('--released') });
+    const baseAt = process.argv.indexOf('--base');
+    if (baseAt >= 0) {
+      const ref = process.argv[baseAt + 1];
+      if (!ref || ref.startsWith('--')) throw new Error('--base requires a Git revision.');
+      const changed = reviewChanges(path.resolve('.'), computeContract(), ref);
+      console.log(`[contract] Review against ${ref}: ${changed.length} recorded change(s).`);
+      for (const line of changed) console.log(`  ${line}`);
+    }
     if (problems.length) {
       console.error(problems.map(p => `[contract] ${p}`).join('\n'));
       process.exit(1);

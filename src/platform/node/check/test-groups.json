@@ -19,6 +19,7 @@
         "src/platform/node/lib/beta.test.js",
         "src/platform/node/lib/boundaries.test.js",
         "src/platform/node/lib/contract.test.js",
+        "src/platform/node/lib/released-contract.test.js",
         "src/platform/node/lib/guidance-titles.test.js",
         "src/platform/modules/documentation/manual-pages.test.js",
         "src/platform/modules/documentation/source-files.test.ts",

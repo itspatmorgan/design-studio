@@ -84,7 +84,7 @@ test('the current version can be released, so the first release needs no bump', 
   assert.deepEqual(plan.problems, []);
   const { run, ran } = scripts(dir);
   const result = applyRelease(dir, plan, { run, log: () => {} });
-  assert.deepEqual(ran, ['pnpm contract --update', 'pnpm check', 'pnpm contract', 'pnpm build']);
+  assert.deepEqual(ran, ['pnpm contract --update', 'pnpm check', 'pnpm contract --released', 'pnpm build']);
   assert.equal(result.tag, 'v0.2.0');
   assert.equal(git('log', '-1', '--format=%s'), 'Release v0.2.0');
   assert.equal(git('cat-file', '-t', 'v0.2.0'), 'tag', 'annotated');
