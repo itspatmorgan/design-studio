@@ -1,9 +1,11 @@
 import { Link, getRouteApi } from '@tanstack/react-router';
 import { NavHeader, NavTitle, NavTabs, navTabClass } from '@/platform/app/shell/nav';
 
+import { manualPages } from '@/platform/modules/documentation/manualPages';
+
 const rootApi = getRouteApi('__root__');
 export default function DocumentationHeader({ reference = false }: { reference?: boolean }) {
-  const { manual } = rootApi.useLoaderData();
+  const manual = manualPages(rootApi.useLoaderData());
   return (
     <NavHeader>
       <NavTitle>Documentation</NavTitle>

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- The app reads the Manual from `manifest.contributions.documentation` and `Manifest.manual` is gone. The shell no longer knows the Manual: its palette group comes from `ModuleApp.palette`, the `/documentation` landing from `ModuleApp.landing` (experimental), palette group order from `ModuleApp.paletteOrder`, and Studio settings groups from `ModuleSpec.settings`. `PLATFORM_VERSION` is `0.3.0` for these declaration fields. Nothing changes in the interface, and the studio builds and checks with Documentation disabled.
 - A module can add an optional `build.ts` (`ModuleBuild`, experimental in `#studio/module`) that contributes data to the manifest as `manifest.contributions[<id>]`, folders to watch, and editable source files. The Documentation module now scans the Manual through it; the Manual and its pages behave as before.
 - CI no longer falls back to the merge base when choosing the upgrade test base; it always starts from the latest release tag.
 

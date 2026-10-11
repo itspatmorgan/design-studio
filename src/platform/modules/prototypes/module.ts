@@ -5,6 +5,7 @@ import type { ModuleSpec } from '#studio/module';
 // Required: the viewer here is also how a module item or a system content section opens.
 export default {
   optional: false,
+  settings: { group: 'prototyping', order: 0 },
   lib: true,
   instructions: [
     { path: 'skills/build-prototype/', when: 'asks to create or edit interactive prototype views' },

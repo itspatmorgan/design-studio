@@ -1,5 +1,5 @@
 // The container every section's navigation is built in: the panel beside the page (Prototypes, the
-// system content, Systems, the Manual). It supplies the sidebar colors, the border, an accessible name, and a
+// system content, Systems, and any module's section). It supplies the sidebar colors, the border, an accessible name, and a
 // width you can drag (remembered, and the same for every section), and it hides when the rail's
 // toggle (or ⌘;) hides navigation, for every section alike. What goes inside is up to the
 // section: a NavHeader (NavHeader.tsx) on top, then a list or tree (NavList.tsx, FileTree.tsx).

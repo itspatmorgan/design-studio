@@ -55,15 +55,6 @@ export type PrototypeRef = PrototypeInfo & {
   artifactsHash?: string; // changes when the items do, so a changed list is fetched again
 };
 
-// One human chapter from src/platform/modules/documentation/pages/<slug>.md.
-export type ManualPage = {
-  slug: string; // its address, /documentation/manual/<slug>: the file name without .md, e.g. "prototypes"
-  title: string;
-  description: string;
-  section: string | null; // sidebar heading, e.g. "Core concepts"
-  source?: string; // the chapter’s source, like "/platform/modules/documentation/pages/prototypes.md"
-};
-
 // `sections` holds the artifacts of the modules' sections of prototype-shaped folders, by section key: the
 // module section artifacts (src/examples/, as `sections.examples`), shaped like prototypes.
 // `systemContent` holds the system content's sections (a system's folder in either system root, see src/platform/core/roots.ts), shaped like
@@ -83,7 +74,8 @@ export type PlatformReferenceGroup = {
 export type Manifest = {
   prototypes: PrototypeRef[];
   sections: Record<string, PrototypeRef[]>;
-  manual: ManualPage[];
+  // What each enabled module's build.ts adds, by module ID (src/platform/core/modules/index.ts, ModuleBuild). Read it with `contribution`.
+  contributions: Record<string, unknown>;
   systemContent: Prototype[];
   systemContentMaps: Record<string, SystemContentMap>;
   platformReferences: PlatformReferenceGroup[];

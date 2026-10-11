@@ -8,7 +8,7 @@ import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../roots.ts';
 // The version of the public contract this copy of the platform offers: the declaration types and the #studio/*
 // API (src/platform/api/) a module or system is written against. A stable export changes only with a new version;
 // experimental ones may change in any 0.x release. A module says the oldest version it works with in `requires`.
-export const PLATFORM_VERSION = '0.2.1';
+export const PLATFORM_VERSION = '0.3.0';
 export const CORE_PAGE_KEYS = ['settings'] as const;
 
 export type ModuleSpec = {
@@ -21,6 +21,8 @@ export type ModuleSpec = {
   requires: string;
   // Explicitly declare whether studio.config.json may turn this module off.
   optional: boolean;
+  // Where Studio settings lists the module: one of its groups and a place within it, low first. Without one it is listed with the other modules.
+  settings?: { group: 'prototyping' | 'systems' | 'team'; order: number };
   // The top-level area the module adds: its address in the app (/examples) and, if it keeps content, the folder
   // that content lives in, relative to the repo root. The key can't also be a contributor's folder, since both are addresses.
   // `items` says the folder holds files the app opens as items, so each file type lists them (globs.ts):
@@ -120,6 +122,11 @@ export function moduleProblems(spec: unknown, folder: string, dir = `${TEAM_MODU
   if (m.description !== undefined && (typeof m.description !== 'string' || m.description.length > 200))
     problems.push(`${where}: description should be one short sentence.`);
   if (typeof m.lib !== 'boolean') problems.push(`${where}: declare lib as true or false.`);
+  if (
+    m.settings !== undefined &&
+    !(['prototyping', 'systems', 'team'].includes(m.settings?.group) && Number.isFinite(m.settings?.order))
+  )
+    problems.push(`${where}: settings must be { group: 'prototyping' | 'systems' | 'team', order: <number> }.`);
   if (typeof m.optional !== 'boolean') problems.push(`${where}: declare optional as true or false.`);
   if (m.instructions !== undefined) {
     if (!Array.isArray(m.instructions)) problems.push(`${where}: instructions should be a list of { path, when }.`);

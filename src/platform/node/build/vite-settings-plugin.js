@@ -91,6 +91,7 @@ export default function settings() {
                 label: m.label,
                 description: m.description,
                 optional: m.optional,
+                settings: m.settings,
                 compatible: compatible(m),
               })),
               systems: SYSTEM_IDS.map(id => ({ id, label: SYSTEM_SPECS[id].label, status: SYSTEM_SPECS[id].status })),

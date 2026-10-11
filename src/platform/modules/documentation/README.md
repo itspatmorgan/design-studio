@@ -46,10 +46,10 @@ Source access is limited to indexed owner documents and locally repairable Manua
 
 ## Implementation
 
-- `module.ts`, `app.tsx`, `ManualLayout.tsx`, `ManualPage.tsx`, `loadManual.ts`: Manual availability, navigation, and reading.
+- `module.ts`, `app.tsx`, `ManualLayout.tsx`, `ManualPage.tsx`, `loadManual.ts`, `manualPages.ts`: Manual availability, navigation, palette entries, the `/documentation` landing, and reading. Chapters come from the manifest's `contributions.documentation` (`types.ts`).
 - `pages/*.md`: authored human chapters.
 - `src/platform/app/docs/KnowledgePage.tsx` and `src/platform/app/router.tsx`: the shared owner browser and overview routes.
-- `src/platform/node/build/build-manifest.js`: owner and Manual discovery.
+- `build.ts`: Manual chapter discovery, contributed to the manifest. `src/platform/node/build/build-manifest.js`: owner discovery.
 - `src/platform/node/lib/platform-references.js`: canonical owner document catalog.
 - `src/platform/node/build/remark-title-from-heading.js`: opening titles without hiding document sections.
 - `src/platform/app/docs/DocumentationEditor.tsx`, `documentationSource.ts`, `src/platform/node/build/files/source.js`: allowlisted document source editing.

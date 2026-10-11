@@ -3,6 +3,7 @@ import type { ModuleSpec } from '#studio/module';
 // The text file type: the system content's fallback, any other text file opens read-only (src/platform/context/file-types.md).
 export default {
   optional: false,
+  settings: { group: 'systems', order: 1 },
   lib: false,
   id: 'text',
   label: 'Text files',

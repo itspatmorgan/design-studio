@@ -24,6 +24,10 @@ export function loadManifest(): Promise<Manifest> {
   return manifest;
 }
 
+// What a module's build.ts contributed to the manifest (manifest.contributions[<id>]), or undefined when the module is off
+// or adds nothing. The caller names the shape its own build.ts produces.
+export const contribution = <T>(m: Manifest, id: string): T | undefined => m.contributions?.[id] as T | undefined;
+
 // Everything that opens like a prototype: prototypes, the artifacts of the modules' sections, the system content's sections.
 export const allPrototypes = (m: Manifest): PrototypeRef[] => [
   ...m.prototypes,

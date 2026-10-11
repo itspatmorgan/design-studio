@@ -9,6 +9,7 @@ export default {
   requires: '0.2.0',
   description: 'Documentation: a human Manual alongside the shared Context and Skills browser.',
   optional: true,
+  settings: { group: 'team', order: 1 },
   instructions: [{ path: 'skills/write-manual/', when: 'asks to add or change the human Manual' }],
   section: { key: 'documentation', folder: 'src/platform/modules/documentation/pages' },
 } satisfies ModuleSpec;

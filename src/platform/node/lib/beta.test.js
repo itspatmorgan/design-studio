@@ -609,9 +609,11 @@ test('standalone diagrams are discovered by both extensions and disabling preser
       if (fs.existsSync('src/platform/modules/document/type.ts')) assert.ok(prototype.artifacts.some(i=>i.fileType==='document'));
       else assert.equal(prototype.artifacts.some(i=>i.fileType==='document'), false);
       assert.ok(manifest.platformReferences.find(g=>g.id==='diagrams')?.references.length);
-      if (manifest.manual.length) {
-        assert.ok(manifest.manual.some(p=>p.slug==='diagrams' && p.source==='/platform/modules/documentation/pages/diagrams.md'));
-        assert.ok(manifest.manual.every(p=>p.source?.startsWith('/platform/modules/documentation/pages/')));
+      const manual = manifest.contributions.documentation?.manual ?? [];
+      assert.equal('manual' in manifest, false);
+      if (manual.length) {
+        assert.ok(manual.some(p=>p.slug==='diagrams' && p.source==='/platform/modules/documentation/pages/diagrams.md'));
+        assert.ok(manual.every(p=>p.source?.startsWith('/platform/modules/documentation/pages/')));
       }
       setModule(false);
     `,
@@ -636,11 +638,55 @@ test('standalone diagrams are discovered by both extensions and disabling preser
       else assert.equal(prototype.artifacts.some(i=>i.fileType==='document'), false);
       assert.ok(fs.existsSync('src/prototypes/samples/feedback-inbox/test-flow.mermaid'));
       assert.equal(manifest.platformReferences.find(g=>g.id==='diagrams')?.references.length,0);
-      assert.equal(manifest.manual.some(p=>p.slug==='diagrams'),false);
+      assert.equal((manifest.contributions.documentation?.manual ?? []).some(p=>p.slug==='diagrams'),false);
     `,
       ],
       { cwd: dir, encoding: 'utf8', stdio: 'pipe' },
     );
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the studio builds its manifest and passes module checks with Documentation disabled', {
+  skip: !fs.existsSync('src/platform/modules/documentation/module.ts'),
+}, async () => {
+  const { execFileSync } = await import('node:child_process');
+  const root = path.resolve('.');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-no-documentation-'));
+  try {
+    fs.cpSync(root, dir, {
+      recursive: true,
+      filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)),
+    });
+    fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
+    linkSystemDependencies(root, dir);
+    execFileSync(
+      process.execPath,
+      [
+        '--input-type=module',
+        '--eval',
+        `
+      import fs from 'node:fs'; import assert from 'node:assert/strict';
+      import { parseConfigFile, serializeConfig, withModule } from './src/platform/core/config-file.ts';
+      const config='studio.config.json';
+      fs.writeFileSync(config, serializeConfig(withModule(parseConfigFile(fs.readFileSync(config,'utf8')).value, 'documentation', false)));
+      const { buildManifest } = await import('./src/platform/node/build/build-manifest.js');
+      const { manifest, errors } = buildManifest({ write: false, quiet: true });
+      assert.equal(errors, 0);
+      assert.equal('documentation' in manifest.contributions, false);
+      assert.equal('manual' in manifest, false);
+      // The Context & Skills browser's data does not depend on the Manual.
+      assert.ok(manifest.platformReferences.length > 0);
+    `,
+      ],
+      { cwd: dir, encoding: 'utf8', stdio: 'pipe' },
+    );
+    execFileSync(process.execPath, ['src/platform/node/check/check-modules.js'], {
+      cwd: dir,
+      encoding: 'utf8',
+      stdio: 'pipe',
+    });
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

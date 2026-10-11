@@ -9,6 +9,7 @@ export default {
   requires: '0.2.0',
   description: 'An .excalidraw file opens as a page to arrange views, documents, and notes on.',
   optional: true,
+  settings: { group: 'prototyping', order: 2 },
   instructions: [
     { path: 'skills/use-canvas/', when: 'asks for a canvas (a page of views, documents, and notes arranged together)' },
   ],

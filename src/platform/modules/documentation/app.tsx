@@ -7,6 +7,9 @@ import { APP_NAME } from '@/platform/app/data/config';
 import type { ModuleApp } from '#studio/module';
 import { loadManifest } from '@/platform/app/data/manifest';
 import { loadManualPage } from './loadManual';
+import { manualPages } from './manualPages';
+import { CommandGroup, CommandItem, CommandSeparator } from '@/platform/systems/studio/components/command';
+import type { PaletteContext } from '#studio/module';
 
 // Manual pages render in DocLayout, loaded with the first Manual page.
 const ManualPage = lazyRouteComponent(() => import('./ManualPage'));
@@ -21,7 +24,7 @@ async function manualLoader(slug: string, mode?: 'source') {
       ? import('./ManualPage').then(mod => mod.prepareManualSource())
       : undefined,
   ]);
-  const page = (await loadManifest()).manual.find(p => p.slug === slug);
+  const page = manualPages(await loadManifest()).find(p => p.slug === slug);
   if (import.meta.env.DEV && mode === 'source') {
     const path = 'src' + (page?.source ?? `/platform/modules/documentation/pages/${slug}.md`);
     return {
@@ -47,10 +50,36 @@ async function manualLoader(slug: string, mode?: 'source') {
   };
 }
 
+const manualPath = (slug: string) => '/documentation/manual' + (slug === 'index' ? '' : '/' + slug);
+
+// The Manual's chapters in the ⌘K palette.
+function ManualPalette({ manifest, go }: PaletteContext) {
+  const pages = manualPages(manifest);
+  if (!pages.length) return null;
+  return (
+    <>
+      <CommandSeparator />
+      <CommandGroup heading='Manual'>
+        {pages.map(page => (
+          <CommandItem
+            key={'manual:' + page.slug}
+            value={'manual ' + page.title + ' ' + (page.source ?? page.slug)}
+            onSelect={() => go({ to: manualPath(page.slug) } as never)}
+          >
+            <span className='truncate'>{page.title}</span>
+          </CommandItem>
+        ))}
+      </CommandGroup>
+    </>
+  );
+}
+
 export default {
   icon: BookOpen01Icon,
   rail: 'top',
   order: 30,
+  palette: ManualPalette,
+  landing: manifest => (manualPages(manifest).length ? '/documentation/manual' : undefined),
   routes: root => {
     // The Manual's sidebar, around whichever page is open.
     const manualRoute = createRoute({

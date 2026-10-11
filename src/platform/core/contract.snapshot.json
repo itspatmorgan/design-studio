@@ -1,5 +1,5 @@
 {
-  "platformVersion": "0.2.1",
+  "platformVersion": "0.3.0",
   "formatVersions": {
     "config": 1,
     "prototype": 1,
@@ -213,17 +213,20 @@
       "optional",
       "requires",
       "section?",
+      "settings?",
       "upstream?",
       "version"
     ],
     "ModuleApp": [
       "homeOrder?",
       "icon",
+      "landing?",
       "localOnly?",
       "navLabel?",
       "order",
       "overview?",
       "palette?",
+      "paletteOrder?",
       "places?",
       "rail",
       "routes?",

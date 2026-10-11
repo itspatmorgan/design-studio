@@ -7,6 +7,7 @@ export default {
   requires: '0.2.0',
   description: 'Manage team contributors, Admin access, and permissions to maintain systems.',
   optional: true,
+  settings: { group: 'team', order: 2 },
   lib: false,
   section: { key: 'contributors' },
   instructions: [

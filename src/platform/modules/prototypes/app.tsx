@@ -116,4 +116,5 @@ export default {
   overview: Overview,
   places: PrototypesPlaces,
   palette: PrototypesPalette,
+  paletteOrder: 25, // after Systems (20), as before
 } satisfies ModuleApp;

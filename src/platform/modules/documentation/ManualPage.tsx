@@ -3,6 +3,7 @@ import { getRouteApi, lazyRouteComponent } from '@tanstack/react-router';
 import { DocLayout } from '@/platform/app/docs/DocLayout';
 import { DocBase } from '@/platform/app/docs/DocBase';
 import type { ManualModule } from './loadManual';
+import { manualPages } from './manualPages';
 import { useSourceView } from '@/platform/core/source/useSourceView';
 
 const DocumentationEditor = import.meta.env.DEV
@@ -23,7 +24,7 @@ type Props = {
 };
 
 export default function ManualPage({ slug, source, ...props }: Props) {
-  const { manual } = rootApi.useLoaderData();
+  const manual = manualPages(rootApi.useLoaderData());
   const file = manual.find(page => page.slug === slug)?.source ?? `/platform/modules/documentation/pages/${slug}.md`;
   const { rendered } = useSourceView(import.meta.env.DEV, Boolean(source));
   if (source && DocumentationEditor)

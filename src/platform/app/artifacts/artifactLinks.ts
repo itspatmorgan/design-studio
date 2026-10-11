@@ -11,7 +11,7 @@ import { SYSTEM_CONTENT_KEY, contentParts, contentId } from '@/platform/core/roo
 import { contentAddress, allPrototypes } from '@/platform/app/data/manifest';
 import { MODULES } from '@/platform/app/data/modules';
 
-// The router's first path segments that are pages of a module (/systems/…, /documentation/manual/…) and not items: the sections
+// The router's first path segments that are pages of a module (/systems/…, /documentation/…) and not items: the sections
 // with no items of their own. The system content's and the module sections' addresses are item paths (/examples/<id>/<item>).
 const APP_PAGES = new Set(MODULES.flatMap(m => (m.section && !m.section?.items ? [m.section.key] : [])));
 

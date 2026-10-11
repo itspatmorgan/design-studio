@@ -25,14 +25,14 @@ import { Card, CardHeader, CardContent, CardDescription } from '@/platform/syste
 import { adminProblems, type StudioConfig } from '@/platform/core/config';
 import { useStudioSettings } from '@/platform/app/settings/useStudioSettings';
 
-// Presentation groups do not change ownership or availability. Unlisted extensions remain visible.
+// Presentation groups do not change ownership or availability. A module names its group and place in module.ts
+// (`settings`); modules without one are listed under Other modules.
 const moduleGroups = [
-  { id: 'prototyping', title: 'Prototype tools', modules: ['prototypes', 'view', 'canvas', 'diagrams', 'document'] },
-  { id: 'design-systems', title: 'System resources', modules: ['systems', 'text'] },
-  { id: 'studio-team', title: 'Studio & team', modules: ['onboarding', 'documentation', 'contributors'] },
-  { id: 'extensions', title: 'Other modules', modules: [] },
+  { id: 'prototyping', title: 'Prototype tools' },
+  { id: 'systems', title: 'System resources' },
+  { id: 'team', title: 'Studio & team' },
+  { id: 'extensions', title: 'Other modules' },
 ];
-const groupedModuleIds = new Set(moduleGroups.flatMap(group => group.modules));
 
 const fields = ['name', 'tagline', 'usage', 'defaultSystem', 'modules', 'admins'] as const;
 function Section({
@@ -253,9 +253,14 @@ export default function Settings() {
             >
               <div className='space-y-10'>
                 {moduleGroups.map(group => {
-                  const modules = group.modules.length
-                    ? group.modules.flatMap(id => snapshot.modules.filter(module => module.id === id))
-                    : snapshot.modules.filter(module => !groupedModuleIds.has(module.id));
+                  const modules =
+                    group.id === 'extensions'
+                      ? snapshot.modules.filter(
+                          module => !moduleGroups.some(other => other.id === module.settings?.group),
+                        )
+                      : snapshot.modules
+                          .filter(module => module.settings?.group === group.id)
+                          .sort((a, b) => a.settings!.order - b.settings!.order);
                   if (!modules.length) return null;
                   return (
                     <section key={group.id} aria-labelledby={`modules-${group.id}-title`}>

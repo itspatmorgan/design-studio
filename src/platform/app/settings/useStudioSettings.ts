@@ -11,7 +11,14 @@ type Snapshot = {
   actor: string | null;
   role: 'admin' | 'contributor' | null;
   contributors: { key: string; name: string; github: string }[];
-  modules: { id: string; label: string; description?: string; optional: boolean; compatible: boolean }[];
+  modules: {
+    id: string;
+    label: string;
+    description?: string;
+    optional: boolean;
+    compatible: boolean;
+    settings?: { group: string; order: number };
+  }[];
   systems: { id: string; label: string; status: 'active' | 'archived' }[];
 };
 

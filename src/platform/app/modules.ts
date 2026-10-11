@@ -49,6 +49,10 @@ export type ModuleApp = {
   // CommandItems it adds to the palette's Places group, and groups of its own.
   places?: ComponentType<PaletteContext>;
   palette?: ComponentType<PaletteContext>;
+  // Where its palette groups sit among the other modules' groups, low first, when that differs from `order`.
+  paletteOrder?: number;
+  /** @experimental Where the shared Documentation address (/documentation) opens, instead of the Context & Skills browser. Receives the manifest; return undefined to leave the default. */
+  landing?: (manifest: Manifest) => string | undefined;
 };
 
 const apps = import.meta.glob<ModuleApp>('/__studio_modules__/app.tsx', { eager: true, import: 'default' });

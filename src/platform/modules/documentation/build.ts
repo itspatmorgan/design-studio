@@ -4,14 +4,7 @@ import type { ModuleBuild } from '../../core/modules/index.ts';
 import { moduleFolder } from '../../core/roots.ts';
 import { frontmatter } from '../../node/lib/frontmatter.js';
 import { manualChapterEnabled } from './manual-pages.js';
-
-type ManualPage = {
-  slug: string;
-  title: string;
-  description: string;
-  section: string | null;
-  source: string;
-};
+import type { DocumentationContribution, ManualPage } from './types.ts';
 
 // Runs only while Documentation is enabled. Human chapters have one home: module associations control availability,
 // not source ownership.
@@ -95,4 +88,4 @@ export default {
       : [];
     return [...listed, ...present];
   },
-} satisfies ModuleBuild<{ manual: ManualPage[] }>;
+} satisfies ModuleBuild<DocumentationContribution>;

@@ -10,7 +10,6 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/platform/systems/studio/components/command';
 import { findArtifact, findPrototype, firstArtifact } from '@/platform/app/data/manifest';
 import { moduleApps, type PaletteContext } from '@/platform/app/modules';
@@ -86,9 +85,8 @@ export default function CommandPaletteDialog({
               {moduleApps.map(({ spec, app }) => app.places && <app.places key={spec.id} {...context} />)}
             </CommandGroup>
 
-            {moduleApps
-              .filter(({ spec }) => spec.id === 'systems' || spec.id === 'prototypes')
-              .sort((a, b) => Number(b.spec.id === 'systems') - Number(a.spec.id === 'systems'))
+            {[...moduleApps]
+              .sort((a, b) => (a.app.paletteOrder ?? a.app.order) - (b.app.paletteOrder ?? b.app.order))
               .map(
                 ({ spec, app }) =>
                   app.palette && (
@@ -97,25 +95,6 @@ export default function CommandPaletteDialog({
                     </Fragment>
                   ),
               )}
-
-            {manifest.manual.length > 0 && (
-              <>
-                <CommandSeparator />
-                <CommandGroup heading='Manual'>
-                  {manifest.manual.map(page => (
-                    <CommandItem
-                      key={'manual:' + page.slug}
-                      value={'manual ' + page.title + ' ' + (page.source ?? page.slug)}
-                      onSelect={() =>
-                        go({ to: '/documentation/manual' + (page.slug === 'index' ? '' : '/' + page.slug) } as never)
-                      }
-                    >
-                      <span className='truncate'>{page.title}</span>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </>
-            )}
           </CommandList>
         </Command>
       </CommandDialog>

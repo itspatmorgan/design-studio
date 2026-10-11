@@ -7,6 +7,7 @@ export default {
   requires: '0.2.0',
   description: 'A first-run welcome that helps people explore their studio and start their first prototype.',
   optional: true,
+  settings: { group: 'team', order: 0 },
   lib: false,
   instructions: [
     {

@@ -557,8 +557,6 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
     contributions[id] = result.data;
     errors += result.errors;
   }
-  // The app still reads the Manual from `manual`; it moves to the contribution when the app is cut over.
-  const manual = contributions.documentation?.manual ?? [];
 
   // What the deployed site leaves out (src/platform/core/archive.ts).
   const { kept, archived } = forDeploy([...prototypes, ...Object.values(sections).flat()]);
@@ -579,7 +577,6 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   const manifest = {
     prototypes: deploy ? keptPrototypes : prototypes,
     sections: deploy ? keptSections : sections,
-    manual,
     contributions,
     systemContent,
     systemContentMaps: maps,
@@ -599,7 +596,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
       Object.entries(manifest.sections)
         .map(([key, artifacts]) => `${artifacts.length} in ${key}`)
         .join(', ') || 'no sections'
-    }, ${manual.length} manual page(s), ${systemContent.length} systemContent section(s)${errors ? `, ${errors} problem(s) above` : ''}`,
+    }, ${systemContent.length} systemContent section(s)${errors ? `, ${errors} problem(s) above` : ''}`,
   );
   if (deploy && archived.length)
     out.log(`[manifest] Left out of the deployed site: ${archived.length} archived prototype(s)`);

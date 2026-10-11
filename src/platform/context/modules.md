@@ -48,6 +48,14 @@ If a capability needs a platform service the API does not offer, propose an addi
 
 `ModuleApp.rail: 'none'` lets a module contribute to Home without adding a navigation destination. It can omit routes and a section when it owns no browsable content.
 
+`ModuleApp.palette` draws a module's groups in the ⌘K palette; `ModuleApp.paletteOrder` sets their place among the other modules' groups (default `order`). The shell hardcodes no module's palette entries.
+
+`ModuleApp.landing(manifest)` (experimental) returns where the shared `/documentation` address opens, or `undefined` for the default Context & Skills browser. The Documentation module uses it to open the Manual.
+
+`ModuleSpec.settings` (`{ group, order }`) names the group Studio settings lists the module under (`prototyping`, `systems`, or `team`) and its place in it. A module without one is listed under Other modules.
+
+A module reads its own `build.ts` data with `contribution<Data>(manifest, id)`; the manifest has no module-specific fields.
+
 `ModuleApp.navLabel` supplies a shorter navigation label while the declaration retains the full capability name.
 
 `ModuleApp.localOnly: true` restricts a module’s app contributions (rail, routes, home, and search) to local development. Published viewing sites omit them; the module’s source and configuration remain available.

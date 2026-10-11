@@ -2,7 +2,8 @@ import DocumentationNavItem from '@/platform/app/docs/DocumentationNavItem';
 import { Outlet, getRouteApi } from '@tanstack/react-router';
 import { NavGroup, NavList, SectionNav } from '@/platform/app/shell/nav';
 import DocumentationHeader from '@/platform/app/docs/DocumentationHeader';
-import type { ManualPage } from '@/platform/app/data/types';
+import type { ManualPage } from './types';
+import { manualPages } from './manualPages';
 
 const rootApi = getRouteApi('__root__');
 
@@ -20,7 +21,7 @@ function groupBySection(pages: ManualPage[]) {
 // The Manual: a sidebar of pages (from src/platform/modules/documentation/pages/, via the manifest) and the open page. The
 // sidebar is built from the shared navigation pieces (shell/nav/).
 export default function ManualLayout() {
-  const { manual } = rootApi.useLoaderData();
+  const manual = manualPages(rootApi.useLoaderData());
   return (
     <div className='flex h-full min-h-0'>
       <SectionNav label='Documentation'>

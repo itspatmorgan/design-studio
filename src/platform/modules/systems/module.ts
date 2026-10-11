@@ -3,6 +3,7 @@ import type { ModuleSpec } from '#studio/module';
 // Systems: the design systems prototypes are built with (/systems), in src/systems/ (and Studio's own interface system in src/platform/systems/).
 export default {
   optional: false,
+  settings: { group: 'systems', order: 0 },
   lib: false,
   instructions: [
     { path: 'skills/setup-design-system/', when: 'asks to curate, assess, import, replace, or adapt a design system' },

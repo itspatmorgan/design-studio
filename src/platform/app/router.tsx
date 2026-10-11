@@ -101,9 +101,10 @@ const documentationRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'documentation',
   beforeLoad: async () => {
-    const { manual } = await loadManifest();
+    const manifest = await loadManifest();
+    const landing = moduleApps.map(({ app }) => app.landing?.(manifest)).find(Boolean);
     throw redirect({
-      to: (manual.length ? '/documentation/manual' : '/documentation/context/platform.core') as never,
+      to: (landing ?? '/documentation/context/platform.core') as never,
       replace: true,
     });
   },
