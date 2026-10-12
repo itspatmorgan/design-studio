@@ -8,9 +8,11 @@ Design Studio lives in an ordinary folder on your computer. Install it once, the
 
 These are the installation steps for both you and your agent. If you want your agent to handle them, use a session that can create files and run commands on your computer and ask:
 
-> Install Design Studio using https://github.com/itspatmorgan/design-studio-starter/blob/main/src/platform/context/installing.md. Help me choose a folder, preserve existing files, and verify the running preview. Then help me open the Design Studio folder in my agent harness.
+> Install Design Studio from release v0.3.0 using https://github.com/itspatmorgan/design-studio-starter/blob/main/src/platform/context/installing.md. Use the repository installation guide without a plugin installer. Help me choose a folder, preserve existing files, and verify the running preview. Then help me open the Design Studio folder in my agent harness.
 
 ## 1. Prepare your computer
+
+Your chosen agent harness may require its own account or subscription. Studio itself requires no GitHub account for local use.
 
 Install [Git](https://git-scm.com/downloads) and [mise](https://mise.jdx.dev/getting-started.html) if you do not already have them. Git downloads Studio; mise installs the Node.js and pnpm versions the project declares.
 
@@ -19,7 +21,7 @@ Install [Git](https://git-scm.com/downloads) and [mise](https://mise.jdx.dev/get
 Open a terminal in the folder where you keep your projects. Run:
 
 ```sh
-git clone --filter=blob:none --branch v0.2.1 https://github.com/itspatmorgan/design-studio-starter.git design-studio
+git clone --filter=blob:none --branch v0.3.0 https://github.com/itspatmorgan/design-studio-starter.git design-studio
 cd design-studio
 git remote rename origin upstream
 git switch -c main
@@ -27,7 +29,7 @@ git switch -c main
 
 Design Studio is installed in the `design-studio` folder. You can choose a different name. If the folder already exists, choose another name or open the existing studio; do not replace its files.
 
-These commands install release `v0.2.1` and preserve the history needed for future updates.
+These commands install release `v0.3.0` and preserve the history needed for future updates.
 
 ## 3. Install dependencies and open the preview
 
@@ -46,6 +48,14 @@ You can explore the examples before configuring anything. The browser shows your
 ## 4. Open the folder in your agent harness
 
 Open the `design-studio` folder as your agent harness's project or workspace. Use a coding agent that can read files and run commands in that folder. Opening the browser preview alone does not select the folder for your agent.
+
+Codex, Claude Code, and Cursor use the same owned folder and commands:
+
+| Harness | Open the studio | Repository instructions |
+| --- | --- | --- |
+| Codex | Open the folder as a Codex project, or run `codex` from it. | `AGENTS.md` and generated `.agents/skills/` adapters. |
+| Claude Code | Run `claude` from the folder. | `CLAUDE.md` imports `AGENTS.md`; generated `.claude/skills/` adapters link to the canonical procedures. |
+| Cursor | Open the folder in Cursor, then use Agent with that workspace selected. | `AGENTS.md` and generated `.agents/skills/` adapters. |
 
 Ask:
 
@@ -71,7 +81,7 @@ Open the same folder in your agent harness and ask:
 
 > Open my Design Studio and show me the running preview.
 
-To start it yourself, run `mise exec -- pnpm dev` from that folder. If installation or startup fails, share the command and its error with your agent and ask it to diagnose the existing folder.
+To start it yourself, run `mise exec -- pnpm dev` from that folder. If installation or startup fails, share the command and its error with your agent and ask it to diagnose the existing folder. An interrupted clone that is not a valid checkout should be preserved while you choose a new destination. If cloning completed, resume inside that folder: inspect `git status`, rerun `mise install` and `mise exec -- pnpm install --frozen-lockfile`, then start the preview. Do not delete files, clone over the folder, reset configuration, or register the same person again to recover a dependency or startup failure.
 
 See the [Manual](../modules/documentation/pages/index.md) for using Studio. When you are ready to share a viewing site, ask your agent to follow [Publishing](publishing.md). Installation does not publish your work.
 

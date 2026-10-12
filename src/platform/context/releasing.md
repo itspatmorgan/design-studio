@@ -12,24 +12,39 @@ A release is a tagged commit on the upstream `main`, named `v<version>`. Studios
 
 ## Cut a release
 
-1. Merge everything the release includes into `main`, and make sure each change has a line under `## Unreleased` in `CHANGELOG.md`. Run `pnpm test:release` and `node src/platform/node/check/upgrade-test.js` on the frozen candidate. After a supported public tag exists, also run the rehearsal with `--from <preceding-public-tag>`. The release command’s shorter checks do not replace this acceptance.
+1. Merge everything the release includes into `main`, and make sure each change has a line under `## Unreleased` in `CHANGELOG.md`. Freeze the candidate and record its commit with these command results:
+
+   ```sh
+   pnpm install --frozen-lockfile
+   pnpm studio sync --check
+   pnpm format:check
+   pnpm check
+   pnpm contract --released
+   pnpm ownership --strict
+   pnpm test:release
+   node src/platform/node/check/upgrade-test.js
+   pnpm build
+   pnpm build:inspect
+   ```
+
+   After a supported public tag exists, also run the update rehearsal with `--from <preceding-public-tag>`. The release command’s shorter checks do not replace this acceptance. Verify the exact tag before pushing; when the release changes only version metadata and the changelog, rerun its contract, check and build gates. Any behavior change returns to full candidate acceptance.
 2. On a clean `main` that matches `origin/main`, preview the release:
 
    ```sh
-   pnpm release 0.2.1 --dry-run
+   pnpm release 0.3.0 --dry-run
    ```
 
    The dry run prints the version change, the changelog heading, the checks, the commit and tag it would make, and the release notes, and changes nothing. It lists every reason the release can't go ahead.
 3. Cut it:
 
    ```sh
-   pnpm release 0.2.1
+   pnpm release 0.3.0
    ```
 
 4. Review the commit and the tag, then push both together with the command the script prints:
 
    ```sh
-   git push --atomic origin main v0.2.1
+   git push --atomic origin main v0.3.0
    ```
 
 The release commit goes to `main` directly, so the person pushing needs the right to push to `main`.
@@ -47,6 +62,8 @@ The release commit goes to `main` directly, so the person pushing needs the righ
 - Never pushes. It prints the push command.
 
 ## After pushing
+
+Install from the exact public tag using the [installation guide](installing.md), with a frozen dependency installation. Verify the local preview and preserved permanent links. Check the public demo anonymously, including a direct prototype URL and reload. Record the candidate commit, tag, CI results, live harness journeys and hosting limitations in the maintainer acceptance record before announcing the release.
 
 The public launch tag establishes the first compatibility baseline. Before that tag, CI rehearses upgrades between synthetic revisions of the candidate foundation ([Checks and fixes](checks.md)). Historical pre-release tags do not require compatibility. CI also exercises source from the latest supported public release when one exists; subsequent release acceptance uses the preceding supported tag explicitly. Upgrade success is part of the required `build` gate for upstream pull requests.
 

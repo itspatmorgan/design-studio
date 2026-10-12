@@ -22,6 +22,10 @@ Interactive views still run in the browser. The published site does not provide 
 
 ## Choose a deployment process
 
+ChatGPT Sites is the primary demo publishing path. Real teams can use Vercel, Cloudflare, Netlify, or their existing static hosting infrastructure. The host changes deployment, access and caching configuration; it does not change Studio's local authoring model or require a separate application architecture.
+
+For the public demo, use a clone containing approved learning examples. When your agent has native Sites tools, publish the local studio through the Sites source workflow. Preserve the exact Site project identity in `.openai/hosting.json`, retain Git release ancestry, and use the studio's pinned mise environment for source commits, hooks and `pnpm build`. Configure static output as `dist` and `not_found_handling: "single-page-application"`; the demo's root-origin build uses `/`. Native Sites registration starts private. Set public access only for an authorized public demo; preserve the audience when updating. Save the matching source commit and build archive, deploy that saved version, and require a successful native deployment result. An expected URL or saved version alone is not publication. Republish updates to the same project and verify the viewer's direct links and assets.
+
 The platform provides a portable static build. Configure a publishing workflow for the chosen host. Document repository-specific deployment configuration in its maintainer guidance. This starter’s configuration is in [Contributing](../../../CONTRIBUTING.md#starter-repository-publishing).
 
 For a host that serves the app below a URL prefix, pass that prefix through `STUDIO_BASE_PATH`. The build normalizes its trailing slash; local commands use `/` by default. For example:
@@ -57,6 +61,8 @@ Configure caching at the chosen host:
 | Other public files | Choose a policy for their actual update frequency. |
 
 Publish complete output atomically when supported. Retain previous hashed assets during rollout when the host allows it. Do not return HTML for missing asset URLs; use the app fallback only for application routes.
+
+Sites' static SPA fallback also returns HTML with HTTP 200 for missing asset URLs. Treat this as a provider limitation when evaluating a deployment. Verify that every referenced asset loads, check browser errors, and test direct-link reloads after publication. Hosts with configurable rewrite rules should preserve asset 404 responses.
 
 The production page installs recovery before its entry module loads. A missing entry or lazy chunk can trigger one refresh with a cache-busting query while preserving the route, search, and hash. Retries are bounded for one minute, including when browser storage is unavailable. Offline failures do not trigger automatic refresh. Recovery helps with replaced assets but does not repair a missing upload or incorrect base path. Hosts with a Content Security Policy must allow the generated inline bootstrap, for example through its hash.
 

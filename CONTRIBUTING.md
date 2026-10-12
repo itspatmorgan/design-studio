@@ -29,6 +29,8 @@ Use fictional sample data. Do not commit credentials, local environment files, p
 
 ## Starter repository publishing
 
+The primary public demo is [hosted with ChatGPT Sites](https://design-studio-foundation-demo.itspatmorgan.chatgpt.site). Its isolated source contains approved learning examples. Native Sites updates reuse its project identity and public URL. The repository's GitHub Pages workflow remains a separate automated viewing build.
+
 For any host, install with Node 24 and pnpm 12, run `pnpm build`, and publish `dist/`. The build validates source and types. Use `pnpm test` for focused regressions or `pnpm build:release` for full release verification. `pnpm build:inspect` reports startup asset size and requests. Your chosen host owns routing, caching, access, and deployment configuration.
 
 The [Checks and deployment workflow](.github/workflows/checks.yml) publishes successful pushes to `main` only in `itspatmorgan/design-studio-starter`. The workflow selects affected regression groups and runs them concurrently with scope and bundling, caches dependencies, cancels obsolete validation, and checks commit freshness before deploying. Copies run checks without publishing; configure your own deployment when needed.
@@ -43,6 +45,8 @@ STUDIO_BASE_PATH=/design-studio-starter/ pnpm preview
 ```
 
 See [Publishing](src/platform/context/publishing.md) for portable hosting, direct-link routing, and access requirements.
+
+Maintainers record the public launch checks in [v0.3.0 acceptance](.github/releases/v0.3.0-acceptance.md) and follow [Releasing](src/platform/context/releasing.md) to cut the tag.
 
 ## License
 
