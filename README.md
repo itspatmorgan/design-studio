@@ -6,7 +6,7 @@ An open-source, local prototype sandbox for designers and product managers who b
 
 You direct the work in your preferred agent harness. Design Studio gives you a browser preview, reusable design systems, and a place to connect screens, diagrams, canvases, and documents. The code and context live together in a folder you own.
 
-**[View demo](https://design-studio-foundation-demo.itspatmorgan.chatgpt.site) · [Install Design Studio](src/platform/context/installing.md) · [See the product](https://itspatmorgan.com/design-studio)**
+**[View demo](https://itspatmorgan.com/design-studio-starter/) · [Install Design Studio](src/platform/context/installing.md) · [See the product](https://itspatmorgan.com/design-studio)**
 
 ## What you can build
 
@@ -48,7 +48,7 @@ Work individually in Personal mode, or use Team mode to register contributors an
 
 ## Publish a viewing site
 
-The public demo uses ChatGPT Sites. Teams can publish the same portable static viewing build with hosting services such as [Vercel](https://vercel.com/docs/frameworks/frontend/vite), [Netlify](https://docs.netlify.com/build/configure-builds/javascript-spas/), [Cloudflare](https://developers.cloudflare.com/workers/static-assets/), or another static-site host. Ask your agent to guide you through the host you use:
+The ongoing public demo uses GitHub Pages at [itspatmorgan.com/design-studio-starter](https://itspatmorgan.com/design-studio-starter/). ChatGPT Sites is an optional publishing-workflow demonstration. Teams can publish the same portable static viewing build with hosting services such as [Vercel](https://vercel.com/docs/frameworks/frontend/vite), [Netlify](https://docs.netlify.com/build/configure-builds/javascript-spas/), [Cloudflare](https://developers.cloudflare.com/workers/static-assets/), or another static-site host. Ask your agent to guide you through the host you use:
 
 > Help me publish my Design Studio with [hosting service] so [audience] can explore it. Follow my Design Studio's publishing instructions and guide me through setting up hosting. Review what will be shared and verify the published link.
 

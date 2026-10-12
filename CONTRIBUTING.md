@@ -29,7 +29,7 @@ Use fictional sample data. Do not commit credentials, local environment files, p
 
 ## Starter repository publishing
 
-The primary public demo is [hosted with ChatGPT Sites](https://design-studio-foundation-demo.itspatmorgan.chatgpt.site). Its isolated source contains approved learning examples. Native Sites updates reuse its project identity and public URL. The repository's GitHub Pages workflow remains a separate automated viewing build.
+The ongoing [public demo](https://itspatmorgan.com/design-studio-starter/) is hosted on the creator's custom domain by the repository's GitHub Pages workflow. An isolated ChatGPT Sites fixture validates the optional publishing workflow with approved learning examples; it is not the public demo destination. Native Sites updates reuse that fixture's project identity and URL.
 
 For any host, install with Node 24 and pnpm 12, run `pnpm build`, and publish `dist/`. The build validates source and types. Use `pnpm test` for focused regressions or `pnpm build:release` for full release verification. `pnpm build:inspect` reports startup asset size and requests. Your chosen host owns routing, caching, access, and deployment configuration.
 
