@@ -96,7 +96,7 @@ export function artifactAvailability(spec: FileTypeSpec | undefined, context: Ar
 export type FileTypeSpec = {
   label: string; // "View", "Document"
   // Prototype source identity travels with the file. System content retains paths.
-  // No generation during discovery: creation/migration assigns it explicitly.
+  // No generation during discovery: creation/explicit assignment supplies it.
   identity?: IdentityMetadata;
   extensions: readonly string[]; // ".tsx", ".md"
   // The syntax the Source view highlights (src/platform/app/source/ArtifactSource.tsx). Leave it

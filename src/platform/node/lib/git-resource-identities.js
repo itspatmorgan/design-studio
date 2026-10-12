@@ -7,11 +7,7 @@ import { SYSTEM_ROOTS } from '../../core/roots.ts';
 
 // Build the same retained identity inventory from Git, never from the checkout.
 // Staged checks inspect index blobs; CI inspects the explicitly requested tree.
-export function gitResourceIdentities(
-  ref,
-  types,
-  { cwd = process.cwd(), staged = false, legacyOwnership = false } = {},
-) {
+export function gitResourceIdentities(ref, types, { cwd = process.cwd(), staged = false } = {}) {
   if (ref === 'empty-tree' && !staged) return { resources: [], missing: [], problems: [] };
   const git = args =>
     execFileSync('git', args, {
@@ -66,18 +62,7 @@ export function gitResourceIdentities(
     for (const resource of inventory.resources)
       if (resource.kind === 'prototype') {
         const metadata = JSON.parse(fs.readFileSync(path.join(root, resource.path), 'utf8'));
-        const ownerContributorId = metadata.ownerContributorId ?? (legacyOwnership ? metadata.ownerId : undefined);
-        if (
-          legacyOwnership &&
-          ownerContributorId !== undefined &&
-          !inventory.resources.some(
-            person =>
-              person.kind === 'contributor' &&
-              person.key === resource.ownerKey &&
-              person.studioId === ownerContributorId,
-          )
-        )
-          inventory.problems.push(`${resource.path}: historical owner must match its contributor folder.`);
+        const ownerContributorId = metadata.ownerContributorId;
         if (ownerContributorId !== undefined) resource.ownerContributorId = ownerContributorId;
       }
     return inventory;

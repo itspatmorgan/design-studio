@@ -108,7 +108,13 @@ test('Git inventories inspect their own tree and staged blobs, including retaine
   write('studio.config.json', '{ "usage": "personal" }');
   write(
     'src/prototypes/pat/example/meta.json',
-    JSON.stringify({ studioId: parent, ownerId: owner, title: 'Example', status: 'archived' }),
+    JSON.stringify({
+      studioId: parent,
+      ownerContributorId: owner,
+      systemId: null,
+      title: 'Example',
+      status: 'archived',
+    }),
   );
   write('src/prototypes/pat/example/notes.md', `---\nstudioId: ${artifact}\n---\n# Notes\n`);
   write('src/prototypes/pat/example/_helper.md', `---\nstudioId: ${artifact}\n---\n`);
@@ -116,7 +122,7 @@ test('Git inventories inspect their own tree and staged blobs, including retaine
   git(['-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'Before']);
   const baseline = git(['rev-parse', 'HEAD']);
   const types = { document: { inPrototype: true, extensions: ['.md'], identity: markdownIdentity } };
-  const before = gitResourceIdentities('HEAD', types, { cwd: root, legacyOwnership: true });
+  const before = gitResourceIdentities('HEAD', types, { cwd: root });
   assert.equal(before.resources.length, 3);
   assert.deepEqual(before.problems, []);
   assert.equal(before.resources.find(resource => resource.kind === 'prototype').ownerContributorId, owner);
@@ -136,7 +142,7 @@ test('Git inventories inspect their own tree and staged blobs, including retaine
   write('src/prototypes/pat/example/notes.md', `---\nstudioId: ${artifact}\n---\n# Unstaged\n`);
   const staged = gitResourceIdentities(null, types, { cwd: root, staged: true });
   assert.match(resourceIdentityChangeProblems(before, staged).join('\n'), /cannot be replaced/);
-  assert.deepEqual(gitResourceIdentities('HEAD', types, { cwd: root, legacyOwnership: true }), before);
+  assert.deepEqual(gitResourceIdentities('HEAD', types, { cwd: root }), before);
   git(['-c', 'core.hooksPath=/dev/null', 'commit', '-qm', 'Replace artifact identity']);
   const check = spawnSync(
     process.execPath,

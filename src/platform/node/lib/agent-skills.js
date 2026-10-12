@@ -77,21 +77,6 @@ const exists = file => {
 
 // Manage only exact generated entries. Modified, colliding, and unrelated files are preserved.
 export function syncSkillAdapters(root, catalog, { check = false } = {}) {
-  // Migrate the starter's known, dangling legacy adapters without following or deleting their targets.
-  for (const rel of ['.agents/skills', '.claude/skills']) {
-    const abs = path.join(root, rel);
-    if (!canonicalDirectory(path.dirname(abs), root)) {
-      if (exists(path.dirname(abs))) throw new Error(`${rel}: unsafe adapter parent.`);
-    }
-    if (
-      exists(abs)?.isSymbolicLink() &&
-      fs.readlinkSync(abs) === '../src/systems/platform/skills' &&
-      !fs.existsSync(abs)
-    ) {
-      if (check) throw new Error(`${rel}: legacy adapter needs synchronization.`);
-      fs.unlinkSync(abs);
-    }
-  }
   const receiptPath = path.join(root, '.agents/studio-skills.json');
   for (const dir of ['.agents', '.agents/skills', '.claude', '.claude/skills']) {
     const abs = path.join(root, dir);

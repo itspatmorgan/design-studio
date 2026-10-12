@@ -3,8 +3,6 @@ import { useContext, type ComponentProps } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { MDXComponents } from 'mdx/types';
 import { DocBase } from '@/platform/app/docs/DocBase';
-import { fileTypeOf } from '@/platform/app/data/fileTypes';
-import { artifactSlug } from '@/platform/core/fileTypes';
 import { markdownPath } from './referenceLinks';
 import ArtifactEmbed from '@/platform/app/artifacts/ArtifactEmbed';
 import { MermaidDiagram } from '@/platform/app/diagrams/MermaidDiagram';
@@ -36,9 +34,7 @@ function MarkdownLink({ href = '', ...props }: ComponentProps<'a'>) {
   if (base !== null && !href.startsWith('?') && !/^([a-z][a-z0-9+.-]*:|\/\/)/i.test(href)) {
     const url = new URL(href, `http://doc${base}/`);
     const path = markdownPath(url.pathname, systemIdentities);
-    const to =
-      sourceArtifactPath(manifest, url.pathname) ??
-      (path.startsWith('/documentation/reference/') ? path : fileTypeOf(path) ? artifactSlug(path) : path);
+    const to = sourceArtifactPath(manifest, url.pathname) ?? path;
     return (
       <Link
         to={to as never}

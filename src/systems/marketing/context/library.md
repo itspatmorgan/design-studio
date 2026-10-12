@@ -23,4 +23,4 @@ Button keeps shadcn’s variant pattern and Base UI behavior with 32px, 40px, an
 
 All styles and popups stay inside Marketing’s theme boundary. Existing warm neutral color aliases remain for prototype composition, alongside shadcn’s semantic roles. The source brand values remain in [Brand](brand.md); dark mode remains a documented adaptation.
 
-Dependencies are `@base-ui/react`, `class-variance-authority`, `tailwind-merge`, `lucide-react`, and `@fontsource-variable/geist`. No full upstream catalog or global theme is installed.
+Dependencies are `@base-ui/react`, `class-variance-authority`, `lucide-react`, and `@fontsource-variable/geist`. The shared `cn` utility comes through the platform UI entry. No full upstream catalog or global theme is installed.

@@ -20,7 +20,6 @@ export function platformReferences({ root, modules, enabled, systemContent, syst
         const targets = [...prose.matchAll(/\]\(([^)\s]+)(?:\s+[^)]*)?\)/g)].flatMap(match => {
           const target = match[1].split('#')[0];
           if (!target || /^(?:[a-z]+:|\/\/)/i.test(target)) return [];
-          if (target.startsWith('/documentation/reference/')) return [target.slice('/documentation/reference'.length)];
           if (target.startsWith('/')) return [];
           return [path.posix.normalize(path.posix.join(path.posix.dirname(source), target))];
         });

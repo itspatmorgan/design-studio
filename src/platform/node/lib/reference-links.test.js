@@ -1,14 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { markdownPath, migratedGuidancePath } from '../../app/docs/referenceLinks.ts';
+import { markdownPath } from '../../app/docs/referenceLinks.ts';
 import globs, { archivedSystemGlobs, withSystemNegations } from '../build/vite-globs-plugin.js';
 import { ENABLED_MODULES } from './modules.js';
 import titleFromHeading from '../build/remark-title-from-heading.js';
 
 test('owner README and relative context links use the same browser', () => {
   const resolve = (href, base) => markdownPath(new URL(href, `http://doc${base}/`).pathname);
-  // A module is addressed by its id wherever its folder is: the supplied root, the team's, or a saved link from before
-  // the supplied modules moved to src/platform/modules.
+  // Supplied and team module source links resolve to the same owner browser.
   assert.equal(
     resolve('../../../../platform/modules/systems/README.md', '/systems/studio/context'),
     '/documentation/context/module.systems',
@@ -130,33 +129,6 @@ test('technical context and skill source links resolve without a duplicate Refer
     markdownPath('/platform/modules/prototypes/skills/build-prototype/SKILL.md'),
     '/documentation/context/module.prototypes/skills/build-prototype/SKILL',
   );
-});
-
-test('saved Reference, Knowledge, and system guidance links follow both migrations', () => {
-  const cases = {
-    '/documentation/context/platform.core/context/technical/config':
-      '/documentation/context/platform.core/context/config',
-    '/documentation/reference/platform/context/technical/file-types.md':
-      '/documentation/context/platform.core/context/file-types',
-    '/platform/context/technical/agent-context.md': '/documentation/context/platform.core/context/agent-context',
-    '/systems/studio/rules/prototype-workflow': '/documentation/context/module.prototypes/skills/build-prototype/SKILL',
-    '/systems/studio/context/principles.md': '/documentation/context/platform.core/context/principles',
-    '/systems/studio/skills/setup-design-system/SKILL.md':
-      '/documentation/context/module.systems/skills/setup-design-system/SKILL',
-    '/documentation/reference/modules/systems/reference.md': '/documentation/context/module.systems',
-    '/documentation/reference/platform/core/fileTypes.md': '/documentation/context/platform.core/context/file-types',
-    '/documentation/reference/modules/README.md': '/documentation/context/platform.core/context/modules',
-    '/documentation/reference/platform/modules/systems/reference.md': '/documentation/context/module.systems',
-    '/documentation/reference/platform/modules/README.md': '/documentation/context/platform.core/context/modules',
-    '/documentation/reference': '/documentation/context/platform.core',
-    '/knowledge/platform.core/context/personas': '/documentation/context/platform.core/context/personas',
-    '/documentation/context/product/context/accessibility': '/systems/product/context/accessibility',
-    '/documentation/context/marketing/skills/review/SKILL': '/systems/marketing/skills/review/SKILL',
-    '/knowledge/studio/context/writing': '/systems/studio/context/writing',
-  };
-  for (const [from, to] of Object.entries(cases)) assert.equal(migratedGuidancePath(from), to, from);
-  assert.equal(migratedGuidancePath('/documentation/context/platform.core/context/personas'), null);
-  assert.equal(migratedGuidancePath('/systems/product/context/accessibility'), null);
 });
 
 test('archived systems are left out of the build in whichever root they are in', () => {

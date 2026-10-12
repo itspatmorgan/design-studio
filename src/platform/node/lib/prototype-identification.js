@@ -2,10 +2,9 @@
 // reads/builds never assign IDs, and an existing identity or owner is immutable.
 import fs from 'node:fs';
 import path from 'node:path';
-import { planSourceIdentityMigration } from './resource-identity-migration.js';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { canonicalDirectory } from './safe-paths.js';
-import { resourceId, jsonIdentity } from '../../core/resourceIdentity.ts';
+import { resourceId, jsonIdentity, createResourceId, canvasIdentity } from '../../core/resourceIdentity.ts';
 import { canPerform } from '../../core/permissions.ts';
 import { prototypeAssignment } from './prototype-assignment.js';
 import { readDeclaration } from '../../core/declarations.ts';
@@ -13,7 +12,13 @@ import { auditResourceIdentities } from './resource-identity-audit.js';
 import { applySetupChanges } from './studio-setup.js';
 import { systemDirOf } from './system-folders.js';
 
-export function planPrototypeIdentification(root, types, folder, actor, { ids = {} } = {}) {
+export function planPrototypeIdentification(
+  root,
+  types,
+  folder,
+  actor,
+  { ids = {}, generate = createResourceId } = {},
+) {
   const absolute = path.resolve(root, folder),
     relative = path.relative(root, absolute).split(path.sep).join('/');
   const match = /^src\/prototypes\/([a-z0-9][a-z0-9-]*)\/([a-z0-9][a-z0-9._-]*)$/i.exec(relative);
@@ -51,7 +56,7 @@ export function planPrototypeIdentification(root, types, folder, actor, { ids = 
   const assignment = prototypeAssignment(metadata, systems);
   if (assignment.problems.length) throw new Error(assignment.problems.join('\n'));
   const selected = resource => resource.path === `${relative}/meta.json` || resource.parent === relative;
-  const source = planSourceIdentityMigration(root, types, { ids, select: selected });
+  const source = planPrototypeIdentities(root, types, { ids, generate, select: selected });
   const changes = source.changes;
   if (metadata.ownerContributorId === undefined) {
     const change = changes.find(change => change.path === `${relative}/meta.json`);
@@ -110,4 +115,51 @@ export function applyPrototypeIdentification(root, types, plan, actor) {
     prototypeId: current.resources.find(resource => resource.kind === 'prototype').studioId,
     changed: current.changes.length,
   };
+}
+
+// ids is an optional path->ID allocation retained from an earlier preview.
+// Existing identities are never reassigned. A collision is retried before any write.
+function planPrototypeIdentities(root, types, { ids, generate, select }) {
+  const audit = auditResourceIdentities(root, types);
+  if (audit.problems.length) throw new Error(audit.problems.join('\n'));
+  const used = new Set(audit.resources.flatMap(resource => (resource.studioId ? [resource.studioId] : [])));
+  const locations = new Set(audit.resources.map(resource => resource.path));
+  for (const file of Object.keys(ids))
+    if (!locations.has(file)) throw new Error(`${file}: identity allocation is outside the current inventory.`);
+  const snapshot = [],
+    resources = [],
+    changes = [];
+  for (const resource of audit.resources) {
+    const before = fs.readFileSync(path.join(root, resource.path), 'utf8');
+    snapshot.push({ ...resource, before });
+    let id = resource.studioId;
+    if (id && ids[resource.path] !== undefined && ids[resource.path] !== id)
+      throw new Error(`${resource.path}: an existing identity cannot be reassigned during assignment.`);
+    if (!id && select(resource)) {
+      if (ids[resource.path] !== undefined) {
+        id = resourceId(ids[resource.path]);
+        if (used.has(id)) throw new Error(`${resource.path}: preview allocation conflicts with resource ID ${id}.`);
+      } else {
+        for (let attempt = 0; attempt < 32; attempt++) {
+          const candidate = resourceId(generate());
+          if (!used.has(candidate)) {
+            id = candidate;
+            break;
+          }
+        }
+        if (!id) throw new Error(`${resource.path}: could not allocate a unique resource identity.`);
+      }
+      used.add(id);
+      changes.push({
+        path: resource.path,
+        before,
+        after:
+          resource.kind === 'artifact'
+            ? types[resource.fileType].identity.write(before, id)
+            : canvasIdentity.write(before, id),
+      });
+    }
+    resources.push({ ...resource, studioId: id });
+  }
+  return { snapshot, resources, changes };
 }

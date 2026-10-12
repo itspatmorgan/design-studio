@@ -52,7 +52,7 @@ Pop-ups render within the themed container. Starter Base UI portals pass `usePor
 
 ## Permanent identity and routes
 
-Each installed system declares `studioId` in `system.ts`. Creation and installation allocate it; rename, ordinary updates, archive, and restore retain it. Package source and version remain separate provenance. The browser opens `/systems/<system-id>` and named surfaces such as `/colors`, `/fonts`, `/components/button`, `/context/design`, and `/skills/build-flow/SKILL`. System children have no generated IDs. Source keys and dependency paths remain meaningful; changing them still requires import and reference repair. See [Resource identity](../../context/resource-identity.md) for relationship resolution and migration.
+Each installed system declares `studioId` in `system.ts`. Creation and installation allocate it; rename, ordinary updates, archive, and restore retain it. Package source and version remain separate provenance. The browser opens `/systems/<system-id>` and named surfaces such as `/colors`, `/fonts`, `/components/button`, `/context/design`, and `/skills/build-flow/SKILL`. System children have no generated IDs. Source keys and dependency paths remain meaningful; changing them still requires import and reference repair. See [Resource identity](../../context/resource-identity.md) for relationship resolution.
 
 ## Page loading
 

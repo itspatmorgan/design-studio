@@ -35,7 +35,7 @@ export type SystemLibrary = {
 };
 
 export type SystemSpec = {
-  studioId?: string; // permanent installed identity; optional until explicit migration
+  studioId?: string; // permanent installed identity; optional in an uninstalled package or scaffold
   role: 'platform' | 'prototype';
   status: 'active' | 'archived';
   renameReview?: readonly string[]; // references that require an agent review after renaming

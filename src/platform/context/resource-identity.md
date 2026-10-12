@@ -1,6 +1,6 @@
 ---
 title: Resource identity foundation
-description: Permanent source identities, filesystem parity, relationship resolution, authority, and migration.
+description: Permanent source identities, filesystem parity, relationship resolution, authority, and explicit assignment.
 toc: true
 ---
 
@@ -12,7 +12,7 @@ Prototype and system public routes use permanent IDs. Source metadata, assignmen
 
 Creation and duplication allocate identities explicitly. Copies remap their own permanent references; renames and moves retain identity and preserve supported filesystem dependency repair. Builds reject missing, malformed, and duplicate identities, including archived resources and disabled installed file types. Source writes and Git checks protect retained identities and ownership.
 
-The full migration has a read-only saved preview and a guarded apply command. Directly authored prototype files use a scoped assignment command. Neither mechanism silently repairs malformed metadata or unresolved legacy references.
+Directly authored prototype files use a scoped assignment command with a read-only preview. It preserves existing identities and refuses malformed metadata or unresolved relationships.
 
 ## Objective
 
@@ -38,7 +38,7 @@ For independent uniform generation, the probability of any collision among n IDs
 | Diagram artifact | Leading `%% @studio-id <id>` comment. |
 | Canvas artifact | Top-level `studioId` in the scene JSON. |
 
-Creation and explicit migration assign identity. Reading, normal saves, and builds do not invent it. Invalid or duplicate declarations require an actionable error rather than silent replacement. Duplication deliberately creates a new identity and remaps copied internal identity references; ordinary edits preserve it.
+Creation and explicit assignment supply identity. Reading, normal saves, and builds do not invent it. Invalid or duplicate declarations require an actionable error rather than silent replacement. Duplication deliberately creates a new identity and remaps copied internal identity references; ordinary edits preserve it.
 
 ## Filesystem parity and dependency integrity
 
@@ -82,7 +82,7 @@ flowchart LR
   SystemFolder --> Contracts[Named system surfaces and dependency paths]
 ```
 
-This is a full cutover before public release. Existing readable routes do not receive compatibility aliases. Stored references must be migrated to permanent URLs. Copied permanent URLs resolve independently of browser history state. Hosting must continue serving the app fallback for direct routes and configured base paths. See [Publishing](publishing.md).
+This is a full cutover before public release. Existing readable routes do not receive compatibility aliases. Stored references use permanent URLs. Copied permanent URLs resolve independently of browser history state. Hosting must continue serving the app fallback for direct routes and configured base paths. See [Publishing](publishing.md).
 
 ## Ownership and authority
 
@@ -98,15 +98,9 @@ Future prototype-specific collaborator grants can extend this model. Collaborato
 
 Run `pnpm studio identity-audit --json` to inspect current identity declarations, missing metadata, and malformed or duplicate identities. The audit includes archived prototypes and file types retained in installed modules even when disabled. It excludes prototype helpers and does not assign identities, generate a manifest, repair references, or change authority.
 
-The initial audit scope is contributor profiles, system declarations, and contributor-owned prototype trees. Custom module-owned prototype-shaped sections retain their own contracts. Full migration refuses such installations until the section has an explicit identity policy; it does not guess containment or ownership.
+The audit scope is contributor profiles, system declarations, and contributor-owned prototype trees. Custom module-owned prototype-shaped sections retain their own identity and ownership contracts.
 
-Run `pnpm studio identity-plan --out <new-file>` to save a reviewable, composed source preview: metadata, persisted relationships, and stored browser links. It includes exact before/after content, allocated IDs, and a digest inventory of participating source trees and installed module declarations. The output file must not already exist. A new preview allocates new candidate IDs; the saved preview retains its allocation. The command changes no Studio source and refuses installed prototype-shaped module sections until they have an explicit identity policy.
-
-`src/platform/node/lib/resource-identity-migration.js` implements the internal metadata stage. It recomputes the preview from the current inventory rather than trusting arbitrary edits in a saved plan, rejects changed sources and inventory additions/removals, retries generated collisions, verifies the result, and rolls back failed writes. Rollback refuses to overwrite concurrent edits and reports when manual recovery is needed.
-
-`src/platform/node/lib/resource-relationship-migration.js` prepares the relationship stage after source IDs are complete: configuration grants and the default, explicit prototype assignments and owners, archive provenance, and rebuild targets and source identities. It preserves explicit `null` and pins historical omitted assignments to the reviewed default, retains source keys only for registration/location, and refuses unavailable dependencies requiring reconciliation.
-
-`src/platform/node/lib/resource-foundation-migration.js` composes all stages in an isolated temporary review workspace. Its internal apply recomputes the exact reviewed plan, guards the complete participating inventory, applies the combined edits, verifies relationships and links, and rolls back failures while preserving concurrent edits. Canvas timestamps and nonces replay deterministically from the saved preview. Binary assets are copied and hashed as bytes and never rewritten. Run `pnpm studio identity-apply <reviewed-preview.json> --yes` after reviewing the saved preview. The command requires existing Admin authority and rejects an edited preview or changed inventory before writing. A shared-operation marker coordinates development-server restarts during the transaction. There are no browser compatibility aliases.
+The public foundation uses the current permanent identity and relationship declarations exclusively. There is no bulk pre-release conversion command or historical format reader. Preserve an older pilot's original files and perform any one-time conversion separately in an isolated copy using reviewed historical tooling before transferring its work into the current foundation.
 
 Installed systems require a valid `studioId` for runtime resolution. Uninstalled package/scaffold declarations can omit it; installation allocates the instance identity. Plain-data declarations reject duplicate properties at every level, including duplicate identity and permission keys.
 
@@ -124,4 +118,4 @@ Comments, revision history, authentication, a database, collaborator UI, and can
 
 The system installation policy is to allocate a new ID for each installed system instance. Package origin and version remain separate provenance; renaming or upgrading that installation preserves its ID. Installing the same package in another studio allocates a different ID. A repository fork retains its source IDs. The person delegated this choice, and this is the selected approach.
 
-The person explicitly chose a full cutover before public release. No legacy browser-route aliases are required. Existing stored links are migrated where supported, and unsupported references must be surfaced for review. New public links use the permanent routes exclusively.
+The person explicitly chose a full cutover before public release. No legacy browser-route aliases are required. Older stored links need separate reconciliation before importing pilot work; unsupported references must be surfaced for review. New public links use the permanent routes exclusively.

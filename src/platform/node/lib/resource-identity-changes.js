@@ -2,9 +2,7 @@
 // A proposed grant or ownership declaration cannot authorize its own mutation.
 export function resourceIdentityChangeProblems(before, after) {
   const problems = [
-    ...after.missing.map(
-      file => `After: ${file}: permanent identity is missing; run an explicit identity assignment or migration.`,
-    ),
+    ...after.missing.map(file => `After: ${file}: permanent identity is missing; run an explicit identity assignment.`),
     ...before.problems.map(problem => `Before: ${problem}`),
     ...after.problems.map(problem => `After: ${problem}`),
   ];
@@ -23,7 +21,7 @@ export function resourceIdentityChangeProblems(before, after) {
   const beforeParents = prototypeIds(before.resources),
     afterParents = prototypeIds(after.resources);
   for (const previous of before.resources) {
-    if (!previous.studioId) continue; // Explicit first-time migration may add IDs.
+    if (!previous.studioId) continue; // Explicit authoring may assign missing IDs.
     const samePath = afterPath.get(previous.path);
     if (samePath && previous.studioId !== samePath.studioId) {
       // Swapping two named resources is a move, provided both retained identities

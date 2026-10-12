@@ -26,7 +26,7 @@ export function keyForGithub(login, contributors = loadContributors()) {
   return matches.length === 1 ? matches[0] : null;
 }
 
-/** Current contributor's key: Git email first, with unambiguous legacy identity fallbacks. */
+/** Current contributor's key: Git email first, with unambiguous alternatives for unavailable email. */
 export function resolveContributor() {
   const contributors = loadContributors();
   const email = run('git', ['config', 'user.email']).toLowerCase();

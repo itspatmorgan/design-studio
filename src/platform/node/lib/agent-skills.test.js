@@ -85,14 +85,8 @@ test('collision does not overwrite a user skill and unsafe directory links are r
   assert.throws(() => syncSkillAdapters(root, catalog), /unsafe|cannot leave/);
 });
 
-test('legacy dangling links migrate, and malformed skill metadata prevents exposure', t => {
-  const { root, catalog, write, owners } = fixture(t);
-  for (const host of ['.agents', '.claude']) {
-    fs.mkdirSync(path.join(root, host));
-    fs.symlinkSync('../src/systems/platform/skills', path.join(root, host, 'skills'), 'dir');
-  }
-  syncSkillAdapters(root, catalog);
-  assert.ok(fs.lstatSync(path.join(root, '.agents/skills')).isDirectory());
+test('malformed skill metadata prevents exposure', t => {
+  const { write, root, owners } = fixture(t);
   write('src/platform/skills/review/SKILL.md', '---\nname: other\ndescription: Review\n---');
   assert.throws(() => skillCatalog(root, owners), /have to match/);
 });

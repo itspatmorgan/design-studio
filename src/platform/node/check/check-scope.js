@@ -31,9 +31,7 @@ if (!changed) {
 const { files, baseRef } = changed;
 let baselineInventory;
 try {
-  const baseline = (baselineInventory = gitResourceIdentities(baseRef ?? 'HEAD', INSTALLED_FILE_TYPES, {
-    legacyOwnership: true,
-  }));
+  const baseline = (baselineInventory = gitResourceIdentities(baseRef ?? 'HEAD', INSTALLED_FILE_TYPES));
   const proposed = gitResourceIdentities(after ?? 'HEAD', INSTALLED_FILE_TYPES, { staged: mode === '--staged' });
   const identityProblems = resourceIdentityChangeProblems(baseline, proposed);
   if (identityProblems.length) {

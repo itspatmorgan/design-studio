@@ -57,7 +57,7 @@ The reviewed dependency map is `src/platform/node/check/test-groups.json`. Each 
 | Group | Purpose and indirect dependencies |
 | --- | --- |
 | Runtime | Platform/module behavior, Studio UI, identity, permissions, source editing, and documentation readers. Platform, module, build, and shared script implementation selects this group. |
-| Setup | Configuration, onboarding, registration, system creation, and legacy identity CLI migration. Shared core declarations, setup helpers, CLI code, and relevant module Node implementations select this group. |
+| Setup | Configuration, onboarding, registration, system creation, and scoped identity CLI authoring. Shared core declarations, setup helpers, CLI code, and relevant module Node implementations select this group. |
 | Publishing | Disposable production builds verify runtime boundaries and disabled-capability exclusion. Build machinery, routing, shared core declarations, module registration, and source discovery select this group. |
 | Distribution | Plugin bootstrap, packaging, manifests, toolchain, and benchmark tooling. Plugin machinery and shared harness/skill inputs select this group. |
 

@@ -82,3 +82,63 @@ test('direct authoring never infers an omitted assignment from the configured de
   assert.equal(fs.readFileSync(file, 'utf8'), before);
   assert.equal(fs.readFileSync(path.join(root, folder, 'notes.md'), 'utf8'), '# Notes\n');
 });
+
+test('scoped allocation retries collisions, rejects exhausted allocation and outside paths without writing', t => {
+  const { root, folder } = fixture(t);
+  const owner = JSON.parse(fs.readFileSync(path.join(root, 'contributors/pat.json'))).studioId;
+  let attempts = 0;
+  assert.throws(
+    () =>
+      planPrototypeIdentification(root, types, folder, 'pat', {
+        generate: () => {
+          attempts++;
+          return owner;
+        },
+      }),
+    /could not allocate/,
+  );
+  assert.equal(attempts, 32);
+  const sequence = [owner, 'zzzzzzzzzzzzzzzz', 'zzzzzzzzzzzzzzzz', 'yyyyyyyyyyyyyyyy'];
+  const plan = planPrototypeIdentification(root, types, folder, 'pat', { generate: () => sequence.shift() });
+  assert.equal(plan.changes.length, 2);
+  assert.equal(new Set(plan.resources.map(resource => resource.studioId)).size, 2);
+  assert.throws(
+    () =>
+      planPrototypeIdentification(root, types, folder, 'pat', {
+        ids: { '../outside.json': 'zzzzzzzzzzzzzzzz' },
+      }),
+    /outside the current inventory/,
+  );
+  assert.equal(fs.readFileSync(path.join(root, folder, 'notes.md'), 'utf8'), '# Notes\n');
+});
+
+test('a scoped assignment write failure restores earlier files', t => {
+  const { root, folder } = fixture(t);
+  const plan = planPrototypeIdentification(root, types, folder, 'pat');
+  const rename = fs.renameSync;
+  let calls = 0;
+  t.mock.method(fs, 'renameSync', (...args) => {
+    if (++calls === 2) throw new Error('Injected assignment failure');
+    return rename(...args);
+  });
+  assert.throws(() => applyPrototypeIdentification(root, types, plan, 'pat'), /Injected assignment failure/);
+  for (const change of plan.changes) assert.equal(fs.readFileSync(path.join(root, change.path), 'utf8'), change.before);
+});
+
+test('scoped assignment rollback preserves a concurrent edit and reports required recovery', t => {
+  const { root, folder } = fixture(t);
+  const plan = planPrototypeIdentification(root, types, folder, 'pat');
+  const rename = fs.renameSync;
+  let calls = 0;
+  const concurrent = path.join(root, plan.changes[0].path);
+  t.mock.method(fs, 'renameSync', (...args) => {
+    if (++calls === 2) {
+      fs.writeFileSync(concurrent, 'Concurrent editor content\n');
+      throw new Error('Injected later failure');
+    }
+    return rename(...args);
+  });
+  assert.throws(() => applyPrototypeIdentification(root, types, plan, 'pat'), /some files could not be restored/);
+  assert.equal(fs.readFileSync(concurrent, 'utf8'), 'Concurrent editor content\n');
+  assert.equal(fs.readFileSync(path.join(root, plan.changes[1].path), 'utf8'), plan.changes[1].before);
+});

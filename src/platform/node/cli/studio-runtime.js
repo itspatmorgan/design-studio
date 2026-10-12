@@ -22,8 +22,6 @@ import { systemPackage, systemDependencyProblems } from '../lib/system-dependenc
 //   sync [--check]                    synchronize routing and project skills; --check never writes
 //   context <prototype-folder> [--json] inspect assignment, rebuild target, scope, and guidance paths; never writes
 //   identity-audit [--json]             inspect existing/missing IDs, including retained types; never writes
-//   identity-plan [--out <file>] [--json] preview IDs, relationships and stored links; no source is changed
-//   identity-apply <preview> [--yes]     apply the reviewed migration with existing Admin authority
 //   identify <prototype-folder> [--yes] assign missing IDs within one owned prototype
 //   check                             pnpm check, and what has changed from the original of a module you added
 //   update [version] [--dry-run]      take an upstream release on a new studio-update/v<version> branch;
@@ -935,7 +933,7 @@ const commands = {
 };
 if (!command || !Object.hasOwn(commands, command)) {
   console.error(
-    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'update', 'identity-audit', 'identity-plan', 'identity-apply', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
+    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'update', 'identity-audit', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
   );
   process.exit(command ? 1 : 0);
 }

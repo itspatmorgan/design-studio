@@ -1,4 +1,4 @@
-// Read-only migration inventory. No manifest generation, identity assignment, or
+// Read-only retained resource inventory. No manifest generation, identity assignment, or
 // source repair happens here. Retained disabled file types are inspected too.
 import fs from 'node:fs';
 import path from 'node:path';
