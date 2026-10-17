@@ -12,6 +12,7 @@ A leaner foundation with the same core Studio experience. This beta release simp
 - Remove compatibility snapshots, benchmark machinery, duplicate tests, and repeated build/type checks.
 - Consolidate agent maintenance guidance and use the installed upstream shadcn CLI in a disposable workspace instead of a Studio wrapper.
 - Report immediate Studio/preview startup sizes and the largest deferred chunks in build inspection.
+- Use Hugeicons throughout Studio chrome and remove the unused Lucide dependency.
 
 ### Updating from 0.1.0
 
