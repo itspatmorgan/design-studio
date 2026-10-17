@@ -8,6 +8,7 @@ import { API_ENTRIES, API_POLICY } from '../../core/modules/boundaries.ts';
 import { scopePolicy } from './scope.js';
 import importGuard from '../build/vite-import-guard-plugin.js';
 import { dependencyResolver, importsOf } from './imports.js';
+import { fileTypeDeclarationProblems } from './file-type-declarations.js';
 
 function fixture(t) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'studio-api-environments-')));
@@ -238,4 +239,24 @@ test('public UI building blocks do not eagerly import the shell or application r
   visit(path.join(root, 'src/platform/api/ui.ts'));
   for (const file of ['src/platform/app/shell/App.tsx', 'src/platform/app/modules.ts'])
     assert.equal(seen.has(path.join(root, file)), false, `${file} introduces an eager module registration cycle`);
+});
+
+test('file declarations validate their own entry and transitive Node-safe adapters', t => {
+  const { root, write } = fixture(t);
+  const directory = path.join(root, 'src/modules/probe');
+  write('src/modules/probe/type.ts', "export {value as default} from './identity';");
+  write('src/modules/probe/identity.ts', "export {value} from '#studio/files';");
+  assert.deepEqual(fileTypeDeclarationProblems(root, directory), []);
+  write('src/modules/probe/identity.ts', "export {value} from './nested';");
+  for (const source of [
+    "import React from 'react'; export const value=React;",
+    'export const value=window.location;',
+    "export {value} from '../../../platform/private';",
+  ]) {
+    write('src/platform/private.ts', 'export const value=1;');
+    write('src/modules/probe/nested.ts', source);
+    assert.ok(fileTypeDeclarationProblems(root, directory).length, source);
+  }
+  write('src/modules/probe/type.ts', "export * from '../../../platform/private';");
+  assert.match(fileTypeDeclarationProblems(root, directory).join('\n'), /Node-safe local helpers|public API/);
 });

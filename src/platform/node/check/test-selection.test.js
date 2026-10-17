@@ -43,18 +43,27 @@ test('a module declaration or file type selects publishing validation in either 
   for (const root of ['src/platform/modules/canvas', 'src/modules/research'])
     assert.deepEqual(select([`${root}/Canvas.tsx`]).groups, ['runtime'], root);
 });
-test('module test discovery includes JavaScript and TypeScript procedures in both module roots', () => {
+test('discovery includes JavaScript and TypeScript app, tooling and module tests', () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'module-tests-'));
   try {
-    for (const directory of ['src/modules/example', 'src/platform/modules/supplied']) {
+    for (const directory of [
+      'src/modules/example',
+      'src/platform/modules/supplied',
+      'src/platform/app/data',
+      'src/platform/node/lib',
+    ]) {
       fs.mkdirSync(path.join(root, directory), { recursive: true });
       for (const file of ['prepare.test.js', 'runtime.test.ts']) fs.writeFileSync(path.join(root, directory, file), '');
     }
     assert.deepEqual(discoverTests(root), [
       'src/modules/example/prepare.test.js',
       'src/modules/example/runtime.test.ts',
+      'src/platform/app/data/prepare.test.js',
+      'src/platform/app/data/runtime.test.ts',
       'src/platform/modules/supplied/prepare.test.js',
       'src/platform/modules/supplied/runtime.test.ts',
+      'src/platform/node/lib/prepare.test.js',
+      'src/platform/node/lib/runtime.test.ts',
     ]);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -77,6 +86,11 @@ test('unknown paths, dependencies, missing comparison, and new tests fail closed
     actual.filter(file => !available.includes(file)),
     [],
     'Every discovered test must have a reviewed group.',
+  );
+  assert.deepEqual(
+    available.filter(file => fs.existsSync(file) && !actual.includes(file)),
+    [],
+    'Every existing cataloged test must be discoverable.',
   );
 });
 test('dependency glob matching respects path separators', () => {

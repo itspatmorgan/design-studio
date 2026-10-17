@@ -195,6 +195,30 @@ test('private module consumers and symlink scopes are rejected; disabled app and
       export default {icon: Home01Icon, rail: 'none', order: 50, overview: Overview} satisfies ModuleApp;
     `,
     );
+    run(
+      '--input-type=module',
+      '--eval',
+      `
+      import assert from 'node:assert/strict';
+      import {createServer} from 'vite';
+      const server=await createServer({configLoader:'native', cacheDir:'.vite-test-cache', server:{middlewareMode:true,hmr:false,ws:false,watch:null}, optimizeDeps:{noDiscovery:true,include:[]}});
+      try {
+        const {MODULES}=await server.ssrLoadModule('/platform/app/data/modules.ts');
+        const {moduleFolder}=await server.ssrLoadModule('/platform/core/roots.ts');
+        for(const [id,folder] of [['canvas','platform/modules/canvas'],['extra','modules/extra']]) {
+          assert.ok(MODULES.some(module=>module.id===id), id+' is missing from the dev registry');
+          assert.equal(moduleFolder(id), folder);
+        }
+        for(const [file,entry] of [['/platform/app/modules.ts','app.tsx'],['/platform/app/data/fileTypes.ts','open.tsx'],['/platform/app/data/fileTypeSpecs.ts','type.ts']]) {
+          await server.transformRequest(file);
+          const module=await server.moduleGraph.getModuleByUrl(file);
+          const urls=[...module.importedModules].map(item=>item.url);
+          for(const folder of [entry==='app.tsx' ? 'platform/modules/systems' : 'platform/modules/canvas','modules/extra'])
+            assert.ok(urls.some(url=>url.includes('/'+folder+'/'+entry)), file+' did not import '+folder+'/'+entry);
+        }
+      } finally {await server.close();}
+    `,
+    );
     const contributed = () =>
       JSON.parse(fs.readFileSync(path.join(root, 'public/prototypes/manifest.json'))).contributions.extra;
     const calls = () => fs.readFileSync(path.join(root, '.extra-build-calls'), 'utf8');

@@ -3,15 +3,30 @@ import { test } from 'node:test';
 import spec from './type.ts';
 import { resourceId } from '#studio/files';
 
-test('lofi toggling preserves view identity and executable contents in both header orders', () => {
+test('fidelity toggles preserve identity, source and prose and reject false markers', () => {
   const id = resourceId('0123456789abcdef');
   const source = 'export default function Screen() { return null; }\n';
-  const identified = spec.identity!.write(source, id);
-  const lofi = spec.fidelity!.setLofi(identified, true);
-  assert.equal(spec.identity!.read(lofi), id);
-  assert.equal(spec.fidelity!.setLofi(lofi, false), identified);
-  const identifiedLofi = spec.identity!.write(spec.fidelity!.setLofi(source, true), id);
-  assert.equal(spec.identity!.read(spec.fidelity!.setLofi(identifiedLofi, false)), id);
+  const { isLofi, setLofi } = spec.fidelity!;
+  for (const prefix of ['', '\uFEFF', '/** Checkout notes */\n']) {
+    const identified = spec.identity!.write(prefix + source, id);
+    const on = setLofi(identified, true);
+    assert.equal(isLofi(on), true);
+    assert.equal(setLofi(on, true), on);
+    assert.equal(setLofi(on, false), identified);
+    assert.equal(setLofi(identified, false), identified);
+    assert.equal(spec.identity!.read(on), id);
+    const identifiedLofi = spec.identity!.write(setLofi(prefix + source, true), id);
+    assert.equal(spec.identity!.read(setLofi(identifiedLofi, false)), id);
+  }
+  for (const header of ['// @lofi\n', '/**\n * Checkout, first try.\n * @lofi\n */\n']) {
+    assert.equal(isLofi(header + source), true);
+    const off = setLofi(header + source, false);
+    assert.equal(isLofi(off), false);
+    assert.ok(off.endsWith(source));
+    if (header.includes('Checkout')) assert.ok(off.includes('Checkout, first try.'));
+  }
+  for (const text of ['', source, source + '// @lofi', '/** @lofioutdated */\n' + source])
+    assert.equal(isLofi(text), false);
 });
 
 import { viewIdentity } from './identity.ts';

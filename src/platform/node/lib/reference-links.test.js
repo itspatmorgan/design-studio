@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { platformReferences } from './platform-references.js';
+import { setModuleFolders } from '../../core/roots.ts';
 import { markdownPath } from '../../app/docs/referenceLinks.ts';
 import globs, { archivedSystemGlobs, withSystemNegations } from '../build/vite-globs-plugin.js';
 import { ENABLED_MODULES } from './modules.js';
@@ -153,3 +158,76 @@ test('archived systems are left out of the build in whichever root they are in',
     "import.meta.glob('/systems/*/system.ts')",
   );
 });
+
+for (const base of ['modules', 'platform/modules'])
+  test(`owner discovery preserves canonical sources and availability in ${base}`, t => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-owner-links-'));
+    setModuleFolders([['example', `src/${base}/example`]]);
+    t.after(() => {
+      setModuleFolders([]);
+      fs.rmSync(root, { recursive: true, force: true });
+    });
+    const write = (file, text) => {
+      fs.mkdirSync(path.dirname(path.join(root, 'src', file)), { recursive: true });
+      fs.writeFileSync(path.join(root, 'src', file), text);
+    };
+    const toPlatform = base === 'modules' ? '../../../platform/README.md' : '../../../README.md';
+    write('platform/README.md', '# Platform');
+    write('platform/context/config.md', '# Configuration');
+    write(`${base}/example/README.md`, '# Example');
+    write(`${base}/example/extra.md`, '# Additional contract');
+    write(
+      `${base}/example/context/configure.md`,
+      `# Configure\n[Platform](${toPlatform}#context)\n[Additional](../extra.md)\n[Remote](https://example.com/extra.md)`,
+    );
+    write(`${base}/example/context/example.md`, '# Example workflow\n```md\n[Additional](../extra.md)\n```');
+    write('systems/product/README.md', '# Product');
+    const systemContent = [
+      {
+        id: 'module.example:context',
+        contributorKey: 'system-content',
+        system: 'module.example',
+        title: 'Context',
+        artifacts: ['configure.md', 'example.md'].map(path => ({ path })),
+      },
+      {
+        id: 'product:context',
+        contributorKey: 'system-content',
+        system: 'product',
+        title: 'Context',
+        artifacts: [],
+        owner: { kind: 'system', id: 'product', label: 'Product', root: 'src/systems/product' },
+      },
+    ];
+    const modules = [{ id: 'example', label: 'Example', instructions: [{ path: 'context/example.md' }] }];
+    const discover = enabled => platformReferences({ root, modules, enabled, systemContent });
+    const groups = discover(['example']);
+    const core = groups.find(group => group.id === 'core');
+    assert.deepEqual(
+      core.references.map(ref => ref.source),
+      ['/platform/README.md'],
+    );
+    assert.deepEqual(
+      core.references[0].related.map(ref => ref.title),
+      ['module.example · Context · Configure'],
+    );
+    assert.ok(!groups.some(group => group.id === 'system.product'));
+    const refs = groups.find(group => group.id === 'example').references;
+    assert.deepEqual(
+      refs.map(ref => ref.source),
+      [`/${base}/example/README.md`, `/${base}/example/extra.md`],
+    );
+    assert.ok(
+      refs.every(ref => ref.related.length === 1),
+      'fenced and remote links must not add guidance',
+    );
+    assert.equal(markdownPath(refs[0].source), '/documentation/context/module.example');
+    fs.rmSync(path.join(root, `src/${base}/example/README.md`));
+    assert.deepEqual(
+      discover(['example'])
+        .find(group => group.id === 'example')
+        .references.map(ref => ref.source),
+      [`/${base}/example/extra.md`],
+    );
+    assert.deepEqual(discover([]).find(group => group.id === 'example').references, []);
+  });

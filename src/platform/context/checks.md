@@ -26,7 +26,7 @@ Ordinary builds use the same command in source clones and installed studios. Pub
 
 The [checks workflow](../../../.github/workflows/checks.yml) defines job dependencies. [Releasing](releasing.md) owns candidate acceptance; [project publishing](releasing.md#project-repository-publishing) owns this repository's deployment.
 
-Keep tests for failure-prone behavior and boundaries. Use synthetic fixtures instead of asserting the starter's sample content or visual token choices. Production integration tests end in `.integration.test.js` and run in the release tier. Optional module tests disappear with their module.
+Keep a small suite for critical infrastructure, data integrity, stable behavioral contracts, and consequential regressions. Use synthetic fixtures instead of asserting the starter's sample content, generated source spelling, or visual token choices. Ordinary development uses type checks, builds, and targeted runtime verification for presentation and incidental behavior. Consolidate shared fixtures only when this removes maintenance work; preserve distinct authority, identity, rollback, and race-condition failures. Validate proposed redundancy with targeted mutations when a replacement must catch the same fault. Production integration tests end in `.integration.test.js` and run in the release tier. Optional module tests disappear with their module.
 
 See [Personal & team use](/documentation/manual/team) for how these checks fit the workflow. Configure branch protection and required checks to enforce the team's merge policy.
 
@@ -50,7 +50,7 @@ Upstream CI runs the released comparison and PR report. The release command runs
 
 Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, ownership, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
 
-The reviewed dependency map is `src/platform/node/check/test-groups.json`. Each retained test belongs to a group. `src/platform/node/check/test-selection.js` follows local transitive imports and supplements them with explicit source patterns for subprocesses, fixture reads, and globs. Patterns describe dependencies, not just the folder containing a test.
+The reviewed dependency map is `src/platform/node/check/test-groups.json`. Each retained JavaScript or TypeScript test under the platform or either module root is discovered and belongs to a group. Catalog consistency is checked in both directions: discovered tests must be classified, and existing cataloged tests must be discoverable. Missing tests from removed optional modules are permitted. `src/platform/node/check/test-selection.js` follows local transitive imports and supplements them with explicit source patterns for subprocesses, fixture reads, and globs. Patterns describe dependencies, not just the folder containing a test.
 
 | Group | Purpose and indirect dependencies |
 | --- | --- |
