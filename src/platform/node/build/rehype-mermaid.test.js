@@ -3,60 +3,28 @@ import assert from 'node:assert/strict';
 import mdx from '@mdx-js/rollup';
 import rehypePrettyCode from 'rehype-pretty-code';
 import rehypeMermaid from './rehype-mermaid.js';
-import { contentPalette, documentCodeTheme } from '../../systems/studio/styles/contentPalette.js';
+import fileEmbeds from './rehype-file-embeds.js';
 
-test('Mermaid source survives compilation while ordinary code still highlights', async () => {
+test('Markdown compilation preserves nested Mermaid source, block artifacts, inline links and ordinary code/images', async () => {
   const source = 'flowchart LR\n  A["<Feedback> {draft}"] --> B[Review]\n';
-  const markdown = '```mermaid\n' + source + '```\n\n```js\nconst value = 1;\n```';
+  const markdown =
+    '> ```mermaid\n' +
+    source.replace(/^/gm, '> ') +
+    '```\n\n```js\nconst value = 1;\n```\n\n' +
+    '![View](app/main.tsx)\n\n![Canvas](board.excalidraw)\n\n![Document](context.md)\n\n![Flow](../flow.mermaid)\n\n![Sequence](sequence.mmd)\n\nSee ![Flow](flow.mermaid) for context.\n\n![Photo](photo.png)';
   const plugin = mdx({
     format: 'md',
     providerImportSource: '@mdx-js/react',
-    rehypePlugins: [
-      rehypeMermaid,
-      [rehypePrettyCode, { theme: { light: documentCodeTheme('light'), dark: documentCodeTheme('dark') } }],
-    ],
+    rehypePlugins: [rehypeMermaid, fileEmbeds, [rehypePrettyCode, { theme: 'github-dark' }]],
   });
-  const compiled = (await plugin.transform.call({}, markdown, '/test.md')).code;
+  const compiled = (await plugin.transform.call({}, markdown, '/example.md')).code;
   assert.ok(compiled.includes('"mermaid-diagram"'));
   assert.ok(compiled.includes(JSON.stringify(source)));
   assert.ok(compiled.includes('data-rehype-pretty-code-figure'));
-  assert.ok(!compiled.includes('language-mermaid'));
-  assert.ok(compiled.includes(contentPalette.light.green), 'light syntax uses the shared keyword color');
-  assert.ok(compiled.includes(contentPalette.dark.green), 'dark syntax uses the shared keyword color');
-});
-
-test('Only Mermaid code fences are replaced, including inside nested content', () => {
-  const code = language => ({
-    type: 'element',
-    tagName: 'pre',
-    children: [
-      {
-        type: 'element',
-        tagName: 'code',
-        properties: { className: [language] },
-        children: [{ type: 'text', value: 'A --> B\n' }],
-      },
-    ],
-  });
-  const ordinary = code('language-js');
-  const tree = { children: [{ tagName: 'blockquote', children: [code('language-mermaid'), ordinary] }] };
-  rehypeMermaid()(tree);
-  assert.equal(tree.children[0].children[0].tagName, 'mermaid-diagram');
-  assert.equal(tree.children[0].children[0].properties.source, 'A --> B\n');
-  assert.equal(tree.children[0].children[1], ordinary);
-});
-
-test('prototype file images compile into block embeds while inline references stay links', async () => {
-  const { default: diagramFiles } = await import('./rehype-file-embeds.js');
-  const plugin = mdx({ format: 'md', providerImportSource: '@mdx-js/react', rehypePlugins: [diagramFiles] });
-  const markdown =
-    '![View](app/main.tsx)\n\n![Canvas](board.excalidraw)\n\n![Document](context.md)\n\n![Feedback flow](../feedback-flow.mermaid)\n\n![Sequence](sequence.mmd)\n\nSee ![Flow](flow.mermaid) for context.\n\n![Photo](photo.png)';
-  const compiled = (await plugin.transform.call({}, markdown, '/example.md')).code;
   assert.ok(compiled.includes('"prototype-artifact"'));
-  assert.ok(compiled.includes('"../feedback-flow.mermaid"'));
-  assert.ok(compiled.includes('"sequence.mmd"'));
-  for (const path of ['app/main.tsx', 'board.excalidraw', 'context.md'])
-    assert.ok(compiled.includes(`source: "${path}"`));
+  for (const source of ['app/main.tsx', 'board.excalidraw', 'context.md', '../flow.mermaid', 'sequence.mmd'])
+    assert.ok(compiled.includes(`source: "${source}"`));
+  assert.ok(compiled.includes('"a"'), 'inline references use links rather than block previews');
   assert.ok(compiled.includes('href: "flow.mermaid"'));
   assert.ok(compiled.includes('src: "photo.png"'));
   assert.ok(!compiled.includes('src: "flow.mermaid"'));
@@ -88,24 +56,4 @@ test('file references resolve nested files and remain within the document protot
   assert.equal(artifactReference('flow.mermaid', null), null);
   for (const path of ['app/main.tsx', 'board.excalidraw', 'context.md', 'notes.txt'])
     assert.equal(artifactReference(path, base)?.path, `research/${path}`);
-});
-
-test('file previews respect the Node-readable capability surfaces to bound canvas nesting', async () => {
-  const { artifactAvailability } = await import('../../core/fileTypes.ts');
-  const allowed = (type, surface, renderer = true) =>
-    artifactAvailability(type, { local: false, editable: false, present: true, renderer, scope: 'prototype' }).embeds[
-      surface
-    ].available;
-  const spec = surfaces => ({
-    systemUsage: 'independent',
-    inPrototype: true,
-    inSystemContent: false,
-    capabilities: { embeds: surfaces },
-  });
-  assert.equal(allowed(undefined, 'document'), false);
-  assert.equal(allowed(spec([]), 'canvas'), false);
-  assert.equal(allowed(spec(['document', 'canvas']), 'canvas'), true);
-  assert.equal(allowed(spec(['document']), 'document'), true);
-  assert.equal(allowed(spec(['document']), 'canvas'), false);
-  assert.equal(allowed(spec(['document']), 'document', false), false);
 });

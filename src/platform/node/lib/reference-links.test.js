@@ -9,6 +9,8 @@ import { markdownPath } from '../../app/docs/referenceLinks.ts';
 import globs, { archivedSystemGlobs, withSystemNegations } from '../build/vite-globs-plugin.js';
 import { ENABLED_MODULES } from './modules.js';
 import titleFromHeading from '../build/remark-title-from-heading.js';
+import { frontmatter } from './frontmatter.js';
+import remarkMdxFrontmatter from 'remark-mdx-frontmatter';
 
 test('owner README and relative context links use the same browser', () => {
   const resolve = (href, base) => markdownPath(new URL(href, `http://doc${base}/`).pathname);
@@ -67,10 +69,11 @@ test('contracts render every section and extract only the opening title', () => 
     heading(2, 'For developers'),
     { type: 'paragraph', children: [{ type: 'text', value: 'Contract' }] },
   ];
-  const tree = { children: [heading(1, 'System contract'), ...sections] };
+  const tree = { children: [heading(1, 'System "contract": details'), ...sections] };
   titleFromHeading()(tree, { basename: 'README.md' });
-  assert.equal(tree.children[0].type, 'yaml');
+  assert.equal(frontmatter('---\n' + tree.children[0].value + '\n---').title, 'System "contract": details');
   assert.deepEqual(tree.children.slice(1), sections);
+  assert.doesNotThrow(() => remarkMdxFrontmatter()({ type: 'root', ...tree }, {}));
 });
 
 test('frontmatter titles suppress only a matching opening H1', () => {
