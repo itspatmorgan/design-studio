@@ -152,7 +152,7 @@ The manifest scans declared content sections. Vite supplies file globs and theme
 
 `pnpm check` validates declarations, configuration, section collisions, dependency boundaries, file-type contracts, and enabled module checks.
 
-`pnpm baseline removal <id>` checks physical removal in an authorized Personal-mode fixture with its own Git history and linked installed dependencies. Add `--off` for disabling or `--working` to test uncommitted changes. The release suite runs the enabled control and each retained supplied optional module disabled and removed. Lifecycle checks also verify Team-mode restrictions, retained external content, and re-enabling.
+The release suite builds with all optional modules disabled, then physically removed. The ordinary production build covers enabled modules. Lifecycle tests retain Team-mode restrictions, external content, and re-enabling checks.
 
 A module owns one canonical technical contract in its README.md. Human workflows live in `src/platform/modules/documentation/pages/`, where a chapter declares `module: <id>` to follow that capability’s availability. Context includes standing requirements. Skills describe tasks. Link to contracts instead of copying them.
 
