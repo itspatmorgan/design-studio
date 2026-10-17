@@ -22,25 +22,11 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "src/platform/core/resourceReferences.test.ts",
     "vite.config.ts",
     "src/platform/modules/*/server.ts",
     "src/platform/modules/*/build.ts",
     "src/modules/*/server.ts",
     "src/modules/*/build.ts",
-    "src/platform/modules/canvas/cli.ts",
-    "src/platform/modules/canvas/tools.test.ts",
-    "src/platform/modules/systems/content/content.test.ts",
-    "src/platform/modules/systems/docs.test.ts",
-    "src/platform/core/archive.test.ts",
-    "src/platform/core/order.test.ts",
-    "src/platform/core/modules/modules.test.ts",
-    "src/platform/core/modules/globs.test.ts",
-    "src/platform/core/permissions.test.ts",
-    "src/platform/core/roots.test.ts",
-    "src/platform/core/config.test.ts",
-    "src/platform/core/config-file.test.ts",
-    "src/platform/modules/systems/spec.test.ts",
-    "src/platform/core/declarations.test.ts"
+    "src/platform/modules/canvas/cli.ts"
   ]
 }
