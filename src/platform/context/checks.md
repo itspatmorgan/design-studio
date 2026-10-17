@@ -8,8 +8,7 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 
 | Stage | Checks and effect |
 | --- | --- |
-| Before commit | Staged asset sizes and module checks can block the commit. Scope and Git identity checks report warnings. |
-| Before push | Scope summary. It does not run the full build or block platform changes. |
+| Before commit | Staged asset sizes can block the commit. |
 | `pnpm build` | Manifest validation, module checks, type checking, and the production bundle. |
 | `pnpm test` | Focused platform and enabled-module regression tests. |
 | `pnpm test:release` | All regression tests, including disposable setup/production fixtures. |
@@ -37,7 +36,7 @@ The public entry files under `src/platform/api/` and their TypeScript declaratio
 
 ## Minimum sufficient verification
 
-Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
+Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. The build job runs tests and production compilation with one dependency installation.
 
 Tests are discovered directly under the platform and registered module roots. Ordinary CI runs `pnpm test`; explicit full checks run `pnpm test:release`. Optional module removal removes its tests from discovery. An empty test inventory fails verification. No catalog or change-selection rules need maintenance.
 
@@ -46,7 +45,6 @@ Tests are discovered directly under the platform and registered module roots. Or
 | Message | Next step |
 | --- | --- |
 | Platform files changed | Confirm authorization and use the maintainer's review process. |
-| Git identity differs | Ask your agent to compare Git settings with your contributor registration. |
 | Import crosses a boundary | Ask your agent to use a permitted dependency. |
 | Styles escape their scope | Ask your agent to contain the selector or use a CSS Module. |
 | File exceeds the size limit | Reduce the asset before committing. |
@@ -66,6 +64,6 @@ This setup is the studio maintainer's responsibility.
 
 [Contributor scope](contributor-scope.md) defines authority and before-side review rules. Personal use skips team scope checks, but declaration, dependency, asset, and permanent-identity checks still apply. A proposed usage or grant change cannot authorize itself.
 
-Identity checks inspect staged or committed source and protect [retained identities and containment](resource-identity.md#direct-authoring-and-verification). Identity errors fail CI even for reviewed proposals; local hooks report them for correction.
+Identity checks inspect staged or committed source and protect [retained identities and containment](resource-identity.md#direct-authoring-and-verification). Identity errors fail CI even for reviewed proposals; CI rejects them.
 
 These checks do not prevent an unauthorized Git push by themselves. Configure GitHub branch protection, required checks, and the team's review process.

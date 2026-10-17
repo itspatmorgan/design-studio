@@ -54,46 +54,16 @@ jobs:
       - name: Keep personal contributor files out of the starter and public demo
         if: github.repository_id == '1401250166'
         run: node src/platform/node/check/check-starter.js
-  regressions:
-    name: Regressions
+  build:
     runs-on: ubuntu-24.04
     concurrency:
-      group: regressions-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: jdx/mise-action@v5
-      - name: Locate dependency store
-        id: store
-        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
-        with:
-          path: ${{ steps.store.outputs.path }}
-          key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
-      - run: pnpm install --frozen-lockfile
-      - name: Run regressions
-        run: |
-          if [ "${{ inputs.full_checks }}" = true ]; then
-            pnpm test:release
-          else
-            pnpm test
-          fi
-  bundle:
-    name: Production build
-    runs-on: ubuntu-24.04
-    concurrency:
-      group: bundle-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      group: build-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
-          fetch-tags: true
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: jdx/mise-action@v5
       - name: Locate dependency store
@@ -106,20 +76,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm studio sync --check
       - run: pnpm format:check
+      - name: Run regressions
+        run: |
+          if [ "${{ inputs.full_checks }}" = true ]; then
+            pnpm test:release
+          else
+            pnpm test
+          fi
       - run: pnpm build
         env:
           STUDIO_BASE_PATH: ${{ github.repository_id == '1401250166' && '/design-studio-demo/' || '/' }}
           STUDIO_PUBLIC_URL: ${{ github.repository_id == '1401250166' && 'https://itspatmorgan.com/design-studio-demo/' || '' }}
       - run: pnpm build:inspect
-  # Keep the existing required check name. A successful bundle alone cannot pass it.
-  build:
-    needs: [bundle, regressions]
-    if: always()
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Require build and regression success
-        env:
-          BUNDLE_RESULT: ${{ needs.bundle.result }}
-          REGRESSION_RESULT: ${{ needs.regressions.result }}
-        run: |
-          test "$BUNDLE_RESULT" = success && test "$REGRESSION_RESULT" = success || exit 1
