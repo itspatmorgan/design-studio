@@ -4,7 +4,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { matches } from '../check/test-selection.js';
+function matches(file, glob) {
+  const escaped = glob
+    .split('**')
+    .map(part =>
+      part
+        .split('*')
+        .map(text => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('[^/]*'),
+    )
+    .join('.*');
+  return new RegExp(`^${escaped}$`).test(file);
+}
 
 export const TIERS = ['upstream', 'generated', 'seed', 'team'];
 export const loadOwnership = root => JSON.parse(fs.readFileSync(path.join(root, '.studio/ownership.json'), 'utf8'));

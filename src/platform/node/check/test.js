@@ -1,40 +1,15 @@
-// Discover retained tests; optional module removal also removes its tests.
+// Discover tests directly; removing an optional module removes its tests too.
 import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { discoverTests, planTests } from './test-selection.js';
+import { MODULE_ROOTS } from '../../core/roots.ts';
 
 const args = process.argv.slice(2);
-let files;
-if (args[0] === '--changed') {
-  const [base, head, ...options] = args.slice(1);
-  if (options.some(option => !['--plan-only', '--full', '--merge-base'].includes(option)))
-    throw new Error('Usage: test.js --changed <base> <head> [--plan-only] [--full] [--merge-base]');
-  const plan = planTests(base, head, {
-    full: options.includes('--full') || process.env.STUDIO_FULL_CHECKS === 'true',
-    mergeBase: options.includes('--merge-base') || process.env.GITHUB_EVENT_NAME === 'pull_request',
-  });
-  console.log(JSON.stringify(plan, null, 2));
-  if (options.includes('--plan-only')) {
-    if (process.env.GITHUB_OUTPUT)
-      fs.appendFileSync(process.env.GITHUB_OUTPUT, `tests_needed=${plan.tests.length > 0}\n`);
-    if (process.env.GITHUB_STEP_SUMMARY)
-      fs.appendFileSync(
-        process.env.GITHUB_STEP_SUMMARY,
-        `## Verification plan\n\n${plan.exhaustive ? 'Full release suite' : plan.full ? 'All ordinary regressions' : plan.groups.join(', ') || 'Authoring: production checks only'} (${plan.tests.length} test files).\n\n${plan.reasons.map(reason => '- ' + reason.replace(/[\r\n]/g, ' ')).join('\n')}\n`,
-      );
-    process.exit(0);
-  }
-  files = plan.tests;
-} else {
-  if (args.some(arg => arg !== '--release'))
-    throw new Error('Usage: test.js [--release] | --changed <base> <head> [--plan-only] [--full] [--merge-base]');
-  files = discoverTests().filter(file => args.includes('--release') || !file.endsWith('.integration.test.js'));
-  if (!files.length) throw new Error('No retained regression tests found.');
-}
-if (!files.length) {
-  console.log('No regression groups selected. Production and scope checks remain required.');
-  process.exit(0);
-}
+if (args.some(arg => arg !== '--release')) throw new Error('Usage: test.js [--release]');
+const patterns = ['src/platform', ...MODULE_ROOTS].flatMap(root => [`${root}/**/*.test.ts`, `${root}/**/*.test.js`]);
+const files = [...new Set(fs.globSync(patterns))]
+  .filter(file => args.includes('--release') || !file.endsWith('.integration.test.js'))
+  .sort();
+if (!files.length) throw new Error('No retained regression tests found.');
 const result = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit' });
 if (result.error) throw result.error;
 process.exit(result.status ?? 1);

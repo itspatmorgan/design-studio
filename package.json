@@ -27,7 +27,6 @@
     "test:release": "node src/platform/node/check/test.js --release",
     "build:release": "pnpm test:release && pnpm build",
     "build:inspect": "node src/platform/node/check/inspect-build.js",
-    "test:changed": "node src/platform/node/check/test.js --changed",
     "format": "biome format --write .",
     "format:check": "biome format ."
   },
