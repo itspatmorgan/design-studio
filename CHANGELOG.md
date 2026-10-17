@@ -3,10 +3,10 @@
 ## Unreleased
 
 - Retire managed extension downloads and provenance locks; integrate external source through reviewed repository edits.
-- Collapse CI and availability fixtures, remove benchmark machinery, and simplify isolated shadcn staging.
+- Collapse CI and production availability fixtures; retain individual availability probes and replace shadcn staging wrappers with a verified manual workflow.
 
 - Use manual Git upgrades and releases; remove the managed updater, ownership map, and compatibility snapshot machinery.
-- Discover regression tests directly, remove redundant test infrastructure and guidance, and avoid repeated build checks.
+- Discover regression tests directly, consolidate maintenance guidance, and remove redundant test infrastructure and repeated build/type checks.
 - Report both immediate Studio/preview startup sizes and deferred chunks in build inspection.
 
 ## 0.1.0 (2026-10-14)
