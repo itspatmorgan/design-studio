@@ -9,13 +9,32 @@ Consult the official [shadcn skill](https://github.com/shadcn-ui/ui/blob/main/sk
 
 Use `info --json` in the prepared workspace to resolve the actual base, style, icon library, aliases, and CSS path. Read the selected component's `docs` output and fetch its linked API/examples before composing or adapting it. Preserve Base UI versus Radix APIs, especially `render` versus `asChild`. Reuse the system's installed components before selecting new ones. Use the selected icon library consistently.
 
-Pass preset names, codes, or shadcn builder links to `prepare-shadcn`; it extracts a builder link's preset code before invoking the CLI. Do not decode opaque codes or construct encoded links manually. Use `preset resolve --json` after configuration to inspect the result. Inspect its `fallbacks`: inferred defaults are not evidence of the person's chosen font, theme, or radius, especially for adapted scoped themes. Preserve actual source and saved decisions. Presets and component base are separate choices; preserve the saved base unless explicitly changed. A theme/font-only refinement can use `apply --only theme,font` in staging; it does not switch icon implementations. Inspect local help first.
+Pass a preset name or code to the installed CLI. For a builder link, use its `preset` query parameter; keep the code opaque. Do not decode opaque codes or construct encoded links manually. Use `preset resolve --json` after configuration to inspect the result. Inspect its `fallbacks`: inferred defaults are not evidence of the person's chosen font, theme, or radius, especially for adapted scoped themes. Preserve actual source and saved decisions. Presets and component base are separate choices; preserve the saved base unless explicitly changed. A theme/font-only refinement can use `apply --only theme,font` in staging; it does not switch icon implementations. Inspect local help first.
 
 ## Adapt the upstream workflow to Studio
 
-Generate in the workspace from `pnpm prepare-shadcn`, never in the Studio root or a system source folder. The [curation contract](../../../context/curation.md#isolated-shadcn-preparation) owns staging isolation and manual configuration integration. Upstream `add --dry-run` previews staging writes. Existing adapted components are not copied into staging, so this is not a comparison against their current Studio implementation. Compare selected generated source with those files before integrating updates; preserve intentional customization.
+Generate in a disposable workspace outside Studio, never in the Studio root or a system source folder. Use the manual staging procedure below. Upstream `add --dry-run` previews staging writes. Existing adapted components are not copied into staging, so this is not a comparison against their current Studio implementation. Compare selected generated source with those files before integrating updates; preserve intentional customization.
 
 Replace the upstream full-catalog installation and standalone showcase with the smallest useful kit, live component examples, and a representative Studio prototype. Global `:root`, `.dark`, `@theme`, and global utilities from upstream are staging material: adapt them to the system's scoped theme, explicit inventory, supported modes, and portal contract. Never derive or enable another color mode merely because an upstream procedure recommends it. Fonts follow the supplied sources, licensed assets, or explicitly allowed substitutions.
+
+## Manual staging
+
+Inspect installed help, then run from the Studio checkout. For a new foundation, substitute the selected base and preset; `nova` with `base` is the default starting point:
+
+```sh
+staging=$(mktemp -d)
+pnpm exec shadcn create --cwd "$staging" --name kit --template vite --base base --preset nova --no-monorepo --yes
+pnpm exec shadcn info --cwd "$staging/kit" --json
+pnpm exec shadcn preset resolve --cwd "$staging/kit" --json
+pnpm exec shadcn docs button input --cwd "$staging/kit" --json
+pnpm exec shadcn add input --cwd "$staging/kit" --dry-run
+pnpm exec shadcn add input --cwd "$staging/kit" --yes
+pnpm --dir "$staging/kit" build
+```
+
+For continuation, initialize staging with the saved base and style, then copy the target's `components.json` into staging before generating components. Preserve its choices and registries; remap `tailwind.css` to `src/index.css` and every alias into staging (`@/components`, `@/components/ui`, `@/lib/utils`, `@/lib`, `@/hooks`). Inspect `info --json` to confirm all resolved destinations stay there. Copy a supplied DESIGN.md into staging unchanged. Existing scoped themes and adapted components remain comparison material; do not treat staging as their visual equivalent.
+
+Review generated source and dependencies against the target before integrating selected files manually. Preserve Studio identities, workspace package names, scoped themes, system-relative CSS paths, and aliases; runtime utility imports use `#studio/runtime`. Never copy staging aliases or package manifests wholesale. Record the actual CLI/source versions and decisions once in the system's curation record, verify the integrated kit in Studio, then remove the disposable workspace.
 
 ## Translate a DESIGN.md
 

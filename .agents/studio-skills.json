@@ -17,17 +17,9 @@
       "kind": "link",
       "hash": "9ea2aef310a741eeacdc67118caaeae12a76df0d03432e84110e9aea7242cf4b"
     },
-    ".agents/skills/studio-platform-maintain-context/SKILL.md": {
-      "kind": "file",
-      "hash": "456fc17f55d8ae1c6184515e2e520b8a1c91d9651aa67fd08243ec99a58537c3"
-    },
-    ".claude/skills/studio-platform-maintain-context": {
-      "kind": "link",
-      "hash": "49a297c8b346c5dd90bcd70d2767c756b8ae8ce11a092463786a1ed2dcb7648e"
-    },
     ".agents/skills/studio-platform-maintain-documentation/SKILL.md": {
       "kind": "file",
-      "hash": "6e43c4393ee08efe7fb5fe19da04fc8d16a69e49ec2f29aa64eb4ef768ffee4c"
+      "hash": "70bb937660468d16a406e1161684c5ea254063b6fbd3785526473e1f1485ded8"
     },
     ".claude/skills/studio-platform-maintain-documentation": {
       "kind": "link",

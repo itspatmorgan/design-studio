@@ -26,7 +26,7 @@ A team system's `system.ts` and `intro.tsx` import their declaration types, `Sys
 
 `intro.tsx` supplies optional overview content. Its exports and presentation are defined in [Systems interface](context/interface.md#overview).
 
-[System curation](context/curation.md) defines the Overview setup prompt builder, saved decisions, and isolated `pnpm prepare-shadcn` command.
+[System curation](context/curation.md) defines the Overview setup prompt builder, saved decisions, and manual upstream staging procedure.
 
 The two system roots are `src/platform/systems/` (supplied by the upstream project) and `src/systems/` (the team's). They are listed once, supplied root first, in `src/platform/core/roots.ts`; discovery, the build, and the app all read that list. A system's id is its folder name, and the same id cannot appear in both roots. The supplied root holds only the platform system and the platform system lives only there, so the Studio system is `src/platform/systems/studio/` with the same structure as other systems; every team system, including the starter Product and Marketing systems, is in `src/systems/<id>/`. A system's `dir` is the folder it was found in, and every path built for it (components, theme, assets, context, skills) starts from that folder. Creating, renaming, archiving, and removing systems only touch `src/systems/`. Its `system.ts` declares `role: 'platform'`; other systems explicitly declare `role: 'prototype'`. Exactly one installed system must declare that role. Discovery resolves the application system by role, independently of its folder name. It is always registered (the configuration never lists it) and cannot be removed or assigned to prototypes. Its documentation mode is `off`. Every system explicitly declares `status` (`active` or `archived`), `role`, `styling`, `colorModes`, `docs`, and `origin`. Platform infrastructure remains under `src/platform/`.
 
@@ -151,7 +151,7 @@ Studio is maintained with Studio and excluded from prototype choices, default-sy
 
 ## System knowledge and agent routing
 
-The [contracts and operating instructions foundation](../../context/contracts-and-instructions.md) distinguishes technical contracts from operating policy, intent, and procedures.
+The [documentation standard](../../context/documentation-standards.md#ownership) distinguishes technical contracts from operating policy, intent, and procedures.
 
 A system’s guidance applies to its product and design domain. Platform and modules own their operating knowledge and procedures.
 

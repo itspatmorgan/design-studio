@@ -11,12 +11,12 @@ Show the proposed kit and its purpose. Let designers specify components and them
 
 ## Direct and review in the browser
 
-Use [System curation](../../../context/curation.md) for the Overview summary and staging command. Read an existing curation record and inspect actual progress before restarting setup.
+Use [System curation](../../../context/curation.md) for the Overview summary and saved decisions. Read an existing curation record and inspect actual progress before restarting setup.
 
 1. For shadcn, offer its [builder](https://ui.shadcn.com/create) to explore themes, fonts, icons, and styles. Reuse a supplied preset or builder link. Recommend Base UI unless the person chooses another base. Do not recreate upstream controls in Studio.
 2. Establish the first useful direction. For supplied DESIGN.md, follow [shadcn configuration and design guidance](shadcn.md). A preset and DESIGN.md can be used together. Separate explicit design values from proposals and missing materials.
 3. Save the agreed direction, source links, and next action in one system-owned curation record. Keep Overview's toolkit summary current.
-4. Prepare upstream material with `pnpm prepare-shadcn`. Reuse the system's configuration when continuing; supply a preset only when choosing a new starting configuration. Run its printed commands in the isolated workspace. Read the resolved configuration and component documentation, and inspect selected payloads and dependencies before integrating them. Integrate reviewed configuration manually, restoring the target system's CSS path and aliases.
+4. Follow [Manual staging](shadcn.md#manual-staging) to prepare upstream material outside Studio. Reuse the system's configuration when continuing; supply a new preset only when choosing a new starting configuration. Read the resolved configuration and component documentation, and inspect selected payloads and dependencies before integrating them. Integrate reviewed configuration manually, restoring the target system's CSS path and aliases.
 5. Integrate foundations, then open the relevant theme, font, and icon pages for review. A foundation can be useful before any components arrive.
 6. Integrate the small component kit and open live examples, including pop-ups and required states. Then build or reuse a representative prototype and save its permanent ID in the curation summary.
 7. After each meaningful step, update the summary and next action. Carry out authorized mechanics without extra approval. Pause only for unresolved design choices or scope decisions. Mark the final stage after verification and human review, not file presence.

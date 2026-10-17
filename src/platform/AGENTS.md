@@ -11,8 +11,7 @@ Skills are owned by the platform, enabled modules, and registered systems. Inspe
 - For configuring a running studio, or updating it to a newer Design Studio release, use [configure-studio](skills/configure-studio/SKILL.md). Missing dependencies alone do not mean initialization is needed.
 - For contributor registration, use [setup-contributor](skills/setup-contributor/SKILL.md).
 - For module or system installation, creation, availability, or removal, use [manage-modules](skills/manage-modules/SKILL.md).
-- For shared context or skills, use [maintain-context](skills/maintain-context/SKILL.md).
-- For owner READMEs, Manual coordination, or guidance audits, use [maintain-documentation](skills/maintain-documentation/SKILL.md).
+- For READMEs, shared context, skills, Manual coordination, or guidance audits, use [maintain-documentation](skills/maintain-documentation/SKILL.md).
 - For an explicit design-system review, use [check-design-system](skills/check-design-system/SKILL.md).
 
 Use pnpm. Reuse unchanged instructions already read; read source before editing. Save verbose check output to a temporary log and report results and warnings concisely.

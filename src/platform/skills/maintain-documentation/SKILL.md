@@ -1,18 +1,12 @@
 ---
 name: maintain-documentation
-description: "Revise owner READMEs, coordinate Manual updates, or audit relevance and consistency across contracts, context, and skills. Use maintain-context to author context or task procedures."
+description: "Author or audit READMEs, context, and task skills for the platform, modules, and systems; coordinate human Manual updates."
 ---
 
-## Review or revise
+Read the owner's README and [Documentation standards](../../context/documentation-standards.md). Check implementation and command help before documenting behavior. For human Manual chapters, use [write-manual](../../modules/documentation/skills/write-manual/SKILL.md) when Documentation is enabled.
 
-Read the owner's README and [documentation standard](../../context/documentation-standards.md). For authoring context or skills, use [maintain-context](../maintain-context/SKILL.md); for human chapters, use [write-manual](../../modules/documentation/skills/write-manual/SKILL.md) when Documentation is enabled.
+Update the canonical source and affected links; subtract repetition of code, types, or other guidance. Preserve supplied intent, unusual constraints, and data-protection guarantees. Context explains decisions; skills hold task judgment. Do not invent product facts or add catalogs and tracking systems. An audit alone does not authorize edits.
 
-Check implementation and command help, then ask:
+After skill or routing changes, run `pnpm studio sync`; preserve team-authored adapters. Root `AGENTS.md` is generated from `src/platform/AGENTS.md`, module routing, and `AGENTS.team.md`. Module routes use module-relative `instructions` paths; system skills apply to assigned prototypes or explicit system maintenance.
 
-- Does this passage change a meaningful decision, or repeat code, types, or another source?
-- Is the source current and correctly owned? Can a direct link replace duplication?
-- Does routing load only relevant guidance? Are disabled capabilities and system assignments respected?
-
-Update the canonical source and affected callers. Preserve intent, unusual constraints, and data-protection guarantees. Verify affected links, metadata, rendered content, and request routing; distinguish walkthroughs from live agent testing. An audit alone does not authorize implementation.
-
-Follow [working context](../../context/working-in-studio.md) for checks and saving. Report concrete changes or findings and unresolved limits; do not add new tracking systems or universal rules for isolated mistakes.
+Verify affected links, anchors, metadata, and rendered content. For a skill, walk through matching and out-of-scope requests; distinguish walkthroughs from live agent testing. Follow [working context](../../context/working-in-studio.md) for checks and saving, and report unresolved limits. A focused change does not require a broader guidance audit.
