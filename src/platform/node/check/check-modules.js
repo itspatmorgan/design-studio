@@ -50,7 +50,6 @@ import {
   SYSTEM_IDS,
   systemDeclarationProblems,
 } from '../../modules/systems/node/systems.js';
-import { changesFromLock } from '../lib/lock.js';
 import { readContributors } from '../lib/contributors.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -240,16 +239,6 @@ for (const m of specs) {
   } catch (e) {
     problems.push(`${m.id}: its check.ts failed to run (${e.message}).`);
   }
-}
-
-// What you changed in a module or design system you added from a source (studio.lock.json). Yours to change: this says where.
-for (const c of changesFromLock()) {
-  const parts = [
-    c.changed.length &&
-      `${c.changed.length} file(s) changed from the original (${c.changed[0]}${c.changed.length > 1 ? ', ...' : ''})`,
-    c.missing.length && `${c.missing.length} file(s) deleted`,
-  ].filter(Boolean);
-  console.log(`[modules] The ${c.kind} ${c.id} has ${parts.join(' and ')}.`);
 }
 
 // A module that needs a newer platform is turned off, not broken: say so, and carry on.

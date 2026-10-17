@@ -5,7 +5,7 @@
 import { changedFiles, git } from './changed-files.js';
 import { resolveContributor, keyForGithub } from '../cli/resolve-contributor.js';
 import { studioRole, canPerform, sameSystemIdentity, parseMaintainers } from '../../core/permissions.ts';
-import { readDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { CONFIG_FILE } from '../../core/config.ts';
 import { parseConfigFile } from '../../core/config-file.ts';
 import { INSTALLED_FILE_TYPES } from '../lib/installed-file-types.js';

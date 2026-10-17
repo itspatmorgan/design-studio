@@ -121,7 +121,6 @@ Design systems are content in `src/systems/` (and Studio's own interface system 
 pnpm studio list
 pnpm studio disable <id>
 pnpm studio enable <id>
-pnpm studio add <source>
 pnpm studio remove <module-or-system>
 pnpm studio create-module <id>
 pnpm studio create-system <id>
@@ -129,9 +128,9 @@ pnpm studio sync
 pnpm check
 ```
 
-Add, remove, and create commands preview changes. Applying them requires `--yes`. Use CLI help for source formats and optional flags.
+Remove and create commands preview changes. Applying them requires `--yes`. Use CLI help for current arguments.
 
-Studio commands register and unregister capabilities, manage config module flags, `studio.lock.json`, and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
+Studio commands register and unregister capabilities, manage config module flags and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
 
 Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
 
@@ -139,17 +138,11 @@ Packages remain installed after removal. Remove them only when no retained code 
 
 ## Installation contract
 
-Preview reads declarations as data. Applying installation trusts the module's code. It can execute the installed declaration and checks.
+Extension installation is ordinary repository work, not a package-manager feature. Review the source, license, dependencies, and affected files before integrating it. Code runs with the privileges of the local repository.
 
-Packages install with lifecycle scripts disabled. Failed checks restore project files, but downloaded packages may remain in `node_modules`.
+Use `create-module` or `create-system` for a local scaffold, then adapt selected source under the team root. Preserve the newly allocated system `studioId`, package identity, and explicit registration; do not copy another installation's identity or overwrite existing work. Team modules use `#studio/*`; system dependencies live in their own manifest with shared React peers.
 
-Sources can be local folders, HTTPS or SSH Git addresses, or HTTPS tarballs. HTTP, `file://`, and `git://` sources are rejected.
-
-Packs cannot contain symlinks, escaping paths, or file collisions. Limits are 500 files, 2 MB per file, and 20 MB total.
-
-Upstream libraries require their license and provenance. The license override is an explicit user decision, governed by the manage-modules skill.
-
-Installation is not a sandbox. Installed code has the privileges of repository code.
+Review dependency changes, run `pnpm install --ignore-scripts`, synchronize instructions, and verify `pnpm check`, `pnpm test`, `pnpm build`, and the affected browser workflows. There is no download, archive, license-override, or provenance-lock subsystem. Git records the integrated source and its history.
 
 ## Discovery and verification
 
@@ -165,7 +158,7 @@ A module owns one canonical technical contract in its README.md. Human workflows
 
 ## Customization and updates
 
-Supplied and locally authored modules use the same contract, in different roots. Installed external capabilities record their source and file hashes in `studio.lock.json`; locally authored modules remain team-owned. Git records the supplied platform revision.
+Supplied and locally authored modules use the same contract, in different roots. Git records integrated module/system source and the supplied platform revision.
 
 You own all repository code. Editing supplied modules or platform internals can create conflicts when merging upstream releases; [Ownership and updates](ownership.md) maps which paths are upstream, generated, seed, or team-owned. Review updates on a branch, reconcile local changes, and run `pnpm build`. The [customization Manual](/documentation/manual/customize) explains the progression from prototype work to platform changes.
 

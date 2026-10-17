@@ -500,7 +500,7 @@ test('team modules and systems reach the platform only through #studio/*; suppli
   for (const [target, specifier] of [
     ['src/platform/app/router.tsx', '@/platform/app/router'],
     ['src/platform/node/lib/modules.js', '../../node/lib/modules.js'],
-    ['src/platform/core/modules/pack.ts', '../../core/modules/pack.ts'],
+    ['src/platform/core/declarations.ts', '../../core/declarations.ts'],
     ['src/platform/context/principles.md', '../../context/principles.md'],
   ])
     assert.equal(platformImportProblem('src/platform/modules/canvas/app.tsx', target, specifier), null, target);

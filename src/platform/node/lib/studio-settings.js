@@ -2,7 +2,7 @@ import { contributorPreferenceProblems } from '../../core/modules/preferences.ts
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { readDeclaration as readSystemDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration as readSystemDeclaration } from '../../core/declarations.ts';
 import { configProblems, studioRole } from '../../core/config.ts';
 import { compatible } from '../../core/modules/index.ts';
 import { renderAgents } from './agents-file.js';

@@ -5,7 +5,7 @@ import { readContributors } from './contributors.js';
 import { readSettings } from './studio-settings.js';
 import { editorFile, openEditor } from '../build/files/editor.js';
 import { reveal } from '../build/files/ops.js';
-import { readDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { canPerform, studioRole } from '../../core/permissions.ts';
 import { systemRegistered } from '../../core/config.ts';
 import { planSystemLifecycle, systemDependents } from './system-lifecycle.js';

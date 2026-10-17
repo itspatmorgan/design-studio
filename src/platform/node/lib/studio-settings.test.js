@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { readDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { applySetupChanges, editDeclaration } from './studio-setup.js';
 import { planSettings, readSettings, saveSettings } from './studio-settings.js';
 import { writeProfiles } from './fixtures/contributors.js';

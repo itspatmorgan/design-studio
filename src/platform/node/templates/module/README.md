@@ -9,5 +9,4 @@ A module for Design Studio. It adds a page at `/__ID__` and a button for it on t
 
 This README is the entry point and technical contract. The shared Context and Skills browser reads the original module files. See the [module contract](../../platform/context/modules.md) for extension details.
 
-To use it in another Design Studio, publish this folder as a git repository and run `pnpm studio add <address>` there.
-To check it before that, run `pnpm check`.
+To reuse it in another studio, review and copy its source into the team module root, declare availability and dependencies, and run `pnpm studio sync`, `pnpm check`, and `pnpm build`.

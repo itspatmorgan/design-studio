@@ -20,7 +20,6 @@ The other stored formats do not take the field, each for a reason:
 
 - A canvas is an Excalidraw scene, so its top level belongs to Excalidraw. It already carries `studioVersion`, which a newer copy of the app reads as "open it, never save over it". Canvas keeps that field.
 - Documents and diagrams are Markdown and Mermaid text. A leading comment or frontmatter carries their identity, and nothing about them is a Studio-defined structure that needs upgrading.
-- `studio.lock.json` has `lockfileVersion` and is read and written only by installation tooling.
 - `module.ts` and `system.ts` are code declarations. Compatibility is declared with `requires` and `PLATFORM_VERSION`.
 
 ## Validation

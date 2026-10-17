@@ -89,6 +89,6 @@ See the [Manual](../modules/documentation/pages/index.md) for using Studio. When
 
 Confirm the destination and where that filesystem lives before creating files. Preserve existing studios and confirmed choices. Follow the commands above using the person's supported tools; do not install a plugin or use plugin bootstrap tooling for this path.
 
-After cloning, read the installed repository's `AGENTS.md` and linked guidance. Verify the release ancestry, local `main` branch, and `upstream` remote. A release clone does not need a hand-written `studio.lock.json`; see [Ownership and updates](ownership.md#the-installed-release).
+After cloning, read the installed repository's `AGENTS.md` and linked guidance. Verify the release ancestry, local `main` branch, and `upstream` remote. For revision tracking, see [Ownership and updates](ownership.md#the-installed-release).
 
 Verify the actual local preview and report the absolute studio path. Help the person open that folder in their agent harness; distinguish instructions to open it from a verified workspace handoff. Use [Configure Studio](../skills/configure-studio/SKILL.md) when they request configuration. Installation alone does not authorize creating a hosted repository, pushing, or publishing.
