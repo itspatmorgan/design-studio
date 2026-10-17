@@ -188,10 +188,30 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
       assert.equal(INSTALLED_FILE_TYPES.view.identity.read(fs.readFileSync(dir+'/renamed.tsx','utf8')),viewId);
       assert.equal(JSON.parse(fs.readFileSync(source)).links[0],'./renamed.tsx?mode=source#part');
       assert.match(fs.readFileSync(dir+'/notes.md','utf8'),/renamed.tsx/);
+      for(const [file,content] of [['_copy-fixture/nested/data.txt','retained data'],['_copy-fixture/node_modules/ignored.txt','excluded'],['.trash/ignored.txt','excluded']]) {
+        fs.mkdirSync(path.dirname(dir+'/'+file),{recursive:true}); fs.writeFileSync(dir+'/'+file,content);
+      }
+      const sourceBeforeCopy=fs.readFileSync(source,'utf8');
+      const failed=path.resolve('src/prototypes/artifact-fixture/failed-copy'), originalCopy=fs.cpSync;
+      let copiedBeforeFailure=false;
+      fs.cpSync=(from,to,options)=>{originalCopy(from,to,options); if(fs.existsSync(to)){copiedBeforeFailure=true;throw new Error('Injected copy failure');}};
+      try {assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Failed copy'}),/Injected copy failure/);}
+      finally {fs.cpSync=originalCopy;}
+      assert.equal(copiedBeforeFailure,true);
+      assert.equal(fs.existsSync(failed),false);
+      assert.equal(fs.readFileSync(source,'utf8'),sourceBeforeCopy);
+      const racing=path.resolve('src/prototypes/artifact-fixture/racing-copy'), originalMkdir=fs.mkdirSync;
+      fs.mkdirSync=(target,...args)=>{if(target===racing){originalMkdir(target);fs.writeFileSync(target+'/retained.txt','existing');}return originalMkdir(target,...args);};
+      try {
+        assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Racing copy'}),error=>error.code==='EEXIST');
+        assert.equal(fs.readFileSync(racing+'/retained.txt','utf8'),'existing');
+      } finally {fs.mkdirSync=originalMkdir;fs.rmSync(racing,{recursive:true,force:true});}
       const copy=duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Mixed copy'});
       const copied=path.resolve('src/prototypes/artifact-fixture/'+copy.id);
       const copiedMeta=JSON.parse(fs.readFileSync(copied+'/meta.json'));
       const copiedData=JSON.parse(fs.readFileSync(copied+'/model.fixture'));
+      assert.equal(fs.readFileSync(copied+'/_copy-fixture/nested/data.txt','utf8'),'retained data');
+      for(const excluded of ['.trash','_copy-fixture/node_modules'])assert.equal(fs.existsSync(copied+'/'+excluded),false);
       assert.notEqual(copiedMeta.studioId,meta.studioId);
       assert.equal(copiedMeta.systemId,null); assert.equal(copiedMeta.rebuild,undefined);
       assert.notEqual(copiedData.studioId,data.studioId);
@@ -207,7 +227,9 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
         assert.throws(operation,/installed prototype system/);
         assert.equal(fs.existsSync('src/prototypes/artifact-fixture/invalid'),false);
       }
+      const occupied=fs.readFileSync(renamedDir+'/meta.json','utf8');
       assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Renamed copy'}), /already/);
+      assert.equal(fs.readFileSync(renamedDir+'/meta.json','utf8'),occupied);
       fs.symlinkSync(process.cwd(),dir+'/outside');
       try {assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Linked copy'}), /symbolic links/); assert.equal(fs.existsSync('src/prototypes/artifact-fixture/linked-copy'),false);}
       finally {fs.unlinkSync(dir+'/outside');}
