@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { afterChange, parseOrder, withFolderOrder } from '../../core/order.ts';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -287,4 +288,22 @@ test('prototype-relative screen paths are repaired; dynamic expressions stay unc
     next,
     "const screen='flow/start'; const dynamic=`flow/${name}`; const link=<ScreenLink to={'flow/start'} />;",
   );
+});
+
+test('persisted ordering survives folder moves and deletions without changing unrelated entries', () => {
+  assert.deepEqual(parseOrder(['flow', 'flow/main.tsx']), ['flow', 'flow/main.tsx']);
+  for (const invalid of ['flow', [1], ['']]) assert.equal(parseOrder(invalid), null);
+  const order = ['other', 'flow', 'flow/main.tsx', 'flow-long/main.tsx'];
+  assert.deepEqual(afterChange(order, 'flow', 'renamed'), [
+    'other',
+    'renamed',
+    'renamed/main.tsx',
+    'flow-long/main.tsx',
+  ]);
+  assert.deepEqual(afterChange(order, 'flow', null), ['other', 'flow-long/main.tsx']);
+  assert.deepEqual(withFolderOrder(['other/main.tsx', 'flow/a', 'flow/b'], 'flow', ['flow/b', 'flow/a']), [
+    'other/main.tsx',
+    'flow/b',
+    'flow/a',
+  ]);
 });

@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { FORMAT_VERSIONS, formatVersionProblem } from './formats.ts';
 import {
   adminProblems,
   CONFIG_FILE,
@@ -346,6 +347,12 @@ test('a missing or unknown formatVersion is a problem that names the file', () =
     /studio\.config\.json: add "formatVersion": 1/,
   );
   assert.match(problems({ formatVersion: 2 }), /studio\.config\.json: formatVersion is 2.*newer studio/);
+  assert.match(problems({ formatVersion: 0 }), /studio\.config\.json: formatVersion is 0/);
   assert.match(problems({ formatVersion: '1' }), /studio\.config\.json: formatVersion is "1"/);
   assert.equal(problems({ formatVersion: 1 }), '');
+  for (const format of Object.keys(FORMAT_VERSIONS) as (keyof typeof FORMAT_VERSIONS)[]) {
+    assert.equal(formatVersionProblem(FORMAT_VERSIONS[format], format, 'stored.json'), null);
+    for (const invalid of [undefined, 0, 99, '1'])
+      assert.ok(formatVersionProblem(invalid, format, 'stored.json'), `${format}: ${invalid}`);
+  }
 });

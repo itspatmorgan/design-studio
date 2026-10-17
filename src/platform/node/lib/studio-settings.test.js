@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { applySetupChanges } from './studio-setup.js';
+import { readDeclaration } from '../../core/modules/pack.ts';
+import { applySetupChanges, editDeclaration } from './studio-setup.js';
 import { planSettings, readSettings, saveSettings } from './studio-settings.js';
 import { writeProfiles } from './fixtures/contributors.js';
 import { writeFixtureConfig } from './fixtures/identities.js';
@@ -230,4 +231,18 @@ test('team module cannot be disabled, and personal mode does not erase grants', 
     /team use requires/,
   );
   saveSettings({ ...options, base: current.version, changes: { usage: 'team', modules: { contributors: true } } });
+});
+
+test('declaration edits preserve unrelated fields and comments and reject ambiguous or executable input', () => {
+  const original = 'export default { name: "Old", modules: { /* module note */ notes: true }, /* custom */ extra: 7 };';
+  const next = editDeclaration(original, { name: 'New', modules: { notes: false } });
+  assert.deepEqual(readDeclaration(next).value, { name: 'New', modules: { notes: false }, extra: 7 });
+  assert.match(next, /module note/);
+  assert.match(next, /custom/);
+  for (const source of [
+    'export default makeConfig();',
+    'export default { name: "A", "name": "B" };',
+    'export default { modules: { notes: true, "notes": false } };',
+  ])
+    assert.throws(() => editDeclaration(source, { name: 'New', modules: { notes: false } }));
 });

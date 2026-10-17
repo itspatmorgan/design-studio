@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { test } from 'node:test';
 import { artifactFixture } from './fixtures/artifacts.js';
 
@@ -11,7 +12,23 @@ test('a public team file type joins mixed-artifact discovery, validation and pro
     write(base + '/draft.mmd', 'this is intentionally invalid');
     write(base + '/_helper.mermaid', 'flowchart LR\n A-->B');
     assert.match(run('src/modules/fixture/node/public-api.js'), /Public identity and settings validators passed/);
-    run('src/platform/node/cli/studio.js', 'identify', base, '--yes');
+    const cli = (...args) => run('src/platform/node/cli/studio.js', ...args);
+    const before = ['meta.json', 'main.tsx', 'notes.md', 'board.excalidraw'].map(file =>
+      fs.readFileSync(path.join(root, base, file), 'utf8'),
+    );
+    const preview = JSON.parse(cli('identify', base, '--json'));
+    assert.deepEqual(
+      ['meta.json', 'main.tsx', 'notes.md', 'board.excalidraw'].map(file =>
+        fs.readFileSync(path.join(root, base, file), 'utf8'),
+      ),
+      before,
+    );
+    assert.ok(preview.changes.length > 0);
+    cli('identify', base, '--yes');
+    const identified = JSON.parse(cli('context', base, '--json'));
+    assert.equal(identified.assignment.system, null);
+    assert.equal(JSON.parse(cli('identify', base, '--json')).changes.length, 0);
+    assert.equal(JSON.parse(cli('identity-audit', '--json')).missing.length, 0);
     run('src/platform/modules/prototypes/node/create.js', 'Empty runtime fixture', '--no-system');
     run('src/platform/modules/prototypes/node/create.js', 'Assigned empty runtime fixture');
     run(
@@ -54,6 +71,46 @@ test('a public team file type joins mixed-artifact discovery, validation and pro
     );
     assert.ok(!items.some(item => item.path === '_helper.mermaid'));
     assert.ok(items.every(item => item.studioId));
+    const canvas = (...args) => run('src/platform/modules/canvas/cli.ts', base + '/board.excalidraw', ...args);
+    const boardFile = path.join(root, base, 'board.excalidraw'),
+      boardBefore = fs.readFileSync(boardFile, 'utf8');
+    assert.ok(JSON.stringify(JSON.parse(canvas('artifacts'))).includes('main.tsx'));
+    assert.equal(fs.readFileSync(boardFile, 'utf8'), boardBefore);
+    canvas('create', JSON.stringify({ type: 'artifact', artifact: './main.tsx' }));
+    const board = JSON.parse(fs.readFileSync(boardFile));
+    assert.equal(board.studioId, JSON.parse(boardBefore).studioId);
+    const viewId = items.find(item => item.path === 'main.tsx').studioId;
+    assert.equal(
+      board.elements.find(element => element.type === 'embeddable').link,
+      '/prototypes/' + identified.prototype.studioId + '/artifacts/' + viewId,
+    );
+    const canvasAfter = fs.readFileSync(boardFile, 'utf8');
+    const denied = spawnSync(
+      process.execPath,
+      [
+        'src/platform/modules/canvas/cli.ts',
+        base + '/board.excalidraw',
+        'create',
+        '{"type":"note","text":"Unauthorized"}',
+      ],
+      {
+        cwd: root,
+        encoding: 'utf8',
+        env: { ...fixture.env, GIT_CONFIG_VALUE_0: 'Unknown Person', GIT_CONFIG_VALUE_1: 'unknown@example.invalid' },
+      },
+    );
+    assert.equal(denied.status, 1, denied.stderr + denied.stdout);
+    assert.equal(fs.readFileSync(boardFile, 'utf8'), canvasAfter);
+    fs.renameSync(path.join(root, base), path.join(root, base + '-relocated'));
+    try {
+      assert.equal(
+        JSON.parse(cli('context', base + '-relocated', '--json')).prototype.studioId,
+        identified.prototype.studioId,
+      );
+      assert.equal(fs.readFileSync(path.join(root, base + '-relocated/board.excalidraw'), 'utf8'), canvasAfter);
+    } finally {
+      fs.renameSync(path.join(root, base + '-relocated'), path.join(root, base));
+    }
     run('src/platform/node/check/check-modules.js');
     run('src/platform/node/check/typecheck.js');
     run('node_modules/vite/bin/vite.js', 'build', '--configLoader', 'native');
