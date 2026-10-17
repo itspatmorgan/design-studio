@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Retire managed extension downloads and provenance locks; integrate external source through reviewed repository edits.
+- Collapse CI and availability fixtures, remove benchmark machinery, and simplify isolated shadcn staging.
+
 - Use manual Git upgrades and releases; remove the managed updater, ownership map, and compatibility snapshot machinery.
 - Discover regression tests directly, remove redundant test infrastructure and guidance, and avoid repeated build checks.
 - Report both immediate Studio/preview startup sizes and deferred chunks in build inspection.

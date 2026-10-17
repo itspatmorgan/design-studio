@@ -93,7 +93,7 @@ const slug = text =>
     .replace(/^-+|-+$/g, '')
     .replace(/^[^a-z]+/, '');
 
-// ---- places that must never be deleted, whatever a pack or a flag says
+// ---- places that must never be deleted, whatever a command or a flag says
 const PROTECTED = new Set([
   'src',
   'src/platform',
