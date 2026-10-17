@@ -199,26 +199,66 @@ test('CI resolves persisted grants from the before-side identity directory and p
   const baseline = commit('Persisted authority');
   write('src/systems/product/components/button.tsx', 'export default () => null;');
   const assignedWork = commit('Assigned system work');
-  const check = (before, after) =>
+  const check = (before, after, { actor = 'member-fixture', role = 'write', review = false } = {}) =>
     spawnSync(
       process.execPath,
-      [fileURLToPath(new URL('../check/check-scope.js', import.meta.url)), '--ci', before, after],
+      [
+        fileURLToPath(new URL('../check/check-scope.js', import.meta.url)),
+        '--ci',
+        before,
+        after,
+        ...(review ? ['--review'] : []),
+      ],
       {
         cwd: root,
         encoding: 'utf8',
-        env: { ...process.env, STUDIO_SCOPE_ACTOR: 'member-fixture', STUDIO_PLATFORM_ROLE: 'write' },
+        env: { ...process.env, STUDIO_SCOPE_ACTOR: actor, STUDIO_PLATFORM_ROLE: role },
       },
     );
   const allowed = check(baseline, assignedWork);
   assert.equal(allowed.status, 0, allowed.stderr + allowed.stdout);
+  write('contributors/pat.json', JSON.stringify({ studioId: owner, name: 'Pat', github: 'member-fixture', email: '' }));
+  write(
+    'contributors/member.json',
+    JSON.stringify({ studioId: replacement, name: 'Member', github: 'pat-fixture', email: '' }),
+  );
+  const impersonation = commit('Proposed identity change');
+  assert.equal(check(assignedWork, impersonation).status, 1, 'proposed profiles cannot impersonate an Admin');
+  write('contributors/pat.json', JSON.stringify({ studioId: owner, name: 'Pat', github: 'pat-fixture', email: '' }));
+  write(
+    'contributors/member.json',
+    JSON.stringify({ studioId: replacement, name: 'Member', github: 'member-fixture', email: '' }),
+  );
+  const trusted = commit('Restore trusted identity');
   config.admins.push(replacement);
   write('studio.config.json', JSON.stringify(config));
   write('src/platform/fixture.md', '# Proposed shared work');
   const elevated = commit('Proposed elevation');
-  const denied = check(assignedWork, elevated);
+  const denied = check(trusted, elevated);
   assert.equal(denied.status, 1, denied.stderr + denied.stdout);
   assert.match(denied.stdout, /studio.config.json/);
   assert.match(denied.stdout, /src\/platform\/fixture.md/);
+  for (const [role, review] of [
+    ['maintain', false],
+    ['admin', false],
+    ['write', true],
+  ]) {
+    const accepted = check(trusted, elevated, { role, review });
+    assert.equal(accepted.status, 0, accepted.stderr + accepted.stdout);
+  }
+  config.usage = 'personal';
+  write('studio.config.json', JSON.stringify(config));
+  const personal = commit('Proposed personal mode');
+  assert.equal(
+    check(trusted, personal, { actor: 'unregistered' }).status,
+    1,
+    'proposed personal mode cannot bypass team scope',
+  );
+  write('src/platform/fixture.md', '# Personal work');
+  const personalWork = commit('Personal work');
+  const accepted = check(personal, personalWork, { actor: 'unregistered' });
+  assert.equal(accepted.status, 0, accepted.stderr + accepted.stdout);
+  assert.match(accepted.stdout, /team ownership checks are skipped/);
 });
 
 test('missing IDs in proposed retained resources fail even when no previous resource existed', () => {

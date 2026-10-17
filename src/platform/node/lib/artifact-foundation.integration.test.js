@@ -7,7 +7,9 @@ import { artifactFixture } from './fixtures/artifacts.js';
 test('a public team file type joins mixed-artifact discovery, validation and production loading', () => {
   const fixture = artifactFixture();
   try {
-    const { root, base, run } = fixture;
+    const { root, base, run, write } = fixture;
+    write(base + '/draft.mmd', 'this is intentionally invalid');
+    write(base + '/_helper.mermaid', 'flowchart LR\n A-->B');
     assert.match(run('src/modules/fixture/node/public-api.js'), /Public identity and settings validators passed/);
     run('src/platform/node/cli/studio.js', 'identify', base, '--yes');
     run('src/platform/modules/prototypes/node/create.js', 'Empty runtime fixture', '--no-system');
@@ -42,7 +44,15 @@ test('a public team file type joins mixed-artifact discovery, validation and pro
       new Set(items.map(item => item.fileType)),
       new Set(['view', 'document', 'diagrams', 'canvas', 'fixture']),
     );
-    assert.equal(new Set(items.map(item => item.studioId)).size, 5);
+    assert.equal(new Set(items.map(item => item.studioId)).size, 6);
+    assert.deepEqual(
+      items
+        .filter(item => item.fileType === 'diagrams')
+        .map(item => item.path)
+        .sort(),
+      ['draft.mmd', 'flow.mermaid'],
+    );
+    assert.ok(!items.some(item => item.path === '_helper.mermaid'));
     assert.ok(items.every(item => item.studioId));
     run('src/platform/node/check/check-modules.js');
     run('src/platform/node/check/typecheck.js');
@@ -96,6 +106,8 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
       import fs from 'node:fs'; import path from 'node:path'; import assert from 'node:assert/strict';
       import {runOp} from './src/platform/node/build/files/ops.js';
       import {duplicatePrototype} from './src/platform/modules/prototypes/node/duplicate.js';
+      import {createPrototype,renamePrototype} from './src/platform/modules/prototypes/node/create.js';
+      import {DEFAULT_SYSTEM,PROTOTYPE_SYSTEMS} from './src/platform/modules/systems/node/systems.js';
       import {INSTALLED_FILE_TYPES} from './src/platform/node/lib/file-types.js';
       import {canChange} from './src/platform/node/build/files/policy.js';
       const dir=path.resolve('${base}');
@@ -123,9 +135,42 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
       const copied=path.resolve('src/prototypes/artifact-fixture/'+copy.id);
       const copiedMeta=JSON.parse(fs.readFileSync(copied+'/meta.json'));
       const copiedData=JSON.parse(fs.readFileSync(copied+'/model.fixture'));
+      assert.notEqual(copiedMeta.studioId,meta.studioId);
+      assert.equal(copiedMeta.systemId,null); assert.equal(copiedMeta.rebuild,undefined);
       assert.notEqual(copiedData.studioId,data.studioId);
       assert.equal(copiedData.links[1],'/prototypes/'+copiedMeta.studioId+'/artifacts/'+copiedData.studioId);
       assert.equal(JSON.parse(fs.readFileSync(source)).links[1],self);
+      const renamed=renamePrototype({key:'artifact-fixture',id:copy.id,title:'Renamed copy'});
+      const renamedDir=path.resolve('src/prototypes/artifact-fixture/'+renamed.id);
+      assert.equal(fs.existsSync(copied),false);
+      assert.equal(JSON.parse(fs.readFileSync(renamedDir+'/meta.json')).studioId,copiedMeta.studioId);
+      assert.equal(JSON.parse(fs.readFileSync(renamedDir+'/model.fixture')).links[1],copiedData.links[1]);
+      assert.throws(()=>renamePrototype({key:'artifact-fixture',id:renamed.id,title:'Mixed'}), /already/);
+      for(const operation of [()=>createPrototype({key:'artifact-fixture',title:'Invalid',system:'missing'}),()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Invalid',system:'missing'})]) {
+        assert.throws(operation,/installed prototype system/);
+        assert.equal(fs.existsSync('src/prototypes/artifact-fixture/invalid'),false);
+      }
+      assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Renamed copy'}), /already/);
+      fs.symlinkSync(process.cwd(),dir+'/outside');
+      try {assert.throws(()=>duplicatePrototype({key:'artifact-fixture',id:'mixed',title:'Linked copy'}), /symbolic links/); assert.equal(fs.existsSync('src/prototypes/artifact-fixture/linked-copy'),false);}
+      finally {fs.unlinkSync(dir+'/outside');}
+      const assigned=createPrototype({key:'artifact-fixture',title:'Assigned source',system:DEFAULT_SYSTEM});
+      const assignedDir='src/prototypes/artifact-fixture/'+assigned.slug;
+      const assignedMeta=JSON.parse(fs.readFileSync(assignedDir+'/meta.json'));
+      const bytes=fs.readFileSync(dir+'/meta.json','utf8');
+      for(const [id,title,target,sourceSystem,sourceId] of [['mixed','Assigned rebuild',DEFAULT_SYSTEM,null,meta.studioId],[assigned.slug,'Unassigned rebuild',null,PROTOTYPE_SYSTEMS[DEFAULT_SYSTEM].studioId,assignedMeta.studioId]]) {
+        const rebuild=duplicatePrototype({key:'artifact-fixture',id,title,system:target});
+        const stored=JSON.parse(fs.readFileSync('src/prototypes/artifact-fixture/'+rebuild.id+'/meta.json'));
+        assert.equal(stored.systemId,sourceSystem);
+        assert.deepEqual(stored.rebuild,{targetSystemId:target===null?null:PROTOTYPE_SYSTEMS[target].studioId,sourcePrototypeId:sourceId});
+        const projected=rebuild.manifest.prototypes.find(proto=>proto.id===rebuild.id);
+        assert.equal(projected.system,sourceSystem===null?null:DEFAULT_SYSTEM);
+        assert.equal(projected.rebuild.targetSystemKey,target);
+        assert.equal(projected.rebuild.sourcePrototypeId,sourceId);
+        assert.equal(projected.rebuild.sourcePath,'src/prototypes/artifact-fixture/'+id);
+      }
+      assert.equal(fs.readFileSync(dir+'/meta.json','utf8'),bytes);
+      assert.equal(assignedMeta.systemId,PROTOTYPE_SYSTEMS[DEFAULT_SYSTEM].studioId);
       console.log(JSON.stringify({id:meta.studioId,viewId,self}));
     `,
       )
@@ -134,6 +179,7 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
         .at(-1),
     );
     run('src/platform/node/cli/studio.js', 'disable', 'fixture');
+    run('src/platform/node/cli/studio.js', 'disable', 'diagrams');
     run(
       '--input-type=module',
       '--eval',
@@ -146,9 +192,14 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
       assert.equal(JSON.parse(fs.readFileSync(dir+'/model.fixture')).links[0],'./main.tsx?mode=source#part');
       const proto=buildManifest({write:false,quiet:true}).manifest.prototypes.find(p=>p.studioId==='${result.id}');
       assert.ok(!proto.artifacts.some(item=>item.fileType==='fixture'));
+      assert.ok(!proto.artifacts.some(item=>item.fileType==='diagrams'));
+      assert.ok(proto.artifacts.some(item=>item.fileType==='document'));
+      assert.ok(fs.existsSync(dir+'/flow.mermaid'));
+      assert.equal(buildManifest({write:false,quiet:true}).manifest.platformReferences.find(group=>group.id==='diagrams').references.length,0);
     `,
     );
     run('src/platform/node/cli/studio.js', 'enable', 'fixture');
+    run('src/platform/node/cli/studio.js', 'enable', 'diagrams');
     run('src/platform/node/cli/studio.js', 'create-system', 'fixture-system', '--yes');
     run(
       '--input-type=module',
@@ -156,8 +207,78 @@ test('public source adapters follow moves, copies and disabled renderers; mixed 
       `
       import fs from 'node:fs'; import {readDeclaration} from './src/platform/core/declarations.ts';
       const meta=JSON.parse(fs.readFileSync('${base}/meta.json'));
-      meta.systemId=readDeclaration(fs.readFileSync('src/systems/fixture-system/system.ts','utf8')).value.studioId;
+      const systemId=readDeclaration(fs.readFileSync('src/systems/fixture-system/system.ts','utf8')).value.studioId;
+      const {spawnSync}=await import('node:child_process'); const assert=(await import('node:assert/strict')).default;
+      for(const state of [{systemId},{systemId:null,rebuild:{targetSystemId:systemId,sourcePrototypeId:meta.studioId}}]) {
+        fs.writeFileSync('${base}/meta.json',JSON.stringify({...meta,...state}));
+        const refused=spawnSync(process.execPath,['src/platform/node/cli/studio.js','remove','fixture-system','--yes'],{encoding:'utf8'});
+        assert.equal(refused.status,1,refused.stderr+refused.stdout);
+        assert.ok((refused.stderr+refused.stdout).includes('artifact-fixture/mixed'));
+        assert.ok(fs.existsSync('src/systems/fixture-system/system.ts'));
+      }
+      meta.systemId=systemId;
       fs.writeFileSync('${base}/meta.json',JSON.stringify(meta));
+    `,
+    );
+    run(
+      '--input-type=module',
+      '--eval',
+      `
+      import fs from 'node:fs'; import path from 'node:path'; import assert from 'node:assert/strict';
+      import {Readable} from 'node:stream';
+      import filesPlugin from './src/platform/node/build/vite-files-plugin.js';
+      import {readDeclaration} from './src/platform/core/declarations.ts';
+      import {editDeclaration} from './src/platform/node/lib/studio-setup.js';
+      import {writeProfiles} from './src/platform/node/lib/fixtures/contributors.js';
+      const configFile='studio.config.json', previous=fs.readFileSync(configFile,'utf8');
+      const systemFile='src/systems/fixture-system/system.ts', declaration=fs.readFileSync(systemFile,'utf8');
+      const systemId=readDeclaration(declaration).value.studioId;
+      writeProfiles(process.cwd(),{'route-admin':{name:'Route Admin',preferences:{onboarding:{welcomeDismissed:true},fixture:{ready:false}}}});
+      const config=JSON.parse(previous);
+      config.usage='team'; config.admins=[JSON.parse(fs.readFileSync('contributors/route-admin.json')).studioId];
+      config.systemMaintainers[systemId]=[JSON.parse(fs.readFileSync('contributors/artifact-fixture.json')).studioId];
+      const save=()=>fs.writeFileSync(configFile,JSON.stringify(config)); save();
+      let handler;
+      await filesPlugin().configureServer({middlewares:{use:(_path,fn)=>{handler=fn;}},watcher:{on(){}},ws:{send(){}},config:{logger:{error(){}}}});
+      const request=async(url,body)=>{
+        const req=Readable.from(body?[JSON.stringify(body)]:[]);
+        req.method=body?'POST':'GET';req.url=url;req.headers={'sec-fetch-site':'same-origin'};
+        const res={statusCode:0,setHeader(){},end(body){this.body=body;}};
+        await handler(req,res,()=>assert.fail('Unexpected route fallback'));return res;
+      };
+      const source=body=>request('/systems/source',{systemId,path:'styles/theme.css',...body});
+      try {
+        const file=path.resolve('${base}/main.tsx'), originalRead=fs.readFileSync;
+        const url='/file?contributor=artifact-fixture&prototype=mixed&path=main.tsx';
+        fs.readFileSync=(name,...args)=>{if(name===file)throw new Error('Read failure');return originalRead(name,...args);};
+        try {assert.equal((await request(url)).statusCode,500);} finally {fs.readFileSync=originalRead;}
+        assert.equal((await request(url)).statusCode,200);
+        assert.equal((await request('/prototype-duplicate',{contributor:'system-content',prototype:'studio:context',title:'Forbidden',system:null})).statusCode,403);
+        assert.equal((await request('/documentation',{action:'write',path:'src/platform/README.md',content:'# Forbidden'})).statusCode,403);
+        const read=await source({action:'read'}); assert.equal(read.statusCode,200);
+        const theme=JSON.parse(read.body);
+        assert.equal((await source({action:'write',base:theme.version,content:theme.content})).statusCode,200);
+        assert.equal((await source({action:'write',base:'stale',content:'# Overwrite'})).statusCode,409);
+        const themePath='src/systems/fixture-system/styles/theme.css';
+        assert.equal(fs.readFileSync(themePath,'utf8'),theme.content);
+        fs.renameSync(themePath,themePath+'.ordinary');fs.symlinkSync(path.basename(themePath)+'.ordinary',themePath);
+        try {assert.equal((await source({action:'read'})).statusCode,404);} finally {fs.unlinkSync(themePath);fs.renameSync(themePath+'.ordinary',themePath);}
+        assert.equal((await source({action:'read',path:'../other/system.ts'})).statusCode,400);
+        assert.equal((await source({action:'read',systemId:'0000000000000000'})).statusCode,404);
+        fs.writeFileSync(systemFile,editDeclaration(declaration,{status:'archived'}));
+        try {assert.equal((await source({action:'write',base:theme.version,content:theme.content})).statusCode,404);} finally {fs.writeFileSync(systemFile,declaration);}
+        fs.writeFileSync('src/systems/fixture-system/components/route-proof.tsx','export function RouteProof(){return null;}');
+        assert.equal((await request('/op',{contributor:'systems',prototype:'fixture-system',op:'rename',path:'route-proof.tsx',name:'unsafe.tsx'})).statusCode,400);
+        assert.ok(fs.existsSync('src/systems/fixture-system/components/route-proof.tsx'));
+        assert.equal((await request('/systems/skill',{systemId,name:'route-proof',description:'A synthetic route check.'})).statusCode,200);
+        assert.ok(fs.existsSync('src/systems/fixture-system/skills/route-proof/SKILL.md'));
+        const docs=await request('/systems/component-docs',{systemId,component:'route-proof'});
+        assert.equal(docs.statusCode,200);
+        const written=JSON.parse(docs.body).written;
+        assert.ok(written.some(file=>file.endsWith('.md'))); assert.ok(written.every(file=>fs.existsSync(file)));
+        config.systemMaintainers[systemId]=[]; save();
+        assert.equal((await source({action:'write',base:theme.version,content:theme.content})).statusCode,403);
+      } finally {fs.writeFileSync(configFile,previous);fs.unlinkSync('contributors/route-admin.json');}
     `,
     );
     write(

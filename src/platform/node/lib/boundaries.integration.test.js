@@ -331,6 +331,7 @@ test('private module consumers and symlink scopes are rejected; disabled app and
     run('src/platform/node/check/typecheck.js');
     run('node_modules/vite/bin/vite.js', 'build');
     assert.equal(manifest().contributions.documentation, undefined);
+    assert.ok(manifest().platformReferences.length > 0, 'Context and Skills remain available without Manual');
     assert.ok(inspectBuild(path.join(root, 'dist')).requests > 0);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

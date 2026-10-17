@@ -39,6 +39,9 @@ test('runtime dependency scopes reject indirect, private, documentation and dott
     const file = p => path.join(root, p);
     const cases = [
       ['src/prototypes/sam/flow.v1/main.tsx', 'src/platform/app/router.tsx', false],
+      ['src/prototypes/sam/flow.v1/main.tsx', 'src/platform/node/lib/helper.js', false],
+      ['src/prototypes/sam/flow.v1/main.tsx', 'src/prototypes/sam/other/main.tsx', false],
+      ['src/prototypes/sam/flow.v1/main.tsx', 'src/lib/shared.ts', true],
       ['src/prototypes/sam/flow.v1/main.tsx', 'src/systems/studio/components/button.tsx', false],
       ['src/prototypes/sam/flow.v1/main.tsx', 'src/prototypes/sam/flow.v1/_helper.ts', true],
       ['src/prototypes/sam/flow.v1/main.tsx', 'src/systems/product/components/button.tsx', true],
@@ -56,6 +59,13 @@ test('runtime dependency scopes reject indirect, private, documentation and dott
     ];
     for (const [from, to, allowed] of cases)
       assert.equal(policy.problem('./target', file(from), file(to)) === null, allowed, `${from} → ${to}`);
+    write(root, 'src/prototypes/sam/unassigned/meta.json', JSON.stringify({ systemId: null }));
+    const unassigned = file('src/prototypes/sam/unassigned/main.tsx');
+    assert.equal(policy.scopeOf(unassigned).system, null);
+    assert.match(
+      policy.problem('./target', unassigned, file('src/systems/product/components/button.tsx')),
+      /outside its runtime boundary/,
+    );
     const proto = file('src/prototypes/sam/flow.v1/main.tsx');
     assert.equal(policy.problem('@module/extra', proto, file('src/modules/extra/lib/index.ts')), null);
     assert.match(
