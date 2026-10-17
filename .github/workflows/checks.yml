@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       full_checks:
-        description: Run exhaustive release fixtures and upgrade rehearsals
+        description: Run exhaustive release fixtures
         type: boolean
         default: true
   workflow_call:
     inputs:
       full_checks:
-        description: Run exhaustive release fixtures and upgrade rehearsals
+        description: Run exhaustive release fixtures
         type: boolean
         default: false
 permissions:
@@ -51,10 +51,6 @@ jobs:
             node src/platform/node/check/check-scope.js --ci "$BASE_REF" "$HEAD_REF"
           fi
           node src/platform/node/check/check-asset-size.js --ci "$BASE_REF" "$HEAD_REF"
-      # Only the upstream project requires every path to be named in the ownership map; a studio's own files are its own.
-      - name: Check the ownership map covers every path
-        if: github.repository_id == '1401250166'
-        run: node src/platform/node/check/check-ownership.js --strict
       - name: Keep personal contributor files out of the starter and public demo
         if: github.repository_id == '1401250166'
         run: node src/platform/node/check/check-starter.js
@@ -115,51 +111,15 @@ jobs:
           STUDIO_BASE_PATH: ${{ github.repository_id == '1401250166' && '/design-studio-demo/' || '/' }}
           STUDIO_PUBLIC_URL: ${{ github.repository_id == '1401250166' && 'https://itspatmorgan.com/design-studio-demo/' || '' }}
       - run: pnpm build:inspect
-  # Exhaustive upgrade rehearsals run only on explicit full/manual checks; ordinary updater regressions remain in PRs.
-  upgrade:
-    name: Upgrade test
-    if: github.repository_id == '1401250166' && inputs.full_checks == true
-    runs-on: ubuntu-24.04
-    concurrency:
-      group: upgrade-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-      cancel-in-progress: true
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - uses: jdx/mise-action@v5
-      - name: Locate dependency store
-        id: store
-        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
-        with:
-          path: ${{ steps.store.outputs.path }}
-          key: pnpm-12-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', 'patches/**') }}
-      - run: pnpm install --frozen-lockfile
-      # Rehearse the actual command within the candidate foundation and, after launch, from the supported release.
-      - name: Rehearse the actual update command
-        run: |
-          node src/platform/node/check/upgrade-test.js
-          RELEASE=$(git tag --list 'v*' --sort=-v:refname | node --input-type=module -e "import fs from 'node:fs'; import {isSupportedRelease} from './src/platform/node/lib/release-versions.js'; console.log(fs.readFileSync(0,'utf8').trim().split('\n').find(tag => isSupportedRelease(tag)) ?? '')")
-          if [ -n "$RELEASE" ]; then
-            node src/platform/node/check/upgrade-test.js --from "$RELEASE"
-          fi
   # Keep the existing required check name. A successful bundle alone cannot pass it.
   build:
-    needs: [bundle, regressions, upgrade]
+    needs: [bundle, regressions]
     if: always()
     runs-on: ubuntu-24.04
     steps:
-      - name: Require bundle, regression, and upgrade success
+      - name: Require build and regression success
         env:
           BUNDLE_RESULT: ${{ needs.bundle.result }}
           REGRESSION_RESULT: ${{ needs.regressions.result }}
-          UPGRADE_RESULT: ${{ needs.upgrade.result }}
-          UPGRADE_REQUIRED: ${{ github.repository_id == '1401250166' && inputs.full_checks == true }}
         run: |
           test "$BUNDLE_RESULT" = success && test "$REGRESSION_RESULT" = success || exit 1
-          if [ "$UPGRADE_REQUIRED" = true ]; then
-            test "$UPGRADE_RESULT" = success || exit 1
-          fi

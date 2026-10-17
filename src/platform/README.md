@@ -28,12 +28,9 @@ All platform knowledge and requirements live together in `context/`:
 | Shared diagram rendering | [Diagrams and code formatting](context/diagrams.md) |
 | Implementation dependencies | [Technology stack](context/stack.md) |
 
-## Commands
+## Maintenance
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm studio update [version] [--dry-run]` | Take a newer Design Studio release on a `studio-update/v<version>` branch; `--continue` finishes one after its conflicts are resolved. See [Updating a studio](context/ownership.md#updating-a-studio). |
-
+[Manual upgrades](context/ownership.md#updating-a-studio) and [release acceptance](context/releasing.md) use ordinary Git and the project checks.
 
 ## Skills
 

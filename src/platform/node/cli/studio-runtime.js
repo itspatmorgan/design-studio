@@ -24,8 +24,6 @@ import { systemPackage, systemDependencyProblems } from '../lib/system-dependenc
 //   identity-audit [--json]             inspect existing/missing IDs, including retained types; never writes
 //   identify <prototype-folder> [--yes] assign missing IDs within one owned prototype
 //   check                             pnpm check, and what has changed from the original of a module you added
-//   update [version] [--dry-run]      take an upstream release on a new studio-update/v<version> branch;
-//   update --continue                 finish one after resolving conflicts (src/platform/node/cli/studio-update.js)
 // Dry runs read declarations as data. --yes trusts the source: its checks run after packages install.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -192,11 +190,7 @@ const checkInFreshProcess = () => {
 // ---- commands
 function list() {
   const lock = readLock();
-  say(
-    lock.platform
-      ? `Platform ${PLATFORM_VERSION}, from upstream release v${lock.platform.version} (${lock.platform.commit.slice(0, 7)})`
-      : `Platform ${PLATFORM_VERSION}; the upstream release is not recorded yet (pnpm studio update records it)`,
-  );
+  say(`Platform ${PLATFORM_VERSION}`);
   say();
   say('Modules');
   for (const [id, m] of Object.entries(MODULES)) {
@@ -933,7 +927,7 @@ const commands = {
 };
 if (!command || !Object.hasOwn(commands, command)) {
   console.error(
-    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'update', 'identity-audit', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
+    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'identity-audit', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
   );
   process.exit(command ? 1 : 0);
 }

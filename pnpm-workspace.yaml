@@ -6,7 +6,7 @@ hoist: false
 autoInstallPeers: false
 strictPeerDependencies: false # Studio checks shared React compatibility in system runtime graphs.
 sharedWorkspaceLockfile: true
-# Let update recovery run before regenerating dependencies after a resolved merge.
+# Keep command execution explicit; frozen installs in CI reject stale dependencies.
 verifyDepsBeforeRun: warn
 
 patchedDependencies:

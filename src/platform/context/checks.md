@@ -16,12 +16,10 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | `pnpm build:release` | Full regression suite followed by the production build. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |
 | `pnpm format` / `pnpm format:check` | Format upstream code, JSON and CSS with Biome, or check that it is formatted. Team and seed paths, generated files and `studio.config.json` are excluded. CI runs the check. |
-| `pnpm studio update [version]` | Take an upstream release on its own branch, then run `pnpm check` and `pnpm build`. See [Updating a studio](ownership.md#updating-a-studio). |
-| `node src/platform/node/check/upgrade-test.js` | Rehearse the actual update command using isolated synthetic releases and a customized studio. Checks dry-run invariants, complete ownership and receipt preservation, conflict/continue, failed-check reporting, and frozen install/check/build. Use `--working` before committing, `--from <public-tag>` for a supported source release, and `--keep` to inspect fixtures. |
 | GitHub pull request | Scope review, asset sizes, ordinary regressions, and one production build. Platform proposals are flagged for review. |
 | Push to `main` | Scope authorization, asset sizes, regressions, and production build. Platform changes require an admin or maintainer role. |
 
-Ordinary builds use the same command in source clones and installed studios. Publishing does not rerun maintainer regressions. CI requires `scope` and `build`; the latter includes ordinary regressions and production compilation. Explicit full checks also require upgrade acceptance in the upstream repository. A failed, cancelled, or unexpectedly skipped required job fails the gate. Copies choose their own CI and publishing policy.
+Ordinary builds use the same command in source clones and installed studios. Publishing does not rerun maintainer regressions. CI requires `scope` and `build`; the latter includes ordinary regressions and production compilation. A failed, cancelled, or unexpectedly skipped required job fails the gate. Copies choose their own CI and publishing policy.
 
 The [checks workflow](../../../.github/workflows/checks.yml) defines job dependencies. [Releasing](releasing.md) owns candidate acceptance; [project publishing](releasing.md#project-repository-publishing) owns this repository's deployment.
 
@@ -31,7 +29,7 @@ See [Personal & team use](/documentation/manual/team) for how these checks fit t
 
 ## Ownership map
 
-See [Ownership and updates](ownership.md#path-map) for path tiers, unlisted files, and strict upstream validation. This check reads tracked paths and the ownership map, independently of contributor scope. A non-Git folder skips it.
+[Ownership and updates](ownership.md#path-map) documents maintenance responsibilities. Git upgrades are reviewed manually; there is no machine-readable ownership map or path-coverage check. Contributor permission and identity checks remain independent.
 
 ## Platform contract
 
@@ -39,7 +37,7 @@ The public entry files under `src/platform/api/` and their TypeScript declaratio
 
 ## Minimum sufficient verification
 
-Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, ownership, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
+Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. Tests and the production build run concurrently; deployment reuses that build output.
 
 Tests are discovered directly under the platform and registered module roots. Ordinary CI runs `pnpm test`; explicit full checks run `pnpm test:release`. Optional module removal removes its tests from discovery. An empty test inventory fails verification. No catalog or change-selection rules need maintenance.
 

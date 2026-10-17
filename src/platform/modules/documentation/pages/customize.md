@@ -54,21 +54,9 @@ Studio checks which environment a feature runs in: the browser application, loca
 
 New versions of Design Studio come out as numbered releases, such as 0.2.1. Your studio doesn't change on its own: you choose when to take a release, and your work stays yours.
 
-Ask your agent to update your studio. It runs `pnpm studio update`, which:
+Ask your agent to review a chosen release on a separate Git branch. It will preserve your current work, inspect the release notes and merge, reconcile conflicts and dependencies, then verify the studio before you adopt the branch.
 
-1. Checks that your work is saved in Git. Commit your changes first.
-2. Finds the newest release. You can ask for a specific one instead.
-3. Makes a separate branch for the update, named after the release, so the version you are working on stays exactly as it was.
-4. Brings the release's changes into that branch. Your prototypes, contributors, systems, settings, and your own modules are kept as you left them.
-5. Checks that the studio still works and builds.
-
-You can ask your agent for a preview first: it shows which release you would get and which files you changed that the release changes too, without changing anything.
-
-If you or your agent changed a part of Studio that the release also changed, the update stops and lists those files. Your agent can help you decide what to keep from each side, or cancel the update and leave everything as it was. Keeping your changes to your own systems, prototypes, settings, and modules, rather than Studio's own code, makes updates smooth.
-
-When the update finishes, try your studio on the update branch. When you're happy, merge the branch into your own (in a team, through a pull request). Your studio records which release it is on, so the next update knows where to start.
-
-The first time, your agent may need to connect your studio to the Design Studio project with `git remote add upstream https://github.com/itspatmorgan/design-studio.git`; the update command says so. Your agent can use the [ownership map](/documentation/context/platform.core/context/ownership) for the details.
+Upgrades use ordinary Git. Your agent must review changes to prototypes, contributors, systems, settings, and modules even when Git merges them without a conflict; there is no automatic preservation policy. Keep a saved revision so you can review or undo the upgrade. See [manual upgrade guidance](/documentation/context/platform.core/context/ownership#updating-a-studio).
 
 ## Where do I add guidance for my agent?
 

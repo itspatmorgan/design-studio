@@ -52,8 +52,6 @@ import {
 } from '../../modules/systems/node/systems.js';
 import { changesFromLock } from '../lib/lock.js';
 import { readContributors } from '../lib/contributors.js';
-import { ownershipReport } from '../lib/ownership.js';
-import { ownershipFails, printOwnership } from './check-ownership.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const problems = declarationProblems();
@@ -260,22 +258,6 @@ for (const m of specs) {
     console.log(
       `[modules] The ${m.id} module needs platform ${m.requires} or newer, and this is ${PLATFORM_VERSION}, so it is off. Update the platform to use it.`,
     );
-}
-
-// Ownership map coverage: an unknown or conflicting path fails the check (src/platform/context/ownership.md).
-// The tracked paths come from Git, so a folder that is not a checkout (an unpacked archive, a test fixture) skips it.
-if (!fs.existsSync(path.join(ROOT, '.git'))) console.log('[ownership] skipped: this folder is not a Git checkout.');
-else {
-  try {
-    const report = ownershipReport(ROOT);
-    printOwnership(report);
-    if (ownershipFails(report))
-      problems.push(
-        'The ownership map (.studio/ownership.json) is incomplete or conflicting; see the [ownership] lines above.',
-      );
-  } catch (e) {
-    problems.push(`The ownership map could not be checked (${e.message}).`);
-  }
 }
 
 if (problems.length) {
