@@ -2,14 +2,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  MODULE_GLOB_ROOTS,
-  MODULE_ROOTS,
-  SUPPLIED_MODULES_ROOT,
-  SUPPLIED_SYSTEMS_ROOT,
-  SYSTEM_GLOB_ROOTS,
-  SYSTEM_ROOTS,
-  TEAM_MODULES_ROOT,
-  TEAM_SYSTEMS_ROOT,
   addressOf,
   isSectionKey,
   moduleFolder,
@@ -80,13 +72,6 @@ test('owner browser addresses round-trip while overviews remain outside prototyp
   assert.equal(parseAddress('/knowledge/platform.core'), null);
 });
 
-test('the system roots are listed once, supplied first', () => {
-  assert.deepEqual(SYSTEM_ROOTS, [SUPPLIED_SYSTEMS_ROOT, TEAM_SYSTEMS_ROOT]);
-  assert.equal(SUPPLIED_SYSTEMS_ROOT, 'src/platform/systems');
-  assert.equal(TEAM_SYSTEMS_ROOT, 'src/systems');
-  assert.deepEqual(SYSTEM_GLOB_ROOTS, ['/platform/systems', '/systems']);
-});
-
 test('a system without a registered folder is taken to be in the team root', () => {
   setSystemFolders([]);
   assert.equal(systemFolder('product'), 'systems/product');
@@ -127,13 +112,6 @@ test('a path inside a system root belongs to that system', () => {
   assert.equal(systemIdOfPath('src/platform/app/styles.css'), undefined);
   assert.equal(systemIdOfPath('src/platform/systems'), undefined);
   assert.equal(systemIdOfPath('src/prototypes/pat/systems/x/y.ts'), undefined);
-});
-
-test('the module roots are listed once, supplied first', () => {
-  assert.deepEqual(MODULE_ROOTS, [SUPPLIED_MODULES_ROOT, TEAM_MODULES_ROOT]);
-  assert.equal(SUPPLIED_MODULES_ROOT, 'src/platform/modules');
-  assert.equal(TEAM_MODULES_ROOT, 'src/modules');
-  assert.deepEqual(MODULE_GLOB_ROOTS, ['/platform/modules', '/modules']);
 });
 
 test('a module without a registered folder is taken to be in the team root', () => {

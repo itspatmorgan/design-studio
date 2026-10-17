@@ -8,7 +8,7 @@ Design Studio maintains file-based context and skills. The host discovers skill 
 
 ## Find the owner
 
-[Responsibilities](contracts-and-instructions.md) defines owners and canonical locations. The [platform README](../README.md) indexes shared knowledge; implementation lives in `core/`, `app/`, and `modules/` (the supplied modules).
+[Documentation ownership](documentation-standards.md#ownership) defines owners and canonical locations. The [platform README](../README.md) indexes shared knowledge; implementation lives in `core/`, `app/`, and `modules/` (the supplied modules).
 
 The Documentation surface offers Manual and Context and Skills. The latter shows one tree grouped by Platform and Modules and reads original files at `/documentation/context/<owner>`. Each system exposes its own Context and Skills beside Theme and Components at `/systems/<system-id>/`. The scopes read canonical files without copying them. The platform and module browser lists documents directly beneath each owner and offers source editing rather than asset management. Prototype and system routes use permanent IDs without readable-route aliases.
 
@@ -16,7 +16,7 @@ The Documentation surface offers Manual and Context and Skills. The latter shows
 
 Root `AGENTS.md` is generated from `src/platform/AGENTS.md`, the module routing block, and the team's `AGENTS.team.md`; edit those sources, not the output. It routes to [working context](working-in-studio.md). Essential requirements cover preservation, contributor scope, assignment, enabled capabilities, and verification. Full [Principles](principles.md) and [Personas](personas.md) apply to platform product and architecture decisions. Studio interface work follows its system entry point and writing context.
 
-[Responsibilities](contracts-and-instructions.md) defines canonical ownership. Enabled modules declare optional task routes through module-relative `instructions: [{ path, when }]`. `pnpm studio sync` regenerates root `AGENTS.md` (including the `studio:modules` block) and native project skill exposure. Adding, removing, and configuring capabilities invokes synchronization; development startup also synchronizes. A build validates sources without rewriting adapters.
+[Documentation ownership](documentation-standards.md#ownership) defines canonical ownership. Enabled modules declare optional task routes through module-relative `instructions: [{ path, when }]`. `pnpm studio sync` regenerates root `AGENTS.md` (including the `studio:modules` block) and native project skill exposure. Adding, removing, and configuring capabilities invokes synchronization; development startup also synchronizes. A build validates sources without rewriting adapters.
 
 ## Resolve a prototype's system
 

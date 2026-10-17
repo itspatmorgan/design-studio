@@ -1,6 +1,6 @@
 ---
 name: studio-platform-maintain-documentation
-description: "Revise owner READMEs, coordinate Manual updates, or audit relevance and consistency across contracts, context, and skills. Use maintain-context to author context or task procedures."
+description: "Author or audit READMEs, context, and task skills for the platform, modules, and systems; coordinate human Manual updates."
 ---
 
 <!-- studio:generated-skill -->

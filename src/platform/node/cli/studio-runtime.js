@@ -4,37 +4,30 @@ import { planSystemLifecycle, applySystemLifecycle } from '../lib/system-lifecyc
 import { prototypeContext } from '../lib/prototype-context.js';
 import { resourceId } from '../../core/resourceIdentity.ts';
 import { moduleConsumers } from '../lib/imports.js';
-import { systemPackage, systemDependencyProblems } from '../lib/system-dependencies.js';
-// pnpm studio <command>: add, remove, turn on or off, and make modules and design systems. For your agent: designers
+// pnpm studio <command>: configure, scaffold, and manage local modules and systems. For your agent: designers
 // ask in plain words and the agent runs these. Every command that changes files says what it will do first, and
 // changes nothing until it is run again with --yes.
 //
 //   list                              what is installed, and what is on
 //   enable <module> / disable <module>   turn an optional module on or off in studio.config.json (its files stay)
-//   add <source> [--path <dir>] [--id <name>] [--yes] [--allow-license]
-//                                     add a module or design system from a folder, a git address (https or ssh,
-//                                     with an optional #branch, tag or commit), or an https .tar.gz
 //   remove <module|system> [--content] [--yes] [--force]
 //                                     delete a module (its prototypes' content is kept unless --content) or a system
-//   create-module <id> [--label <name>] [--out <folder>]
-//   create-system <id> [--label <name>] [--out <folder>]
-//                                     start a new one; with --out, as a pack in that folder to publish
+//   create-module <id> [--label <name>]
+//   create-system <id> [--label <name>]
+//                                     scaffold one in the local team root
 //   sync [--check]                    synchronize routing and project skills; --check never writes
 //   context <prototype-folder> [--json] inspect assignment, rebuild target, scope, and guidance paths; never writes
 //   identity-audit [--json]             inspect existing/missing IDs, including retained types; never writes
 //   identify <prototype-folder> [--yes] assign missing IDs within one owned prototype
-//   check                             pnpm check, and what has changed from the original of a module you added
-//   update [version] [--dry-run]      take an upstream release on a new studio-update/v<version> branch;
-//   update --continue                 finish one after resolving conflicts (src/platform/node/cli/studio-update.js)
-// Dry runs read declarations as data. --yes trusts the source: its checks run after packages install.
+//   check                             validate the local studio
+// Preview local scaffolds and destructive changes before applying with --yes.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-skills.js';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { compatible, listProblems, moduleProblems, PLATFORM_VERSION } from '../../core/modules/index.ts';
-import { licenseVerdict, packPlan, parseSource, readDeclaration } from '../../core/modules/pack.ts';
-import { systemProblems } from '../../modules/systems/spec.ts';
+import { fileURLToPath } from 'node:url';
+import { compatible, PLATFORM_VERSION } from '../../core/modules/index.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { MODULES, ENABLED_MODULES, CONFIG } from '../lib/modules.js';
 import {
   PLATFORM_ID,
@@ -50,7 +43,6 @@ import { applySetupChanges, editDeclaration } from '../lib/studio-setup.js';
 import { planSettings } from '../lib/studio-settings.js';
 import { renderAgents } from '../lib/agents-file.js';
 import { resolveContributor } from './resolve-contributor.js';
-import { fetchSource, walk } from '../lib/fetch-source.js';
 import { loadContributors } from '../lib/contributors.js';
 import {
   SUPPLIED_MODULES_ROOT,
@@ -60,7 +52,6 @@ import {
 } from '../../core/roots.ts';
 import { moduleDirOf, moduleFolderTaken, newModuleDir } from '../lib/module-folders.js';
 import { newSystemDir, systemDirOf, systemFolderTaken } from '../lib/system-folders.js';
-import { changesFromLock, hashFile, readLock, writeLock } from '../lib/lock.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 const rel = (...parts) => path.join(ROOT, ...parts);
@@ -79,33 +70,9 @@ const positional = [];
 for (let i = 0; i < rest.length; i++) {
   const a = rest[i];
   if (a === '--') continue;
-  if (
-    [
-      '--yes',
-      '--content',
-      '--force',
-      '--allow-license',
-      '--json',
-      '--check',
-      '--restore-prototypes',
-      '--recovery',
-    ].includes(a)
-  )
+  if (['--yes', '--content', '--force', '--json', '--check', '--restore-prototypes', '--recovery'].includes(a))
     flags[a.slice(2)] = true;
-  else if (
-    [
-      '--path',
-      '--id',
-      '--label',
-      '--out',
-      '--name',
-      '--tagline',
-      '--usage',
-      '--system',
-      '--admins',
-      '--maintainers',
-    ].includes(a)
-  ) {
+  else if (['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers'].includes(a)) {
     flags[a.slice(2)] = rest[++i];
     if (flags[a.slice(2)] === undefined) fail(`${a} needs a value.`);
   } else if (a.startsWith('--')) fail(`Unknown option ${a}.`);
@@ -126,7 +93,7 @@ const slug = text =>
     .replace(/^-+|-+$/g, '')
     .replace(/^[^a-z]+/, '');
 
-// ---- places that must never be deleted, whatever a pack or a flag says
+// ---- places that must never be deleted, whatever a command or a flag says
 const PROTECTED = new Set([
   'src',
   'src/platform',
@@ -180,9 +147,9 @@ const syncSkills = () => {
   say(`Project skills synchronized (Codex, Cursor, Claude Code; ${result.changed} changes).`);
 };
 const syncInFreshProcess = () => run('node', ['src/platform/node/cli/studio.js', 'sync']);
-const checkInFreshProcess = () => {
+const checkInFreshProcess = (onSuccess = () => {}) => {
   try {
-    run('node', ['src/platform/node/check/check-modules.js']);
+    onSuccess(run('node', ['src/platform/node/check/check-modules.js']).trim());
     return null;
   } catch (e) {
     return `${e.stderr ?? ''}${e.stdout ?? ''}`.trim();
@@ -191,12 +158,7 @@ const checkInFreshProcess = () => {
 
 // ---- commands
 function list() {
-  const lock = readLock();
-  say(
-    lock.platform
-      ? `Platform ${PLATFORM_VERSION}, from upstream release v${lock.platform.version} (${lock.platform.commit.slice(0, 7)})`
-      : `Platform ${PLATFORM_VERSION}; the upstream release is not recorded yet (pnpm studio update records it)`,
-  );
+  say(`Platform ${PLATFORM_VERSION}`);
   say();
   say('Modules');
   for (const [id, m] of Object.entries(MODULES)) {
@@ -209,15 +171,13 @@ function list() {
         : !compatible(m)
           ? `off (needs platform ${m.requires})`
           : 'on';
-    const where = lock.modules[id] ? `added from ${lock.modules[id].source}` : 'came with the kit';
-    say(`  ${id.padEnd(12)} ${state.padEnd(8)} ${m.optional ? 'can be turned off' : 'required         '}  ${where}`);
+    say(`  ${id.padEnd(12)} ${state.padEnd(8)} ${m.optional ? 'can be turned off' : 'required         '}`);
     if (m.description) say(`               ${m.description}`);
   }
   say();
   say('Systems');
   for (const id of [PLATFORM_ID, ...(CONFIG.systems ?? [])]) {
-    const where = lock.systems[id] ? `added from ${lock.systems[id].source}` : 'came with the kit';
-    say(`  ${id.padEnd(12)} ${id === DEFAULT_SYSTEM ? 'default ' : '        '} ${where}`);
+    say(`  ${id.padEnd(12)} ${id === DEFAULT_SYSTEM ? 'default ' : '        '}`);
   }
 }
 
@@ -271,215 +231,6 @@ function registerCapability(kind, id, present, remember = () => {}) {
   fs.writeFileSync(file, serializeConfig(next));
 }
 
-async function add() {
-  if (positional.length !== 1) fail('Usage: pnpm studio add <source> [--path <folder>] [--id <name>] [--yes]');
-  const source = parseSource(positional[0]);
-  if ('error' in source) fail(source.error);
-  say(`Getting ${positional[0]} ...`);
-  let pack;
-  try {
-    pack = await fetchSource(source, flags.path);
-  } catch (e) {
-    fail(e.message);
-  }
-  const created = []; // files this run wrote
-  let createdSystem;
-  const backups = new Map(); // text of files to put back if it goes wrong
-  const remember = file => {
-    if (!backups.has(file)) backups.set(file, fs.existsSync(file) ? fs.readFileSync(file) : null);
-  };
-  try {
-    const files = walk(pack.dir);
-    const names = files.map(f => f.rel);
-    const hasModule = names.includes('module.ts'),
-      hasSystem = names.includes('system.ts');
-    if (hasModule === hasSystem)
-      fail(
-        hasModule
-          ? 'That has both a module.ts and a system.ts. A pack is one or the other.'
-          : "That isn't a module or a design system: it has no module.ts or system.ts at its top.",
-      );
-    const kind = hasModule ? 'module' : 'system';
-    const declared = readDeclaration(
-      fs.readFileSync(path.join(pack.dir, hasModule ? 'module.ts' : 'system.ts'), 'utf8'),
-    );
-    if ('error' in declared) fail(`${hasModule ? 'module.ts' : 'system.ts'}: ${declared.error}`);
-    const spec = declared.value;
-    const id = kind === 'module' ? spec.id : (flags.id ?? slug(spec.label ?? ''));
-    if (typeof id !== 'string' || !ID.test(id))
-      fail(
-        kind === 'module'
-          ? 'module.ts needs an id: lowercase letters, numbers, and dashes.'
-          : 'Give the system an id with --id <name>: lowercase letters, numbers, and dashes.',
-      );
-    const problems = kind === 'module' ? moduleProblems(spec, id) : systemProblems(spec, id);
-    if (kind === 'system') problems.push(...systemDependencyProblems(ROOT, { [id]: { ...spec, dir: pack.dir } }));
-    if (kind === 'module' && !compatible(spec))
-      problems.push(
-        `It needs platform ${spec.requires} or newer, and this is ${PLATFORM_VERSION}. Update the platform first.`,
-      );
-    const installed = kind === 'module' ? moduleFolderTaken(ROOT, id) : systemFolderTaken(ROOT, id);
-    if (installed)
-      problems.push(
-        kind === 'module' && fs.existsSync(rel(SUPPLIED_MODULES_ROOT, id))
-          ? `There's already a module called "${id}", and it ships with the starter in ${SUPPLIED_MODULES_ROOT}/. A team module can't reuse a supplied module's id: add this one with another id.`
-          : `There's already a ${kind === 'module' ? 'module' : 'design system'} called "${id}". Remove it first (pnpm studio remove ${id}), or add this one with another id.`,
-      );
-    if (kind === 'module')
-      problems.push(
-        ...listProblems([...Object.values(MODULES).filter(m => m && typeof m === 'object'), spec]).filter(
-          p => p.includes(`"${spec.section?.key}"`) || p.includes(` ${id} `),
-        ),
-      );
-    if (kind === 'system' && spec.role === 'platform')
-      problems.push(
-        'The application already has a required Studio system. Added systems must declare role: prototype.',
-      );
-    const plan = packPlan(kind, id, spec, names, PLATFORM_ID);
-    problems.push(...plan.problems);
-    const licenseFile = names.some(n => /^licen[sc]e(\.[a-z]+)?$/i.test(n));
-    const verdict = licenseVerdict(spec, licenseFile);
-    if (verdict === 'none')
-      problems.push(
-        `It says it is built on ${spec.upstream?.repo}, but has ${licenseFile ? 'no usable license' : 'no LICENSE file'}. Without the library's license you can't use it.`,
-      );
-    if (verdict === 'not-permissive' && !flags['allow-license'])
-      problems.push(
-        `Its library is under ${spec.upstream.license}, which isn't one of the permissive licenses (MIT, Apache-2.0, BSD, ISC, and similar). If your company says it's fine, add --allow-license.`,
-      );
-    const taken = plan.moves.filter(m => fs.existsSync(rel(m.to)) && !m.to.startsWith(`${spec.section?.folder}/`));
-    for (const m of taken) problems.push(`${m.to} already exists, and a module never overwrites a file.`);
-    const deps = Object.entries(
-      kind === 'system' ? (systemPackage(pack.dir).dependencies ?? {}) : (spec.dependencies ?? {}),
-    );
-    const pkg = JSON.parse(fs.readFileSync(rel('package.json'), 'utf8'));
-    const needed = deps.filter(
-      ([name]) => !(name in (pkg.dependencies ?? {})) && !(name in (pkg.devDependencies ?? {})),
-    );
-
-    // The review.
-    say();
-    say(
-      `${kind === 'module' ? 'Module' : 'Design system'}: ${spec.label} (${id})${spec.version ? ` ${spec.version}` : ''}`,
-    );
-    if (spec.description) say(spec.description);
-    say(`From: ${pack.origin.source}${pack.origin.ref ? ` at ${pack.origin.ref.slice(0, 12)}` : ''}`);
-    if (spec.upstream)
-      say(
-        `Built on ${spec.upstream.repo} ${spec.upstream.version}, ${spec.upstream.license}${verdict === 'ok' ? ' (permissive)' : ''}`,
-      );
-    say();
-    say(`It would add ${plan.moves.length} file(s):`);
-    const dirs = new Map();
-    for (const m of plan.moves) {
-      const d = path.posix.dirname(m.to);
-      dirs.set(d, (dirs.get(d) ?? 0) + 1);
-    }
-    for (const [d, n] of dirs) say(`  ${d}/   ${n} file(s)`);
-    if (kind === 'module') {
-      const provides = [];
-      if (spec.section)
-        provides.push(
-          `a page at /${spec.section.key}${spec.section.items ? ` (items in ${spec.section.folder})` : ''}`,
-        );
-      if (names.includes('app.tsx')) provides.push('a rail button and routes');
-      if (names.includes('server.ts')) provides.push('routes on the dev server');
-      if (spec.lib) provides.push(`a library prototypes import as @module/${id}`);
-      if (names.includes('check.ts')) provides.push('a check in pnpm check');
-      if (spec.instructions?.length)
-        provides.push(`${spec.instructions.length} platform instruction file(s) for agents`);
-      say(`It provides: ${provides.join('; ') || 'nothing yet'}.`);
-      say(`${spec.optional ? 'It can be turned off in studio.config.json.' : 'It cannot be turned off.'}`);
-    }
-    if (deps.length)
-      say(
-        `It needs npm packages: ${deps.map(([n, v]) => `${n}@${v}${needed.some(([x]) => x === n) ? '' : ' (already installed)'}`).join(', ')}. ${needed.length ? 'They are installed only if you say yes, with install scripts off.' : ''}`,
-      );
-    if (plan.skipped.length) say(`Left behind: ${plan.skipped.length} hidden or dependency file(s).`);
-    say(`Registration: studio.config.json ${kind === 'module' ? `modules.${id}: true` : `systems includes ${id}`}.`);
-    say('Everything it adds is code that will run in your app and your dev server, so read it before you say yes.');
-    if (names.includes('check.ts'))
-      say('With --yes, its check.ts runs on your computer during installation, after its packages are installed.');
-    if (problems.length) {
-      say();
-      for (const p of problems) console.error(`Can't add it: ${p}`);
-      process.exit(1);
-    }
-    if (!flags.yes) {
-      say();
-      say(`Nothing was changed. To add it, run the same command with --yes.`);
-      return;
-    }
-
-    // The package ID describes its source; this ID identifies this installation.
-    const installationId =
-      kind === 'system' ? allocateResourceIdentity(retainedResourceIds(ROOT, INSTALLED_FILE_TYPES)) : undefined;
-    if (kind === 'system') createdSystem = rel(newSystemDir(id));
-    // Add it.
-    for (const m of plan.moves) {
-      const to = rel(m.to);
-      if (fs.existsSync(to)) continue; // content that was already there stays
-      fs.mkdirSync(path.dirname(to), { recursive: true });
-      if (kind === 'system' && m.from === 'system.ts')
-        fs.writeFileSync(
-          to,
-          editDeclaration(fs.readFileSync(path.join(pack.dir, m.from), 'utf8'), { studioId: installationId }),
-        );
-      else if (kind === 'system' && m.from === 'package.json')
-        fs.writeFileSync(
-          to,
-          JSON.stringify({ ...systemPackage(pack.dir), name: `@studio-system/${installationId}` }, null, 2) + '\n',
-        );
-      else fs.copyFileSync(path.join(pack.dir, m.from), to);
-      created.push(to);
-    }
-    const lock = readLock();
-    remember(rel('studio.lock.json'));
-    remember(rel('AGENTS.md'));
-    remember(rel('package.json'));
-    remember(rel('pnpm-lock.yaml'));
-    const entry = {
-      kind,
-      version: spec.version ?? null,
-      source: pack.origin.source,
-      ...(pack.origin.ref && { ref: pack.origin.ref }),
-      ...(spec.upstream && { upstream: spec.upstream }),
-      files: Object.fromEntries(
-        plan.moves.filter(m => created.includes(rel(m.to))).map(m => [m.to, hashFile(rel(m.to))]),
-      ),
-    };
-    lock[kind === 'module' ? 'modules' : 'systems'][id] = entry;
-    writeLock(lock);
-    if (kind === 'system') {
-      say('Installing this system’s workspace dependencies ...');
-      run('pnpm', ['install', '--ignore-scripts', '--no-frozen-lockfile']);
-    } else if (needed.length) {
-      say(`Installing ${needed.map(([n]) => n).join(', ')} ...`);
-      run('pnpm', ['add', '--workspace-root', '--ignore-scripts', ...needed.map(([n, v]) => `${n}@${v}`)]);
-    }
-    registerCapability(kind, id, true, remember);
-    const problem = checkInFreshProcess();
-    if (problem) throw new Error(`It didn't pass the checks:\n${problem}`);
-    syncInFreshProcess();
-    say(`Added ${spec.label}. Restart the dev server to see it.`);
-  } catch (e) {
-    for (const file of created.reverse()) {
-      fs.rmSync(file, { force: true });
-      removeEmptyParents(file);
-    }
-    // Failed workspace installation can leave dependency links in a newly created system.
-    if (createdSystem) fs.rmSync(createdSystem, { recursive: true, force: true });
-    for (const [file, content] of backups) {
-      if (content === null) fs.rmSync(file, { force: true });
-      else fs.writeFileSync(file, content);
-    }
-    console.error(`Nothing was added. ${e.message}`);
-    process.exitCode = 1;
-  } finally {
-    pack.cleanup();
-  }
-}
-
 function lifecycle(action) {
   if (
     flags.yes &&
@@ -519,26 +270,9 @@ function lifecycle(action) {
   const marker = rel('.studio-system-operation');
   const markerFd = fs.openSync(marker, 'wx');
   fs.closeSync(markerFd);
-  const lockBefore = fs.existsSync(rel('studio.lock.json')) ? fs.readFileSync(rel('studio.lock.json'), 'utf8') : null;
   const packageLockBefore = fs.readFileSync(rel('pnpm-lock.yaml'));
   try {
     const result = applySystemLifecycle(plan, () => {
-      const lock = readLock();
-      const entry = lock.systems[positional[0]];
-      if (entry && action === 'rename' && plan.id !== positional[0]) {
-        delete lock.systems[positional[0]];
-        lock.systems[plan.id] = {
-          ...entry,
-          files: Object.fromEntries(
-            Object.entries(entry.files ?? {}).map(([file, hash]) => [
-              file.replace(`${TEAM_SYSTEMS_ROOT}/${positional[0]}/`, `${TEAM_SYSTEMS_ROOT}/${plan.id}/`),
-              hash,
-            ]),
-          ),
-        };
-      }
-      if (action === 'delete') delete lock.systems[positional[0]];
-      writeLock(lock);
       if (plan.move || plan.remove)
         run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
       const problem = checkInFreshProcess();
@@ -548,8 +282,6 @@ function lifecycle(action) {
     say(JSON.stringify(result));
   } catch (error) {
     fs.writeFileSync(rel('pnpm-lock.yaml'), packageLockBefore);
-    if (lockBefore === null) fs.rmSync(rel('studio.lock.json'), { force: true });
-    else fs.writeFileSync(rel('studio.lock.json'), lockBefore);
     throw error;
   } finally {
     fs.rmSync(marker, { force: true });
@@ -678,9 +410,6 @@ function remove() {
     fs.rmSync(a, { recursive: true, force: true });
     removeEmptyParents(a);
   }
-  const lock = readLock();
-  delete lock[isModule ? 'modules' : 'systems'][id];
-  writeLock(lock);
   registerCapability(isModule ? 'module' : 'system', id, false);
   if (!isModule)
     run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
@@ -691,40 +420,24 @@ function remove() {
 function create(kind) {
   const [id] = positional;
   if (!id || !ID.test(id))
-    fail(
-      `Usage: pnpm studio create-${kind} <id> [--label <name>] [--out <folder>]. The id is lowercase letters, numbers, and dashes.`,
-    );
+    fail(`Usage: pnpm studio create-${kind} <id> [--label <name>]. The id is lowercase letters, numbers, and dashes.`);
   const label = flags.label ?? titleOf(id);
   if (/[\n\r<>`$\\]/.test(label)) fail('The label should be plain text.');
   const template = rel('src', 'platform', 'node', 'templates', kind);
   // A new module requires the platform it was made with, so a release never edits the template.
   const fill = text =>
     text.replaceAll('__ID__', id).replaceAll('__LABEL__', label).replaceAll('__REQUIRES__', PLATFORM_VERSION);
-  const templateFiles = walk(template).map(f => f.rel);
-  const sourceOf = new Map(templateFiles.map(f => [fill(f), f])); // a file's name has the id in it too
-  const files = templateFiles.map(fill);
-  if (flags.out) {
-    // A pack in its own folder, to publish.
-    const out = path.resolve(flags.out);
-    if (fs.existsSync(out) && fs.readdirSync(out).length) fail(`${out} isn't empty.`);
-    for (const file of files) say(`Create ${path.join(out, file)}`);
-    if (!flags.yes) {
-      say('Nothing written. Apply this scaffold with --yes.');
-      return;
-    }
-    for (const f of files) {
-      const to = path.join(out, f);
-      fs.mkdirSync(path.dirname(to), { recursive: true });
-      fs.writeFileSync(to, fill(fs.readFileSync(path.join(template, sourceOf.get(f)), 'utf8')));
-    }
-    say(
-      `Made the ${kind} in ${out}. Publish it as a git repository, then anyone can run: pnpm studio add <its address>`,
-    );
-    return;
-  }
-  const spec = readDeclaration(
-    fill(fs.readFileSync(path.join(template, kind === 'module' ? 'module.ts' : 'system.ts'), 'utf8')),
-  ).value;
+  const moves = fs
+    .readdirSync(template, { recursive: true, withFileTypes: true })
+    .filter(entry => entry.isFile())
+    .map(entry => {
+      const from = path.relative(template, path.join(entry.parentPath, entry.name));
+      const file = fill(from)
+        .split(path.sep)
+        .join('/')
+        .replace(/^instructions\//, '');
+      return { from, to: `${kind === 'module' ? newModuleDir(id) : newSystemDir(id)}/${file}` };
+    });
   if (kind === 'module' ? moduleFolderTaken(ROOT, id) : systemFolderTaken(ROOT, id))
     fail(
       kind === 'module' && fs.existsSync(rel(SUPPLIED_MODULES_ROOT, id))
@@ -733,9 +446,7 @@ function create(kind) {
     );
   if (kind === 'module' && SECTION_TAKEN(id))
     fail(`"${id}" is already the address of another module, or a contributor's folder. Choose another id.`);
-  const plan = packPlan(kind, id, spec, files, PLATFORM_ID);
-  if (plan.problems.length) fail(plan.problems.join('\n'));
-  for (const move of plan.moves) {
+  for (const move of moves) {
     if (fs.existsSync(rel(move.to))) fail(`${move.to} already exists.`);
     say(`Create ${move.to}`);
   }
@@ -750,15 +461,14 @@ function create(kind) {
   const backups = new Map();
   if (kind === 'system') backups.set(rel('pnpm-lock.yaml'), fs.readFileSync(rel('pnpm-lock.yaml')));
   try {
-    for (const m of plan.moves) {
+    for (const m of moves) {
       const to = rel(m.to);
       if (fs.existsSync(to)) throw new Error(`${m.to} already exists.`);
       fs.mkdirSync(path.dirname(to), { recursive: true });
-      const content = fill(fs.readFileSync(path.join(template, sourceOf.get(m.from)), 'utf8'));
+      const content = fill(fs.readFileSync(path.join(template, m.from), 'utf8'));
       let source = content;
-      if (kind === 'system' && sourceOf.get(m.from) === 'system.ts')
-        source = editDeclaration(content, { studioId: installationId });
-      if (kind === 'system' && sourceOf.get(m.from) === 'package.json') {
+      if (kind === 'system' && m.from === 'system.ts') source = editDeclaration(content, { studioId: installationId });
+      if (kind === 'system' && m.from === 'package.json') {
         const host = JSON.parse(fs.readFileSync(rel('package.json'), 'utf8'));
         source =
           JSON.stringify(
@@ -801,14 +511,8 @@ function SECTION_TAKEN(id) {
 }
 
 function check() {
-  const problem = checkInFreshProcess();
-  say(problem ?? run('node', ['src/platform/node/check/check-modules.js']).trim());
-  const changes = changesFromLock();
-  for (const c of changes) {
-    say(
-      `${c.kind} ${c.id}: ${c.changed.length ? `${c.changed.length} file(s) changed from the original (${c.changed[0]}${c.changed.length > 1 ? ', ...' : ''})` : ''}${c.changed.length && c.missing.length ? '; ' : ''}${c.missing.length ? `${c.missing.length} file(s) deleted` : ''}. That's yours to change; this just says where it differs.`,
-    );
-  }
+  const problem = checkInFreshProcess(say);
+  if (problem) say(problem);
   if (problem) process.exit(1);
 }
 
@@ -926,23 +630,19 @@ const commands = {
   'archive-system': () => lifecycle('archive'),
   'restore-system': () => lifecycle('restore'),
   'delete-system': () => lifecycle('delete'),
-  add,
   remove,
   'create-module': () => create('module'),
   'create-system': () => create('system'),
 };
 if (!command || !Object.hasOwn(commands, command)) {
   console.error(
-    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'update', 'identity-audit', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
+    `Usage: pnpm studio <command>\n  ${[...Object.keys(commands), 'identity-audit', 'identify'].join(', ')}\nSee the top of src/platform/node/cli/studio-runtime.js for what each does.`,
   );
   process.exit(command ? 1 : 0);
 }
 if (flags.recovery && command !== 'configure') fail('--recovery is only for explicit configuration setup or recovery.');
 const applies = flags.yes || ['enable', 'disable'].includes(command);
-const externalScaffold = ['create-module', 'create-system'].includes(command) && flags.out;
-const sharedChange =
-  ['configure', 'enable', 'disable', 'add', 'remove', 'create-module', 'create-system'].includes(command) &&
-  !externalScaffold;
+const sharedChange = ['configure', 'enable', 'disable', 'remove', 'create-module', 'create-system'].includes(command);
 if (
   applies &&
   sharedChange &&

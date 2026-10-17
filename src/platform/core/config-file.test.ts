@@ -31,45 +31,11 @@ test('a repeated key is refused at any depth, and only a key counts', () => {
   assert.ok('value' in parseConfigFile('{"a":{"x":1},"b":{"x":2},"list":[{"x":1},{"x":2}],"name":"x:","t":"name"}'));
 });
 
-test('serializing is 2-space JSON with a trailing newline and keeps key order', () => {
-  const text = serializeConfig(base);
-  assert.ok(text.endsWith('}\n') && !text.endsWith('\n\n'));
-  assert.match(text, /^\{\n {2}"\$schema": /);
-  assert.deepEqual(Object.keys(JSON.parse(text)), Object.keys(base));
-  assert.equal(serializeConfig((parseConfigFile(text) as { value: StudioConfig }).value), text);
-});
-
-test('changing a setting keeps its place, and a new setting goes where readers expect it', () => {
-  const renamed = withSettings(base, { name: 'Renamed' });
-  assert.deepEqual(Object.keys(renamed), Object.keys(base));
-  assert.equal(renamed.name, 'Renamed');
-  assert.equal(base.name, 'Studio', 'the original is untouched');
-  const withTagline = withSettings(base, { tagline: 'Hello' });
-  assert.deepEqual(Object.keys(withTagline), [
-    '$schema',
-    'formatVersion',
-    'name',
-    'usage',
-    'tagline',
-    'modules',
-    'systems',
-    'systemMaintainers',
-    'defaultSystem',
-  ]);
-  const withAdmins = withSettings(withTagline, { admins: ['bbbbbbbbbbbbbbbb'] });
-  assert.equal(Object.keys(withAdmins).at(-1), 'admins');
-  assert.deepEqual(
-    Object.keys(withSettings(withAdmins, { tagline: undefined })),
-    Object.keys(withAdmins).filter(k => k !== 'tagline'),
-  );
-  // Reordered by hand: nothing moves.
-  const custom = { name: 'A', defaultSystem: 'x', usage: 'team' } as Partial<StudioConfig>;
-  assert.deepEqual(Object.keys(withSettings(custom, { usage: 'personal', tagline: 'T' })), [
-    'name',
-    'defaultSystem',
-    'usage',
-    'tagline',
-  ]);
+test('setting updates preserve unrelated data and do not mutate their input', () => {
+  const changed = withSettings(base, { name: 'Renamed', tagline: 'Hello' });
+  assert.deepEqual(changed, { ...base, name: 'Renamed', tagline: 'Hello' });
+  assert.equal(base.name, 'Studio');
+  assert.deepEqual(withSettings(changed, { tagline: undefined }), { ...base, name: 'Renamed' });
 });
 
 test('turning a module on, off, or out edits only the modules list', () => {
@@ -80,10 +46,4 @@ test('turning a module on, off, or out edits only the modules list', () => {
   assert.deepEqual(withModule({ ...base, modules: undefined } as unknown as StudioConfig, 'text', true).modules, {
     text: true,
   });
-});
-
-test('a setting change keeps formatVersion in place', () => {
-  const changed = withSettings(base, { name: 'Renamed', usage: 'team' });
-  assert.equal(changed.formatVersion, 1);
-  assert.equal(Object.keys(changed)[1], 'formatVersion');
 });

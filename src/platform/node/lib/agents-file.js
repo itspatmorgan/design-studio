@@ -2,7 +2,7 @@
 // the team's own guidance (AGENTS.team.md). Everything that writes or checks it goes through here.
 import fs from 'node:fs';
 import path from 'node:path';
-import { agentsBlock, composeAgents } from '../../core/modules/pack.ts';
+import { agentsBlock, composeAgents } from '../../core/declarations.ts';
 
 export const PLATFORM_AGENTS = 'src/platform/AGENTS.md';
 export const TEAM_AGENTS = 'AGENTS.team.md';

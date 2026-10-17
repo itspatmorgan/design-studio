@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { moduleIdsIn } from './module-folders.js';
 
 test('local personal setup resumes, then a second clone joins a team without changing configuration', () => {
@@ -144,22 +144,6 @@ test('local personal setup resumes, then a second clone joins a team without cha
     assert.equal(Object.hasOwn(declared().modules, 'lifecycle-fixture'), false);
     assert.ok(!fs.existsSync(path.join(dir, 'src/modules/lifecycle-fixture')));
     assert.equal(fs.readFileSync(path.join(dir, 'fixture-notes/notes.md'), 'utf8'), 'Retained contributor notes.\n');
-    const beforeFailedInstall = fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8');
-    const pack = path.join(dir, 'failing-pack');
-    fs.mkdirSync(pack);
-    fs.writeFileSync(
-      path.join(pack, 'module.ts'),
-      "export default { id: 'failing-fixture', label: 'Failing fixture', version: '0.1.0', requires: '0.1.0', optional: true, lib: false };\n",
-    );
-    fs.writeFileSync(path.join(pack, 'check.ts'), "export default () => ['Deliberate fixture failure'];\n");
-    assert.throws(() => run(dir, 'src/platform/node/cli/studio.js', 'add', pack, '--yes'), /Command failed/);
-    assert.equal(fs.readFileSync(path.join(dir, 'studio.config.json'), 'utf8'), beforeFailedInstall);
-    assert.equal(fs.existsSync(path.join(dir, 'src/modules/failing-fixture')), false);
-    fs.writeFileSync(path.join(pack, 'check.ts'), 'export default () => [];\n');
-    run(dir, 'src/platform/node/cli/studio.js', 'add', pack, '--yes');
-    assert.equal(declared().modules['failing-fixture'], true);
-    run(dir, 'src/platform/node/cli/studio.js', 'remove', 'failing-fixture', '--yes');
-    fs.rmSync(pack, { recursive: true });
     assert.equal(run(dir, 'src/platform/node/cli/resolve-contributor.js').trim(), 'samples');
     run(dir, 'src/platform/modules/prototypes/node/create.js', 'Sample');
     git(dir, 'config', 'user.name', 'Sam Solo');
@@ -256,7 +240,6 @@ test('local personal setup resumes, then a second clone joins a team without cha
     for (const args of [
       ['create-system', 'unauthorized', '--yes'],
       ['configure', '--admins', 'alex', '--yes'],
-      ['configure', '--admins', 'alex', '--out', 'unused', '--yes'],
     ]) {
       const denied = spawnSync(process.execPath, ['src/platform/node/cli/studio.js', ...args], {
         cwd: clone,

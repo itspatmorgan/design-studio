@@ -177,7 +177,7 @@ for (const base of ['modules', 'platform/modules'])
     const toPlatform = base === 'modules' ? '../../../platform/README.md' : '../../../README.md';
     write('platform/README.md', '# Platform');
     write('platform/context/config.md', '# Configuration');
-    write(`${base}/example/README.md`, '# Example');
+    write(`${base}/example/README.md`, '---\ntitle: Example capability\n---\n# Example');
     write(`${base}/example/extra.md`, '# Additional contract');
     write(
       `${base}/example/context/configure.md`,
@@ -224,6 +224,11 @@ for (const base of ['modules', 'platform/modules'])
       refs.every(ref => ref.related.length === 1),
       'fenced and remote links must not add guidance',
     );
+    assert.equal(refs[0].title, 'Example capability');
+    assert.equal(refs[1].title, 'Additional contract');
+    assert.equal(refs[0].related[0].href, markdownPath(`/${base}/example/context/example.md`));
+    assert.equal(refs[1].related[0].href, markdownPath(`/${base}/example/context/configure.md`));
+    assert.equal(discover([]).find(group => group.id === 'example').enabled, false);
     assert.equal(markdownPath(refs[0].source), '/documentation/context/module.example');
     fs.rmSync(path.join(root, `src/${base}/example/README.md`));
     assert.deepEqual(

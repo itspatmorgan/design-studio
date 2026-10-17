@@ -1,5 +1,6 @@
+import { ArrowUpRight01Icon, HelpCircleIcon, Copy01Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, CircleHelp, Copy } from 'lucide-react';
 import { Button, buttonVariants } from '@/platform/systems/studio/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/platform/systems/studio/components/tabs';
 import { Textarea } from '@/platform/systems/studio/components/textarea';
@@ -72,7 +73,7 @@ export default function SystemSetup({ system, label }: Props) {
                     className={buttonVariants({ variant: 'default', size: 'sm' })}
                   >
                     Open shadcn builder
-                    <ArrowUpRight className='size-3' aria-hidden />
+                    <HugeiconsIcon icon={ArrowUpRight01Icon} className='size-3' aria-hidden />
                   </a>
                   <div>
                     <div className='mb-2 flex items-center gap-2'>
@@ -85,7 +86,7 @@ export default function SystemSetup({ system, label }: Props) {
                             <Button variant='ghost' size='icon-sm' aria-label='Where to find your shadcn preset' />
                           }
                         >
-                          <CircleHelp className='size-4' aria-hidden />
+                          <HugeiconsIcon icon={HelpCircleIcon} className='size-4' aria-hidden />
                         </TooltipTrigger>
                         <TooltipContent side='top' className='block max-w-64 p-3'>
                           <p className='mb-3 leading-5'>
@@ -178,7 +179,7 @@ export default function SystemSetup({ system, label }: Props) {
           {prompt}
         </p>
         <Button className='mt-4' onClick={() => void copy()}>
-          <Copy className='size-4' aria-hidden />
+          <HugeiconsIcon icon={Copy01Icon} className='size-4' aria-hidden />
           {copied ? 'Prompt copied' : 'Copy prompt'}
         </Button>
         <p role='status' className='mt-2 text-xs text-muted-foreground'>

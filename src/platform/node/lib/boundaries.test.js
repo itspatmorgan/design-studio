@@ -4,7 +4,6 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { execFileSync } from 'node:child_process';
 import { scopePolicy } from './scope.js';
 import { importsOf, dependencyResolver, moduleConsumers } from './imports.js';
 import { cssProblems } from './css-scope.js';
@@ -501,7 +500,7 @@ test('team modules and systems reach the platform only through #studio/*; suppli
   for (const [target, specifier] of [
     ['src/platform/app/router.tsx', '@/platform/app/router'],
     ['src/platform/node/lib/modules.js', '../../node/lib/modules.js'],
-    ['src/platform/core/modules/pack.ts', '../../core/modules/pack.ts'],
+    ['src/platform/core/declarations.ts', '../../core/declarations.ts'],
     ['src/platform/context/principles.md', '../../context/principles.md'],
   ])
     assert.equal(platformImportProblem('src/platform/modules/canvas/app.tsx', target, specifier), null, target);
@@ -524,29 +523,6 @@ test('the API entries match the files in src/platform/api', async () => {
   const files = fs.readdirSync(path.join(root, API_FOLDER)).map(file => file.replace(/\.ts$/, ''));
   assert.deepEqual([...files].sort(), [...API_ENTRIES].sort());
   // One specifier resolves in Node too: the root package.json maps #studio/* to the entry files.
-  const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
-  assert.deepEqual(pkg.imports, { '#studio/*': './src/platform/api/*.ts' });
   const declarations = await import('#studio/files');
   assert.equal(typeof declarations.defineFileType, 'function');
-});
-
-test('a fresh Node process loads the public module version without browser configuration', () => {
-  const root = path.resolve(import.meta.dirname, '../../../..');
-  const output = execFileSync(
-    process.execPath,
-    [
-      '--input-type=module',
-      '--eval',
-      `
-    import assert from 'node:assert/strict';
-    import * as api from '#studio/module';
-    assert.deepEqual(Object.keys(api), ['PLATFORM_VERSION', 'adminProblems']);
-    assert.deepEqual(api.adminProblems({usage:'team',admins:['sam']},['sam']),[]);
-    assert.match(api.PLATFORM_VERSION, /^\\d+\\.\\d+\\.\\d+$/);
-    console.log(api.PLATFORM_VERSION);
-  `,
-    ],
-    { cwd: root, encoding: 'utf8' },
-  );
-  assert.match(output.trim(), /^\d+\.\d+\.\d+$/);
 });

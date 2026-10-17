@@ -11,7 +11,7 @@ Honor enabled module declarations. A visible file or skill does not enable an un
 
 When changing behavioral declarations or scaffolds, follow [explicit declaration](principles.md#declare-what-the-system-provides): write defaults visibly and validate missing required fields.
 
-Use the [minimum sufficient verification policy](checks.md#minimum-sufficient-verification) to select regression groups for changed behavior and dependencies. Repeat passed checks only when new changes or unresolved failures justify it.
+Use the [minimum sufficient verification policy](checks.md#minimum-sufficient-verification) to choose checks for changed behavior and dependencies. Repeat passed checks only when new changes or unresolved failures justify it.
 
 Run `pnpm build` before committing completed changes. Fix reported type, boundary, and asset errors rather than suppressing checks. Inspect rendered results for interface or prototype changes. When adding or changing static assets, follow the [asset convention and guard](assets.md).
 

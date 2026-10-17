@@ -17,8 +17,7 @@
       "!src/prototypes",
       "!src/systems/*/**",
       "!src/modules",
-      "!src/platform/node/templates",
-      "!src/platform/core/contract.snapshot.json"
+      "!src/platform/node/templates"
     ]
   },
   "formatter": {

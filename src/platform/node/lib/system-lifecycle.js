@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { readDeclaration } from '../../core/modules/pack.ts';
+import { readDeclaration } from '../../core/declarations.ts';
 import { editDeclaration, applySetupChanges } from './studio-setup.js';
 import { CONFIG_FILE, systemRegistered } from '../../core/config.ts';
 import { parseConfigFile, serializeConfig, withSettings } from '../../core/config-file.ts';

@@ -8,7 +8,7 @@ Design Studio lives in an ordinary folder on your computer. Install it once, the
 
 These are the installation steps for both you and your agent. If you want your agent to handle them, use a session that can create files and run commands on your computer and ask:
 
-> Install Design Studio from release v0.1.0 using https://github.com/itspatmorgan/design-studio/blob/main/src/platform/context/installing.md. Use the repository installation guide without a plugin installer. Help me choose a folder, preserve existing files, and verify the running preview. Then help me open the Design Studio folder in my agent harness.
+> Install Design Studio from release v0.1.1 using https://github.com/itspatmorgan/design-studio/blob/v0.1.1/src/platform/context/installing.md. Use the repository installation guide without a plugin installer. Help me choose a folder, preserve existing files, and verify the running preview. Then help me open the Design Studio folder in my agent harness.
 
 ## 1. Prepare your computer
 
@@ -21,7 +21,7 @@ Install [Git](https://git-scm.com/downloads) and [mise](https://mise.jdx.dev/get
 Open a terminal in the folder where you keep your projects. Run:
 
 ```sh
-git clone --filter=blob:none --branch v0.1.0 https://github.com/itspatmorgan/design-studio.git design-studio
+git clone --filter=blob:none --branch v0.1.1 https://github.com/itspatmorgan/design-studio.git design-studio
 cd design-studio
 git remote rename origin upstream
 git switch -c main
@@ -29,7 +29,7 @@ git switch -c main
 
 Design Studio is installed in the `design-studio` folder. You can choose a different name. If the folder already exists, choose another name or open the existing studio; do not replace its files.
 
-These commands install release `v0.1.0` and preserve the history needed for future updates.
+These commands install release `v0.1.1` and preserve the history needed for future updates.
 
 ## 3. Install dependencies and open the preview
 
@@ -89,6 +89,6 @@ See the [Manual](../modules/documentation/pages/index.md) for using Studio. When
 
 Confirm the destination and where that filesystem lives before creating files. Preserve existing studios and confirmed choices. Follow the commands above using the person's supported tools; do not install a plugin or use plugin bootstrap tooling for this path.
 
-After cloning, read the installed repository's `AGENTS.md` and linked guidance. Verify the release ancestry, local `main` branch, and `upstream` remote. A release clone does not need a hand-written `studio.lock.json`; see [Ownership and updates](ownership.md#the-installed-release).
+After cloning, read the installed repository's `AGENTS.md` and linked guidance. Verify the release ancestry, local `main` branch, and `upstream` remote. For revision tracking, see [Ownership and updates](ownership.md#the-installed-release).
 
 Verify the actual local preview and report the absolute studio path. Help the person open that folder in their agent harness; distinguish instructions to open it from a verified workspace handoff. Use [Configure Studio](../skills/configure-studio/SKILL.md) when they request configuration. Installation alone does not authorize creating a hosted repository, pushing, or publishing.

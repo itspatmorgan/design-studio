@@ -17,7 +17,7 @@ Distinguish initial configuration from a settings update. Missing dependencies o
 2. If registration is needed, follow [setup-contributor](../setup-contributor/SKILL.md) in **registration-only mode**. Return here after identity verification.
 3. Preview requested choices with `pnpm studio configure`. Enable Contributors & Permissions before switching to team use, and provide registered Admin keys with `--admins key,key`. Preserve existing grants when resuming. Use `--recovery` only for authorized initial setup without an Admin or permission recovery. Apply confirmed choices with `--yes`; the command validates configuration and preserves existing prototype assignments. Restart the server as required.
 4. If the person wants to curate or import a kit now, follow [setup-design-system](../../modules/systems/skills/setup-design-system/SKILL.md). Reuse its representative prototype for final verification. If they choose to explore with an installed starter, preserve that choice and continue without requiring a replacement system.
-5. If supplied product context needs saving, use [maintain-context](../maintain-context/SKILL.md) in the selected product system. Preserve platform personas, principles, and skills. Keep unresolved materials explicit.
+5. If supplied product context needs saving, use [maintain-documentation](../maintain-documentation/SKILL.md) in the selected product system. Preserve platform personas, principles, and skills. Keep unresolved materials explicit.
 
 The setup-design-system skill owns system migration and starter cleanup. Do not perform a second cleanup here.
 
@@ -37,11 +37,4 @@ Report completed choices, verified local links, and unresolved input. Leave the 
 
 ## Update to a newer release
 
-When the person asks to update Studio itself, read [Ownership and updates](../../context/ownership.md#updating-a-studio) and use `pnpm studio update`. Do not merge upstream by hand.
-
-1. Run `pnpm studio update --dry-run` (or `pnpm studio update <version> --dry-run` for a named release). If the working tree is not clean, ask the person whether to commit their work first; do not stash or discard it. If there is no `upstream` remote, add the one the command prints only with the person's agreement.
-2. Explain the result in plain words: the installed and target releases, and the files the release changes that the studio changed too, with what happens to each. Ask before applying.
-3. Run `pnpm studio update`. It works on a new `studio-update/v<version>` branch and never pushes or changes the person's branch.
-4. On a conflict, show the listed files. Resolve a file only when the person's intent and the release's change are both clear; keep the person's work, take the release's change, and explain each choice. Then `git add` the files and run `pnpm studio update --continue`. If the resolution is unclear, or the person prefers, abort with `git merge --abort`, switch back to their branch, and delete the update branch.
-5. If `pnpm check` or `pnpm build` fails after the merge, fix the cause on the update branch and rerun both. A release note may name a manual step, such as moving settings into a new file; follow it.
-6. Summarize what changed and leave merging the branch into theirs to the person, by pull request in a team studio. Push only when asked.
+Follow [manual upgrade guidance](../../context/ownership.md#updating-a-studio). Preserve current work, use a separate branch, review the complete merge including cleanly merged content and settings, install and sync, then verify the affected workflows and production build. The release notes and Git history are the source of truth. Do not push or publish without a request.

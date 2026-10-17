@@ -6,11 +6,9 @@
 import { validHostSurface, type HostSurfaceSpec } from '../fileTypes.ts';
 import { MODULE_ROOTS, TEAM_MODULES_ROOT } from '../roots.ts';
 
-// The version of the public contract this copy of the platform offers: the declaration types and the #studio/*
-// API (src/platform/api/) a module or system is written against. After the first public baseline, stable changes
-// require a minor increase under the 0.x policy; experimental changes remain recorded. A module names the oldest
-// version it works with in `requires`. See context/checks.md for snapshot and released-baseline verification.
-export const PLATFORM_VERSION = '0.1.0';
+// This copy's API version. A module's `requires` declares the oldest platform it works with.
+// Current declarations and #studio/* entries are authoritative; see context/modules.md.
+export const PLATFORM_VERSION = '0.1.1';
 export const CORE_PAGE_KEYS = ['settings'] as const;
 
 // A bounded schema: every named primitive field is required; module checks may add domain constraints.
@@ -71,12 +69,8 @@ export type ModuleSpec = {
   // Context and skill paths relative to this module. A trailing slash supplies a whole skill folder.
   // Optional task conditions generate root AGENTS.md routes for enabled modules.
   instructions?: { path: string; when?: string }[];
-  // npm packages the module needs, as name → version ("dialkit": "^1.2.0"). Adding the module shows them and installs
-  // them only when you say so.
+  // npm packages owned by the module, as name → version. Integrate dependencies through the root manifest.
   dependencies?: Record<string, string>;
-  // For a module built around an open source library: where the library came from. The library's license file
-  // has to be in the module's folder, and its license a permissive one, or adding it is refused.
-  upstream?: { repo: string; version: string; license: string };
 };
 
 // A module can add routes to the dev server (<module folder>/server.ts, served by
@@ -222,19 +216,6 @@ export function moduleProblems(spec: unknown, folder: string, dir = `${TEAM_MODU
       ))
   )
     problems.push(`${where}: optimizeDependencies must list at most 32 unique package roots declared in dependencies.`);
-  if (m.upstream !== undefined) {
-    const u = m.upstream as Partial<NonNullable<ModuleSpec['upstream']>>;
-    if (
-      !u ||
-      typeof u.repo !== 'string' ||
-      typeof u.version !== 'string' ||
-      typeof u.license !== 'string' ||
-      !u.repo ||
-      !u.version ||
-      !u.license
-    )
-      problems.push(`${where}: upstream needs repo, version and license, as text.`);
-  }
   if (m.section !== undefined) {
     const { key, folder: dir } = m.section as Partial<NonNullable<ModuleSpec['section']>>;
     if (typeof key !== 'string' || !KEY.test(key))

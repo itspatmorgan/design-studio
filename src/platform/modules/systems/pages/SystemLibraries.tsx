@@ -1,5 +1,6 @@
+import { LinkSquare02Icon, Image01Icon, LibraryIcon, SmileIcon, TextFontIcon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import { Link } from '@tanstack/react-router';
-import { ExternalLink, Image, Library, Smile, Type } from 'lucide-react';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { PageHeader } from './foundations';
 import { systemPath } from '#studio/systems';
@@ -12,7 +13,7 @@ export default function SystemLibraries({ system, label }: { system: string; lab
       <PageHeader title='Libraries' description={`The sources and tools behind ${label}.`} />
       {!libraries.length && (
         <div className='rounded-xl border border-border bg-muted/40 p-6'>
-          <Library aria-hidden='true' className='mb-3 size-5 text-muted-foreground' />
+          <HugeiconsIcon icon={LibraryIcon} aria-hidden='true' className='mb-3 size-5 text-muted-foreground' />
           <h2 className='font-medium'>No libraries added yet</h2>
           <p className='mt-2 text-sm text-muted-foreground'>
             Ask your agent to add a library when your system needs more capabilities.
@@ -22,20 +23,24 @@ export default function SystemLibraries({ system, label }: { system: string; lab
       {libraries.length > 0 && (
         <ul aria-label='System libraries' className='space-y-3'>
           {libraries.map(library => {
-            const Icon = library.assets?.includes('icons')
-              ? Smile
+            const icon = library.assets?.includes('icons')
+              ? SmileIcon
               : library.assets?.includes('fonts')
-                ? Type
+                ? TextFontIcon
                 : library.assets?.includes('images')
-                  ? Image
-                  : Library;
+                  ? Image01Icon
+                  : LibraryIcon;
             return (
               <li
                 id={library.id}
                 key={library.id}
                 className='flex scroll-mt-6 items-start gap-3 rounded-lg border border-border p-4'
               >
-                <Icon aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
+                <HugeiconsIcon
+                  icon={icon}
+                  aria-hidden='true'
+                  className='mt-0.5 size-4 shrink-0 text-muted-foreground'
+                />
                 <div className='flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3'>
                   <div className='min-w-0 flex-1 basis-56'>
                     <div className='flex flex-wrap items-baseline gap-x-2 gap-y-1'>
@@ -90,7 +95,7 @@ export default function SystemLibraries({ system, label }: { system: string; lab
                       aria-label={`${library.label} documentation`}
                       className='inline-flex items-center gap-1 underline underline-offset-4 hover:text-muted-foreground'
                     >
-                      Docs <ExternalLink aria-hidden='true' className='size-3.5' />
+                      Docs <HugeiconsIcon icon={LinkSquare02Icon} aria-hidden='true' className='size-3.5' />
                     </a>
                   </div>
                 </div>

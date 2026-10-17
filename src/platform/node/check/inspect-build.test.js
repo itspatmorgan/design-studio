@@ -14,14 +14,18 @@ test('startup measurement follows static dependencies once and validates lazy re
     shared: { file: 'shared.js', imports: ['cycle'] },
     cycle: { file: 'cycle.js', imports: ['shared'] },
     lazy: { file: 'lazy.js' },
+    studio: { file: 'studio.js', imports: ['shared'], dynamicImports: ['lazy'] },
   };
-  for (const file of ['app.js', 'app.css', 'shared.js', 'cycle.js', 'lazy.js'])
+  for (const file of ['app.js', 'app.css', 'shared.js', 'cycle.js', 'lazy.js', 'studio.js'])
     fs.writeFileSync(path.join(root, file), '12345');
   fs.writeFileSync(path.join(root, '.vite/manifest.json'), JSON.stringify(manifest));
   const result = inspectBuild(root);
   assert.equal(result.requests, 4);
   assert.equal(result.bytes, 20);
   assert.ok(!result.assets.some(asset => asset.file === 'lazy.js'));
+  assert.equal(inspectBuild(root, 'studio').requests, 5);
+  assert.ok(!inspectBuild(root, 'studio').assets.some(asset => asset.file === 'lazy.js'));
+  assert.throws(() => inspectBuild(root, 'missing'), /Missing startup entry/);
   fs.rmSync(path.join(root, 'lazy.js'));
   assert.throws(() => inspectBuild(root), /ENOENT/);
   manifest.lazy.file = '../outside.js';

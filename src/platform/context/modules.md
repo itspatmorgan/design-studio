@@ -64,14 +64,9 @@ The graph follows repository source, not npm package implementations. Packages r
 
 Artifact hosts and Systems examples provide `PortalContext` with their themed container. System overlays read it through `usePortalContainer()` and pass that element to their portal implementation. Both import `#studio/runtime`, so the provider and consumers use one context instance per document. `cn` remains a shared runtime dependency; prototypes do not gain permission to import its package directly. The runtime entry must remain independent of shell, settings, manifest, routing, and discovery code.
 
-`src/platform/api/*.ts` lists each export with a JSDoc tag:
-
-- `@stable`: the declaration types, `PLATFORM_VERSION`, and the identity values. After the public baseline, stable signatures and referenced stable types require a minor version increase under the 0.x policy.
-- `@experimental`: everything else. It may change in any 0.x release; release notes name the change.
+`src/platform/api/*.ts` defines the public exports. The project is pre-release; review changes against current consumers rather than maintaining a compatibility snapshot.
 
 Importing anything under `src/platform/` from team code by another path, including `src/platform/node/` and Studio's system files, is an error in `pnpm check` and in the development and build import guard. Imports between modules use `@module/<id>` as before. Supplied modules may import platform internals, since they ship with the platform; their imports are not examples of the public API.
-
-The [contract snapshot](checks.md#platform-contract) records semantic signatures, referenced types, and stability. `pnpm contract` checks annotations and snapshot freshness; `pnpm contract --released` separately enforces compatibility against the supported public release. Referenced public types retain their declared stability; other local types inherit it from their exposing declaration.
 
 Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary.
 
@@ -126,7 +121,6 @@ Design systems are content in `src/systems/` (and Studio's own interface system 
 pnpm studio list
 pnpm studio disable <id>
 pnpm studio enable <id>
-pnpm studio add <source>
 pnpm studio remove <module-or-system>
 pnpm studio create-module <id>
 pnpm studio create-system <id>
@@ -134,9 +128,9 @@ pnpm studio sync
 pnpm check
 ```
 
-Add, remove, and create commands preview changes. Applying them requires `--yes`. Use CLI help for source formats and optional flags.
+Remove and create commands preview changes. Applying them requires `--yes`. Use CLI help for current arguments.
 
-Studio commands register and unregister capabilities, manage config module flags, `studio.lock.json`, and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
+Studio commands register and unregister capabilities, manage config module flags and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
 
 Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
 
@@ -144,17 +138,11 @@ Packages remain installed after removal. Remove them only when no retained code 
 
 ## Installation contract
 
-Preview reads declarations as data. Applying installation trusts the module's code. It can execute the installed declaration and checks.
+Extension installation is ordinary repository work, not a package-manager feature. Review the source, license, dependencies, and affected files before integrating it. Code runs with the privileges of the local repository.
 
-Packages install with lifecycle scripts disabled. Failed checks restore project files, but downloaded packages may remain in `node_modules`.
+Use `create-module` or `create-system` for a local scaffold, then adapt selected source under the team root. Preserve the newly allocated system `studioId`, package identity, and explicit registration; do not copy another installation's identity or overwrite existing work. Team modules use `#studio/*`; system dependencies live in their own manifest with shared React peers.
 
-Sources can be local folders, HTTPS or SSH Git addresses, or HTTPS tarballs. HTTP, `file://`, and `git://` sources are rejected.
-
-Packs cannot contain symlinks, escaping paths, or file collisions. Limits are 500 files, 2 MB per file, and 20 MB total.
-
-Upstream libraries require their license and provenance. The license override is an explicit user decision, governed by the manage-modules skill.
-
-Installation is not a sandbox. Installed code has the privileges of repository code.
+Review dependency changes, run `pnpm install --ignore-scripts`, synchronize instructions, and verify `pnpm check`, `pnpm test`, `pnpm build`, and the affected browser workflows. There is no download, archive, license-override, or provenance-lock subsystem. Git records the integrated source and its history.
 
 ## Discovery and verification
 
@@ -164,13 +152,13 @@ The manifest scans declared content sections. Vite supplies file globs and theme
 
 `pnpm check` validates declarations, configuration, section collisions, dependency boundaries, file-type contracts, and enabled module checks.
 
-`pnpm baseline removal <id>` checks physical removal in an authorized Personal-mode fixture with its own Git history and linked installed dependencies. Add `--off` for disabling or `--working` to test uncommitted changes. The release suite runs the enabled control and each retained supplied optional module disabled and removed. Lifecycle checks also verify Team-mode restrictions, retained external content, and re-enabling.
+The release suite builds with all optional modules disabled, then physically removed. The ordinary production build covers enabled modules. Lifecycle tests retain Team-mode restrictions, external content, and re-enabling checks.
 
 A module owns one canonical technical contract in its README.md. Human workflows live in `src/platform/modules/documentation/pages/`, where a chapter declares `module: <id>` to follow that capability’s availability. Context includes standing requirements. Skills describe tasks. Link to contracts instead of copying them.
 
 ## Customization and updates
 
-Supplied and locally authored modules use the same contract, in different roots. Installed external capabilities record their source and file hashes in `studio.lock.json`; locally authored modules remain team-owned. The lock's `platform` entry records the upstream release the studio is on ([The installed release](ownership.md#the-installed-release)); the lock does not track supplied starter code file by file.
+Supplied and locally authored modules use the same contract, in different roots. Git records integrated module/system source and the supplied platform revision.
 
 You own all repository code. Editing supplied modules or platform internals can create conflicts when merging upstream releases; [Ownership and updates](ownership.md) maps which paths are upstream, generated, seed, or team-owned. Review updates on a branch, reconcile local changes, and run `pnpm build`. The [customization Manual](/documentation/manual/customize) explains the progression from prototype work to platform changes.
 

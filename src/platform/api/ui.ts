@@ -1,14 +1,14 @@
 // #studio/ui: the shell's building blocks a module renders with: navigation, home blocks, collections, documents
 // and source editing. Studio's interface components are #studio/components. Browser code only.
-/** @stable What a module's app.tsx adds to the app: rail button, routes, home block, palette and menu entries. */
+/** What a module's app.tsx adds to the app: rail button, routes, home block, palette and menu entries. */
 export type { ModuleApp } from '../app/modules.ts';
-/** @stable What palette entries receive: the manifest, the open prototype and navigation. */
+/** What palette entries receive: the manifest, the open prototype and navigation. */
 export type { PaletteContext } from '../app/modules.ts';
-/** @stable One entry a module adds to a prototype's menu. */
+/** One entry a module adds to a prototype's menu. */
 export type { PrototypeAction } from '../app/modules.ts';
-/** @experimental The shell's not-found page. */
+/** The shell's not-found page. */
 export { NotFound } from '../app/shell/NotFound.tsx';
-/** @experimental A section's side navigation and its parts. */
+/** A section's side navigation and its parts. */
 export {
   SectionNav,
   NavHeader,
@@ -18,49 +18,49 @@ export {
   navLinkClass,
   navLinkStyle,
 } from '../app/shell/nav/index.ts';
-/** @experimental Arranges menu items into groups with dividers, dropping the ones that don't apply. */
+/** Arranges menu items into groups with dividers, dropping the ones that don't apply. */
 export { menuGroups } from '../app/shell/menuGroups.ts';
-/** @experimental A contributor's photo or initials. */
+/** A contributor's photo or initials. */
 export { ContributorAvatar } from '../app/shell/ContributorAvatar.tsx';
-/** @experimental A module's block on the home page, with a link to its section. */
+/** A module's block on the home page, with a link to its section. */
 export { HomeSection } from '../app/items/HomeSection.tsx';
-/** @experimental A short hint for an empty home block. */
+/** A short hint for an empty home block. */
 export { HomeHint } from '../app/items/HomeSection.tsx';
-/** @experimental A section's list of items as cards or rows, with its view toggle and archived heading. */
+/** A section's list of items as cards or rows, with its view toggle and archived heading. */
 export { Collection, ViewToggle, ArchivedHeading } from '../app/items/Collection.tsx';
-/** @experimental One item in a Collection's card view. */
+/** One item in a Collection's card view. */
 export { CollectionCard } from '../app/items/CollectionCard.tsx';
-/** @experimental One item in a Collection's list view, or in a home block. */
+/** One item in a Collection's list view, or in a home block. */
 export { ItemRow } from '../app/items/ItemRow.tsx';
-/** @experimental A compiled Markdown page with its title, description and table of contents. */
+/** A compiled Markdown page with its title, description and table of contents. */
 export { DocLayout } from '../app/docs/DocLayout.tsx';
-/** @experimental The app path relative links in a shown document resolve from. */
+/** The app path relative links in a shown document resolve from. */
 export { DocBase } from '../app/docs/DocBase.ts';
-/** @experimental Document typography for rendered content. */
+/** Document typography for rendered content. */
 export { Prose } from '../app/docs/Prose.tsx';
-/** @experimental The source editor, given file access and a language. */
+/** The source editor, given file access and a language. */
 export { default as SourceEditor } from '../core/source/SourceEditor.tsx';
-/** @experimental The file access and permission a SourceEditor is given. */
+/** The file access and permission a SourceEditor is given. */
 export type { SourceAccess } from '../core/source/access.ts';
-/** @experimental A language the SourceEditor highlights. */
+/** A language the SourceEditor highlights. */
 export type { SourceLanguage } from '../core/source/SourceEditor.tsx';
-/** @experimental A prototype file's source editor, with read and write access and permissions resolved. */
+/** A prototype file's source editor, with read and write access and permissions resolved. */
 export { default as ArtifactSource } from '../app/source/ArtifactSource.tsx';
-/** @experimental The Source view toggle state, its shortcut and focus return, for a file page. */
+/** The Source view toggle state, its shortcut and focus return, for a file page. */
 export { useSourceView } from '../core/source/useSourceView.ts';
-/** @experimental The authorized settings editor with stale-snapshot handling and restart coordination. */
+/** The authorized settings editor with stale-snapshot handling and restart coordination. */
 export { useStudioSettings } from '../app/settings/useStudioSettings.ts';
-/** @experimental Lazy Mermaid rendering shared by document content and standalone diagrams. */
+/** Lazy Mermaid rendering shared by document content and standalone diagrams. */
 export { MermaidDiagram } from '../app/diagrams/MermaidDiagram.tsx';
 
-/** @experimental Shared artifact preparation and presentation; callers retain mounting and visibility policy. */
+/** Shared artifact preparation and presentation; callers retain mounting and visibility policy. */
 export { ArtifactHost } from '../app/artifacts/ArtifactHost.tsx';
-/** @experimental Artifact host layout, interaction, and admission inputs. */
+/** Artifact host layout, interaction, and admission inputs. */
 export type { ArtifactHostProps } from '../app/artifacts/ArtifactHost.tsx';
 
-/** @experimental Shared file navigation with explicit owner creation, bundle and permission policies. */
+/** Shared file navigation with explicit owner creation, bundle and permission policies. */
 export { default as FileTree } from '../app/files/FileTree.tsx';
-/** @experimental Owner policies and props for shared file navigation. */
+/** Owner policies and props for shared file navigation. */
 export type { FileTreePolicy, FileTreeProps, NewFileOption } from '../app/files/FileTree.tsx';
-/** @experimental Copyable error presentation for file-backed surfaces. */
+/** Copyable error presentation for file-backed surfaces. */
 export { default as FileError } from '../app/files/FileError.tsx';

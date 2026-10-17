@@ -46,6 +46,8 @@ export default function importGuard({
     },
     transform(code, id) {
       const file = id.split('?')[0];
+      // Package internals are governed by package declarations, not repository source rules.
+      if (file.split(/[\\/]/).includes('node_modules')) return null;
       const rel = path.relative(root, file).split(path.sep).join('/');
       const scope = policy.scopeOf(file);
       // Re-read the graph on transforms: dev edits to a transitive helper must not reuse a stale verdict.
@@ -53,16 +55,16 @@ export default function importGuard({
       const entry = apiEntryOf(rel);
       if (entry) apiProblems.push(...policy.apiEntryProblems([entry]));
       if (apiProblems.length) this.error(apiProblems.join('\n'));
-      if (/\.[cm]?[jt]sx?$/.test(file))
-        for (const { source } of importsOf(code, file)) {
-          const problem = policy.packageProblem(source, file);
-          if (problem) this.error(problem);
-        }
+      const imports = /\.[cm]?[jt]sx?$/.test(file) ? importsOf(code, file) : [];
+      for (const { source } of imports) {
+        const problem = policy.packageProblem(source, file);
+        if (problem) this.error(problem);
+      }
       if (!scope && moduleIdOfPath(path.relative(root, file).split(path.sep).join('/')) === undefined) return null;
       if (scope && /\.module\.css$/.test(file)) {
         const problems = cssProblems(code, { file, mode: 'module' });
         if (problems.length) this.error(problems.join('\n'));
-      } else if (/\.[cm]?[jt]sx?$/.test(file) && importsOf(code, file).some(i => !i.typeOnly && i.source === null)) {
+      } else if (imports.some(i => !i.typeOnly && i.source === null)) {
         const problem = policy.computedImportProblem(file);
         if (problem) this.error(problem);
       }

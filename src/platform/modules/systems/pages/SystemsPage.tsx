@@ -1,29 +1,29 @@
+import {
+  ArrowDown01Icon,
+  Compass01Icon,
+  LibraryIcon,
+  CubeIcon,
+  Notebook01Icon,
+  MagicWand01Icon,
+  ColorsIcon,
+  TextFontIcon,
+  SquareRoundCornerIcon,
+  Layers01Icon,
+  RulerIcon,
+  ArrowRight01Icon,
+  SparklesIcon,
+  CodeIcon,
+  SmileIcon,
+  Image01Icon,
+  Search01Icon,
+  ArrowShrink01Icon,
+  ArrowExpand01Icon,
+  Cancel01Icon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
 import { getSystemSource } from '#studio/systems';
 import { Suspense, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useSearch, useRouterState, lazyRouteComponent } from '@tanstack/react-router';
-import {
-  ChevronDown,
-  Compass,
-  Library,
-  Blocks,
-  NotebookText,
-  WandSparkles,
-  SwatchBook,
-  Type,
-  SquareRoundCorner,
-  Layers2,
-  Ruler,
-  MoveRight,
-  Sparkles,
-  Braces,
-  Smile,
-  Image,
-  Search,
-  ChevronsDownUp,
-  ChevronsUpDown,
-  X,
-  type LucideIcon,
-} from 'lucide-react';
 import { Input } from '@/platform/systems/studio/components/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { artifactLabel, findArtifact } from '@/platform/app/data/manifest';
@@ -127,20 +127,22 @@ const TOKEN_PAGES: { id: string; label: string; group: TokenGroup }[] = [
 ];
 
 // Stable semantic icons distinguish system guidance and theme pages from source files.
-const PAGE_ICONS: Record<string, LucideIcon> = {
-  intro: Compass,
-  colors: SwatchBook,
-  typography: Type,
-  radius: SquareRoundCorner,
-  shadows: Layers2,
-  spacing: Ruler,
-  motion: MoveRight,
-  effects: Sparkles,
-  tokens: Braces,
-  icons: Smile,
+const PAGE_ICONS: Record<string, IconSvgElement> = {
+  intro: Compass01Icon,
+  colors: ColorsIcon,
+  typography: TextFontIcon,
+  radius: SquareRoundCornerIcon,
+  shadows: Layers01Icon,
+  spacing: RulerIcon,
+  motion: ArrowRight01Icon,
+  effects: SparklesIcon,
+  tokens: CodeIcon,
+  icons: SmileIcon,
 };
-const CONTENT_ICONS: Record<string, LucideIcon> = { context: NotebookText, skills: WandSparkles };
-const navIcon = (Icon: LucideIcon) => <Icon aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />;
+const CONTENT_ICONS: Record<string, IconSvgElement> = { context: Notebook01Icon, skills: MagicWand01Icon };
+const navIcon = (icon: IconSvgElement) => (
+  <HugeiconsIcon icon={icon} aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />
+);
 
 // Different Systems routes mount separate page instances. Keep tree choices for the session.
 const systemTreeState = new Map<
@@ -172,7 +174,8 @@ function SystemBranch({
         title={path}
         className='mx-1 flex h-7 w-[calc(100%-8px)] items-center gap-1.5 rounded-md px-2 text-left text-[12px] font-medium leading-tight hover:bg-sidebar-foreground/5'
       >
-        <ChevronDown
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
           className={'size-3.5 shrink-0 text-muted-foreground transition-transform ' + (open ? '' : '-rotate-90')}
         />
         {label}
@@ -282,9 +285,9 @@ function SystemNav({
     matches('Libraries') ||
     (manifest.systems[system]?.libraries ?? []).some(library => matches(library.label) || matches(library.description));
   const assetPages = [
-    { id: 'fonts', label: 'Fonts', icon: Type },
-    { id: 'icons', label: 'Icons', icon: Smile },
-    { id: 'images', label: 'Images', icon: Image },
+    { id: 'fonts', label: 'Fonts', icon: TextFontIcon },
+    { id: 'icons', label: 'Icons', icon: SmileIcon },
+    { id: 'images', label: 'Images', icon: Image01Icon },
   ].filter(
     item =>
       matches('Assets') ||
@@ -311,7 +314,7 @@ function SystemNav({
           path={path}
           label={label}
           className={id ? undefined : 'h-7'}
-          icon={navIcon(component ? Blocks : (PAGE_ICONS[id ?? 'intro'] ?? Blocks))}
+          icon={navIcon(component ? CubeIcon : (PAGE_ICONS[id ?? 'intro'] ?? CubeIcon))}
           reveal={() => systemSourceRequest('reveal', path)}
         />
       )
@@ -335,10 +338,10 @@ function SystemNav({
                 setQuery('');
               }}
             >
-              {navIcon(Search)}
+              {navIcon(Search01Icon)}
             </TreeAction>
             <TreeAction label={allExpanded ? 'Collapse all' : 'Expand all'} onClick={toggleAll} disabled={Boolean(q)}>
-              {navIcon(allExpanded ? ChevronsDownUp : ChevronsUpDown)}
+              {navIcon(allExpanded ? ArrowShrink01Icon : ArrowExpand01Icon)}
             </TreeAction>
           </div>
         </div>
@@ -369,7 +372,7 @@ function SystemNav({
                 }}
                 className='absolute right-1 top-0.5 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground'
               >
-                {navIcon(X)}
+                {navIcon(Cancel01Icon)}
               </button>
             )}
           </div>
@@ -384,7 +387,7 @@ function SystemNav({
             className={navLinkClass}
             style={navLinkStyle}
           >
-            {navIcon(Library)}Libraries
+            {navIcon(LibraryIcon)}Libraries
           </Link>
         )}
         {contentSections.map(({ id, section, proto }) => (
