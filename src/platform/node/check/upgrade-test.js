@@ -74,8 +74,7 @@ function source(cwd, revision, working = false) {
     fs.rmSync(archive);
   }
 }
-const versionFile = 'src/platform/core/modules/index.ts',
-  snapshotFile = 'src/platform/core/contract.snapshot.json';
+const versionFile = 'src/platform/core/modules/index.ts';
 const platformVersion = cwd =>
   fs.readFileSync(path.join(cwd, versionFile), 'utf8').match(/PLATFORM_VERSION = '([^']+)'/)[1];
 const stack = 'src/platform/context/stack.md',
@@ -145,11 +144,6 @@ try {
   edit(upstream, versionFile, text =>
     text.replace(/PLATFORM_VERSION = '[^']+'/, `PLATFORM_VERSION = '${targetVersion}'`),
   );
-  edit(upstream, snapshotFile, text => {
-    const snapshot = JSON.parse(text);
-    snapshot.platformVersion = targetVersion;
-    return JSON.stringify(snapshot, null, 2) + '\n';
-  });
   edit(upstream, 'README.md', text => text + '\nIncoming README bytes.\n');
   fs.rmSync(path.join(upstream, seed), { force: true });
   write(upstream, newSeed, 'New incoming seed bytes.\n');

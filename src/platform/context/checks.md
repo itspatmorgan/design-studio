@@ -35,15 +35,7 @@ See [Ownership and updates](ownership.md#path-map) for path tiers, unlisted file
 
 ## Platform contract
 
-The platform contract snapshot (`src/platform/core/contract.snapshot.json`, schema 1) records the public API's semantic signatures and stability, referenced local types, generic parameters, readonly modifiers, nested shapes, runtime package lists, stored format versions, and Node, pnpm, React, and React DOM requirements. TypeScript provides signatures without implementation bodies or comments. A referenced public type retains its explicit stability; other local types inherit the declaration that exposes them.
-
-`pnpm contract` checks export annotations and requires the snapshot to match current source. Run `pnpm contract --update` after a reviewed surface change. This command does not decide release compatibility. Earlier pre-release APIs and snapshot schemas are not supported compatibility baselines.
-
-The first supported public release is `v0.1.0`. `src/platform/node/lib/release-versions.js` declares that baseline. Updates, compatibility checks, and CI share this selection policy. `pnpm contract --released` independently reads the preceding supported release tag's snapshot. It excludes the candidate’s own tag only when its version and clean commit match. A tagged HEAD remains the baseline during uncommitted release edits. The initial public candidate can establish its baseline without a preceding public tag; later candidates fail clearly when that history is missing. Fetch complete history and release tags for this maintainer check.
-
-After public launch, a stable signature, referenced stable type, runtime requirement/package list, or stored format version change requires a minor version increase under the 0.x policy. Experimental changes remain recorded and may change within 0.x. Updating the editable snapshot cannot authorize a change against the released baseline. `pnpm contract --released --base <revision>` also reports the PR-base snapshot differences for review; this report imposes no compatibility with historical pre-release snapshots.
-
-Upstream CI runs the released comparison and PR report. The release command runs the released comparison after refreshing its snapshot. A studio's normal `pnpm check` and `pnpm build` do not impose upstream version bumps on local platform changes.
+The public entry files under `src/platform/api/` and their TypeScript declarations are the source of truth. Build checks validate their environment boundaries and all current consumers. The project is pre-release: there is no semantic snapshot or backwards-compatibility gate. Stored-file versions and validators still reject unsupported data; see [Format versions](formats.md).
 
 ## Minimum sufficient verification
 

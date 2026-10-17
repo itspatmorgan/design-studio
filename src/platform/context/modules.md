@@ -64,14 +64,9 @@ The graph follows repository source, not npm package implementations. Packages r
 
 Artifact hosts and Systems examples provide `PortalContext` with their themed container. System overlays read it through `usePortalContainer()` and pass that element to their portal implementation. Both import `#studio/runtime`, so the provider and consumers use one context instance per document. `cn` remains a shared runtime dependency; prototypes do not gain permission to import its package directly. The runtime entry must remain independent of shell, settings, manifest, routing, and discovery code.
 
-`src/platform/api/*.ts` lists each export with a JSDoc tag:
-
-- `@stable`: the declaration types, `PLATFORM_VERSION`, and the identity values. After the public baseline, stable signatures and referenced stable types require a minor version increase under the 0.x policy.
-- `@experimental`: everything else. It may change in any 0.x release; release notes name the change.
+`src/platform/api/*.ts` defines the public exports. The project is pre-release; review changes against current consumers rather than maintaining a compatibility snapshot.
 
 Importing anything under `src/platform/` from team code by another path, including `src/platform/node/` and Studio's system files, is an error in `pnpm check` and in the development and build import guard. Imports between modules use `@module/<id>` as before. Supplied modules may import platform internals, since they ship with the platform; their imports are not examples of the public API.
-
-The [contract snapshot](checks.md#platform-contract) records semantic signatures, referenced types, and stability. `pnpm contract` checks annotations and snapshot freshness; `pnpm contract --released` separately enforces compatibility against the supported public release. Referenced public types retain their declared stability; other local types inherit it from their exposing declaration.
 
 Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary.
 

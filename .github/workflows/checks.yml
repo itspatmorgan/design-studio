@@ -110,11 +110,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm studio sync --check
       - run: pnpm format:check
-      - name: Verify public contract and report PR changes
-        if: github.repository_id == '1401250166'
-        env:
-          CONTRACT_BASE: ${{ github.event.pull_request.base.sha || github.event.before || github.sha }}
-        run: pnpm contract --released --base "$CONTRACT_BASE"
       - run: pnpm build
         env:
           STUDIO_BASE_PATH: ${{ github.repository_id == '1401250166' && '/design-studio-demo/' || '/' }}

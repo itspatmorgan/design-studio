@@ -8,7 +8,7 @@ Publish when people need a shared viewing URL. The studio maintainer chooses the
 
 ## What the build provides
 
-Use the toolchain declared in `mise.toml` and `package.json`. Run `pnpm install --frozen-lockfile`, then `pnpm build`. This validates the manifest, module boundaries, types, and production compilation and writes a static site to `dist/`. Tests are separate: `pnpm test:changed <base> <head>` runs groups selected by the [verification policy](checks.md#minimum-sufficient-verification); `pnpm test` is the focused development suite; `pnpm build:release` adds the full maintainer regressions. The site includes active prototypes, design-system pages, the system context, and the Manual when enabled.
+Use the toolchain declared in `mise.toml` and `package.json`. Run `pnpm install --frozen-lockfile`, then `pnpm build`. This validates the manifest, module boundaries, types, and production compilation and writes a static site to `dist/`. Tests are separate: `pnpm test` runs ordinary regressions; `pnpm build:release` also runs disposable production fixtures. The site includes active prototypes, design-system pages, the system context, and the Manual when enabled.
 
 Archived prototypes are excluded from the production build. Individual items cannot be archived. Archive content you want to keep locally without including it in the site.
 
