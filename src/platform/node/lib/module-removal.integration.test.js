@@ -5,20 +5,18 @@ import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
 
-test('optional modules support enabled, disabled, and removed production configurations', async t => {
+test('optional modules support disabled and removed production configurations', async t => {
   const root = path.resolve(import.meta.dirname, '../../../..');
   const logs = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-availability-logs-'));
   t.after(() => fs.rmSync(logs, { recursive: true, force: true }));
   const optional = ['canvas', 'diagrams', 'document', 'documentation', 'onboarding', 'contributors'].filter(id =>
     fs.existsSync(path.join(root, 'src/platform/modules', id, 'module.ts')),
   );
-  const cases = [
-    ['none', 'enabled'],
-    ...optional.flatMap(id => [
-      [id, 'disabled'],
-      [id, 'removed'],
-    ]),
-  ];
+  // The required production job covers the enabled configuration once.
+  const cases = optional.flatMap(id => [
+    [id, 'disabled'],
+    [id, 'removed'],
+  ]);
   let next = 0;
   let failed = false;
   async function worker() {

@@ -69,18 +69,40 @@ test('discovery includes JavaScript and TypeScript app, tooling and module tests
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
-test('unknown paths, dependencies, missing comparison, and new tests fail closed to the full suite', () => {
+test('uncertain changes broaden ordinary regressions; only explicit full checks include exhaustive fixtures', () => {
   for (const file of [
     'new-feature/file.js',
     'pnpm-lock.yaml',
     '.github/workflows/checks.yml',
     'src/platform/node/check/test-groups.json',
     '../outside',
-  ])
-    assert.equal(select([file]).full, true, file);
+  ]) {
+    const plan = select([file]);
+    assert.equal(plan.full, true, file);
+    assert.equal(
+      plan.tests.some(test => test.endsWith('.integration.test.js')),
+      false,
+      file,
+    );
+  }
   assert.equal(selectTests([], catalog, [...available, 'src/modules/new/unknown.test.ts']).full, true);
-  assert.equal(planTests('00000000', 'HEAD').full, true);
-  assert.equal(selectTests([], catalog, available, { full: true }).tests.length, available.length);
+  const fallback = planTests('00000000', 'HEAD');
+  assert.equal(fallback.full, true);
+  assert.equal(fallback.exhaustive, false);
+  assert.equal(
+    fallback.tests.some(test => test.endsWith('.integration.test.js')),
+    false,
+  );
+  assert.deepEqual(
+    selectTests([], catalog, available, { full: true }).tests,
+    available.filter(file => !file.endsWith('.integration.test.js')),
+  );
+  assert.deepEqual(selectTests([], catalog, available, { full: true, exhaustive: true }).tests, available);
+  assert.deepEqual(planTests('00000000', 'HEAD', { full: true }).tests, discoverTests());
+  assert.equal(
+    select(['src/platform/core/config.ts']).tests.some(test => test.endsWith('.integration.test.js')),
+    false,
+  );
   const actual = discoverTests();
   assert.deepEqual(
     actual.filter(file => !available.includes(file)),
@@ -192,4 +214,30 @@ test('Git comparison includes both sides of cross-area renames and selected fail
   );
   assert.equal(forced.status, 0, forced.stderr);
   assert.equal(JSON.parse(forced.stdout).full, true);
+  assert.equal(JSON.parse(forced.stdout).exhaustive, true);
+  // A conservative fallback must not accidentally run expensive fixtures. Explicit opt-in must execute them.
+  write('src/platform/node/lib/failure.test.js', "import {test} from 'node:test'; test('ordinary passes',()=>{});\n");
+  write(
+    'src/platform/node/lib/slow.integration.test.js',
+    "import {test} from 'node:test'; test('exhaustive failure',()=>{throw Error('exhaustive sentinel')});\n",
+  );
+  const execute = extra =>
+    spawnSync(
+      process.execPath,
+      [path.resolve('src/platform/node/check/test.js'), '--changed', '00000000', 'HEAD', ...extra],
+      { cwd: root, encoding: 'utf8', env },
+    );
+  const ordinary = execute([]);
+  assert.equal(ordinary.status, 0, ordinary.stdout + ordinary.stderr);
+  assert.ok(!ordinary.stdout.includes('exhaustive sentinel'));
+  const exhaustive = execute(['--full']);
+  assert.equal(exhaustive.status, 1, exhaustive.stdout + exhaustive.stderr);
+  assert.match(exhaustive.stdout, /exhaustive sentinel/);
+  const envPlan = spawnSync(
+    process.execPath,
+    [path.resolve('src/platform/node/check/test.js'), '--changed', authoringBase, 'HEAD', '--plan-only'],
+    { cwd: root, encoding: 'utf8', env: { ...env, STUDIO_FULL_CHECKS: 'true' } },
+  );
+  assert.equal(envPlan.status, 0, envPlan.stderr);
+  assert.ok(JSON.parse(envPlan.stdout).tests.includes('src/platform/node/lib/slow.integration.test.js'));
 });

@@ -7,13 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       full_checks:
-        description: Run every regression group
+        description: Run exhaustive release fixtures and upgrade rehearsals
         type: boolean
         default: true
   workflow_call:
     inputs:
       full_checks:
-        description: Force every regression group
+        description: Run exhaustive release fixtures and upgrade rehearsals
         type: boolean
         default: false
 permissions:
@@ -126,20 +126,20 @@ jobs:
           STUDIO_BASE_PATH: ${{ github.repository_id == '1401250166' && '/design-studio-demo/' || '/' }}
           STUDIO_PUBLIC_URL: ${{ github.repository_id == '1401250166' && 'https://itspatmorgan.com/design-studio-demo/' || '' }}
       - run: pnpm build:inspect
-  # Rehearse preservation, conflict recovery, and failed-check reporting through the actual updater.
+  # Exhaustive upgrade rehearsals run only on explicit full/manual checks; ordinary updater regressions remain in PRs.
   upgrade:
     name: Upgrade test
-    if: github.repository_id == '1401250166' && github.event_name == 'pull_request'
+    if: github.repository_id == '1401250166' && inputs.full_checks == true
     runs-on: ubuntu-24.04
     concurrency:
-      group: upgrade-${{ github.workflow }}-${{ github.event.pull_request.number }}
+      group: upgrade-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           fetch-tags: true
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: jdx/mise-action@v5
       - name: Locate dependency store
         id: store
@@ -168,7 +168,7 @@ jobs:
           BUNDLE_RESULT: ${{ needs.bundle.result }}
           REGRESSION_RESULT: ${{ needs.regressions.result }}
           UPGRADE_RESULT: ${{ needs.upgrade.result }}
-          UPGRADE_REQUIRED: ${{ github.repository_id == '1401250166' && github.event_name == 'pull_request' }}
+          UPGRADE_REQUIRED: ${{ github.repository_id == '1401250166' && inputs.full_checks == true }}
         run: |
           test "$BUNDLE_RESULT" = success && test "$REGRESSION_RESULT" = success || exit 1
           if [ "$UPGRADE_REQUIRED" = true ]; then

@@ -18,6 +18,7 @@
         "src/platform/node/check/test-selection.test.js",
         "src/platform/node/lib/agent-skills.test.js",
         "src/platform/node/lib/artifact-moves.test.js",
+        "src/platform/node/lib/artifact-authoring.test.js",
         "src/platform/node/lib/source-archive.test.js",
         "src/platform/node/lib/boundaries.test.js",
         "src/platform/node/lib/loader-recovery.test.js",

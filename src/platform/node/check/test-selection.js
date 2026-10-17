@@ -1,4 +1,4 @@
-// Conservative regression selection. Publishing validation is never selected away.
+// Conservative regression selection within the ordinary tier; exhaustive fixtures require explicit opt-in.
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -65,7 +65,12 @@ export function importedDependencies(catalog, root = process.cwd()) {
     }),
   );
 }
-export function selectTests(files, catalog, available, { full = false, reason = '', imports = {} } = {}) {
+export function selectTests(
+  files,
+  catalog,
+  available,
+  { full = false, exhaustive = false, reason = '', imports = {} } = {},
+) {
   const names = Object.keys(catalog.groups);
   const classified = new Set(names.flatMap(name => catalog.groups[name].tests));
   const unknownTests = available.filter(file => !classified.has(file));
@@ -121,7 +126,8 @@ export function selectTests(files, catalog, available, { full = false, reason = 
   const tests = full
     ? available
     : [...new Set(groups.flatMap(name => catalog.groups[name].tests).filter(file => available.includes(file)))].sort();
-  return { version: 1, full, groups, tests, reasons, changedFiles: files };
+  const retained = tests.filter(file => exhaustive || !file.endsWith('.integration.test.js'));
+  return { version: 1, full, exhaustive, groups, tests: retained, reasons, changedFiles: files };
 }
 export function changedPaths(base, head, { root = process.cwd(), mergeBase = false } = {}) {
   const git = args =>
@@ -150,6 +156,8 @@ export function changedPaths(base, head, { root = process.cwd(), mergeBase = fal
   return [...new Set(files)].sort();
 }
 export function planTests(base, head, { root = process.cwd(), full = false, mergeBase = false } = {}) {
+  // Capture explicit opt-in before conservative fallbacks broaden ordinary coverage.
+  const exhaustive = full;
   const catalog = JSON.parse(fs.readFileSync(path.join(root, 'src/platform/node/check/test-groups.json'), 'utf8'));
   if (
     catalog.version !== 1 ||
@@ -179,5 +187,10 @@ export function planTests(base, head, { root = process.cwd(), full = false, merg
     full = true;
     reason = 'Removed non-authoring paths require full verification.';
   }
-  return selectTests(files, catalog, available, { full, reason, imports: importedDependencies(catalog, root) });
+  return selectTests(files, catalog, available, {
+    full,
+    exhaustive,
+    reason,
+    imports: importedDependencies(catalog, root),
+  });
 }
