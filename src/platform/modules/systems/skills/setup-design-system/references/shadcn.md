@@ -13,7 +13,7 @@ Pass preset names, codes, or shadcn builder links to `prepare-shadcn`; it extrac
 
 ## Adapt the upstream workflow to Studio
 
-Generate in the workspace from `pnpm prepare-shadcn`, never in the Studio root or a system source folder. The [curation contract](../../../context/curation.md#isolated-shadcn-preparation) owns configuration translation and saving. Upstream `add --dry-run` previews staging writes. Existing adapted components are not copied into staging, so this is not a comparison against their current Studio implementation. Compare selected generated source with those files before integrating updates; preserve intentional customization.
+Generate in the workspace from `pnpm prepare-shadcn`, never in the Studio root or a system source folder. The [curation contract](../../../context/curation.md#isolated-shadcn-preparation) owns staging isolation and manual configuration integration. Upstream `add --dry-run` previews staging writes. Existing adapted components are not copied into staging, so this is not a comparison against their current Studio implementation. Compare selected generated source with those files before integrating updates; preserve intentional customization.
 
 Replace the upstream full-catalog installation and standalone showcase with the smallest useful kit, live component examples, and a representative Studio prototype. Global `:root`, `.dark`, `@theme`, and global utilities from upstream are staging material: adapt them to the system's scoped theme, explicit inventory, supported modes, and portal contract. Never derive or enable another color mode merely because an upstream procedure recommends it. Fonts follow the supplied sources, licensed assets, or explicitly allowed substitutions.
 

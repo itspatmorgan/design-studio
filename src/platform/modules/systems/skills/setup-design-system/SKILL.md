@@ -58,7 +58,7 @@ Do not remove another person's work merely because a contributor joined. Explain
 
 ## Completion
 
-Managed creation and installation register the system and maintainer entry. Set the intended [system declarations](../../README.md#structure) and [theme inventory](../../README.md#theme); validators check their structure. Adjust components and examples to those choices.
+Local creation registers the system and maintainer entry; external source is integrated into that scaffold. Set the intended [system declarations](../../README.md#structure) and [theme inventory](../../README.md#theme); validators check their structure. Adjust components and examples to those choices.
 
 Review representative components and pop-ups in every supported color mode. Verify that a single-mode system keeps its mode when Studio toggles. Follow [working context](../../../../context/working-in-studio.md) for build and save requirements after migration.
 
