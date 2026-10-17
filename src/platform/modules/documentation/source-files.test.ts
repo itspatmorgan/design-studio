@@ -7,80 +7,77 @@ import { spawnSync } from 'node:child_process';
 import build from './build.ts';
 import { sourceFile } from '../../node/build/files/source.js';
 
-test('Manual discovery and editable sources work without initializing a module registry', t => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-manual-discovery-'));
+test('fresh-process Manual discovery filters capabilities and keeps invalid chapters repairable', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-manual-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const folder = 'src/platform/modules/documentation/pages';
-  fs.cpSync(folder, path.join(root, folder), { recursive: true });
-  const enabled = Object.keys(JSON.parse(fs.readFileSync('studio.config.json', 'utf8')).modules);
-  // A fresh process reproduces native build-hook loading alongside Vite's separate bundled registry.
+  fs.mkdirSync(path.join(root, folder), { recursive: true });
+  const chapters = {
+    index: 'title: Introduction\norder: 1',
+    canvas: 'title: Canvas\norder: 2\nmodule: canvas',
+    document: 'title: Documents\norder: 3\nmodule: document',
+    removed: 'title: Removed\norder: 4\nmodule: removed-capability',
+    invalid: 'title: Invalid\norder: 5\nmodule: 42',
+    damaged: 'title: broken [',
+  };
+  for (const [name, metadata] of Object.entries(chapters))
+    fs.writeFileSync(path.join(root, folder, name + '.md'), '---\n' + metadata + '\n---\nBody');
+  // A fresh process reproduces native build-hook loading without a browser module registry.
   const result = spawnSync(
     process.execPath,
     [
       '--input-type=module',
       '-e',
-      `import build from ${JSON.stringify(new URL('./build.ts', import.meta.url).href)};
-       const root = ${JSON.stringify(root)};
-       const result = build.manifest({root, enabled: ${JSON.stringify(enabled)}, out: console});
-       console.log(JSON.stringify({result, sources: build.sourceFiles(result.data, {root}), watch: build.watch}));`,
+      `
+    import build from ${JSON.stringify(new URL('./build.ts', import.meta.url).href)};
+    const root = ${JSON.stringify(root)}, diagnostics = [];
+    const result = build.manifest({root, enabled: ['canvas'], out: {error: message => diagnostics.push(message)}});
+    console.log(JSON.stringify({result, diagnostics, sources: build.sourceFiles(result.data, {root}), watch: build.watch}));
+  `,
     ],
     { encoding: 'utf8' },
   );
   assert.equal(result.status, 0, result.stderr);
   const {
     result: discovered,
+    diagnostics,
     sources,
     watch,
   } = JSON.parse(result.stdout) as {
     result: ReturnType<typeof build.manifest>;
+    diagnostics: string[];
     sources: string[];
     watch: string[];
   };
-  assert.equal(discovered.errors, 0);
-  assert.deepEqual(discovered.data.manual.map(page => page.slug).sort(), [
-    'agent',
-    'customize',
-    'environment',
-    'index',
-    'prototypes',
-    'questions',
-    'share',
-    'team',
-  ]);
+  assert.deepEqual(
+    discovered.data.manual.map(page => page.slug),
+    ['index', 'canvas'],
+  );
+  assert.equal(discovered.errors, 2);
+  assert.ok(diagnostics.some(message => message.includes('invalid.md')));
+  assert.ok(diagnostics.some(message => message.includes('damaged.md')));
   assert.deepEqual(watch, [folder]);
-  assert.deepEqual([...new Set(sources)].sort(), discovered.data.manual.map(page => 'src' + page.source).sort());
-});
-
-test('Manual source contribution keeps malformed chapters repairable and disappears without contributed data', t => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-manual-source-'));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
-  const chapter = 'src/platform/modules/documentation/pages/index.md';
-  const damaged = 'src/platform/modules/documentation/pages/draft.md';
-  fs.mkdirSync(path.dirname(path.join(root, chapter)), { recursive: true });
-  fs.writeFileSync(path.join(root, chapter), '# Source');
-  fs.writeFileSync(path.join(root, damaged), '---\ntitle: broken');
-  const data = {
-    manual: [
-      {
-        slug: 'index',
-        title: 'Index',
-        description: '',
-        section: null,
-        source: '/platform/modules/documentation/pages/index.md',
-      },
-    ],
-  };
-  const allowed = build.sourceFiles(data, { root });
-  assert.ok(allowed.includes(chapter));
-  assert.ok(allowed.includes(damaged));
-  for (const file of [chapter, damaged]) {
-    const before = sourceFile(root, allowed, { action: 'read', path: file });
+  assert.deepEqual(
+    [...new Set(sources)].sort(),
+    Object.keys(chapters)
+      .map(name => `${folder}/${name}.md`)
+      .sort(),
+  );
+  const disabled = build.manifest({ root, enabled: [], out: { ...console, error() {} } });
+  assert.deepEqual(
+    disabled.data.manual.map(page => page.slug),
+    ['index'],
+  );
+  for (const name of ['index', 'invalid', 'damaged']) {
+    const file = `${folder}/${name}.md`;
+    const before = sourceFile(root, sources, { action: 'read', path: file });
     assert.equal(
-      sourceFile(root, allowed, { action: 'write', path: file, content: '# Edited', base: before.body.version }).status,
+      sourceFile(root, sources, { action: 'write', path: file, content: '# Repaired', base: before.body.version })
+        .status,
       undefined,
     );
   }
   const unavailable = build.sourceFiles(undefined, { root });
   assert.deepEqual(unavailable, []);
-  assert.equal(sourceFile(root, unavailable, { action: 'read', path: chapter }).status, 404);
+  assert.equal(sourceFile(root, unavailable, { action: 'read', path: `${folder}/index.md` }).status, 404);
 });

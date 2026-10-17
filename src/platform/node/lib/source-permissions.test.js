@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { writeProfiles } from './fixtures/contributors.js';
 import { canWriteSource, prototypeOwnershipMatches } from '../build/files/policy.js';
+import { documentationSources, sourceFile } from '../build/files/source.js';
 import { writeFixtureConfig } from './fixtures/identities.js';
 
 test('source writes recheck revoked grants and archive status without waiting for a restart', () => {
@@ -101,4 +102,38 @@ test('source editor preserves prototype identity and refuses owner/location mism
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test('source catalogs preserve repair access and refuse stale, oversized, linked or unlisted writes', t => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'studio-source-catalog-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const relative = 'src/platform/README.md',
+    file = path.join(root, relative);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, '---\ntitle: broken');
+  const manifest = {
+    contributions: {},
+    platformReferences: [{ references: [{ source: '/platform/README.md' }, { source: '/platform/README.md' }] }],
+  };
+  const allowed = documentationSources(root, manifest);
+  assert.deepEqual(allowed, [relative]);
+  const call = request => sourceFile(root, allowed, { path: relative, ...request });
+  const before = call({ action: 'read' }).body;
+  assert.equal(before.content, '---\ntitle: broken');
+  fs.writeFileSync(file, '# External edit');
+  assert.equal(call({ action: 'write', base: before.version, content: '# Overwrite' }).status, 409);
+  assert.equal(fs.readFileSync(file, 'utf8'), '# External edit');
+  const current = call({ action: 'read' }).body;
+  assert.equal(call({ action: 'write', base: current.version, content: '# Repaired' }).status, undefined);
+  assert.equal(fs.readFileSync(file, 'utf8'), '# Repaired');
+  assert.equal(call({ action: 'write', base: current.version, content: 'x'.repeat(750 * 1024 + 1) }).status, 413);
+  assert.equal(fs.readFileSync(file, 'utf8'), '# Repaired');
+  assert.equal(call({ action: 'read', path: '../../README.md' }).status, 404);
+  manifest.platformReferences = [];
+  assert.equal(sourceFile(root, documentationSources(root, manifest), { action: 'read', path: relative }).status, 404);
+  fs.renameSync(file, file + '.ordinary');
+  fs.symlinkSync(file + '.ordinary', file);
+  assert.equal(call({ action: 'read' }).status, 404);
+  assert.equal(call({ action: 'write', content: '# Linked overwrite', base: current.version }).status, 404);
+  assert.equal(fs.readFileSync(file + '.ordinary', 'utf8'), '# Repaired');
 });

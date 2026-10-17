@@ -30,7 +30,6 @@
     "src/modules/*/build.ts",
     "src/platform/modules/canvas/cli.ts",
     "src/platform/modules/canvas/tools.test.ts",
-    "src/platform/modules/view/lofi.test.ts",
     "src/platform/modules/systems/content/content.test.ts",
     "src/platform/modules/systems/docs.test.ts",
     "src/platform/core/archive.test.ts",

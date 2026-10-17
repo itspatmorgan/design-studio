@@ -72,12 +72,14 @@ export function duplicatePrototype({ key, id, title, system }) {
     };
   fs.mkdirSync(to);
   try {
-    fs.cpSync(from, to, {
-      recursive: true,
-      force: false,
-      errorOnExist: true,
-      filter: file => file === from || !excluded.has(path.basename(file)),
-    });
+    // Keep the exclusively reserved root; Node 24.22 also rejects existing directories when errorOnExist is set.
+    for (const name of fs.readdirSync(from))
+      fs.cpSync(path.join(from, name), path.join(to, name), {
+        recursive: true,
+        force: false,
+        errorOnExist: true,
+        filter: file => !excluded.has(path.basename(file)),
+      });
     identifyPrototypeArtifacts(to, INSTALLED_FILE_TYPES, used, meta.studioId, previousPrototypeId);
     moveWithLinks(to, to, meta, personAddress(key, id), `/prototypes/${key}/${slug}`, `/prototypes/${key}/${id}`);
     return { id: slug, manifest: buildManifest().manifest };

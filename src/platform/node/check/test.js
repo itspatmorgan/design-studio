@@ -20,7 +20,7 @@ if (args[0] === '--changed') {
     if (process.env.GITHUB_STEP_SUMMARY)
       fs.appendFileSync(
         process.env.GITHUB_STEP_SUMMARY,
-        `## Verification plan\n\n${plan.full ? 'Full suite' : plan.groups.join(', ') || 'Authoring: production checks only'} (${plan.tests.length} test files).\n\n${plan.reasons.map(reason => '- ' + reason.replace(/[\r\n]/g, ' ')).join('\n')}\n`,
+        `## Verification plan\n\n${plan.exhaustive ? 'Full release suite' : plan.full ? 'All ordinary regressions' : plan.groups.join(', ') || 'Authoring: production checks only'} (${plan.tests.length} test files).\n\n${plan.reasons.map(reason => '- ' + reason.replace(/[\r\n]/g, ' ')).join('\n')}\n`,
       );
     process.exit(0);
   }

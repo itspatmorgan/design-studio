@@ -11,6 +11,8 @@ import { scopePolicy } from './scope.js';
 import { importsOf } from './imports.js';
 import { systemDependencyProblems, systemLibraryInventory, systemPeerProblems } from './system-dependencies.js';
 import importGuard from '../build/vite-import-guard-plugin.js';
+import publicApi from '../build/vite-public-api-plugin.js';
+import { API_ENTRIES } from '../../core/modules/boundaries.ts';
 
 function fixture(t) {
   const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'studio-system-packages-')));
@@ -216,6 +218,18 @@ test('two package versions resolve through assigned library entries in TypeScrip
     assert.equal(require('chart-library').version, `chart-version-${version}`);
     assert.equal(systemLibraryInventory(root, id, systems[id])[0].version, version);
   }
+  write('tsconfig.app.json', {
+    compilerOptions: {
+      moduleResolution: 'bundler',
+      paths: { '@/*': ['./src/*'], '#studio/*': ['./src/platform/api/*.ts'] },
+    },
+  });
+  for (const entry of API_ENTRIES) write(`src/platform/api/${entry}.ts`, 'export {};');
+  write('src/platform/api/runtime.ts', 'export const cn = (...args: string[]) => args.join(" ");');
+  write(
+    'src/systems/a/components/public.ts',
+    "import {cn} from '#studio/runtime'; export const classes=cn('workspace-public-proof');",
+  );
   const roots = ['a', 'b'].map(id => path.join(root, `src/prototypes/alex/${id}/view.ts`));
   const program = ts.createProgram(roots, {
     noEmit: true,
@@ -231,13 +245,14 @@ test('two package versions resolve through assigned library entries in TypeScrip
   write('index.html', '<script type="module" src="/main.ts"></script>');
   write(
     'main.ts',
-    "import {version as a} from './src/prototypes/alex/a/view'; import {version as b} from './src/prototypes/alex/b/view'; console.log(a,b);",
+    "import {version as a} from './src/prototypes/alex/a/view'; import {version as b} from './src/prototypes/alex/b/view'; import {classes} from './src/systems/a/components/public'; console.log(a,b,classes);",
   );
   const options = {
     root,
     configFile: false,
     logLevel: 'silent',
-    plugins: [importGuard({ root, systems, modules: [], prototypeDirs: [] })],
+    plugins: [importGuard({ root, systems, modules: [], prototypeDirs: [] }), publicApi({ root })],
+    resolve: { alias: { '@': path.join(root, 'src') } },
   };
   const server = await createServer({
     ...options,
@@ -251,6 +266,13 @@ test('two package versions resolve through assigned library entries in TypeScrip
     );
     await server.transformRequest('/src/systems/a/libraries/charts.ts');
     await server.transformRequest('/src/systems/b/libraries/charts.ts');
+    const publicModule = await server.ssrLoadModule('/src/systems/a/components/public.ts');
+    assert.equal(publicModule.classes, 'workspace-public-proof');
+    write(
+      'src/systems/a/components/private.ts',
+      "import {cn} from '@/platform/api/runtime'; export const value=cn('private');",
+    );
+    await assert.rejects(server.transformRequest('/src/systems/a/components/private.ts'), /public API/);
     write('src/prototypes/alex/a/bad.ts', "import 'host-only';");
     await assert.rejects(server.transformRequest('/src/prototypes/alex/a/bad.ts'), /not shared runtime/);
   } finally {
@@ -263,6 +285,7 @@ test('two package versions resolve through assigned library entries in TypeScrip
     .join('\n');
   assert.match(output, /chart-version-1\.0\.0/);
   assert.match(output, /chart-version-2\.0\.0/);
+  assert.match(output, /workspace-public-proof/);
   write('src/prototypes/alex/a/view.ts', "export * from 'host-only';");
   await assert.rejects(build({ ...options, build: { write: false } }), /not shared runtime/);
 });

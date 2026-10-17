@@ -136,6 +136,7 @@ test('Node-readable embed surfaces and browser implementations must agree', () =
   const spec = fixture({ capabilities: { ...fixture().capabilities, embeds: ['document'] } });
   assert.equal(artifactAvailability(spec, environment).embeds.document.available, true);
   assert.equal(artifactAvailability(spec, environment).embeds.canvas.available, false);
+  assert.equal(artifactAvailability(spec, { ...environment, renderer: false }).embeds.document.available, false);
   assert.equal(artifactAvailability(undefined, environment).embeds.document.available, false);
   assert.equal(artifactAvailability(spec, { ...environment, scope: 'systemContent' }).embeds.document.available, false);
   assert.throws(() => assertFileTypeModule('fixture', spec, module()), /Embed/);

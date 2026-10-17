@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { afterChange, parseOrder, withFolderOrder } from '../../core/order.ts';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -242,7 +243,8 @@ test('move HMR suppression matches only completed move writes and leaves later e
 });
 
 test('prototype rename/duplicate updates literal code self-links without rewriting external strings', () => {
-  const root = fixture();
+  const root = fixture(),
+    renamed = root + '-renamed';
   try {
     write(root, 'meta.json', '{"title":"Test"}');
     write(
@@ -250,12 +252,24 @@ test('prototype rename/duplicate updates literal code self-links without rewriti
       'main.tsx',
       "const to='/prototypes/sam/sample/next'; const external='https://other.test/prototypes/sam/sample/next';",
     );
-    moveWithLinks(root, root, { title: 'New' }, personAddress('sam', 'sample'), '/prototypes/sam/new', address);
-    const next = fs.readFileSync(path.join(root, 'main.tsx'), 'utf8');
+    write(root, 'notes.md', '[View](/sam/sample/next) /sam/sample-long/next');
+    write(root, 'board.excalidraw', JSON.stringify({ elements: [{ link: address + '/next' }] }));
+    moveWithLinks(root, renamed, { title: 'New' }, personAddress('sam', 'sample'), '/prototypes/sam/new', address);
+    const next = fs.readFileSync(path.join(renamed, 'main.tsx'), 'utf8');
+    assert.equal(fs.existsSync(root), false);
+    assert.equal(
+      fs.readFileSync(path.join(renamed, 'notes.md'), 'utf8'),
+      '[View](/prototypes/sam/new/next) /sam/sample-long/next',
+    );
+    assert.equal(
+      JSON.parse(fs.readFileSync(path.join(renamed, 'board.excalidraw'))).elements[0].link,
+      '/prototypes/sam/new/next',
+    );
     assert.match(next, /to='\/prototypes\/sam\/new\/next'/);
     assert.match(next, /https:\/\/other.test\/prototypes\/sam\/sample\/next/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(renamed, { recursive: true, force: true });
   }
 });
 
@@ -274,4 +288,22 @@ test('prototype-relative screen paths are repaired; dynamic expressions stay unc
     next,
     "const screen='flow/start'; const dynamic=`flow/${name}`; const link=<ScreenLink to={'flow/start'} />;",
   );
+});
+
+test('persisted ordering survives folder moves and deletions without changing unrelated entries', () => {
+  assert.deepEqual(parseOrder(['flow', 'flow/main.tsx']), ['flow', 'flow/main.tsx']);
+  for (const invalid of ['flow', [1], ['']]) assert.equal(parseOrder(invalid), null);
+  const order = ['other', 'flow', 'flow/main.tsx', 'flow-long/main.tsx'];
+  assert.deepEqual(afterChange(order, 'flow', 'renamed'), [
+    'other',
+    'renamed',
+    'renamed/main.tsx',
+    'flow-long/main.tsx',
+  ]);
+  assert.deepEqual(afterChange(order, 'flow', null), ['other', 'flow-long/main.tsx']);
+  assert.deepEqual(withFolderOrder(['other/main.tsx', 'flow/a', 'flow/b'], 'flow', ['flow/b', 'flow/a']), [
+    'other/main.tsx',
+    'flow/b',
+    'flow/a',
+  ]);
 });
