@@ -210,6 +210,11 @@ test('Vite uses the same policy for direct edges, build startup and edited trans
       return id ? { id } : null;
     },
   };
+  // Invalid package source is deliberately not parsed; repository imports still get checked below.
+  assert.equal(
+    guard.transform.call(context, "import 'undeclared-package';", path.join(root, 'node_modules/vendor/index.js')),
+    null,
+  );
   guard.buildStart.call(context);
   const server = write('src/modules/probe/server.ts', "import './helper';");
   write('src/modules/probe/helper.ts', "export { value } from '#studio/files';");

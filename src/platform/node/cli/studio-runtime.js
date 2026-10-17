@@ -178,9 +178,9 @@ const syncSkills = () => {
   say(`Project skills synchronized (Codex, Cursor, Claude Code; ${result.changed} changes).`);
 };
 const syncInFreshProcess = () => run('node', ['src/platform/node/cli/studio.js', 'sync']);
-const checkInFreshProcess = () => {
+const checkInFreshProcess = (onSuccess = () => {}) => {
   try {
-    run('node', ['src/platform/node/check/check-modules.js']);
+    onSuccess(run('node', ['src/platform/node/check/check-modules.js']).trim());
     return null;
   } catch (e) {
     return `${e.stderr ?? ''}${e.stdout ?? ''}`.trim();
@@ -795,8 +795,8 @@ function SECTION_TAKEN(id) {
 }
 
 function check() {
-  const problem = checkInFreshProcess();
-  say(problem ?? run('node', ['src/platform/node/check/check-modules.js']).trim());
+  const problem = checkInFreshProcess(say);
+  if (problem) say(problem);
   const changes = changesFromLock();
   for (const c of changes) {
     say(

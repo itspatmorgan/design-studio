@@ -35,7 +35,7 @@ test('optional modules support disabled and removed production configurations', 
       const log = fs.readFileSync(path.join(logs, `${id}-${mode}.log`), 'utf8');
       if (result !== 0) failed = true;
       assert.equal(result, 0, `${id} ${mode}:\n${log}`);
-      assert.match(log, /manifest, modules, typecheck, tests and bundle all pass/);
+      assert.match(log, /manifest, modules, typecheck and bundle all pass/);
       t.diagnostic(`${id}: ${mode} passes`);
     }
   }

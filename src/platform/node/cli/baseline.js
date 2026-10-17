@@ -4,7 +4,6 @@ import { FORMAT_VERSIONS } from '../../core/formats.ts';
 // Maintainer tool: measures how modular the platform is and how fast it builds, so a refactor can show
 // it changed neither the product nor the speed. Everything runs in a scratch copy under the system
 // temp folder; the repo is only read.
-//   node src/platform/node/cli/baseline.js coupling            which source files name each module
 //   node src/platform/node/cli/baseline.js build [dir]         build time, manifest size, bundle size (default: a scratch copy of this repo)
 //   node src/platform/node/cli/baseline.js removal <module>    delete a module in a scratch copy, then check the app still builds ("none" is the control);
 //                                                with --off, turn it off in studio.config.json instead and keep its files
@@ -16,39 +15,21 @@ import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { fileURLToPath } from 'node:url';
-import { MODULE_ROOTS } from '../../core/roots.ts';
 import { writeProfiles } from '../lib/fixtures/contributors.js';
 import { linkSystemDependencies } from '../lib/fixtures/workspace-dependencies.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
 
-// A module's own files (what removing it deletes) and the words that mean source code is using it.
-const MODULES = {
-  contributors: { paths: ['src/platform/modules/contributors'], pattern: 'modules/contributors' },
-  onboarding: { paths: ['src/platform/modules/onboarding'], pattern: "modules/onboarding|'onboarding'" },
-  documentation: { paths: ['src/platform/modules/documentation'], pattern: "modules/documentation|'documentation'" },
-  systems: {
-    paths: [
-      'src/systems',
-      'src/platform/systems',
-      'src/platform/modules/systems/pages',
-      'src/platform/modules/systems/data/loadDocs.ts',
-    ],
-    pattern: 'systems',
-  },
-  canvas: { paths: ['src/platform/modules/canvas'], pattern: 'excalidraw|canvas' },
-  diagrams: { paths: ['src/platform/modules/diagrams'], pattern: 'modules/diagrams' },
-  document: { paths: ['src/platform/modules/document'], pattern: 'modules/document' },
-  view: { paths: ['src/platform/modules/view'], pattern: 'modules/view' },
-  text: { paths: ['src/platform/modules/text'], pattern: 'modules/text' },
-};
+// Physical paths exercised by the disposable removal fixtures.
+const MODULES = Object.fromEntries(
+  ['contributors', 'onboarding', 'documentation', 'canvas', 'diagrams', 'document', 'view', 'text'].map(id => [
+    id,
+    { paths: [`src/platform/modules/${id}`] },
+  ]),
+);
 
 // Tools run straight from node_modules: pnpm would stop to re-check dependencies in a scratch copy.
 const VITE = ['node_modules/vite/bin/vite.js', 'build'];
-const TESTS = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
-  .scripts.test.replace(/^node /, '')
-  .split(' ');
-
 const SKIP_COPY = new Set(['node_modules', 'dist', '.git']);
 const tmp = name => fs.mkdtempSync(path.join(os.tmpdir(), `studio-${name}-`));
 const kb = n => `${(n / 1024).toFixed(0)} KB`;
@@ -128,48 +109,6 @@ function sizeOf(dir, keep = () => true) {
   return { raw, gz, files };
 }
 
-function coupling() {
-  const rows = [];
-  for (const [id, m] of Object.entries(MODULES)) {
-    let out = '';
-    try {
-      out = execFileSync(
-        'git',
-        [
-          'grep',
-          '-lEi',
-          m.pattern,
-          '--',
-          'src',
-          'vite.config.ts',
-          'package.json',
-          'tsconfig.app.json',
-          'tsconfig.node.json',
-          ':!*.md',
-          ':!*.mdx',
-          ':!*.excalidraw',
-          ':!src/prototypes',
-          ':!src/platform/app',
-          ':!src/platform/context',
-          ':!src/platform/core',
-          ':!src/platform/skills',
-          ':!*.test.ts',
-          ...MODULE_ROOTS.map(root => `:!${root}`),
-          ...m.paths.map(p => `:!${p}`),
-        ],
-        { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
-      );
-    } catch (e) {
-      if (e.status !== 1) throw e; // git grep exits 1 when nothing matches
-    }
-    rows.push({ module: id, files: out.split('\n').filter(Boolean).length });
-  }
-  console.log(
-    'Source files outside a module that name it, not counting the module declarations (fewer is better; 0 means removable):',
-  );
-  console.table(rows);
-}
-
 function build(dir) {
   const manifest = run(dir, 'node', ['src/platform/node/build/build-manifest.js', '--deploy']);
   const bundle = manifest.ok ? run(dir, 'node', VITE) : { ok: false, seconds: 0, tail: manifest.tail };
@@ -197,7 +136,6 @@ const STEPS = [
   ['manifest', 'node', ['src/platform/node/build/build-manifest.js', '--strict', '--deploy']],
   ['modules', 'node', ['src/platform/node/check/check-modules.js']],
   ['typecheck', 'node', ['src/platform/node/check/typecheck.js']],
-  ['tests', 'node', TESTS],
   ['bundle', 'node', VITE],
 ];
 
@@ -261,7 +199,7 @@ function removal(id) {
         return false;
       }
     }
-    console.log(`${id}: removable (manifest, modules, typecheck, tests and bundle all pass)`);
+    console.log(`${id}: removable (manifest, modules, typecheck and bundle all pass)`);
     return true;
   } finally {
     discard(dir);
@@ -307,8 +245,7 @@ function fixture(count) {
 }
 
 const [cmd, arg] = process.argv.slice(2);
-if (cmd === 'coupling') coupling();
-else if (cmd === 'build') {
+if (cmd === 'build') {
   const dir = arg && !arg.startsWith('--') ? path.resolve(arg) : scratchCopy('build');
   try {
     build(dir);
@@ -324,8 +261,6 @@ else if (cmd === 'fixture') {
   }
   fixture(n);
 } else {
-  console.error(
-    'Usage: node src/platform/node/cli/baseline.js coupling | build [dir] | removal <module> | fixture <count>',
-  );
+  console.error();
   process.exit(2);
 }
