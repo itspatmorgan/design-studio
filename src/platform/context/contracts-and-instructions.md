@@ -1,33 +1,21 @@
 ---
 title: Responsibilities
-description: Ownership of platform, module, and system context and skills.
+description: Canonical owners for guidance and technical requirements.
 toc: true
 ---
 
-Design Studio has two kinds of agent guidance: context and skills. Both belong to the capability or domain they describe.
-
 ## Choose the system of record
 
-| Owner | Canonical root | Context | Skills |
-| --- | --- | --- | --- |
-| Platform | `src/platform/` | Design Studio principles, personas, shared working requirements, and technical context. | Cross-module tasks such as configuring a studio, contributor setup, module management, and documentation maintenance. |
-| Module | `src/platform/modules/<id>/` (the team's: `<module folder>/`) | Capability knowledge and the module README's authoritative technical requirements. | Tasks using or maintaining that capability. |
-| System | `src/systems/<id>/` (Studio's own: `src/platform/systems/studio/`) | Product, brand, audience, design, component usage, and writing conventions. | Domain-specific tasks for that system. |
-
-Context can describe facts, rationale, or standing requirements. Label requirements clearly; a context document is not necessarily optional advice. Skills define task triggers, required input, procedures, supporting resources, and completion criteria. Keep short relevant constraints in the skill when they do not need an independent shared document.
-
-Root `AGENTS.md` supplies essential operating requirements and routes. It is generated: upstream requirements are written in `src/platform/AGENTS.md` and the team's own in `AGENTS.team.md`. System entry points select relevant product guidance. The Manual explains the environment to people; the Context and Skills browser displays original owner files. Neither surface creates another authoritative copy.
+| Owner | Root | Owns |
+| --- | --- | --- |
+| Platform | `src/platform/` | Shared product intent, operating context, architecture, and cross-module tasks. |
+| Module | `src/platform/modules/<id>/` or `src/modules/<id>/` | Capability README, context, and task skills. |
+| System | `src/systems/<id>/` or `src/platform/systems/studio/` | Its product, design, component, and writing guidance. |
 
 ## Technical requirements
 
-Each owner has a `README.md` entry point. A module README holds its main technical contract. Platform knowledge and contracts live together in `src/platform/context/`; `core/` holds implementation. These documents are technical context, including valid structures, supported interfaces, and compatibility requirements. Split a substantial specialized subject only when it needs its own maintained source and link it from the README.
-
-Skills consult these documents without copying schemas or dependency matrices. Code and checks implement and enforce selected requirements; successful checks cannot prove that an agent read or understood guidance.
+Use the owner's README as an index. Code and types define exact interfaces; context explains intent and constraints; skills describe tasks. The Manual explains the product to people. Browsers display these original files, not another maintained copy.
 
 ## Change the owner, then its consumers
 
-Update implementation, authoritative technical context, affected skills, and Manual explanations together. A product convention cannot relax runtime, scope, or source-access boundaries.
-
-Platform guidance lives in `src/platform/context/` and `skills/`. Module guidance lives beside its implementation. Studio's own system (`src/platform/systems/studio/`) retains application design guidance and its interface toolkit; it does not own platform operating procedures.
-
-Use [Maintain Context](../skills/maintain-context/SKILL.md) to author context and skills. Use [Maintain Documentation](../skills/maintain-documentation/SKILL.md) to revise READMEs and audit consistency. [Documentation standards](documentation-standards.md) defines writing and metadata; [Agent context routing](agent-context.md) owns discovery and synchronization behavior.
+Update the canonical source and affected callers together. Product guidance cannot relax platform boundaries. See [Documentation standards](documentation-standards.md) for writing and [Agent context routing](agent-context.md) for discovery. Use [Maintain Context](../skills/maintain-context/SKILL.md) for authoring or [Maintain Documentation](../skills/maintain-documentation/SKILL.md) for an audit.

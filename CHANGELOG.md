@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Use manual Git upgrades and releases; remove the managed updater, ownership map, and compatibility snapshot machinery.
+- Discover regression tests directly, remove redundant test infrastructure and guidance, and avoid repeated build checks.
+- Report both immediate Studio/preview startup sizes and deferred chunks in build inspection.
+
 ## 0.1.0 (2026-10-14)
 
 Design Studio’s first public beta, 0.1.0. Build and explore product ideas with your coding agent in a local workspace you can make your own.

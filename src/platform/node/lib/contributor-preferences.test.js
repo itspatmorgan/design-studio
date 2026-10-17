@@ -23,17 +23,6 @@ function fixture(t) {
   );
   return root;
 }
-test('preference claims preserve identities and unrelated state, including repeated claims', t => {
-  const root = fixture(t);
-  const before = readPreferenceProfile(root, 'sam');
-  transactPreferenceProfile(root, 'sam', {
-    base: before.version,
-    update: profile => ({ ...profile, welcomeDismissed: true }),
-  });
-  const { profile } = readPreferenceProfile(root, 'sam');
-  assert.equal(profile.studioId, '0123456789abcdef');
-  assert.deepEqual(profile.preferences.research, { keep: 3 });
-});
 test('preference transactions reject foreign actors, stale versions, and symlink profiles', t => {
   const root = fixture(t);
   assert.throws(

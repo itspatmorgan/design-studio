@@ -2,7 +2,7 @@
 
 # Design Studio
 
-Read [working context](src/platform/context/working-in-studio.md) at the start of each session. Preserve existing work and respect the person's explicit choices and authorization. Before changing upstream-owned paths, read the relevant [ownership tiers](src/platform/context/ownership.md#tiers) and [path map](src/platform/context/ownership.md#path-map).
+Read [working context](src/platform/context/working-in-studio.md) at the start of each session. Before changing upstream-owned paths, read the relevant [ownership tiers](src/platform/context/ownership.md#tiers) and [path map](src/platform/context/ownership.md#path-map).
 
 Before editing an existing contributor-owned prototype, use `pnpm studio context src/prototypes/<key>/<id> --json` to resolve contributor scope, assignment, and pending rebuild. For creation or other content, resolve the contributor with `node src/platform/node/cli/resolve-contributor.js`. Explicit `systemId: null` means no system; missing assignments are invalid. The default is written explicitly at creation. Read the assigned system's `AGENTS.md` and relevant context. For a pending rebuild, read the target system too and preserve the original.
 
@@ -17,7 +17,7 @@ Skills are owned by the platform, enabled modules, and registered systems. Inspe
 - For owner READMEs, Manual coordination, or guidance audits, use [maintain-documentation](src/platform/skills/maintain-documentation/SKILL.md).
 - For an explicit design-system review, use [check-design-system](src/platform/skills/check-design-system/SKILL.md).
 
-Use pnpm for project commands. Reuse instructions already read while available and unchanged; retrieve missing or stale instructions after compaction or file changes. Re-read source files before editing them. Use targeted searches and bounded reads; read applicable skill procedures in full. Save verbose check output to a temporary log, inspect final exit status and warnings, and report concise results with its path.
+Use pnpm. Reuse unchanged instructions already read; read source before editing. Save verbose check output to a temporary log and report results and warnings concisely.
 
 The human Manual lives in `src/platform/modules/documentation/pages/`; technical requirements live in owner READMEs and context documents. Update affected guidance with platform behavior changes. For routing work, consult [TanStack Router](https://tanstack.com/router/latest/docs/framework/react/overview).
 
