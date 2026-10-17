@@ -14,9 +14,9 @@ Set `PLATFORM_VERSION` in `src/platform/core/modules/index.ts` to match the tag.
 
 Build release candidates in a separate clean clone. Keep the maintainer's real profile and private prototypes local; do not copy ignored files or existing build output into the clone. The upstream starter distributes fictional sample profiles, personal usage, and no personal permission grants. `check-starter.js` rejects personal work even when Git ignores it. Installed studios may contain real contributors.
 
-## 0.1.0 launch checklist
+## Release announcement
 
-Publication remains on hold until explicitly directed. Verify installation from the exact public tag, demo interactions, direct links, and reloads before announcement. After approval, update the website repository's installation prompts to the public tag: `src/data/design-studio-setup.ts` and `src/data/design-studio-agent.txt`.
+Publish only when explicitly directed. Before announcement, verify installation from the exact public tag, demo interactions, direct links, and reloads. Update this repository's installation guide and README prompt, and the website repository's installation prompts, to the new tag: `src/data/design-studio-setup.ts` and `src/data/design-studio-agent.txt`.
 
 ## Cut a release
 
