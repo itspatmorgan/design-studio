@@ -1,11 +1,10 @@
+import { ArrowDown01Icon, ArrowRight01Icon, LinkSquare02Icon, LibraryIcon } from '@hugeicons/core-free-icons';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
-import { ArrowRight, ExternalLink, Library } from 'lucide-react';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { systemPath } from '#studio/systems';
 
 import { HugeiconsIcon } from '@hugeicons/react';
-import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
 import { Button } from '@/platform/systems/studio/components/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
 import { CodeBlock, PageHeader, SystemFrame } from '@/platform/modules/systems/pages/foundations';
@@ -290,7 +289,11 @@ export function ComponentDocPage({
       {filePath && (
         <Section title='Source'>
           <div className='flex items-start gap-3 rounded-lg border border-border p-4'>
-            <Library aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-muted-foreground' />
+            <HugeiconsIcon
+              icon={LibraryIcon}
+              aria-hidden='true'
+              className='mt-0.5 size-4 shrink-0 text-muted-foreground'
+            />
             <div className='flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3'>
               <div className='min-w-0 flex-1 basis-56'>
                 {libraries.length > 0 && (
@@ -304,7 +307,11 @@ export function ComponentDocPage({
                         aria-label={`${library.label} in Libraries`}
                       >
                         {library.label}
-                        <ArrowRight aria-hidden='true' className='size-3.5 text-muted-foreground' />
+                        <HugeiconsIcon
+                          icon={ArrowRight01Icon}
+                          aria-hidden='true'
+                          className='size-3.5 text-muted-foreground'
+                        />
                       </Link>
                     ))}
                   </div>
@@ -322,7 +329,7 @@ export function ComponentDocPage({
                   rel='noreferrer'
                   className='ml-auto inline-flex items-center gap-1 text-sm underline underline-offset-4 hover:text-muted-foreground'
                 >
-                  Component docs <ExternalLink aria-hidden='true' className='size-3.5' />
+                  Component docs <HugeiconsIcon icon={LinkSquare02Icon} aria-hidden='true' className='size-3.5' />
                 </a>
               )}
               <p className='w-full break-all font-mono text-xs text-muted-foreground'>

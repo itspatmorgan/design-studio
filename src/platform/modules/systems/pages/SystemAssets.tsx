@@ -1,9 +1,10 @@
+import { ArrowRight01Icon, Image01Icon, SmileIcon, TextFontIcon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import { systemPath } from '#studio/systems';
 
 import { systemFolder } from '@/platform/core/roots';
 import { useEffect, useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ArrowRight, Image, Smile, Type } from 'lucide-react';
 import { useManifest } from '@/platform/app/data/useManifest';
 import type { DesignSystem } from '@/platform/app/data/types';
 import { NotFound } from '@/platform/app/shell/NotFound';
@@ -109,7 +110,7 @@ export default function SystemAssets({
     Icons: 'Icons for your system’s interface.',
     Images: 'Logos and shared images for your prototypes.',
   }[kind];
-  const Icon = { Fonts: Type, Icons: Smile, Images: Image }[kind];
+  const icon = { Fonts: TextFontIcon, Icons: SmileIcon, Images: Image01Icon }[kind];
   const emptyDescription = {
     Fonts: 'Ask your agent to bring in your product’s font files and connect them to this system’s theme.',
     Icons: 'Ask your agent to bring in your custom icons for this system’s components.',
@@ -128,14 +129,18 @@ export default function SystemAssets({
                 aria-label={`${library.label} in Libraries`}
                 className='flex items-center gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:bg-muted'
               >
-                <Icon aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
+                <HugeiconsIcon icon={icon} aria-hidden='true' className='size-4 shrink-0 text-muted-foreground' />
                 <span className='min-w-0 flex-1'>
                   <span className='font-medium'>{library.label}</span>
                   <span className='ml-2 text-muted-foreground'>
                     {kind === 'Icons' ? 'Icon library' : kind === 'Fonts' ? 'Font library' : 'Image library'}
                   </span>
                 </span>
-                <ArrowRight aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />
+                <HugeiconsIcon
+                  icon={ArrowRight01Icon}
+                  aria-hidden='true'
+                  className='size-3.5 shrink-0 text-muted-foreground'
+                />
               </Link>
             </li>
           ))}
@@ -172,7 +177,7 @@ export default function SystemAssets({
         >
           <EmptyHeader>
             <EmptyMedia variant='icon' className='border border-border bg-background'>
-              <Icon aria-hidden='true' />
+              <HugeiconsIcon icon={icon} aria-hidden='true' />
             </EmptyMedia>
             <EmptyTitle>No local {kind.toLowerCase()} added</EmptyTitle>
             <EmptyDescription>{emptyDescription}</EmptyDescription>

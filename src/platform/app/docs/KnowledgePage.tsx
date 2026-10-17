@@ -1,5 +1,13 @@
+import {
+  ArrowDown01Icon,
+  Search01Icon,
+  Cancel01Icon,
+  File01Icon,
+  Notebook01Icon,
+  MagicWand01Icon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronDown, Search, X, FileText, NotebookText, WandSparkles } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/platform/systems/studio/components/collapsible';
 import { Input } from '@/platform/systems/studio/components/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/platform/systems/studio/components/tooltip';
@@ -55,7 +63,8 @@ function GuidanceBranch({
         title={path}
         className='mx-1 flex h-7 w-[calc(100%-8px)] items-center gap-1.5 rounded-md px-2 text-left text-[12px] font-medium hover:bg-sidebar-foreground/5'
       >
-        <ChevronDown
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
           aria-hidden='true'
           className={
             'size-3.5 shrink-0 text-muted-foreground transition-transform ' + (searching || open ? '' : '-rotate-90')
@@ -119,12 +128,14 @@ export default function KnowledgePage() {
             href={markdownPath(r.source)}
             path={'src' + r.source}
             label={r.source.endsWith('/README.md') ? 'README' : r.title}
-            icon={<FileText aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />}
+            icon={
+              <HugeiconsIcon icon={File01Icon} aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />
+            }
             detail='Document'
           />
         ))}
         {entries.map(({ proto, item, label, kind }) => {
-          const Icon = kind === 'Skill' ? WandSparkles : NotebookText;
+          const icon = kind === 'Skill' ? MagicWand01Icon : Notebook01Icon;
           return (
             <FileNavItem
               key={proto.id + '/' + item.path}
@@ -132,7 +143,9 @@ export default function KnowledgePage() {
               path={repoPath(proto, item.path)}
               label={label}
               detail={kind}
-              icon={<Icon aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />}
+              icon={
+                <HugeiconsIcon icon={icon} aria-hidden='true' className='size-3.5 shrink-0 text-muted-foreground' />
+              }
               reveal={async () => {
                 revealInFinder(proto, item.path);
               }}
@@ -187,7 +200,7 @@ export default function KnowledgePage() {
                   />
                 }
               >
-                <Search className='size-3.5' />
+                <HugeiconsIcon icon={Search01Icon} className='size-3.5' />
               </TooltipTrigger>
               <TooltipContent>Search</TooltipContent>
             </Tooltip>
@@ -219,7 +232,7 @@ export default function KnowledgePage() {
                   }}
                   className='absolute right-1 top-0.5 inline-flex size-7 items-center justify-center rounded-md text-muted-foreground'
                 >
-                  <X className='size-3.5' />
+                  <HugeiconsIcon icon={Cancel01Icon} className='size-3.5' />
                 </button>
               )}
             </div>

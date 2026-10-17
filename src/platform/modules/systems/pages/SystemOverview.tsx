@@ -1,8 +1,7 @@
+import { Archive02Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 import { useEffect } from 'react';
 import { Link } from '@tanstack/react-router';
-import { ArrowUpRight } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Archive02Icon } from '@hugeicons/core-free-icons';
 import { Alert, AlertTitle, AlertDescription } from '@/platform/systems/studio/components/alert';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { systemUsage, prototypeLink } from '@/platform/app/data/manifest';
@@ -150,7 +149,7 @@ export default function SystemOverview({
                     >
                       <span className='min-w-0 flex-1 truncate'>{proto.title}</span>
                       <span className='max-w-36 truncate text-[12px] text-muted-foreground'>{proto.contributor}</span>
-                      <ArrowUpRight aria-hidden className='size-3.5 shrink-0' />
+                      <HugeiconsIcon icon={ArrowUpRight01Icon} aria-hidden className='size-3.5 shrink-0' />
                     </Link>
                   </li>
                 ))}
@@ -161,7 +160,7 @@ export default function SystemOverview({
                 className='mt-3 inline-flex items-center gap-1 text-sm hover:underline'
               >
                 View prototypes using this system
-                <ArrowUpRight aria-hidden className='size-3.5' />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} aria-hidden className='size-3.5' />
               </Link>
             </>
           ) : (

@@ -1,6 +1,7 @@
+import { Loading03Icon } from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useState } from 'react';
 import { useRouterState } from '@tanstack/react-router';
-import { LoaderCircle } from 'lucide-react';
 
 // Preloads and background refreshes do not interrupt the person reading the current page.
 export default function NavigationProgress() {
@@ -23,7 +24,7 @@ export default function NavigationProgress() {
       aria-live='polite'
       className='pointer-events-none fixed right-4 bottom-4 z-50 flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-xs text-muted-foreground shadow-sm'
     >
-      <LoaderCircle aria-hidden className='size-3.5 animate-spin motion-reduce:animate-none' />
+      <HugeiconsIcon icon={Loading03Icon} aria-hidden className='size-3.5 animate-spin motion-reduce:animate-none' />
       Opening page
     </div>
   );
