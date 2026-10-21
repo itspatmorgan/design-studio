@@ -1,0 +1,68 @@
+body {
+  margin: 24px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+h1 {
+  margin: 0;
+  font-size: 24px;
+}
+h2 {
+  font-size: 16px;
+}
+label {
+  display: inline-block;
+  margin: 8px 12px 8px 0;
+}
+select,
+button {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  padding: 6px;
+  max-width: 420px;
+}
+main {
+  display: flex;
+  gap: 24px;
+  align-items: start;
+  width: max-content;
+}
+article {
+  min-width: 0;
+}
+.diagram {
+  box-sizing: border-box;
+  padding: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  overflow: auto;
+}
+.diagram svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: auto;
+}
+.diagram.full,
+.diagram.compact {
+  position: relative;
+  overflow: hidden;
+}
+.diagram.full {
+  height: 600px;
+  padding: 24px;
+}
+.diagram.compact {
+  height: 180px;
+  padding: 12px;
+}
+.diagram.full svg,
+.diagram.compact svg {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+}
