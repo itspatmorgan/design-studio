@@ -16,3 +16,5 @@ patchedDependencies:
   # title bar already opens the view), and it keeps Excalidraw on its desktop layout at any width.
   # See patches/README.md before upgrading Excalidraw.
   '@excalidraw/excalidraw@0.18.1': patches/@excalidraw__excalidraw@0.18.1.patch
+minimumReleaseAgeExclude:
+  - pele@1.8.0

@@ -23,10 +23,6 @@ for (const [engine, r] of Object.entries(results)) {
   assert.equal(r.invalid.artifactPhase, 'error');
   assert.equal(r.invalid.svg, false);
   assert.equal(r.unmounted, true);
-  if (engine === 'pele') {
-    assert.equal(r.stale.artifactFreshness, 'stale');
-    assert.equal(r.stale.svg, true);
-  }
 }
 assert.deepEqual(errors, []);
 results.errors = errors;

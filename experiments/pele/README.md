@@ -1,10 +1,10 @@
 # Pele renderer experiment — issue #67
 
-Run on October 20, 2026 (America/New_York), on `codex/issue-67-pele-evaluation`. This is the bounded evaluation requested in [issue #67](https://github.com/itspatmorgan/design-studio/issues/67), not a renderer migration.
+Initial comparison run on October 20, 2026 (America/New_York), on `codex/issue-67-pele-evaluation`. This is the bounded evaluation requested in [issue #67](https://github.com/itspatmorgan/design-studio/issues/67), not a renderer migration.
 
-**Recommendation: defer migration; prefer Pele's lazy entry point for a follow-up integration.** Compatibility and rendering speed are promising. The full Pele import does not improve the first-flowchart compressed payload over Mermaid's existing lazy loading. Font readiness, width observation, and real canvas interactions still need integration work, and the layout differences below need acceptance before changing existing views.
+**Adoption update:** The user approved the visual/layout differences and authorized migration on this branch. Studio now uses pinned Pele 1.8.0 through its lazy entry point. Font readiness, late-font invalidation, intrinsic resizing, hidden-panel reveal, and actual Studio canvas checks are recorded in [the adoption report](adoption/README.md). The original findings below remain the dated pre-migration evidence, including their original deferral recommendation.
 
-Studio's renderer, source diagrams, root dependencies, contributor profiles, and configuration are unchanged. The repository currently has only its sample contributor, so this is kept as an isolated platform proposal without altering registration.
+The original renderer/theme now live in `baseline/`; Mermaid 11.17.2 is an experiment-only direct dependency. Prototype source, contributor profiles, and Studio configuration remain unchanged. Root runtime dependency/build configuration changes belong to the adoption commit.
 
 ## Evidence and reproduction
 
@@ -101,7 +101,7 @@ Start with `autoDirection: false` for full views **and** compact previews. For d
 
 No candidate navigation is enabled, so no diagram link keyboard action is expected. Browser accessibility snapshots are not a VoiceOver or cross-browser assistive-technology review. Relative/published links would require a new explicit navigation policy if enabled later.
 
-## Decision and remaining gates
+## Initial decision and remaining gates (superseded by adoption report)
 
 Keep Mermaid in production for now. The experiment supports further work on **lazy Pele rendering behind the existing component**, preserving Mermaid source and the artifact lifecycle, rather than maintaining two production renderers.
 

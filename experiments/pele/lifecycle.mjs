@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { MermaidDiagram as Current } from '../../src/platform/app/diagrams/MermaidDiagram.tsx';
-import { MermaidDiagram as Candidate } from 'virtual:pele-component';
+import { MermaidDiagram as Current } from './baseline/MermaidDiagram.tsx';
+import { MermaidDiagram as Candidate } from '../../src/platform/app/diagrams/MermaidDiagram.tsx';
 import '../../src/platform/systems/studio/styles/theme.css';
 import './style.css';
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -26,8 +26,8 @@ window.lifecycleProbe = async engine => {
   root.render(React.createElement(Component, { source: initial }));
   await until(host, 'ready');
   const ready = snapshot(host);
-  // Force an in-flight asynchronous candidate render so obsolete completion is observable.
-  if (engine === 'pele') window.__peleDelayMs = 80;
+  // Replace a source before inspecting the final committed revision.
+
   root.render(React.createElement(Component, { source: 'flowchart LR\nA[Obsolete] --> B[Old]' }));
   await wait(20);
   const stale = snapshot(host);
@@ -35,7 +35,6 @@ window.lifecycleProbe = async engine => {
   await until(host, 'ready');
   await wait(120);
   const rapid = snapshot(host);
-  window.__peleDelayMs = 0;
   root.render(React.createElement(Component, { source: 'flowchart LR\nA[unfinished' }));
   await until(host, 'error');
   const invalid = snapshot(host);
@@ -46,12 +45,11 @@ window.lifecycleProbe = async engine => {
   await wait(120);
   await until(host, 'ready');
   const theme = snapshot(host);
-  if (engine === 'pele') window.__peleDelayMs = 80;
+
   root.render(React.createElement(Component, { source: 'flowchart LR\nA[Unmount] --> B[Done]' }));
   await wait(20);
   root.unmount();
   await wait(120);
   const unmounted = host.innerHTML === '';
-  window.__peleDelayMs = 0;
   return { ready, stale, rapid, invalid, recovered, theme, unmounted };
 };

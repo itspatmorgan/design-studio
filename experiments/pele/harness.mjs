@@ -1,6 +1,6 @@
 import '../../src/platform/systems/studio/styles/theme.css';
 import './style.css';
-import { mermaidTheme } from '../../src/platform/app/diagrams/mermaidTheme.ts';
+import { mermaidTheme } from './baseline/mermaidTheme.ts';
 import fixtures from './fixtures.json';
 export { fixtures };
 const engines = {},
