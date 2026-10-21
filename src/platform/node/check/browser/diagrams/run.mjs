@@ -109,6 +109,40 @@ try {
   const lateFont = { before: fallback, after: await snapshot() };
   assert.notEqual(lateFont.before.artifactInputRevision, lateFont.after.artifactInputRevision);
   assert.notEqual(lateFont.before.viewBox, lateFont.after.viewBox);
+  // Fonts used elsewhere on the page must not block this diagram's own fonts.
+  let releaseUnrelated, unrelatedRequested;
+  const unrelatedFont = new Promise(resolve => {
+    releaseUnrelated = resolve;
+  });
+  const unrelatedRequest = new Promise(resolve => {
+    unrelatedRequested = resolve;
+  });
+  await context.route('**/*unrelated-font*', async route => {
+    unrelatedRequested();
+    await unrelatedFont;
+    await route.continue();
+  });
+  try {
+    await page.evaluate(url => {
+      const face = new FontFace('UnrelatedGeist', `url(${url})`, { weight: '100 900' });
+      document.fonts.add(face);
+      void face.load().catch(() => {});
+    }, `${assetUrl}/${fontUrl}?unrelated-font=1`);
+    await unrelatedRequest;
+    await page.evaluate(() => window.integration.sourceChange('flowchart LR\nA[Independent fonts] --> B[Ready]'));
+    await page.waitForFunction(
+      () =>
+        document.querySelector('figure')?.dataset.artifactPhase === 'ready' &&
+        document.querySelector('figure svg')?.textContent.includes('Independent fonts'),
+      undefined,
+      { timeout: 3000 },
+    );
+    assert.equal(await page.evaluate(() => document.fonts.status), 'loading');
+  } finally {
+    releaseUnrelated();
+  }
+  await page.evaluate(() => document.fonts.ready);
+  await ready();
   const beforeTheme = await snapshot();
   await page.evaluate(() => document.documentElement.classList.add('dark'));
   await page.waitForFunction(

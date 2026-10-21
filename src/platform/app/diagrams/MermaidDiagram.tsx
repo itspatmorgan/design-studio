@@ -71,7 +71,6 @@ export function MermaidDiagram({
           document.fonts.load(`14px ${environment.fontFamily}`, source),
           document.fonts.load(`14px ${environment.fontFamilyMono}`, source),
         ]);
-        await document.fonts.ready;
         if (!active) return;
         const pele = await import('pele/lazy');
         await pele.load(pele.detectType(source));
