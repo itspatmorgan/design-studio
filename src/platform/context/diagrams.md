@@ -116,6 +116,10 @@ export function nextStep(actionable: boolean, count = 3) {
 
 Studio owners can edit `src/platform/systems/studio/styles/contentPalette.js` to change the shared accent palette and document syntax color roles. The source editor reads the same palette.
 
-Edit `src/platform/app/diagrams/mermaidTheme.ts` for diagram color roles and `MermaidDiagram.tsx` for renderer defaults. Diagram neutrals resolve from the platform's current CSS theme. The renderer keeps theme and security defaults under platform control. Authors can still use Mermaid's supported diagram styles, such as flowchart `classDef`, to communicate specific meaning.
+Edit `src/platform/app/diagrams/diagramTheme.ts` for diagram color roles and `MermaidDiagram.tsx` for renderer defaults. Diagram neutrals resolve from the platform's current CSS theme. The renderer keeps theme and security defaults under platform control. Authors can still use Mermaid's supported diagram styles, such as flowchart `classDef`, to communicate specific meaning.
 
-Support follows the bundled Mermaid version. These examples cover common foundations, not every diagram type or syntax feature. Additional Mermaid integrations, such as external layouts or icon packs, may require platform configuration. Excalidraw uses its own rendering.
+Studio renders Mermaid source with Pele's lazy entry point, loading diagram types on demand. Source direction is preserved on every surface (`autoDirection: false`), while available width can change label wrapping and spacing. Fonts load before measurement; font changes and container resizing trigger remeasurement. Hidden zero-width panels wait until they become measurable. Canvas zoom scales the existing SVG rather than changing its layout.
+
+Host policy disables diagram links, images, JavaScript callbacks, and custom icon/math resolvers. Source configuration cannot enable them. Mermaid `classDef` and supported styles remain available, but arbitrary HTML labels, Mermaid themeVariables, external plugins, and layouts are not equivalent supported features. Keep standard Mermaid source portable and check the bundled Pele version's syntax support. Excalidraw uses its own rendering.
+
+Rendering is bounded to 50,000 source characters, 500 flowchart edges, and 4,000,000 SVG characters. These limits do not impose a hard CPU deadline. Parsing, layout, and SVG generation are synchronous after the type loads; the asynchronous watchdog cannot interrupt that work.

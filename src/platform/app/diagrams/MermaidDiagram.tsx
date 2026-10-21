@@ -7,41 +7,8 @@ import {
   type Preparation,
 } from '@/platform/core/artifact-lifecycle/index';
 import { useEffect, useId, useRef, useState } from 'react';
-import { mermaidTheme } from './mermaidTheme';
-
-// Mermaid has global configuration. Serialize initialization and rendering so diagrams
-// in different pages/color modes cannot overwrite each other's configuration mid-render.
-let pending: Promise<unknown> = Promise.resolve();
-function render(source: string, id: string, themeVariables: ReturnType<typeof mermaidTheme>) {
-  const job = pending
-    .catch(() => undefined)
-    .then(async () => {
-      const { default: mermaid } = await import('mermaid');
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: 'strict',
-        theme: 'base',
-        look: 'classic',
-        themeVariables,
-        fontFamily: themeVariables.fontFamily,
-        suppressErrorRendering: true,
-        secure: [
-          'secure',
-          'securityLevel',
-          'startOnLoad',
-          'maxTextSize',
-          'maxEdges',
-          'suppressErrorRendering',
-          'theme',
-          'themeVariables',
-          'fontFamily',
-        ],
-      });
-      return (await mermaid.render(id, source)).svg;
-    });
-  pending = job;
-  return job;
-}
+import { diagramTheme } from './diagramTheme';
+import { useDiagramEnvironment } from './useDiagramEnvironment';
 
 export function MermaidDiagram({
   source,
@@ -53,8 +20,7 @@ export function MermaidDiagram({
   fit?: boolean;
 }) {
   const id = `mermaid-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
-  const [themeRevision, setThemeRevision] = useState(0);
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
+  const { host, environment } = useDiagramEnvironment();
   const [result, setResult] = useState<{
     svg?: string;
     error?: string;
@@ -76,21 +42,10 @@ export function MermaidDiagram({
   }, [result]);
 
   useEffect(() => {
-    const observer = new MutationObserver(() => setDark(document.documentElement.classList.contains('dark')));
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    const changed = () => setThemeRevision(value => value + 1);
-    import.meta.hot?.on('vite:afterUpdate', changed);
-    return () => {
-      observer.disconnect();
-      import.meta.hot?.off('vite:afterUpdate', changed);
-    };
-  }, []);
-
-  useEffect(() => {
     let active = true;
     const controller = current.current!;
-    const themeVariables = mermaidTheme(dark);
     controller.unknown(); // Keep the prior SVG until the replacement succeeds.
+    if (!environment.width) return;
     const deadline = setTimeout(() => {
       active = false;
       controller.unknown('Diagram rendering took too long. Repair the source or reload this view.');
@@ -101,7 +56,7 @@ export function MermaidDiagram({
       try {
         const [sourceRevision, inputs] = await Promise.all([
           digestText(source),
-          digestText(JSON.stringify([source, dark, themeVariables])),
+          digestText(JSON.stringify([source, environment])),
         ]);
         if (!active) return;
         ticket = controller.prepare({ source: sourceRevision, inputs });
@@ -111,7 +66,29 @@ export function MermaidDiagram({
       }
       if (!active) return;
       try {
-        const svg = await render(source, id, themeVariables);
+        if (source.length > 50000) throw new Error('Diagram source is longer than the limit of 50000 characters.');
+        await Promise.allSettled([
+          document.fonts.load(`14px ${environment.fontFamily}`, source),
+          document.fonts.load(`14px ${environment.fontFamilyMono}`, source),
+        ]);
+        if (!active) return;
+        const pele = await import('pele/lazy');
+        await pele.load(pele.detectType(source));
+        if (!active) return;
+        pele.forgetTextWidths();
+        const { svg } = pele.render(source, {
+          idPrefix: id,
+          autoDirection: false,
+          maxWidth: environment.width,
+          fontFamily: environment.fontFamily,
+          fontFamilyMono: environment.fontFamilyMono,
+          fontSize: 14,
+          links: false,
+          images: false,
+          limit: 50000,
+          outputLimit: 4000000,
+          maxEdges: 500,
+        });
         if (active) {
           clearTimeout(deadline);
           setResult({ svg, ticket: ticket ?? undefined, controller });
@@ -135,10 +112,12 @@ export function MermaidDiagram({
       active = false;
       clearTimeout(deadline);
     };
-  }, [source, id, dark, themeRevision]);
+  }, [source, id, environment]);
 
   return (
     <figure
+      ref={host}
+      style={diagramTheme(environment.dark)}
       {...lifecycleAttributes(lifecycle)}
       className={
         fit || compact

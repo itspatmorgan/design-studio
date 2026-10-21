@@ -38,7 +38,7 @@ Starter components use Base UI's `render` prop for composition. Replacement desi
 
 [MDX](https://mdxjs.com) compiles plain Markdown. [Shiki](https://shiki.style) highlights code with the shared [Flexoki](https://stephango.com/flexoki) accent palette. [Tailwind Typography](https://github.com/tailwindlabs/tailwindcss-typography) styles document pages.
 
-[Mermaid](https://mermaid.js.org) renders fenced `mermaid` blocks as diagrams in the shared Markdown reader. It loads on demand for the Manual, system context, reference pages, and prototype Documents. Diagram source stays in the Markdown file. A minimal platform theme coordinates diagrams with the editor and document code. See [Diagrams and code](/documentation/context/platform.core/context/diagrams) for examples and customization.
+[Pele](https://pele.run) renders Mermaid source through its lazy entry point in shared Markdown readers and standalone diagrams. Diagram types load on demand; source remains Mermaid text. Studio supplies the palette, font readiness, resizing, and preview lifecycle. See [Diagrams and code](/documentation/context/platform.core/context/diagrams) for syntax, host policy, and customization.
 
 The canvas module uses [Excalidraw](https://excalidraw.com). It loads when a canvas opens.
 

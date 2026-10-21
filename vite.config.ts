@@ -96,8 +96,8 @@ export default defineConfig({
   // then fails with "Unrecognized extension value". Listing them bundles them together at start.
   optimizeDeps: {
     include: [
-      // Prepare Mermaid and its lazy diagram chunks together before the first document opens.
-      'mermaid',
+      // Prepare the renderer's lazy entry without pulling every diagram type into the shell.
+      'pele/lazy',
       ...optimizedDependencies(ENABLED_MODULES),
       // Embedded prototype views discover these deep imports after the canvas first paints.
       '@base-ui/react/**',
