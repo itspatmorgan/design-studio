@@ -40,6 +40,10 @@ Choose checks by changed behavior and dependencies. Do not rerun unrelated setup
 
 Tests are discovered directly under the platform and registered module roots. Ordinary CI runs `pnpm test`; explicit full checks run `pnpm test:release`. Optional module removal removes its tests from discovery. An empty test inventory fails verification. No catalog or change-selection rules need maintenance.
 
+## Diagram browser regression
+
+After `pnpm build`, install the browser once with `pnpm exec playwright install chromium`, then run `node src/platform/node/check/browser/diagrams/run.mjs`. The focused check covers font readiness and late fonts, resizing/reveal, source races, failure recovery, host link/image policy, source limits, unmount cleanup, compact scaling, and accessible IDs. It uses synthetic content and temporary localhost servers, without contributor data or sample prototype dependencies. Failure screenshots go to an OS temporary directory. This browser check is explicit; ordinary `pnpm test` does not launch browsers.
+
 ## Respond to a check
 
 | Message | Next step |
