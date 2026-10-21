@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## 0.1.2 (2026-10-21)
+
+- Render shared Mermaid diagrams with Pele, loading diagram types on demand in documents, reference pages, and standalone diagrams.
+- Measure diagrams after their fonts load, redraw for font and container changes, and defer hidden previews until they become measurable. Canvas zoom preserves diagram layout, and unrelated page fonts cannot block rendering.
+- Keep diagram links and images disabled under host policy, with explicit source, edge, and SVG output limits. Add focused browser regressions for rendering, lifecycle, and accessibility.
+
+### Updating from 0.1.1
+
+Follow the [manual upgrade guidance](src/platform/context/ownership.md#updating-a-studio), preserve local content and settings, and install the updated dependencies. Stored diagram files remain Mermaid source; no file migration is required.
+
+Review existing diagrams for Pele syntax support and appearance. Arbitrary HTML labels, Mermaid theme variables, external plugins, and layout overrides are not equivalent supported features. See [diagram defaults and limits](src/platform/context/diagrams.md#customize-the-defaults). Excalidraw retains its own renderer.
+
 ## 0.1.1 (2026-10-17)
 
 A leaner foundation with the same core Studio experience. This beta release simplifies development and maintenance workflows while retaining data-integrity, identity, permissions, and recovery checks.
