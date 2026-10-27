@@ -1,7 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type RefObject } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SlidersHorizontalIcon, ArrowDown01Icon, Cancel01Icon, Refresh01Icon } from '@hugeicons/core-free-icons';
+import { SlidersHorizontalIcon, Cancel01Icon, Refresh01Icon } from '@hugeicons/core-free-icons';
 import styles from './inspector.module.css';
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -88,10 +88,7 @@ export function FloatingDialKit({ count, reset, frame, children }: {
           onClick={() => open ? close() : setOpen(true)}
           whileTap={reduced ? undefined : { scale: 0.97 }} transition={{ duration: 0.15, ease }}>
           <HugeiconsIcon icon={SlidersHorizontalIcon} size={16} strokeWidth={1.8} aria-hidden='true' />
-          <span>DialKit</span><span className={styles.count} title={`${count} control groups`}>{count}</span>
-          <motion.span className={styles.chevron} animate={{ rotate: open ? 180 : 0 }} transition={{ duration: reduced ? 0 : 0.18, ease }}>
-            <HugeiconsIcon icon={ArrowDown01Icon} size={12} aria-hidden='true' />
-          </motion.span>
+          <span className={styles.count} title={`${count} control groups`}>{count}</span>
         </motion.button>
         <motion.section ref={panel} id={id} role='dialog' aria-label='DialKit' aria-modal={false} tabIndex={-1}
           aria-hidden={!open} inert={!open} className={styles.panel} data-open={open} data-dragging={dragging}
