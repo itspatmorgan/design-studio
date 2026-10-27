@@ -9,6 +9,6 @@ Use the existing Add DialKit menu action to scaffold a workspace. Describe contr
 
 Use Save to retain accepted defaults and the View menu's Remove DialKit to capture current values and detach. Both use `node/source.ts` for source preparation and ordinary authorized, version-checked source writes. An interrupted preview, source conflict, unsupported binding or group mismatch must be resolved rather than bypassed. Empty Add is idempotent. Add after removal starts a fresh workspace around the preserved design.
 
-Before disabling or removing the module, detach public-library consumers. Use managed module commands and their dependency checks; do not force removal or substitute no-op hooks. Preserve prototype identity, assignments, assets and rendering. The [maintainer record](../../../../../experiments/dialkit/integration.md) holds the current verification evidence.
+Before disabling or removing the module, detach public-library consumers. Use managed module commands and their dependency checks; do not force removal or substitute no-op hooks. Preserve prototype identity, assignments, assets and rendering.
 
 Inspect the iframe and inspector after changes. Exercise tuning, a prototype action, Save/reload, removal, and reattachment. Opening and hiding must preserve preview width. Check theme boundaries, native popovers, scrolling, keyboard dismissal and constrained windows relevant to the change. Distinguish actual browser evidence from source/build checks and unsupported surfaces.

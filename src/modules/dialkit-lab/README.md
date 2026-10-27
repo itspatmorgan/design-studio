@@ -1,6 +1,6 @@
 # DialKit
 
-An optional, prototype-focused module for bespoke design refinement. The registered ID remains `dialkit-lab` so existing imports and configuration retain their identity. It appears as **DialKit** under Prototyping in Studio settings. Normal module availability controls it; no experiment environment variable is required.
+An optional, prototype-focused module for bespoke design refinement. The registered ID remains `dialkit-lab` so existing imports and configuration retain their identity. It appears as **DialKit** under Prototyping in Studio settings. Normal module availability controls it.
 
 ## Ownership and surfaces
 
@@ -34,7 +34,7 @@ The version-1 channel validates sender, origin, session/runtime/artifact identit
 
 Use the standard managed commands and settings. Disable retains module files. Remove previews the deletion before `--yes`. Both protect dependent public-library consumers: first save/detach connected views through their View menus. Empty workspace declarations may remain dormant while unavailable. Neither operation silently resets a design or inserts fallback implementations. Re-enable makes dormant workspaces available again. Packages follow Studio's existing policy and remain installed after removal until explicitly cleaned up.
 
-The module's agent guidance and human Manual chapter follow availability. [Module conventions](../../platform/context/modules.md) govern installation, public boundaries, shared settings and removal. [Human controls](../../platform/modules/documentation/pages/dialkit.md) describe the workflow. Historical control and native-API evidence lives in the [compatibility record](../../../experiments/dialkit/compatibility/README.md); test-only native probes are outside the shipping public library.
+The module's agent guidance and human Manual chapter follow availability. [Module conventions](../../platform/context/modules.md) govern installation, public boundaries, shared settings and removal. [Human controls](../../platform/modules/documentation/pages/dialkit.md) describe the workflow.
 
 ## Verification
 

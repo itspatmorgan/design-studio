@@ -58,7 +58,7 @@
 .controls :global(.dialkit-root) :is(input:not([type='range']):not([type='checkbox']):not([type='radio']), textarea, [contenteditable='true']) { cursor:text; }
 .controls :global(.dialkit-root) :is(button:disabled, input:disabled, [aria-disabled='true']) { cursor:not-allowed; }
 .panel[data-dragging='true'] .grip { cursor:grabbing; }
-/* DialKit mounts native menus outside the panel; scope their cursor overrides to this experiment. */
+/* DialKit mounts native menus outside the panel; scope their cursor overrides to this module. */
 :global(body:has([data-dialkit-floating]) > .dialkit-root) :global(:is(button, [role='menuitem'], [role='menuitemradio'], [role='option'], .dialkit-preset-item, .dialkit-preset-create)) { cursor:default; }
 
 .empty { padding:20px 12px 24px;font:13px/1.6 system-ui,sans-serif;overflow-wrap:anywhere; }
