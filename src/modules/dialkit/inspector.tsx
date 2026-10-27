@@ -41,7 +41,7 @@ function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel
           if (config?.type === 'image' && typeof value === 'string' && /^data:image\/[^;]+;base64,/.test(value)) {
             if(uploads.get(path)?.value===value) continue;
             const token=Symbol();uploads.set(path,{value,token});onPending(1);
-            void callModule<{url:string}>('dialkit-lab','image',{prototypeId,dataUrl:value}).then(result=>{
+            void callModule<{url:string}>('dialkit','image',{prototypeId,dataUrl:value}).then(result=>{
               if(!disposed&&uploads.get(path)?.token===token){uploads.delete(path);onError('');controller.setValue(path,result.url);}
             }).catch(error=>{
               if(!disposed&&uploads.get(path)?.token===token){uploads.delete(path);applying=true;controller.setValues(current.current.values);applying=false;onError(error instanceof Error?error.message:'Image upload failed.');}
@@ -53,10 +53,10 @@ function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel
     const sync = () => { applying = true; const values=structuredClone(current.current.values) as Record<string,any>; for(const [path,upload] of uploads){const keys=path.split('.');let object=values;for(const key of keys.slice(0,-1))object=object[key]??={};object[keys.at(-1)!]=upload.value;} controller.setValues(values); applying = false; };
     sync();
     const listener = () => sync();
-    window.addEventListener(`dialkit-lab-sync-${panel.id}`, listener);
-    return () => { disposed=true; uploads.clear(); window.removeEventListener('dialkit-reset',onReset); unsubscribe(); window.removeEventListener(`dialkit-lab-sync-${panel.id}`, listener); };
+    window.addEventListener(`dialkit-sync-${panel.id}`, listener);
+    return () => { disposed=true; uploads.clear(); window.removeEventListener('dialkit-reset',onReset); unsubscribe(); window.removeEventListener(`dialkit-sync-${panel.id}`, listener); };
   }, [panel.id]);
-  useEffect(() => { window.dispatchEvent(new Event(`dialkit-lab-sync-${panel.id}`)); }, [panel.values]);
+  useEffect(() => { window.dispatchEvent(new Event(`dialkit-sync-${panel.id}`)); }, [panel.values]);
   return null;
 }
 

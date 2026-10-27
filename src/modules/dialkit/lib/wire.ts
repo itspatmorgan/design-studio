@@ -1,5 +1,5 @@
 import type { DialConfig, DialKitValueUpdates } from 'dialkit';
-export const channel = 'studio-dialkit-lab';
+export const channel = 'studio-dialkit';
 // A native image upload can be 10 MiB before base64 encoding. Bound the whole
 // message independently of structural limits without dropping ordinary uploads.
 export const maxPacketCharacters = 16 * 1024 * 1024;

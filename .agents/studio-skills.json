@@ -65,13 +65,13 @@
       "kind": "link",
       "hash": "72b0f4a7dfac54b9ba03d6d094665ff90668d5d5f5d6cb15b7cc43547d06263c"
     },
-    ".agents/skills/studio-module-dialkit-lab-use-dialkit-lab/SKILL.md": {
+    ".agents/skills/studio-module-dialkit-use-dialkit/SKILL.md": {
       "kind": "file",
-      "hash": "85b6144d3435a0c5880e130a5df08105ca6b8623077c8e44213921401bfaa6dc"
+      "hash": "dff5e599e8a9d9c646ad920176783a8075cdb40a074072013d79a66ba9650443"
     },
-    ".claude/skills/studio-module-dialkit-lab-use-dialkit-lab": {
+    ".claude/skills/studio-module-dialkit-use-dialkit": {
       "kind": "link",
-      "hash": "1a66d8c4e3f8d165fd3a1e0c8ed1e4fbb373840109aee6d55f1fa10903748359"
+      "hash": "5030aa1e73d1ce9a053489144dd616469e32d7790fea4deec2a083861f004047"
     },
     ".agents/skills/studio-module-document-write-document/SKILL.md": {
       "kind": "file",

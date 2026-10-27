@@ -11,8 +11,8 @@ export default {
   icon:SlidersHorizontalIcon,rail:'none',order:50,localOnly:true,
   artifactActions:context=>{
     if(!context.environment.local||context.environment.scope!=='prototype'||context.item.fileType!=='view')return [];
-    const attached=!!context.manifest && !!contribution<Attachments>(context.manifest,'dialkit-lab')?.[context.item.studioId!]?.attached;
-    return [{id:'dialkit-lab.toggle',label:attached?'Remove DialKit':'Add DialKit',icon:SlidersHorizontalIcon,localOnly:true,mutates:true,
+    const attached=!!context.manifest && !!contribution<Attachments>(context.manifest,'dialkit')?.[context.item.studioId!]?.attached;
+    return [{id:'dialkit.toggle',label:attached?'Remove DialKit':'Add DialKit',icon:SlidersHorizontalIcon,localOnly:true,mutates:true,
       run:context=>import('./setup').then(module=>attached?module.deleteDialKit(context):module.addDialKit(context))}];
   },
   useActions:proto=>{

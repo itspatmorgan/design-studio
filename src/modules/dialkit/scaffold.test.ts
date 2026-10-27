@@ -13,7 +13,7 @@ test('a view can have only one workspace and retains its identity, fidelity, and
 });
 
 test('workspace discovery is limited to supported declarations in the source header', () => {
-  assert.equal(readWorkspace('// @dialkit-lab {broken}\nexport default null;'), null);
-  assert.equal(readWorkspace('// @dialkit-lab {"version":2}\nexport default null;'), null);
-  assert.equal(readWorkspace('export const text = "// @dialkit-lab {\\"version\\":1}";'), null);
+  assert.equal(readWorkspace('// @dialkit {broken}\nexport default null;'), null);
+  assert.equal(readWorkspace('// @dialkit {"version":2}\nexport default null;'), null);
+  assert.equal(readWorkspace('export const text = "// @dialkit {\\"version\\":1}";'), null);
 });

@@ -6,14 +6,14 @@ import type { Panel } from './lib/wire.ts';
 const config={size:[32,16,64,1],folder:{_collapsed:true,gap:[16,0,40,2]},position:{type:'pad',x:[0,-100,100,1],y:[0,-100,100,1]},spring:{type:'spring',stiffness:180},image:{type:'image',options:['/a.png']},replay:{type:'action',label:'Replay'}} satisfies DialConfig;
 const panel:Panel={id:'p',name:'Layout',config,values:{size:45,folder:{gap:20},position:{x:24,y:21},spring:{type:'easing',duration:.4,ease:[.2,.8,.4,1]},image:'/a.png',replay:{type:'action',label:'Replay'}}};
 const source=`/** @studio-id abc123 */
-// @dialkit-lab {"version":1}
-import {useBespokeControls as useControls,type DialConfig} from '@module/dialkit-lab';
+// @dialkit {"version":1}
+import {useBespokeControls as useControls,type DialConfig} from '@module/dialkit';
 const config={size:[32,16,64,1]} satisfies DialConfig;
 export default function View(){const values=useControls('Layout',config);return <h1 style={{fontSize:values.size}}>Kept</h1>}
 `;
 test('source is the attachment authority even when its view is inactive',()=>{
  assert.deepEqual(inspectSource(source),{attached:true,connected:true});
- assert.deepEqual(inspectSource('// @dialkit-lab {"version":1}\nexport default null'),{attached:true,connected:false});
+ assert.deepEqual(inspectSource('// @dialkit {"version":1}\nexport default null'),{attached:true,connected:false});
  assert.deepEqual(inspectSource('export default null'),{attached:false,connected:false});
 });
 test('save updates defaults while preserving the control schema and actions',()=>{
@@ -24,7 +24,7 @@ test('save updates defaults while preserving the control schema and actions',()=
 });
 test('detach preserves rendered bindings, identity, typed transition values and ordinary source',()=>{
  const next=transformSource(source,[panel],true);
- assert.doesNotMatch(next,/@module\/dialkit-lab|@dialkit-lab|useControls\(/);
+ assert.doesNotMatch(next,/@module\/dialkit|@dialkit|useControls\(/);
  assert.match(next,/@studio-id abc123/);assert.equal(next.match(/@studio-id/g)?.length,1);assert.match(next,/"size": 45/);assert.match(next,/style=\{\{fontSize:values.size\}\}/);assert.match(next,/type:"easing"/);
  assert.equal(transformSource(next,[],true),next);
 });
@@ -38,7 +38,7 @@ test('uploaded images become ordinary static imports and foreign assets are reje
  const image={...panel,values:{...panel.values,image:'/src/prototypes/pat/lab/assets/dialkit-abcdef.png'}};
  const next=transformSource(source,[image],true,'pat/lab','nested/view.tsx');
  assert.match(next,/^\/\*\* @studio-id abc123/);
- assert.match(next,/from "\.\/\.\.\/assets\/dialkit-abcdef.png"/);assert.match(next,/"image": dialKitAsset0/);assert.doesNotMatch(next,/@module\/dialkit-lab|@dialkit-lab/);
+ assert.match(next,/from "\.\/\.\.\/assets\/dialkit-abcdef.png"/);assert.match(next,/"image": dialKitAsset0/);assert.doesNotMatch(next,/@module\/dialkit|@dialkit/);
  assert.throws(()=>transformSource(source,[image],true,'other/lab'),/different prototype/);
 });
 

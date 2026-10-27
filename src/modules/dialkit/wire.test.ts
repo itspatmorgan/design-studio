@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { acceptsPacket, validPacket, maxPacketCharacters } from './lib/wire.ts';
 const scope = { session: 'session-a', runtime: 'runtime-a', identity: 'artifact-a' };
 const source = {} as Window;
-const packet = { channel: 'studio-dialkit-lab', version: 1, ...scope, kind: 'snapshot', sequence: 1, panel: { id: 'panel-a', name: 'Layout', config: { gap: [16, 0, 40] }, values: { gap: 16 } } };
+const packet = { channel: 'studio-dialkit', version: 1, ...scope, kind: 'snapshot', sequence: 1, panel: { id: 'panel-a', name: 'Layout', config: { gap: [16, 0, 40] }, values: { gap: 16 } } };
 test('inspector packets belong to the current sender, origin, document, session and artifact', () => {
   const event = { source, origin: 'https://studio.test', data: packet };
   assert.equal(acceptsPacket(event, source, event.origin, scope), true);

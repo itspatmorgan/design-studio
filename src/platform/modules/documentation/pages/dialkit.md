@@ -2,7 +2,7 @@
 title: DialKit
 description: Tune a prototype, save its design, and remove controls when finished.
 order: 4.5
-module: dialkit-lab
+module: dialkit
 toc: true
 ---
 

@@ -15,7 +15,7 @@
     "view": true,
     "onboarding": true,
     "contributors": true,
-    "dialkit-lab": true
+    "dialkit": true
   },
   "systems": [
     "product",

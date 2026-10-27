@@ -1,6 +1,6 @@
 # DialKit
 
-An optional, prototype-focused module for bespoke design refinement. The registered ID remains `dialkit-lab` so existing imports and configuration retain their identity. It appears as **DialKit** under Prototyping in Studio settings. Normal module availability controls it.
+An optional, prototype-focused module for bespoke design refinement. Its registered ID is `dialkit`. It appears as **DialKit** under Prototyping in Studio settings. Normal module availability controls it.
 
 ## Ownership and surfaces
 
@@ -12,7 +12,7 @@ The inspector is local-authoring UI. Published previews use source defaults and 
 
 Right-click a View and choose Add DialKit. One workspace belongs to one view; any number of named groups may register within it. The empty state directs the person to ask their agent in chat for desired controls. Presence comes from the source declaration/imports through the module's manifest contribution, including inactive views. Active runtime registration does not decide attachment.
 
-Prototype code imports `useBespokeControls` and the `DialConfig` type from `@module/dialkit-lab`. Group names must be unique string literals for source saving. The hook returns values; an optional `onAction` callback handles native actions. Keep bindings local and do not infer schemas from the DOM or mutate a shared system automatically.
+Prototype code imports `useBespokeControls` and the `DialConfig` type from `@module/dialkit`. Group names must be unique string literals for source saving. The hook returns values; an optional `onAction` callback handles native actions. Keep bindings local and do not infer schemas from the DOM or mutate a shared system automatically.
 
 Hide/Show DialKit lives below file visibility in the prototype menu. The shortcut is ⌘⇧; on Mac or Ctrl+Shift+; elsewhere. Visibility is per artifact in this tab's memory and resets on reload. Collapsing or hiding preserves live values. The absolute overlay reserves no preview width. Native folders and version rows share one control scroll area.
 

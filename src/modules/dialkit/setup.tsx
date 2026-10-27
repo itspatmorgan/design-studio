@@ -17,11 +17,11 @@ export async function saveDialKit(context:ArtifactContext,remove=false) {
   try {
     const tuning=currentTuning(identity);
     const source=await readSource(context.proto,context.item.path);
-    const connected=/from\s*['"]@module\/dialkit-lab['"]/.test(source.content);
+    const connected=/from\s*['"]@module\/dialkit['"]/.test(source.content);
     if(connected && (!tuning?.ready || !tuning.panels.length))throw Error('Open this view and wait for its live controls and image uploads before saving or removing DialKit.');
     if(connected && source.version!==tuning!.sourceVersion)throw Error('This source changed. Reload the preview before saving DialKit.');
     const panels=connected && tuning?.capture ? await tuning.capture() : tuning?.panels??[];
-    const result=await callModule<{content:string}>('dialkit-lab','transform',{source:source.content,panels,remove,assetBase:`${context.proto.contributorKey}/${context.proto.id}`,sourcePath:context.item.path});
+    const result=await callModule<{content:string}>('dialkit','transform',{source:source.content,panels,remove,assetBase:`${context.proto.contributorKey}/${context.proto.id}`,sourcePath:context.item.path});
     if(result.content!==source.content)await writeSource(context.proto,context.item.path,result.content,source.version);
     notify(context);
   } finally {pending.delete(identity);}

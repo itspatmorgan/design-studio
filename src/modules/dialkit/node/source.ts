@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import { removeWorkspace, readWorkspace } from '../scaffold.ts';
 import type { Panel } from '../lib/wire.ts';
-const moduleName = '@module/dialkit-lab';
+const moduleName = '@module/dialkit';
 const parse = (source: string) => ts.createSourceFile('view.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
 export function inspectSource(source: string) {
   const file = parse(source);
