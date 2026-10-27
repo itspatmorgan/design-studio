@@ -6,7 +6,7 @@ An optional, prototype-focused module for bespoke design refinement. Its registe
 
 The module owns its floating panel, native DialKit controls, iframe protocol, source preparation, attachment inventory and actions. Platform code supplies generic preview-inspector and artifact-action extension points. Systems has no DialKit demo, hardcoded component adapter or package imports. Native folders, control rendering and version UI remain native.
 
-The inspector is local-authoring UI. Published previews use source defaults and show no inspector. Views may have a system or explicitly use no system. Canvas/document embeds do not acquire an inspector. System component documentation, timeline UI and shared token editing are outside this integration.
+The inspector supports local authoring and opt-in published playgrounds. Published previews use source defaults; controls appear only on views whose header declares `// @dialkit {"version":1,"published":true}`. The default remains local-only. Views may have a system or explicitly use no system. Canvas/document embeds do not acquire an inspector. System component documentation, timeline UI and shared token editing are outside this integration.
 
 ## Attachment and tuning
 
@@ -24,9 +24,15 @@ Remove DialKit in the View menu captures current values, writes ordinary typed v
 
 Add after removal creates an empty workspace around the preserved design. It does not reconstruct the deleted schema. Ask the agent to add new dials. The same pure source transform is available in `node/source.ts`; UI preparation calls the module's `transform` route, and the application performs the existing version-checked source write. The preparation route itself does not read or write files.
 
+## Published playgrounds
+
+The manifest records each view's explicit `published` declaration. The application mounts the inspector only for opted-in published views; importing the library alone does not expose it. Embedded previews remain free of authoring overlays.
+
+Visitors can tune, reset, collapse and hide controls. Save, Add/Remove, source reads and asset writes are local-authoring operations. Published image uploads, if exposed by a view, remain transient data in the browser. Native versions and tuning remain in memory; reload returns to source defaults. The six primary Marketing and Feedback Inbox demo views opt in, with controls scoped to their own layouts and components. Shared system tokens and components remain unchanged.
+
 ## Images and bridge
 
-Uploaded images use the public, Node-only `#studio/assets` service, authorized for the current prototype and trusted server actor. It writes bounded, content-addressed files to the prototype's `assets/` directory. Retries reuse the same file. Save/Remove produce ordinary Vite imports that survive module removal and publishing. Images must fit Studio's 750 KB asset limit. Reset does not delete uploaded files, which may have other references.
+While authoring locally, uploaded images use the public, Node-only `#studio/assets` service, authorized for the current prototype and trusted server actor. It writes bounded, content-addressed files to the prototype's `assets/` directory. Retries reuse the same file. Save/Remove produce ordinary Vite imports that survive module removal and publishing. Images must fit Studio's 750 KB asset limit. Reset does not delete uploaded files, which may have other references.
 
 The version-1 channel validates sender, origin, session/runtime/artifact identity, ordering, finite values, keys, depth (8), array length (64) and total serialized size (16 MiB). Uploaded images cross as asset URLs rather than repeated data strings. Rejected snapshots and updates report errors, and fresh-capture timeouts prevent stale saves. Preview separation is not a security sandbox for untrusted repository code.
 

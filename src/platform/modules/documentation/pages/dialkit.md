@@ -32,7 +32,11 @@ Adding DialKit again creates an empty workspace. Ask the agent for the new dials
 
 An Admin can disable DialKit in Studio settings. Save and remove connected controls from their views first. Dependency checks prevent disabling or uninstalling a module while prototype code still needs it. Disabling keeps the module files. Removal deletes the module implementation while preserving detached prototype designs and assets.
 
-The inspector is available while authoring locally. Published prototypes show their saved design without the inspector.
+## Try published controls
+
+Published views can opt into a DialKit playground. Open the sliders chip to tune and compare the design, then choose **Reset** to return to its starting values. Reloading also restores the saved design. These changes stay in your browser and do not change the shared prototype.
+
+The Marketing landing pages and Feedback Inbox app views demonstrate this workflow. Published controls offer tuning and Reset; saving source and adding or removing DialKit require a local Studio. Views without a published-controls declaration show their saved design without the inspector.
 
 ## Recover from an error
 

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { ArrowUpRight } from '@/systems/marketing/libraries/icons';
 import { buttonVariants } from '@/systems/marketing/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/marketing/components/tabs';
@@ -24,18 +24,20 @@ function ResourceLink({ href, children }: { href: string; children: ReactNode })
   const external = href.startsWith('https://');
   return <a href={href} className={buttonVariants({ variant: "link", size: "sm" })} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>{children}<ArrowUpRight /></a>;
 }
-export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
+export function LandingPage({ version, tuning }: { version: 1 | 2 | 3; tuning: {
+  headingScale: number; descriptionScale: number; whitespaceScale: number; accent?: string; visible?: boolean;
+} }) {
   const headlines = { 1: <>Your next idea.<br />Make it real.</>, 2: <>A studio for<br />what comes next.</>, 3: <>Design with intent.<br />Build with an agent.</> };
   const content = <>
         <main>
           <section className={`${styles.hero} ${styles['hero' + version]}`}>
             <div className={styles.heroCopy}>
             <h1 className="text-display-md font-medium tracking-tight md:text-display-lg">{headlines[version]}</h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-tertiary">{version === 3 ? "An open platform for designers and product managers who build. Turn ideas into working prototypes with an agent that understands your components, context, and design principles." : "An open-source prototype sandbox for designers and builders. Work with your coding agent, your components, and your context."}</p>
+            <p style={{fontSize:18*tuning.descriptionScale}} className="mt-6 max-w-2xl text-lg leading-relaxed text-text-tertiary">{version === 3 ? "An open platform for designers and product managers who build. Turn ideas into working prototypes with an agent that understands your components, context, and design principles." : "An open-source prototype sandbox for designers and builders. Work with your coding agent, your components, and your context."}</p>
             <div className="mt-6"><a href="#install" className={buttonVariants({ size: "lg" })}>Get started</a></div>
             </div>
-            {version === 2 && <StudioFoundation kind="system" />}
-            {version === 3 && <StudioAtmosphere />}
+            {version === 2 && tuning.visible !== false && <StudioFoundation kind="system" />}
+            {version === 3 && tuning.visible !== false && <StudioAtmosphere />}
           </section>
           <section className="py-8 md:py-12" aria-labelledby="demo-title">
             <h2 id="demo-title" className="text-display-sm font-medium tracking-tight">{version === 1 ? 'From an idea to a working prototype.' : version === 2 ? 'Give the idea room to move.' : 'Build prototypes that connect the whole idea'}</h2>
@@ -93,7 +95,7 @@ export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
         {version !== 3 && <footer className="pb-12"><p className="text-sm leading-relaxed text-text-tertiary">This marketing demo uses its own Marketing system: Geist, warm neutrals, and shadcn/ui.</p><div className="mt-4 flex flex-wrap gap-6"><ResourceLink href="/systems/v4576ka1mbpbqdp1">Marketing system</ResourceLink><ResourceLink href={repository}>GitHub</ResourceLink></div></footer>}
   </>;
   const brand = <a href="#" className="flex items-center gap-3 text-lg font-semibold"><StudioMark small={version === 3} />Design Studio</a>;
-  return <div className={`min-h-full bg-bg-primary font-sans text-text-primary ${version > 1 ? styles.websiteArt : ""}`}>
+  return <div style={{'--demo-heading-scale':tuning.headingScale,'--demo-whitespace-scale':tuning.whitespaceScale,...(tuning.accent ? {'--illustration-accent':tuning.accent} : {})} as CSSProperties} className={`min-h-full bg-bg-primary font-sans text-text-primary ${version > 1 ? styles.websiteArt : ""}`}>
     {version === 3 ? <Tabs defaultValue="human" className={styles.siteWidth}>
       <header className="flex flex-wrap items-center justify-between gap-6 py-8">{brand}<TabsList aria-label="Reading mode" className={styles.modeList}><TabsTrigger value="human" className={styles.modeTab}>Human</TabsTrigger><TabsTrigger value="agent" className={styles.modeTab}>Agent</TabsTrigger></TabsList></header>
       <TabsContent value="human">{content}</TabsContent>

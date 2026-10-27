@@ -5,6 +5,8 @@
 //
 // FeedbackInboxScreen takes optional starting state, so the files in states/ can show it filtered,
 // empty, with the panel open, and so on. The default export is the screen as people reach it.
+// @dialkit {"version":1,"published":true}
+import { useBespokeControls } from '@module/dialkit';
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@module/prototypes';
 import { MoreHorizontal, Plus, Search, X } from '@/systems/product/libraries/icons';
@@ -21,6 +23,7 @@ import { PriorityBadge, StatusBadge } from './_components/badges';
 import { NO_FILTER, STATUSES, addFeedback, formatDate, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
 
 export type FeedbackInboxStart = {
+  tuning?: { contentWidth: number; pagePadding: number; rowPadding: number };
   filter?: Filter;
   query?: string;
   adding?: boolean;      // the New feedback panel is open
@@ -28,7 +31,7 @@ export type FeedbackInboxStart = {
   menuFor?: string;      // the row menu of this item is open
 };
 
-export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '', adding: startAdding = false, tried = false, menuFor }: FeedbackInboxStart) {
+export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '', adding: startAdding = false, tried = false, menuFor, tuning = { contentWidth:1024, pagePadding:32, rowPadding:8 } }: FeedbackInboxStart) {
   const { items, filter: asked } = useStore();
   // Starts with what the overview asked for (or what a state file says), then the person takes over.
   const [filter, setFilter] = useState<Filter>(startFilter ?? asked);
@@ -47,7 +50,7 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl px-8 py-8">
+      <div className="mx-auto max-w-5xl px-8 py-8" style={{maxWidth:tuning.contentWidth,padding:tuning.pagePadding}}>
         <header className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">Feedback inbox</h1>
@@ -93,12 +96,12 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
             <TableBody>
               {shown.map((f) => (
                 <TableRow key={f.id} className="cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell className="font-medium">{f.title}</TableCell>
-                  <TableCell className="text-muted-foreground">{f.customer}<span className="text-xs"> · {f.source}</span></TableCell>
-                  <TableCell><PriorityBadge priority={f.priority} /></TableCell>
-                  <TableCell><StatusBadge status={f.status} /></TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(f.createdAt)}</TableCell>
-                  <TableCell onClick={(e) => e.stopPropagation()}>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}} className="font-medium">{f.title}</TableCell>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}} className="text-muted-foreground">{f.customer}<span className="text-xs"> · {f.source}</span></TableCell>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}}><PriorityBadge priority={f.priority} /></TableCell>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}}><StatusBadge status={f.status} /></TableCell>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}} className="text-muted-foreground">{formatDate(f.createdAt)}</TableCell>
+                  <TableCell style={{paddingBlock:tuning.rowPadding}} onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} />}><MoreHorizontal /></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -138,5 +141,10 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
 }
 
 export default function FeedbackInbox() {
-  return <FeedbackInboxScreen />;
+  const layout = useBespokeControls('Inbox density', {
+    contentWidth: [1024, 640, 1280, 16],
+    pagePadding: [32, 16, 56, 2],
+    rowPadding: [8, 4, 20, 1],
+  });
+  return <FeedbackInboxScreen tuning={layout} />;
 }

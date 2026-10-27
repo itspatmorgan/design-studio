@@ -23,7 +23,7 @@ test('DialKit enabled, blocked disable/remove, detached, disabled, re-enabled an
    run(['src/platform/modules/prototypes/node/create.js',name,flag,...(flag==='--system'?['product']:[])]);
    const folder=path.join(dir,'src/prototypes/lifecycle',name.toLowerCase().replaceAll(' ','-'));
    const file=path.join(folder,'prototype.tsx');const identity=fs.readFileSync(file,'utf8').split('\n')[0];
-   const source=identity+`\n// @dialkit {"version":1}\nimport {useBespokeControls,type DialConfig} from '@module/dialkit';\n${flag==='--system'?"import {Button} from '@/systems/product/components/button';":""}\nconst config={size:[32,16,64,1],nested:{gap:[16,0,40,1]}} satisfies DialConfig;\nexport default function View(){const values=useBespokeControls('Layout',config);return <${flag==='--system'?'Button':'button'} style={{fontSize:values.size,padding:values.nested.gap}}>Preserved design</${flag==='--system'?'Button':'button'}>}`;
+   const source=identity+`\n// @dialkit {"version":1,"published":true}\nimport {useBespokeControls,type DialConfig} from '@module/dialkit';\n${flag==='--system'?"import {Button} from '@/systems/product/components/button';":""}\nconst config={size:[32,16,64,1],nested:{gap:[16,0,40,1]}} satisfies DialConfig;\nexport default function View(){const values=useBespokeControls('Layout',config);return <${flag==='--system'?'Button':'button'} style={{fontSize:values.size,padding:values.nested.gap}}>Preserved design</${flag==='--system'?'Button':'button'}>}`;
    fs.writeFileSync(file,source);files.push({file,source,meta:fs.readFileSync(path.join(folder,'meta.json'),'utf8')});
  }
  build('enabled');

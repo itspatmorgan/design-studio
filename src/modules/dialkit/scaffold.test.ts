@@ -17,3 +17,11 @@ test('workspace discovery is limited to supported declarations in the source hea
   assert.equal(readWorkspace('// @dialkit {"version":2}\nexport default null;'), null);
   assert.equal(readWorkspace('export const text = "// @dialkit {\\"version\\":1}";'), null);
 });
+
+test('published opt-in survives scaffolding and is removed with the workspace', () => {
+  const source = '// @dialkit {"version":1,"published":true}\nexport default null;';
+  assert.deepEqual(readWorkspace(source), { version: 1, published: true });
+  assert.equal(scaffoldWorkspace(source), source);
+  assert.equal(removeWorkspace(source), 'export default null;');
+  assert.equal(readWorkspace('// @dialkit {"version":1,"published":"true"}\nexport default null;'), null);
+});

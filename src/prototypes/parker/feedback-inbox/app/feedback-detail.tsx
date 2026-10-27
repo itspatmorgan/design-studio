@@ -3,6 +3,8 @@
 // The feedback inbox opens this screen with the item it was on. Opened directly (or shown on a canvas), it
 // shows the newest item instead of an empty page. DetailScreen takes optional starting state, so the
 // files in states/ can show it with the edit dialog or the delete confirmation open.
+// @dialkit {"version":1,"published":true}
+import { useBespokeControls } from '@module/dialkit';
 import { useState } from 'react';
 import { Link, useNavigate } from '@module/prototypes';
 import { ArrowLeft, Pencil, Trash2 } from '@/systems/product/libraries/icons';
@@ -19,7 +21,7 @@ import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
 import { PRIORITIES, STATUSES, addNote, formatDate, removeFeedback, updateFeedback, useFeedback, useStore, type Priority, type Status } from './_components/store';
 
-export function DetailScreen({ editing: startEditing = false, deleting: startDeleting = false }: { editing?: boolean; deleting?: boolean }) {
+export function DetailScreen({ editing: startEditing = false, deleting: startDeleting = false, tuning = {contentWidth:1024,pagePadding:32,bodySize:14,lineHeight:1.625} }: { editing?: boolean; deleting?: boolean; tuning?: {contentWidth:number;pagePadding:number;bodySize:number;lineHeight:number} }) {
   const { selectedId, items } = useStore();
   const item = useFeedback(selectedId) ?? items[0];
   const [editing, setEditing] = useState(startEditing);
@@ -47,7 +49,7 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl px-8 py-8">
+      <div className="mx-auto max-w-5xl px-8 py-8" style={{maxWidth:tuning.contentWidth,padding:tuning.pagePadding}}>
         {back}
         <header className="mb-6 flex items-start justify-between gap-4">
           <div>
@@ -65,7 +67,7 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
           <div className="space-y-6">
             <section>
               <h2 className="mb-2 text-sm font-semibold">What they said</h2>
-              <p className="text-sm leading-relaxed text-foreground/90">{item.body || 'No details were added.'}</p>
+              <p style={{fontSize:tuning.bodySize,lineHeight:tuning.lineHeight}} className="text-sm leading-relaxed text-foreground/90">{item.body || 'No details were added.'}</p>
               {item.tags.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{item.tags.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}</div>}
             </section>
             <Separator />
@@ -136,5 +138,11 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
 }
 
 export default function Detail() {
-  return <DetailScreen />;
+  const reading = useBespokeControls('Reading layout', {
+    contentWidth: [1024, 640, 1280, 16],
+    pagePadding: [32, 16, 56, 2],
+    bodySize: [14, 12, 20, 1],
+    lineHeight: [1.625, 1.2, 2, 0.025],
+  });
+  return <DetailScreen tuning={reading} />;
 }

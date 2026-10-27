@@ -11,7 +11,7 @@ import { reportTuning } from './tuning';
 import { saveDialKit } from './setup';
 import { channel, acceptsPacket, validPacket, type Packet, type Panel, type Scope } from './lib/wire';
 
-function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel; send: (p: Partial<Packet>) => void; prototypeId:string; onError:(message:string)=>void; onPending:(delta:number)=>void }) {
+function Mirror({ panel, send, prototypeId, onError, onPending, editable }: { panel: Panel; send: (p: Partial<Packet>) => void; prototypeId:string; onError:(message:string)=>void; onPending:(delta:number)=>void; editable:boolean }) {
   const controller = useDialKitController(panel.name, panel.config, {
     id: `inspector-${panel.id}`, persist: false,
     onAction: path => send({ kind: 'action', id: panel.id, path }),
@@ -38,7 +38,7 @@ function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel
         }
         if (JSON.stringify(value) !== JSON.stringify(remote)) {
           const config = path.split('.').reduce<any>((obj,key)=>obj?.[key],current.current.config);
-          if (config?.type === 'image' && typeof value === 'string' && /^data:image\/[^;]+;base64,/.test(value)) {
+          if (editable && config?.type === 'image' && typeof value === 'string' && /^data:image\/[^;]+;base64,/.test(value)) {
             if(uploads.get(path)?.value===value) continue;
             const token=Symbol();uploads.set(path,{value,token});onPending(1);
             void callModule<{url:string}>('dialkit','image',{prototypeId,dataUrl:value}).then(result=>{
@@ -60,8 +60,8 @@ function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel
   return null;
 }
 
-export function PrototypeInspector({ frame, scope, active, visible = active, dark }: {
-  frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; visible?: boolean; dark: boolean;
+export function PrototypeInspector({ frame, scope, active, visible = active, dark, editable }: {
+  frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; visible?: boolean; dark: boolean; editable: boolean;
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
   const manifest = useManifest();
@@ -75,9 +75,9 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
   const item=proto?.artifacts?.find(i=>i.studioId===artifactId);
   useEffect(()=>{
     let cancelled=false;setSourceVersion('');
-    if(active&&proto&&item)void readSource(proto,item.path).then(source=>{if(!cancelled)setSourceVersion(source.version);}).catch(error=>{if(!cancelled)setFailure(String(error));});
+    if(editable&&active&&proto&&item)void readSource(proto,item.path).then(source=>{if(!cancelled)setSourceVersion(source.version);}).catch(error=>{if(!cancelled)setFailure(String(error));});
     return()=>{cancelled=true;};
-  },[scope.identity,scope.runtime,active,manifest]);
+  },[scope.identity,scope.runtime,active,manifest,editable]);
   const captureRef=useRef<null|{id:string;expected:Set<string>;panels:Record<string,Panel>;finish:(error?:Error)=>void}>(null);
   const capture=()=>new Promise<Panel[]>((resolve,reject)=>{
     const request={id:crypto.randomUUID(),expected:new Set(Object.keys(panels)),panels:{} as Record<string,Panel>,finish:(error?:Error)=>{clearTimeout(timer);captureRef.current=null;error?reject(error):resolve(Object.values(request.panels));}};
@@ -85,7 +85,7 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
     captureRef.current=request;send({kind:'request',requestId:request.id});
     if(!request.expected.size)request.finish();
   });
-  useEffect(()=>reportTuning({identity:scope.identity,sourceVersion,ready:active&&!!sourceVersion&&!saving&&!pendingUploads,panels:Object.values(panels),capture}),[scope.identity,sourceVersion,active,panels,saving,pendingUploads]);
+  useEffect(()=>editable ? reportTuning({identity:scope.identity,sourceVersion,ready:active&&!!sourceVersion&&!saving&&!pendingUploads,panels:Object.values(panels),capture}) : undefined,[scope.identity,sourceVersion,active,panels,saving,pendingUploads,editable]);
   const save=async()=>{
     if(!proto||!item)return false;
     // Capture the ready snapshot before marking the header busy.
@@ -98,7 +98,7 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   useEffect(() => {
     let cancelled = false;
-    if (!visible) return;
+    if (!visible || !editable) return;
     const [prototypeId, artifactId] = JSON.parse(scope.identity) as string[];
     const proto = allPrototypes(manifest).find(proto => proto.studioId === prototypeId);
     const item = proto?.artifacts?.find(item => item.studioId === artifactId);
@@ -111,7 +111,7 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
     window.addEventListener('studio-dialkit-workspace', updated);
     void read();
     return () => { cancelled = true; window.removeEventListener('studio-dialkit-workspace', updated); };
-  }, [scope.identity, visible, manifest]);
+  }, [scope.identity, visible, manifest, editable]);
   const visibility = useControlVisibility();
   const available = visible && (Object.keys(panels).length > 0 || workspace !== null);
   useEffect(() => reportControls(scope.identity, available), [scope.identity, available]);
@@ -166,10 +166,10 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
   const entries = Object.values(panels);
   return (
     <>
-      {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} prototypeId={prototypeId} onError={setFailure} onPending={uploadChanged} />)}
-      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit save={save} canSave={active&&!!sourceVersion&&!saving&&!pendingUploads} saving={saving} openRequest={openRequest} initialOpen={!!workspace && !entries.length} count={entries.length} frame={frame} reset={() => {window.dispatchEvent(new Event('dialkit-reset'));entries.forEach(panel => send({ kind: 'reset', id: panel.id }));}}>
+      {entries.map(panel => <Mirror editable={editable} key={panel.id} panel={panel} send={send} prototypeId={prototypeId} onError={setFailure} onPending={uploadChanged} />)}
+      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit save={editable ? save : undefined} canSave={active&&!!sourceVersion&&!saving&&!pendingUploads} saving={saving} openRequest={openRequest} initialOpen={!!workspace && !entries.length} count={entries.length} frame={frame} reset={() => {window.dispatchEvent(new Event('dialkit-reset'));entries.forEach(panel => send({ kind: 'reset', id: panel.id }));}}>
         {failure && <p role='alert' style={{padding:'12px 16px',fontSize:13}}>{failure}</p>}
-        {entries.length ? <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' /> : <EmptyControls />}
+        {entries.length ? <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' productionEnabled /> : <EmptyControls />}
       </FloatingDialKit>}
     </>
   );

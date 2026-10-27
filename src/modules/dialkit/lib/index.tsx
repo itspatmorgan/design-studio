@@ -22,7 +22,8 @@ export function useBespokeControls<T extends DialConfig>(name: string, config: T
   const publish = useRef<(requestId?:string)=>void>(() => {});
   const sequence = useRef(0);
   useEffect(() => {
-    if (!import.meta.env.DEV || parent === window || document.getElementById('root')?.inert) return;
+    // The host gates published inspectors per view; the same scoped bridge serves both environments.
+    if (parent === window || document.getElementById('root')?.inert) return;
     const session = new URLSearchParams(location.search).get('session');
     const runtime = document.documentElement.dataset.previewRuntime;
     const identity = document.querySelector('[data-preview-displayed-identity]')?.getAttribute('data-preview-displayed-identity');

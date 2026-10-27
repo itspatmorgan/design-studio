@@ -12,3 +12,5 @@ Use Save to retain accepted defaults and the View menu's Remove DialKit to captu
 Before disabling or removing the module, detach public-library consumers. Use managed module commands and their dependency checks; do not force removal or substitute no-op hooks. Preserve prototype identity, assignments, assets and rendering.
 
 Inspect the iframe and inspector after changes. Exercise tuning, a prototype action, Save/reload, removal, and reattachment. Opening and hiding must preserve preview width. Check theme boundaries, native popovers, scrolling, keyboard dismissal and constrained windows relevant to the change. Distinguish actual browser evidence from source/build checks and unsupported surfaces.
+
+For an explicitly requested published playground, add `published: true` to the view's `@dialkit` header declaration. Keep this opt-in per view. Visitors tune transient values and reset; source saving, attachment management and asset writes remain local. Verify a production preview, since the local authoring inspector alone does not prove published availability.
