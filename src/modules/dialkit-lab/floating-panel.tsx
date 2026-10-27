@@ -110,20 +110,15 @@ export function FloatingDialKit({ count, reset, frame, children }: {
                 setPosition(previous => clamp({ x: previous.x + direction.x * step, y: previous.y + direction.y * step }));
               }}><HugeiconsIcon icon={SlidersHorizontalIcon} size={16} aria-hidden='true' /></button>
             <h2 className={styles.title}>DialKit</h2><span id={`${id}-move-help`} className={styles.srOnly}>Drag to move. Arrow keys move, Home resets.</span>
+            <button type='button' data-no-drag className={styles.reset} aria-label='Reset tuning' onClick={() => { reset(); setResetCount(value => value + 1); setFeedback('Values reset'); }}>
+              <motion.span animate={{ rotate: resetCount * -360 }} transition={{ duration: reduced ? 0 : 0.35, ease }}><HugeiconsIcon icon={Refresh01Icon} size={14} aria-hidden='true' /></motion.span>Reset
+            </button>
             <button type='button' data-no-drag className={styles.iconButton} aria-label='Collapse DialKit' onClick={close} title='Collapse · Esc'><HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden='true' /></button>
           </header>
           <div className={styles.scroll}>
             <div className={styles.controls}>{children}</div>
           </div>
-          <footer className={styles.footer}>
-            <div className={styles.actions}>
-              <button type='button' className={styles.reset} onClick={() => { reset(); setResetCount(value => value + 1); setFeedback('Values reset'); }}>
-                <motion.span animate={{ rotate: resetCount * -360 }} transition={{ duration: reduced ? 0 : 0.35, ease }}><HugeiconsIcon icon={Refresh01Icon} size={14} aria-hidden='true' /></motion.span>Reset
-              </button>
-              <p>Changes stay in this preview</p>
-            </div>
-            <span className={styles.srOnly} role='status'>{feedback}</span>
-          </footer>
+          <span className={styles.srOnly} role='status'>{feedback}</span>
         </motion.section>
       </div>
     </div>
