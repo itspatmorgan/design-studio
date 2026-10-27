@@ -1,6 +1,6 @@
 .surface { position:absolute;inset:0;z-index:30;pointer-events:none;--dialkit-ease:cubic-bezier(.16,1,.3,1);--dialkit-hairline:color-mix(in srgb,var(--foreground) 12%,transparent); }
 .anchor { position:absolute;top:12px;right:12px;width:min(320px,calc(100% - 24px));display:flex;flex-direction:column;align-items:flex-end;pointer-events:none; }
-.chip { pointer-events:auto;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 11px;border:1px solid var(--dialkit-hairline);border-radius:12px;background:color-mix(in srgb,var(--background) 94%,transparent);backdrop-filter:blur(12px);color:var(--foreground);font:500 12px/1 system-ui,sans-serif;box-shadow:0 2px 4px #00000005,0 4px 14px #0000000b,inset 0 1px 0 #ffffff30;cursor:pointer;user-select:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease; }
+.chip { pointer-events:auto;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 11px;border:1px solid var(--dialkit-hairline);border-radius:12px;background:var(--background);color:var(--foreground);font:500 12px/1 system-ui,sans-serif;box-shadow:0 2px 4px #00000005,0 4px 14px #0000000b,inset 0 1px 0 #ffffff30;cursor:pointer;user-select:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease; }
 .chip:hover { background:var(--background);border-color:color-mix(in srgb,var(--foreground) 22%,transparent);box-shadow:0 3px 6px #00000008,0 6px 18px #00000012; }
 .chip[data-open='true'] { background:var(--background); }
 .count { display:grid;place-items:center;min-width:17px;height:17px;border-radius:5px;background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--muted-foreground);font-size:10px;font-variant-numeric:tabular-nums; }
@@ -36,3 +36,22 @@
 /* Embedded controls share one scrollport. Native pinned headers obscure rows here. */
 .controls :global(.dialkit-panel .dialkit-folder.dialkit-folder-section > .dialkit-folder-header) { position:relative;top:auto;z-index:auto; }
 .controls :global(.dialkit-folder-section > .dialkit-folder-header::before) { display:none; }
+
+/* Give the embedded library the same neutral surface palette as its shell. */
+.controls :global(.dialkit-root[data-theme]) {
+  --dial-glass-bg:var(--background);
+  --dial-dropdown-bg:var(--background);
+  --dial-surface:color-mix(in srgb,var(--foreground) 4%,transparent);
+  --dial-surface-hover:color-mix(in srgb,var(--foreground) 7%,transparent);
+  --dial-surface-active:color-mix(in srgb,var(--foreground) 10%,transparent);
+  --dial-surface-subtle:var(--dialkit-hairline);
+  --dial-text-root:var(--foreground);
+  --dial-text-focus:var(--foreground);
+  --dial-text-primary:var(--foreground);
+  --dial-text-section:var(--muted-foreground);
+  --dial-text-label:var(--muted-foreground);
+  --dial-text-secondary:var(--muted-foreground);
+  --dial-border:var(--dialkit-hairline);
+}
+.controls :global(.dialkit-toolbar-primary) { background:var(--dial-surface);color:var(--dial-text-label);box-shadow:none; }
+.controls :global(.dialkit-toolbar-primary:hover) { background:var(--dial-surface-hover);color:var(--dial-text-focus); }
