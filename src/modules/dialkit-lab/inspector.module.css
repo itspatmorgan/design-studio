@@ -1,6 +1,6 @@
 .surface { position:absolute;inset:0;z-index:30;pointer-events:none;--dialkit-ease:cubic-bezier(.16,1,.3,1);--dialkit-hairline:color-mix(in srgb,var(--foreground) 12%,transparent); }
 .anchor { position:absolute;top:12px;right:12px;bottom:12px;width:min(320px,calc(100% - 24px));display:flex;flex-direction:column;align-items:flex-end;pointer-events:none; }
-.chip { pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:36px;height:36px;padding:0 10px;border:1px solid var(--dialkit-hairline);border-radius:12px;background:var(--background);color:var(--foreground);font:500 12px/1 system-ui,sans-serif;box-shadow:0 2px 4px #00000005,0 4px 14px #0000000b,inset 0 1px 0 #ffffff30;cursor:pointer;user-select:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease; }
+.chip { pointer-events:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:36px;height:36px;padding:0 10px;border:1px solid var(--dialkit-hairline);border-radius:12px;background:var(--background);color:var(--foreground);font:500 12px/1 system-ui,sans-serif;box-shadow:0 2px 4px #00000005,0 4px 14px #0000000b,inset 0 1px 0 #ffffff30;cursor:default;user-select:none;transition:background-color 140ms ease,border-color 140ms ease,box-shadow 140ms ease; }
 .chip:hover { background:var(--background);border-color:color-mix(in srgb,var(--foreground) 22%,transparent);box-shadow:0 3px 6px #00000008,0 6px 18px #00000012; }
 .chip[data-open='true'] { background:var(--background); }
 .panel { position:absolute;top:44px;right:0;width:100%;max-height:calc(100% - 44px);display:flex;flex-direction:column;overflow:visible;color:var(--foreground);background:var(--background);border:1px solid var(--dialkit-hairline);border-radius:18px;box-shadow:0 0 0 1px #00000002,0 4px 8px -4px #00000014,0 16px 48px -12px #00000035;will-change:transform,opacity;visibility:visible;transition:visibility 0s; }
@@ -10,14 +10,14 @@
 .grip,.iconButton { display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted-foreground);flex-shrink:0;transition:background-color 120ms ease,color 120ms ease,transform 120ms var(--dialkit-ease); }
 .grip { cursor:grab;box-shadow:none; }
 .grip:hover { color:var(--foreground);background:transparent;box-shadow:none; }
-.iconButton { cursor:pointer; }
+.iconButton { cursor:default; }
 .iconButton:hover { background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--foreground); }
 .iconButton:active,.reset:active { transform:scale(.97); }
 .scroll { flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 8px;border-radius:0 0 17px 17px;scrollbar-width:thin;scrollbar-color:var(--dialkit-hairline) transparent; }
 .controls :global(.dialkit-panel-inline) { background:transparent; }
 .controls :global(.dialkit-panel[data-multiple='true'] .dialkit-folder-root > .dialkit-folder-header) { display:none; }
 .controls :global(.dialkit-panel[data-multiple='true'] .dialkit-panel-inner) { padding:0 8px; }
-.reset { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:28px;padding:0 7px;border-radius:8px;font:500 11px/1 system-ui,sans-serif;cursor:pointer;transition:transform 140ms var(--dialkit-ease),background-color 140ms ease,box-shadow 140ms ease; }
+.reset { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:28px;padding:0 7px;border-radius:8px;font:500 11px/1 system-ui,sans-serif;cursor:default;transition:transform 140ms var(--dialkit-ease),background-color 140ms ease,box-shadow 140ms ease; }
 .reset { color:var(--muted-foreground);background:transparent;border:0; }
 .reset>span { display:flex; }
 .reset:hover { color:var(--foreground);background:color-mix(in srgb,var(--foreground) 5%,transparent); }
@@ -29,7 +29,7 @@
 
 .title { flex:1;margin:0;color:var(--foreground);font:550 13px/1.4 system-ui,sans-serif; }
 /* Embedded controls share one scrollport. Native pinned headers obscure rows here. */
-.controls :global(.dialkit-panel .dialkit-folder.dialkit-folder-section > .dialkit-folder-header) { position:relative;top:auto;z-index:auto; }
+.controls :global(.dialkit-panel .dialkit-folder.dialkit-folder-section > .dialkit-folder-header) { position:relative;top:auto;z-index:auto;cursor:default; }
 .controls :global(.dialkit-folder-section > .dialkit-folder-header::before) { display:none; }
 
 /* Give the embedded library the same neutral surface palette as its shell. */
@@ -52,3 +52,11 @@
 .controls :global(.dialkit-toolbar-primary:hover) { background:var(--dial-surface-hover);color:var(--dial-text-focus); }
 
 .count { display:grid;place-items:center;min-width:17px;height:17px;border-radius:5px;background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--muted-foreground);font-size:10px;font-variant-numeric:tabular-nums; }
+
+/* Studio uses arrow cursors for controls; reserve specialized cursors for editing and dragging. */
+.controls :global(.dialkit-root) :is(button, [role='button'], [role='slider'], [role='radio'], [role='menuitem'], [role='option'], .dialkit-folder-header, input[type='range']) { cursor:default; }
+.controls :global(.dialkit-root) :is(input:not([type='range']):not([type='checkbox']):not([type='radio']), textarea, [contenteditable='true']) { cursor:text; }
+.controls :global(.dialkit-root) :is(button:disabled, input:disabled, [aria-disabled='true']) { cursor:not-allowed; }
+.panel[data-dragging='true'] .grip { cursor:grabbing; }
+/* DialKit mounts native menus outside the panel; scope their cursor overrides to this experiment. */
+:global(body:has([data-dialkit-floating]) > .dialkit-root) :global(:is(button, [role='menuitem'], [role='menuitemradio'], [role='option'], .dialkit-preset-item, .dialkit-preset-create)) { cursor:default; }
