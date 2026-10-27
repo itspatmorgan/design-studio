@@ -93,7 +93,7 @@ export function FloatingDialKit({ count, reset, frame, children, initialOpen = f
         </motion.button>
         <motion.section ref={panel} id={id} role='dialog' aria-label='DialKit' aria-modal={false} tabIndex={-1}
           aria-hidden={!open} inert={!open} className={styles.panel} data-open={open} data-dragging={dragging}
-          initial={false} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.965, y: open ? 0 : -6 }}
+          initial={{ opacity: 0, scale: 0.965, y: -6 }} animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.965, y: open ? 0 : -6 }}
           transition={{ duration: reduced ? 0 : open ? 0.22 : 0.14, ease }}
           style={{ pointerEvents: open ? 'auto' : 'none', transformOrigin: 'top right' } as CSSProperties}>
           <header className={styles.header} onPointerDown={startDrag} onPointerMove={move} onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={endDrag}>

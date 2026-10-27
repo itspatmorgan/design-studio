@@ -29,6 +29,8 @@ export type PreviewInspectorProps = {
   frame: RefObject<HTMLIFrameElement | null>;
   scope: { session: string; runtime: string; identity: string };
   active: boolean;
+  // Workspace visibility is independent of transient preview recompilation.
+  visible?: boolean;
   dark: boolean;
 };
 export type ModuleApp = {

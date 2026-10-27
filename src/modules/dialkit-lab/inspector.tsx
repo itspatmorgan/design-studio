@@ -37,8 +37,8 @@ function Mirror({ panel, send }: { panel: Panel; send: (p: Partial<Packet>) => v
   return null;
 }
 
-export function PrototypeInspector({ frame, scope, active, dark }: {
-  frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; dark: boolean;
+export function PrototypeInspector({ frame, scope, active, visible = active, dark }: {
+  frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; visible?: boolean; dark: boolean;
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
   const manifest = useManifest();
@@ -46,7 +46,7 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   useEffect(() => {
     let cancelled = false;
-    if (!active) { setWorkspace(null); return; }
+    if (!visible) return;
     const [prototypeId, artifactId] = JSON.parse(scope.identity) as string[];
     const proto = allPrototypes(manifest).find(proto => proto.studioId === prototypeId);
     const item = proto?.artifacts?.find(item => item.studioId === artifactId);
@@ -59,10 +59,11 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
     window.addEventListener('studio-dialkit-workspace', updated);
     void read();
     return () => { cancelled = true; window.removeEventListener('studio-dialkit-workspace', updated); };
-  }, [scope.identity, active, manifest]);
+  }, [scope.identity, visible, manifest]);
   const visibility = useControlVisibility();
-  const available = active && (Object.keys(panels).length > 0 || workspace !== null);
+  const available = visible && (Object.keys(panels).length > 0 || workspace !== null);
   useEffect(() => reportControls(scope.identity, available), [scope.identity, available]);
+  useEffect(() => setPanels({}), [scope.runtime]);
   const sequence = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -71,7 +72,6 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
     frame.current?.contentWindow?.postMessage({ channel, version: 1, ...scope, sequence: ++sequence.current, ...payload }, location.origin);
   };
   useEffect(() => {
-    setPanels({});
     if (!active) return;
     const received = new Map<string, number>();
     const onMessage = (event: MessageEvent) => {

@@ -229,6 +229,7 @@ export default function PreviewHost({
                 key={`${spec.id}:${identity}`}
                 frame={frame}
                 scope={{ session: session.current, runtime: runtime.current!, identity }}
+                visible={interactive.current}
                 active={interactive.current && state === 'ready'}
                 dark={dark}
               />
