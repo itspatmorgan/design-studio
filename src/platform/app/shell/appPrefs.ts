@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -135,6 +136,8 @@ export function useSectionNavWidth() {
     return saved ? clampWidth(saved) : NAV_WIDTH.default;
   });
   const [resizing, setResizing] = useState(false);
+  const finishDrag = useRef<(() => void) | null>(null);
+  useEffect(() => () => finishDrag.current?.(), []);
 
   useEffect(() => {
     if (!resizing) localStorage.setItem(SECTION_NAV_WIDTH_KEY, String(width));
@@ -155,19 +158,41 @@ export function useSectionNavWidth() {
     onPointerDown: (e: ReactPointerEvent<HTMLElement>) => {
       if (e.button !== 0) return;
       e.preventDefault();
+      finishDrag.current?.();
+      const handle = e.currentTarget;
+      const pointerId = e.pointerId;
       const startX = e.clientX;
       const startWidth = width;
+      // Keep receiving events when the pointer crosses into the preview iframe.
+      handle.setPointerCapture(pointerId);
       setResizing(true);
-      const onMove = (m: PointerEvent) => setWidth(clampWidth(startWidth + m.clientX - startX));
-      const onUp = () => {
-        setResizing(false);
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-        window.removeEventListener('pointercancel', onUp);
+      const update = (event: PointerEvent) => {
+        if (event.pointerId === pointerId) setWidth(clampWidth(startWidth + event.clientX - startX));
       };
-      window.addEventListener('pointermove', onMove);
+      const finish = () => {
+        finishDrag.current = null;
+        window.removeEventListener('pointermove', update);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('pointercancel', onCancel);
+        window.removeEventListener('blur', finish);
+        handle.removeEventListener('lostpointercapture', finish);
+        if (handle.hasPointerCapture(pointerId)) handle.releasePointerCapture(pointerId);
+        setResizing(false);
+      };
+      const onUp = (event: PointerEvent) => {
+        if (event.pointerId !== pointerId) return;
+        update(event);
+        finish();
+      };
+      const onCancel = (event: PointerEvent) => {
+        if (event.pointerId === pointerId) finish();
+      };
+      finishDrag.current = finish;
+      window.addEventListener('pointermove', update);
       window.addEventListener('pointerup', onUp);
-      window.addEventListener('pointercancel', onUp);
+      window.addEventListener('pointercancel', onCancel);
+      window.addEventListener('blur', finish);
+      handle.addEventListener('lostpointercapture', finish);
     },
     onDoubleClick: () => setWidth(NAV_WIDTH.default),
     onKeyDown: (e: ReactKeyboardEvent<HTMLElement>) => {
