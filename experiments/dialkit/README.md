@@ -157,3 +157,12 @@ The live booking prototype now ends with DialKit removed and its accepted design
 All 377 regression tests and the production build/type/module checks passed; the existing large-chunk warning remains. Personal prototype content stays ignored by Git. The committed portable fixture under prototype/ now represents the final, uninstrumented state. lifecycle/instrumented-main.tsx retains the intermediate, saved-with-controls source without personal IDs for another agent-led test.
 
 This validates an agent-led lifecycle and the hide/show interaction. Self-service control authoring, a Save/Remove UI, persistent visibility preferences, draft recovery, conflict-aware automatic saving, and production library pruning remain future integration work. Hiding alone is not saving or removal.
+
+
+## Discoverable empty workspace
+
+The booking Main view has an empty workspace again. Right-click its navigation entry and choose Add DialKit beside Make lo-fi. The action uses the sliders icon and directly opens the empty panel. It switches to Remove DialKit for the current view after adding the workspace. Add is idempotent: one workspace per view, with multiple dial groups inside it. There is no modal, brief input, or trash button in the panel. The empty state asks the person to use chat to request dials for the things they want to control.
+
+A leading `// @dialkit-lab {"version":1}` JSON declaration records the workspace without rewriting design bindings. Agents can add or remove the same declaration. Empty-workspace removal and re-add were exercised through the UI, preserving the accepted source and appearance. Connected hook removal remains guarded; the automatic source acceptance/removal adapter is still outstanding. Hide/show is distinct from removal.
+
+Generic artifact-action contributions are separate from file-type-owned capabilities and are rechecked before invocation. Regression coverage verifies permission/local/removal checks, identity/fidelity/source preservation, idempotence, supported header declaration parsing, and exact source restoration on empty removal. A first regression run caught an eager module-registry cycle through public FileTree; callbacks now use a lightweight registry initialized after enabled apps resolve.

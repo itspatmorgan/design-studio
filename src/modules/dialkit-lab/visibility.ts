@@ -19,3 +19,9 @@ export function toggleControls(identity: string) {
 export function useControlVisibility() {
   return useSyncExternalStore(listener => { listeners.add(listener); return () => { listeners.delete(listener); }; }, () => current, () => null);
 }
+
+export const controlVisibility = () => current;
+export function showControls(identity: string) {
+  hiddenViews.delete(identity);
+  if (current?.identity === identity) { current = { ...current, hidden: false }; emit(); }
+}

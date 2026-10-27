@@ -2,6 +2,8 @@
 // ⌘K palette. A module with these has an app.tsx in its folder (<module folder>/app.tsx) that
 // exports a ModuleApp as its default. The shell finds them with a glob, so the app runs with any of
 // them removed, and reads them in `order`: the rail, the palette and the routes all follow the list.
+import { registerArtifactContributions } from './data/artifactContributions';
+import type { ArtifactAction, ArtifactActionContext } from './data/fileTypeModule';
 import type { ComponentType, RefObject } from 'react';
 import type { IconSvgElement } from '@hugeicons/react';
 import type { AnyRoute, NavigateOptions } from '@tanstack/react-router';
@@ -30,6 +32,8 @@ export type PreviewInspectorProps = {
   dark: boolean;
 };
 export type ModuleApp = {
+  // Experimental optional-module actions for an existing artifact. FileTree rechecks availability before running.
+  artifactActions?: (context: ArtifactActionContext) => readonly ArtifactAction[];
   previewInspector?: ComponentType<PreviewInspectorProps>;
   // Local creation workflows do not appear on published viewing sites.
   localOnly?: boolean;
@@ -93,3 +97,6 @@ export const sectionPath = (spec: ModuleSpec) => `/${spec.section!.key}`;
 // Whether a pathname is inside the module's section: /examples and /examples/sample.
 export const inSection = (spec: ModuleSpec, pathname: string) =>
   Boolean(spec.section) && (pathname === sectionPath(spec) || pathname.startsWith(`${sectionPath(spec)}/`));
+
+// Register lightweight callbacks after enabled apps are resolved.
+registerArtifactContributions(moduleApps.flatMap(({ app }) => (app.artifactActions ? [app.artifactActions] : [])));

@@ -60,3 +60,10 @@
 .panel[data-dragging='true'] .grip { cursor:grabbing; }
 /* DialKit mounts native menus outside the panel; scope their cursor overrides to this experiment. */
 :global(body:has([data-dialkit-floating]) > .dialkit-root) :global(:is(button, [role='menuitem'], [role='menuitemradio'], [role='option'], .dialkit-preset-item, .dialkit-preset-create)) { cursor:default; }
+
+.empty { padding:20px 12px 24px;font:13px/1.6 system-ui,sans-serif;overflow-wrap:anywhere; }
+.empty h3 { margin:0 0 8px;font-size:14px;font-weight:550; }
+.empty p { margin:0;white-space:pre-wrap; }
+.empty .emptyHint { margin-top:14px;color:var(--muted-foreground);font-size:12px; }
+
+.empty .emptyHint { margin-top:8px; }

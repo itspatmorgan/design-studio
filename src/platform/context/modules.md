@@ -171,3 +171,7 @@ Modules can declare primitive preference schemas and defaults; see [Contributor 
 `ModuleBuild.assets` contributes named lazy JSON assets through the [shared asset protocol](build-assets.md). Browser consumers use `loadModuleAsset` and `subscribeModuleAsset` from `#studio/data`.
 
 `#studio/systems` exposes [application system services](system-services.md). Use these queries and `ThemeScope` for application rendering; the singular `#studio/system` remains declaration types.
+
+### Experimental artifact menu contributions
+
+The isolated DialKit branch adds `ModuleApp.artifactActions(context)` for optional modules to contribute local actions to an existing artifact’s navigation context menu. Use namespaced IDs and explicit `localOnly`/`mutates` declarations. The shell merges these separately from the file type’s declared actions, re-evaluates providers when the menu opens, and resolves the selected identity and availability again before executing. Server-side mutation authorization and version checks still apply. Enabled module apps register lightweight provider callbacks after initialization; public FileTree imports must not eagerly load the application/module registry. This field is provisional experiment code, not a stable API.

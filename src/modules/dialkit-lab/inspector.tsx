@@ -3,6 +3,9 @@ import { DialRoot, DialStore, useDialKitController } from 'dialkit';
 import 'dialkit/styles.css';
 import { reportControls, useControlVisibility } from './visibility';
 import { FloatingDialKit } from './floating-panel';
+import { EmptyControls } from './empty-controls';
+import { useManifest, allPrototypes, readSource } from '#studio/data';
+import { readWorkspace, type Workspace } from './scaffold';
 import { channel, acceptsPacket, type Packet, type Panel, type Scope } from './lib/wire';
 
 function Mirror({ panel, send }: { panel: Panel; send: (p: Partial<Packet>) => void }) {
@@ -38,8 +41,27 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; dark: boolean;
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
+  const manifest = useManifest();
+  const [openRequest, setOpenRequest] = useState(0);
+  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    if (!active) { setWorkspace(null); return; }
+    const [prototypeId, artifactId] = JSON.parse(scope.identity) as string[];
+    const proto = allPrototypes(manifest).find(proto => proto.studioId === prototypeId);
+    const item = proto?.artifacts?.find(item => item.studioId === artifactId);
+    const read = async () => {
+      if (!proto || !item) return;
+      try { const source = await readSource(proto, item.path); if (!cancelled) { setWorkspace(readWorkspace(source.content)); } }
+      catch { if (!cancelled) { setWorkspace(null); } }
+    };
+    const updated = (event: Event) => { const detail = (event as CustomEvent).detail; if (detail?.identity === scope.identity) { if (detail.open) setOpenRequest(value => value + 1); void read(); } };
+    window.addEventListener('studio-dialkit-workspace', updated);
+    void read();
+    return () => { cancelled = true; window.removeEventListener('studio-dialkit-workspace', updated); };
+  }, [scope.identity, active, manifest]);
   const visibility = useControlVisibility();
-  const available = active && Object.keys(panels).length > 0;
+  const available = active && (Object.keys(panels).length > 0 || workspace !== null);
   useEffect(() => reportControls(scope.identity, available), [scope.identity, available]);
   const sequence = useRef(0);
   const activeRef = useRef(active);
@@ -65,13 +87,13 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
     send({ kind: 'request' });
     return () => window.removeEventListener('message', onMessage);
   }, [scope.session, scope.runtime, scope.identity, active]);
-  if (!active || !Object.keys(panels).length) return null;
+  if (!available) return null;
   const entries = Object.values(panels);
   return (
     <>
       {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} />)}
-      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
-        <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' />
+      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit openRequest={openRequest} initialOpen={!!workspace && !entries.length} count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
+        {entries.length ? <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' /> : <EmptyControls />}
       </FloatingDialKit>}
     </>
   );

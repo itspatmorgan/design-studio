@@ -285,3 +285,30 @@ test('dispatch resolves current authority, artifact presence, and supported acti
   await assert.rejects(() => runArtifactAction('fixture.change', resolve), /unsupported/);
   assert.equal(runs, 0);
 });
+
+test('optional artifact contributions recheck permission, local execution, and removal before dispatch', async () => {
+  let runs = 0;
+  const action = {
+    id: 'optional.setup',
+    label: 'Setup',
+    localOnly: true,
+    mutates: true,
+    run: () => {
+      runs++;
+    },
+  };
+  const spec = fixture();
+  const renderer = module();
+  let current: ArtifactActionTarget = { spec, module: renderer, context: actionContext(), contributions: [action] };
+  assert.equal(artifactActions(spec, renderer, current.context, [action])[0].availability.available, true);
+  current = { ...current, context: actionContext({ editable: false }) };
+  await assert.rejects(() => runArtifactAction(action.id, () => current), /permission/);
+  current = { ...current, context: actionContext({ local: false }) };
+  await assert.rejects(() => runArtifactAction(action.id, () => current), /local studio/);
+  current = { ...current, context: actionContext(), contributions: [] };
+  await assert.rejects(() => runArtifactAction(action.id, () => current), /unsupported/);
+  assert.equal(runs, 0);
+  current = { ...current, contributions: [action] };
+  await runArtifactAction(action.id, () => current);
+  assert.equal(runs, 1);
+});

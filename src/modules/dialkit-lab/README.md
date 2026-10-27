@@ -23,3 +23,11 @@ The module uses only public Studio types. The preview host enumerates enabled mo
 Instrumented prototypes import this module’s public library, so remove or replace that instrumentation before disabling/removing the module. The booking lifecycle fixture has now had its instrumentation removed, with accepted values retained as ordinary source constants. The editor and bridge are excluded from production, but the prototype's DialKit value hooks remain runtime dependencies with source-config defaults. Hiding the inspector is not dependency removal.
 
 Use the [investigation record](../../../experiments/dialkit/README.md) for the fixture, startup commands, evidence, limitations, and cleanup. [Use DialKit Lab](skills/use-dialkit-lab/SKILL.md) describes agent operation. The [module contract](../../platform/context/modules.md) owns installation and boundaries.
+
+## Add and remove an empty workspace
+
+Right-click a prototype View in navigation. Add DialKit appears beside Make lo-fi with the same sliders icon as the trigger. It directly adds a leading `// @dialkit-lab {"version":1}` declaration to that view and opens the empty panel. The empty state tells the person to ask their agent in chat for the controls they want. There is no modal, form, or separate tuning brief.
+
+One view has one workspace, which may contain multiple named groups of dials. Add is idempotent. For the current view, the context-menu action switches to Remove DialKit after adding it. There is no panel trash icon. Removal deletes an empty workspace declaration with the normal authorized, version-checked source write and preserves the remainder of the source exactly. Arbitrary connected hooks are guarded until their values are accepted and their bindings removed through the source workflow. Automatic deletion of connected instrumentation is not implemented. Hide/show preserves the workspace and values.
+
+The module contributes actions through experimental `ModuleApp.artifactActions`. FileTree rechecks the selected artifact and permissions before execution and refreshes contributions when opening a menu. A lightweight provider registry keeps public FileTree consumers free of eager application-registry cycles.

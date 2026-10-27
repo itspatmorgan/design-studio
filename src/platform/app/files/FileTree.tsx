@@ -1,3 +1,4 @@
+import { contributedArtifactActions as contributedActions } from '@/platform/app/data/artifactContributions';
 import { FileActionItems } from '@/platform/app/shell/FileActionItems';
 // The prototype's files, in its navigation: a filterable tree with expand/collapse all, and a
 // "Edit source" in a file's menu, which opens its text in place of its page (the shared platform SourceEditor).
@@ -332,6 +333,7 @@ export default function FileTree({
   const fixed = (node: FileNode) => policy.fixed?.(node) ?? false;
   const newOptions = (folder: string) => policy.newOptions(folder, { live, editable });
   const items = new Map(proto.artifacts.map(i => [i.path, i]));
+  const [, refreshMenus] = useState(0);
   const actionTarget = useRef<(path: string) => ArtifactActionTarget | undefined>(() => undefined);
   useLayoutEffect(() => {
     actionTarget.current = path => {
@@ -624,11 +626,18 @@ export default function FileTree({
     const spec = menuItem && FILE_TYPES[menuItem.fileType];
     const available = artifactAvailability(spec, environment);
     const actionContext = menuItem ? { proto, item: menuItem, environment } : undefined;
-    const actions = actionContext ? artifactActions(spec, fileTypeModules[menuItem!.fileType], actionContext) : [];
+    const actions = actionContext
+      ? artifactActions(spec, fileTypeModules[menuItem!.fileType], actionContext, contributedActions(actionContext))
+      : [];
     if (!local && !actions.some(({ action }) => !action.localOnly && !action.mutates))
       return <div key={key}>{children}</div>;
     return (
-      <ContextMenu key={key}>
+      <ContextMenu
+        key={key}
+        onOpenChange={open => {
+          if (open) refreshMenus(value => value + 1);
+        }}
+      >
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
         <ContextMenuContent className='min-w-44'>
           {/* Groups, in this order, with a line between them (the prototype's menu follows the same rule,
@@ -683,7 +692,7 @@ export default function FileTree({
                             const latest = actionTarget.current(menuItem!.path);
                             return latest?.context.item.studioId === menuItem!.studioId &&
                               latest?.context.item.fileType === menuItem!.fileType
-                              ? latest
+                              ? { ...latest, contributions: contributedActions(latest.context) }
                               : undefined;
                           }),
                         )
