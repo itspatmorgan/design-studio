@@ -115,3 +115,22 @@ This experiment qualifies only the documented simple controls. Full DialKit cont
 - Editing the implementation of the tuning hook itself can require a full reload when its hook signature changes. This is separate from the verified ordinary prototype-only Fast Refresh path.
 
 Recommendation: continue with a contextual inspector that hosts prototype-authored controls. Validate the production handoff and more of DialKit's API before treating the experimental slot/transport as a supported integration. Prefer explicit preview width controls or an overlay option when designers need to hold a target viewport constant while tuning.
+
+
+## Floating DialKit iteration
+
+The dock has been replaced with a compact sliders-icon DialKit chip and a floating, nonmodal panel. Both are absolutely positioned within the preview host; neither consumes a flex column. The collapsed state is the default. The panel keeps native DialKit controls, scoped tuning, reset, and Copy to agent. Its draggable header and keyboard grip allow moving controls away from the area being refined. There is no reserved right strip or width handle.
+
+The shell uses restrained 220ms opening and 140ms closing scale/fade transitions from the top-right corner, a reversible Motion animation on the same mounted panel, subtle press feedback, layered shadows, and reduced-motion branches. Hidden controls are inert; Escape returns focus to the chip. Native color-picker dismissal takes priority over the shell. The overlay intentionally covers part of the prototype while expanded; collapsing restores unobstructed access without changing responsive breakpoints.
+
+Verified in the live booking prototype:
+
+- At a 1118px browser viewport, the iframe remained **1070px open and closed**. At 420px, it remained **372px open and closed**. The temporary viewport override was reset.
+- A keyboard slider edit from 44 to 45 persisted after Escape collapse and reopening.
+- Dragging moved the panel from its corner; Home on the grip restored its position. Narrow-window resizing kept it within the workspace.
+- Escape dismissed the native color picker first, leaving the panel open. A subsequent shell Escape restored chip focus.
+- Scrolling reaches all controls and the footer stays accessible. Reduced-motion branches were inspected in source; the browser tool does not expose preference emulation, so that preference was not visually emulated.
+
+All 377 regression tests passed again, and the production build, typecheck, and module checks passed. The existing large-chunk warning remains.
+
+The earlier dock-width measurements above are historical findings superseded by this iteration. Integration remains experimental and local to this worktree.

@@ -6,13 +6,13 @@ An isolated workflow experiment for prototype-local tuning through an outer Stud
 
 `lib/index.tsx` exposes `useBespokeControls(name, config, { onAction }?)` through `@module/dialkit-lab`. The config and its value bindings stay beside the prototype. The experimental adapter supports the simple slider, color, toggle, and action controls exercised by the booking fixture. Other DialKit controls, presets, and timelines are unqualified.
 
-`app.tsx` contributes a lazy inspector through the experimental `ModuleApp.previewInspector` slot. Its UI and CSS live in the application layer, outside the runtime library. The contribution needs local development and `VITE_DIALKIT_EXPERIMENT=true`. Desktop uses a docked, collapsible panel with adjustable width. At 800px and below it becomes an overlay so the preview remains usable when the panel is collapsed. Docked width changes the preview's actual responsive viewport.
+`app.tsx` contributes a lazy inspector through the experimental `ModuleApp.previewInspector` slot. Its UI and CSS live in the application layer, outside the runtime library. The contribution needs local development and `VITE_DIALKIT_EXPERIMENT=true`. A floating DialKit chip opens a nonmodal overlay at the preview’s top-right. Neither state reserves layout space or changes the iframe viewport. Drag the header or use the grip’s arrow keys to reposition it; Home restores its corner position. Movement is clamped to the workspace. Escape collapses the panel and returns focus to the chip; native popovers handle Escape first. Controls stay mounted while collapsed, with the hidden dialog inert. Opening uses a 220ms ease-out scale/fade, closing takes 140ms, and the shell respects reduced motion. The panel scrolls within the available height.
 
 The module's `studio-dialkit-lab` version-1 channel carries bounded configuration/value snapshots and value, reset, and action commands. Sender window, origin, session, runtime, artifact identity, panel instance, and message ordering constrain delivery. This is trusted same-origin code, not a security sandbox. Commands never read or write source files.
 
 Each prototype hook retains its local store across Fast Refresh. Actual unmount releases the store. Host mirrors are disposed on screen departure and source mode. Source mode pauses the inspector; returning requests the retained preview's current values. Inert embeds do not register with the host. Plain page reloads reset tuning. No browser persistence is enabled.
 
-Copy proposal includes active artifact identity and named configurations/values for agent-assisted source edits. There is no Apply-to-source action. DialKit's built-in copied parameters and version UI describe the host mirrors; they do not provide iframe-aware thumbnail capture or a complete production handoff.
+Copy to agent includes active artifact identity and named configurations/values for agent-assisted source edits. There is no Apply-to-source action. DialKit's built-in copied parameters and version UI describe the host mirrors; they do not provide iframe-aware thumbnail capture or a complete production handoff.
 
 ## Boundaries and reproduction
 

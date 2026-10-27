@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type RefObject, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { DialRoot, DialStore, useDialKitController } from 'dialkit';
 import 'dialkit/styles.css';
-import styles from './inspector.module.css';
+import { FloatingDialKit } from './floating-panel';
 import { channel, acceptsPacket, type Packet, type Panel, type Scope } from './lib/wire';
 
 function Mirror({ panel, send }: { panel: Panel; send: (p: Partial<Packet>) => void }) {
@@ -37,9 +37,6 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; dark: boolean;
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
-  const [open, setOpen] = useState(true);
-  const [width, setWidth] = useState(320);
-  const [notice, setNotice] = useState('');
   const sequence = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -49,7 +46,6 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   };
   useEffect(() => {
     setPanels({});
-    setNotice('');
     if (!active) return;
     const received = new Map<string, number>();
     const onMessage = (event: MessageEvent) => {
@@ -69,20 +65,11 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   const entries = Object.values(panels);
   const proposal = JSON.stringify({ artifact: scope.identity, scope: 'prototype-local', panels: entries.map(({ name, config, values }) => ({ name, config, values })) }, null, 2);
   return (
-    <aside aria-label='Design inspector' className={styles.panel} data-open={open} style={{ '--inspector-width': `${width}px` } as CSSProperties}>
+    <>
       {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} />)}
-      <button type='button' aria-label={open ? 'Collapse design inspector' : 'Open design inspector'} onClick={() => setOpen(value => !value)} style={{ cursor: 'pointer' }}>{open ? 'Tune design  →' : '←'}</button>
-      <div hidden={!open}>
-        <p style={{ fontSize: 12, opacity: .7, marginBlock: 12 }}>Prototype experiment · Changes stay in this preview.</p>
-        <label style={{ fontSize: 12 }}>Inspector width <input aria-label='Inspector width' type='range' min='260' max='420' value={width} onChange={event => setWidth(Number(event.target.value))} /></label>
+      <FloatingDialKit count={entries.length} frame={frame} context={frame.current?.title.replace(/ preview$/, '') ?? 'Current preview'} proposal={proposal} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
         <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' />
-        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: 13, marginBlock: 20 }}>
-          <button type='button' onClick={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>Reset tuning</button>
-          <button type='button' onClick={async () => { try { await navigator.clipboard.writeText(proposal); setNotice('Proposal copied'); } catch { setNotice('Copy from the proposal below'); } }}>Copy proposal</button>
-        </div>
-        <p role='status' style={{ fontSize: 12 }}>{notice}</p>
-        <details><summary style={{ fontSize: 12 }}>View proposal</summary><pre style={{ fontSize: 10, whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{proposal}</pre></details>
-      </div>
-    </aside>
+      </FloatingDialKit>
+    </>
   );
 }
