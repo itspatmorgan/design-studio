@@ -715,8 +715,6 @@ export default function FileTree({
                   <HugeiconsIcon icon={PencilEdit02Icon} /> Rename
                 </ContextMenuItem>
               ),
-            ],
-            [
               <FileActionItems
                 key='file-utilities'
                 group='utilities'
