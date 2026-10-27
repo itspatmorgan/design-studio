@@ -10,6 +10,8 @@ An isolated workflow experiment for prototype-local tuning through an outer Stud
 
 The module's `studio-dialkit-lab` version-1 channel carries bounded configuration/value snapshots and value, reset, and action commands. Sender window, origin, session, runtime, artifact identity, panel instance, and message ordering constrain delivery. This is trusted same-origin code, not a security sandbox. Commands never read or write source files.
 
+The prototype actions menu offers Hide/Show DialKit for the active view when it has registered controls. Hiding removes the shell and trigger while retaining hook values and host mirrors. Visibility is keyed to artifact identity in memory for this browser session; reloading resets the preference. This experimental action uses the existing module contribution API.
+
 Each prototype hook retains its local store across Fast Refresh. Actual unmount releases the store. Host mirrors are disposed on screen departure and source mode. Source mode pauses the inspector; returning requests the retained preview's current values. Inert embeds do not register with the host. Plain page reloads reset tuning. No browser persistence is enabled.
 
 The proposed Copy to agent action and raw-values disclosure were removed from the live panel. Tuning is still transient: saving accepted values into prototype source remains an ordinary agent-assisted code change. There is no Apply-to-source action. DialKit's built-in copied parameters and version UI describe the host mirrors; they do not provide iframe-aware thumbnail capture or a complete production handoff.
@@ -18,6 +20,6 @@ The proposed Copy to agent action and raw-values disclosure were removed from th
 
 The module uses only public Studio types. The preview host enumerates enabled module contributions and imports no DialKit implementation. It is not necessary to turn this module into a required dependency.
 
-The retained prototype imports this module's public library, so remove or replace its instrumentation before disabling/removing the module. The editor and bridge are excluded from production, but the prototype's DialKit value hooks remain runtime dependencies with source-config defaults. Hiding the inspector is not dependency removal.
+Instrumented prototypes import this module’s public library, so remove or replace that instrumentation before disabling/removing the module. The booking lifecycle fixture has now had its instrumentation removed, with accepted values retained as ordinary source constants. The editor and bridge are excluded from production, but the prototype's DialKit value hooks remain runtime dependencies with source-config defaults. Hiding the inspector is not dependency removal.
 
 Use the [investigation record](../../../experiments/dialkit/README.md) for the fixture, startup commands, evidence, limitations, and cleanup. [Use DialKit Lab](skills/use-dialkit-lab/SKILL.md) describes agent operation. The [module contract](../../platform/context/modules.md) owns installation and boundaries.

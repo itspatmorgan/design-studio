@@ -141,3 +141,19 @@ The earlier dock-width measurements above are historical findings superseded by 
 Follow-up feedback removed the proposed Copy to agent handoff and raw-value disclosure from the shell. Live tuning remains transient; removing this action does not add source persistence. Reset remains available. The header now contains only the sliders icon and DialKit, with no native grab-handle tooltip or hover fill/shadow. Keyboard movement instructions remain available to assistive technology.
 
 The native section headers and version toolbars now scroll in normal document flow within the panel's single controls scrollport. They no longer pin over sliders. Both groups were expanded, scrolled, and independently collapsed/reopened in the booking prototype. Computed section-header positioning is relative rather than sticky, and scrolling moves both headers by the same offset. The production build, typecheck, and module checks pass, with the existing chunk-size warning.
+
+
+## Completed prototype lifecycle test
+
+The live booking prototype now ends with DialKit removed and its accepted design retained. Add/save/remove were real agent-assisted source edits, not simulated browser buttons or an automatic generic source-rewriter. Hide/show is a working view-scoped contribution to the existing prototype actions menu. The preference lives in memory for the browser session; it is not yet a declared persistent contributor preference.
+
+1. Added Card finish with a Lift slider beside the prototype’s existing controls. The trigger showed three groups.
+2. Tuned Title Size to 48, Card Radius to 24, Lift to 8, and Duration to 460 using real slider keyboard interactions. Other source values stayed unchanged.
+3. Selected Hide DialKit for this view in the prototype actions menu. The floating surface count became zero while the preview stayed active. Selected Show DialKit for this view; all four tuned values were retained.
+4. Saved those values into prototype configuration defaults through an ordinary source edit. Reloaded the page; the registered sliders showed 48 / 24 / 8 / 460 again.
+5. Replaced all DialKit hooks/configuration in Main and About with plain accepted source values. Main retains the 8px lift / 24px blur shadow, 48px title, 24px card corners, and 460ms confirmation duration. Removed the now-unused Story typography controls from About while preserving its 22px / 1.6 defaults.
+6. Reloaded again. No floating surface was registered and the prototype menu offered no DialKit action. The booking confirmation still worked. Source scanning found no DialKit import or hook in either view.
+
+All 377 regression tests and the production build/type/module checks passed; the existing large-chunk warning remains. Personal prototype content stays ignored by Git. The committed portable fixture under prototype/ now represents the final, uninstrumented state. lifecycle/instrumented-main.tsx retains the intermediate, saved-with-controls source without personal IDs for another agent-led test.
+
+This validates an agent-led lifecycle and the hide/show interaction. Self-service control authoring, a Save/Remove UI, persistent visibility preferences, draft recovery, conflict-aware automatic saving, and production library pruning remain future integration work. Hiding alone is not saving or removal.

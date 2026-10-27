@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { DialRoot, DialStore, useDialKitController } from 'dialkit';
 import 'dialkit/styles.css';
+import { reportControls, useControlVisibility } from './visibility';
 import { FloatingDialKit } from './floating-panel';
 import { channel, acceptsPacket, type Packet, type Panel, type Scope } from './lib/wire';
 
@@ -37,6 +38,9 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   frame: RefObject<HTMLIFrameElement | null>; scope: Scope; active: boolean; dark: boolean;
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
+  const visibility = useControlVisibility();
+  const available = active && Object.keys(panels).length > 0;
+  useEffect(() => reportControls(scope.identity, available), [scope.identity, available]);
   const sequence = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;
@@ -66,9 +70,9 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   return (
     <>
       {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} />)}
-      <FloatingDialKit count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
+      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
         <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' />
-      </FloatingDialKit>
+      </FloatingDialKit>}
     </>
   );
 }
