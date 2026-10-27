@@ -86,7 +86,7 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
     }
   }
 
-  // Groups, in this order, with a line between them (the file menu follows the same rule, FileTree.tsx):
+  // Prototype-level groups, in order, with a line between them:
   // how this panel looks; reach the prototype (open it elsewhere, then copy where it is); change it;
   // delete it, last and alone. A group with nothing in it leaves no line. The last three are shared
   // with the prototype's card (usePrototypeActions.ts).

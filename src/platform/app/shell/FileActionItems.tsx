@@ -7,6 +7,7 @@ import { toast } from '@/platform/systems/studio/components/toast';
 // Shared non-destructive actions for system content, prototype, and documentation files.
 export function FileActionItems({
   path,
+  group = 'all',
   href,
   edit,
   sourceLabel = 'Edit source',
@@ -15,6 +16,7 @@ export function FileActionItems({
   reveal,
 }: {
   path: string;
+  group?: 'all' | 'source' | 'utilities';
   href?: string;
   edit?: () => void;
   sourceLabel?: string;
@@ -36,30 +38,32 @@ export function FileActionItems({
   };
   return (
     <>
-      {edit && (
+      {group !== 'utilities' && edit && (
         <ContextMenuItem onClick={() => run(edit)}>
           <HugeiconsIcon icon={SourceCodeIcon} /> {sourceLabel}
           {sourceShortcut && <ContextMenuShortcut>{shortcutLabel('source')}</ContextMenuShortcut>}
         </ContextMenuItem>
       )}
-      {open && (
+      {group !== 'source' && open && (
         <ContextMenuItem onClick={() => run(open)}>
           <HugeiconsIcon icon={FileEditIcon} /> Open in editor
         </ContextMenuItem>
       )}
-      {reveal && (
+      {group !== 'source' && reveal && (
         <ContextMenuItem onClick={() => run(reveal)}>
           <HugeiconsIcon icon={Folder01Icon} /> Reveal in Finder
         </ContextMenuItem>
       )}
-      {href && (
+      {group !== 'source' && href && (
         <ContextMenuItem onClick={() => run(() => copy(href, 'Link copied'))}>
           <HugeiconsIcon icon={Link01Icon} /> Copy link
         </ContextMenuItem>
       )}
-      <ContextMenuItem onClick={() => run(() => copy(path, 'Path copied'))}>
-        <HugeiconsIcon icon={Copy01Icon} /> Copy path
-      </ContextMenuItem>
+      {group !== 'source' && (
+        <ContextMenuItem onClick={() => run(() => copy(path, 'Path copied'))}>
+          <HugeiconsIcon icon={Copy01Icon} /> Copy path
+        </ContextMenuItem>
+      )}
     </>
   );
 }

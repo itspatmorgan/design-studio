@@ -640,9 +640,8 @@ export default function FileTree({
       >
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
         <ContextMenuContent className='min-w-44'>
-          {/* Groups, in this order, with a line between them (the prototype's menu follows the same rule,
-              PrototypeHeader.tsx): make something here; reach it (open it elsewhere, then copy where it is);
-              change it; delete it, last and alone. A group with nothing in it leaves no line. */}
+          {/* Prioritize in-Studio design actions, then organization, external/file utilities,
+              and deletion last. Folder creation remains first when applicable. */}
           {menuGroups<ReactNode>([
             node.dir && editable
               ? newOptions(node.path).map(o => (
@@ -652,24 +651,22 @@ export default function FileTree({
                 ))
               : [],
             [
-              <FileActionItems
-                key='file-actions'
-                path={repoPath(proto, node.path)}
-                href={menuItem ? artifactUrl(proto, menuItem) : undefined}
-                edit={
-                  menuItem && available.source.available
-                    ? () => {
-                        void navigate({ ...artifactLink(proto, menuItem), search: { mode: 'source' } } as never);
-                      }
-                    : undefined
-                }
-                sourceShortcut
-                sourceLabel={available.editSource.available ? 'Edit source' : 'View source'}
-                open={local && !node.dir ? () => openInEditor(proto, node.path) : undefined}
-                reveal={local ? () => revealInFinder(proto, node.path) : undefined}
-              />,
-            ],
-            [
+              menuItem && available.source.available && (
+                <FileActionItems
+                  key='source'
+                  group='source'
+                  path={repoPath(proto, node.path)}
+                  edit={
+                    menuItem && available.source.available
+                      ? () => {
+                          void navigate({ ...artifactLink(proto, menuItem), search: { mode: 'source' } } as never);
+                        }
+                      : undefined
+                  }
+                  sourceShortcut
+                  sourceLabel={available.editSource.available ? 'Edit source' : 'View source'}
+                />
+              ),
               available.fidelity.available && (
                 <ContextMenuItem
                   key='lofi'
@@ -708,6 +705,8 @@ export default function FileTree({
                   {action.icon && <HugeiconsIcon icon={action.icon} />} {action.label}
                 </ContextMenuItem>
               )),
+            ],
+            [
               changeable && (
                 <ContextMenuItem
                   key='rename'
@@ -716,6 +715,16 @@ export default function FileTree({
                   <HugeiconsIcon icon={PencilEdit02Icon} /> Rename
                 </ContextMenuItem>
               ),
+            ],
+            [
+              <FileActionItems
+                key='file-utilities'
+                group='utilities'
+                path={repoPath(proto, node.path)}
+                href={menuItem ? artifactUrl(proto, menuItem) : undefined}
+                open={local && !node.dir ? () => openInEditor(proto, node.path) : undefined}
+                reveal={local ? () => revealInFinder(proto, node.path) : undefined}
+              />,
             ],
             [
               changeable && (
