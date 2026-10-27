@@ -667,14 +667,6 @@ export default function FileTree({
                   sourceLabel={available.editSource.available ? 'Edit source' : 'View source'}
                 />
               ),
-              available.fidelity.available && (
-                <ContextMenuItem
-                  key='lofi'
-                  onClick={() => setTimeout(() => setLofi(items.get(node.path)!, !items.get(node.path)!.lofi))}
-                >
-                  <HugeiconsIcon icon={PaintBoardIcon} /> {items.get(node.path)?.lofi ? 'Make hi-fi' : 'Make lo-fi'}
-                </ContextMenuItem>
-              ),
               ...actions.map(({ action, availability }) => (
                 <ContextMenuItem
                   key={action.id}
@@ -705,6 +697,14 @@ export default function FileTree({
                   {action.icon && <HugeiconsIcon icon={action.icon} />} {action.label}
                 </ContextMenuItem>
               )),
+              available.fidelity.available && (
+                <ContextMenuItem
+                  key='lofi'
+                  onClick={() => setTimeout(() => setLofi(items.get(node.path)!, !items.get(node.path)!.lofi))}
+                >
+                  <HugeiconsIcon icon={PaintBoardIcon} /> {items.get(node.path)?.lofi ? 'Make hi-fi' : 'Make lo-fi'}
+                </ContextMenuItem>
+              ),
             ],
             [
               changeable && (
