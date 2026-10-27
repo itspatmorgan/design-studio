@@ -96,3 +96,5 @@ Page previews and inert embeds use the same lifecycle adapter. A renderer commit
 The [shared lifecycle contract](../../context/source.md#artifact-revision-and-preview-lifecycle) defines input coverage, static-preview limits, optional activity, message ordering, and state/lifetime policy. The status counter describes load attempts. It never stands in for source freshness. The child controller is also replaced when an identified artifact's source location changes.
 
 View loads its assigned theme through the public [application system services](../../context/system-services.md). Its child preview entry remains supplied-only.
+
+Preview surface sizing uses literal zero minimum heights at the system boundary and inner scroll container. These layout constraints must work with explicit `systemId: null` and systems that omit a spacing token; token-backed zero utilities can otherwise compute to an automatic minimum and clip long views instead of scrolling.

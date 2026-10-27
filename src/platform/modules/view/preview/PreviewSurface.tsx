@@ -61,10 +61,11 @@ export default function PreviewSurface({
         themeClass={themeClass}
         className={
           (lofi ? 'lofi-view ' : '') +
-          'bg-background text-foreground relative flex min-h-0 flex-1 flex-col [contain:layout]'
+          'bg-background text-foreground relative flex min-h-[0px] flex-1 flex-col [contain:layout]'
         }
       >
-        <div className='min-h-0 flex-1 overflow-auto'>
+        {/* Literal zero must work even when the assigned system has no spacing token. */}
+        <div className='min-h-[0px] flex-1 overflow-auto'>
           <PortalContext.Provider value={portal}>
             <PrototypeNavigationProvider value={prototype}>
               <Component />
