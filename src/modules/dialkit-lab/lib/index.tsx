@@ -58,3 +58,5 @@ export function useBespokeControls<T extends DialConfig>(name: string, config: T
   useEffect(() => publish.current(), [controls.values, config, name]);
   return controls.values;
 }
+
+export { DialKitCompatibilityProbe, CompatibilityMotion } from './compatibility';

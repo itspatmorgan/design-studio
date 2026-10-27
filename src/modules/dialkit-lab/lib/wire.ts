@@ -1,5 +1,8 @@
 import type { DialConfig, DialKitValueUpdates } from 'dialkit';
 export const channel = 'studio-dialkit-lab';
+// A native image upload can be 10 MiB before base64 encoding. Bound the whole
+// message independently of structural limits without dropping ordinary uploads.
+export const maxPacketCharacters = 16 * 1024 * 1024;
 export type Scope = { session: string; runtime: string; identity: string };
 export type Panel = { id: string; name: string; config: DialConfig; values: DialKitValueUpdates<DialConfig> };
 export type Packet = Scope & { channel: typeof channel; version: 1; sequence: number; kind: 'snapshot' | 'remove' | 'request' | 'update' | 'action' | 'reset'; panel?: Panel; id?: string; path?: string; value?: unknown };
@@ -9,7 +12,7 @@ export function validPacket(value: unknown): value is Packet {
   if (v.channel !== channel || v.version !== 1 || !Number.isSafeInteger(v.sequence) || v.sequence < 0) return false;
   if (![v.session, v.runtime, v.identity].every(s => typeof s === 'string' && s.length > 0 && s.length < 2048)) return false;
   if (!['snapshot', 'remove', 'request', 'update', 'action', 'reset'].includes(v.kind)) return false;
-  try { if (JSON.stringify(value).length > 24000) return false; } catch { return false; }
+  try { if (JSON.stringify(value).length > maxPacketCharacters) return false; } catch { return false; }
   const safe = (x: unknown, depth = 0): boolean => {
     if (depth > 8) return false;
     if (x === null || typeof x === 'string' || typeof x === 'boolean') return true;
