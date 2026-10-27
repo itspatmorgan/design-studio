@@ -26,7 +26,7 @@ import DuplicatePrototypeDialog from '@/platform/modules/prototypes/viewer/Dupli
 import DeletePrototypeDialog from '@/platform/modules/prototypes/viewer/DeletePrototypeDialog';
 type Icon = typeof Link01Icon;
 
-export type Action = { label: string; icon: Icon; onSelect: () => void; destructive?: boolean };
+export type Action = { label: string; icon: Icon; onSelect: () => void; destructive?: boolean; shortcut?: string };
 
 export function usePrototypeActions(proto: PrototypeInfo) {
   const router = useRouter();

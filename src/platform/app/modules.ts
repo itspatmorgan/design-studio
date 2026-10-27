@@ -28,6 +28,7 @@ export type PrototypeAction = {
   onSelect: () => void;
   destructive?: boolean;
   group?: 'visibility';
+  shortcut?: string;
 };
 
 // Experimental slot used only by the isolated DialKit workflow test.

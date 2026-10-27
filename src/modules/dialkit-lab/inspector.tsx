@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { DialRoot, DialStore, useDialKitController } from 'dialkit';
 import 'dialkit/styles.css';
-import { reportControls, useControlVisibility } from './visibility';
+import { isDialKitShortcut } from './shortcut';
+import { reportControls, useControlVisibility, toggleControls, controlVisibility } from './visibility';
 import { FloatingDialKit } from './floating-panel';
 import { EmptyControls } from './empty-controls';
 import { useManifest, allPrototypes, readSource } from '#studio/data';
@@ -64,6 +65,24 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
   const available = visible && (Object.keys(panels).length > 0 || workspace !== null);
   useEffect(() => reportControls(scope.identity, available), [scope.identity, available]);
   useEffect(() => setPanels({}), [scope.runtime]);
+  useEffect(() => {
+    if (!available) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (!isDialKitShortcut(event)) return;
+      const target = event.target as Element | null;
+      // Targets may belong to the preview's document, so avoid outer-realm instanceof checks.
+      if (typeof target?.closest === 'function' && target.closest('input,textarea,select,[contenteditable]:not([contenteditable="false"]),.cm-editor')) return;
+      const context = controlVisibility();
+      if (!context?.available || context.identity !== scope.identity) return;
+      event.preventDefault();
+      event.stopPropagation();
+      toggleControls(scope.identity);
+    };
+    const preview = frame.current?.contentWindow;
+    window.addEventListener('keydown', onKey);
+    preview?.addEventListener('keydown', onKey);
+    return () => { window.removeEventListener('keydown', onKey); preview?.removeEventListener('keydown', onKey); };
+  }, [available, frame, scope.identity, scope.runtime]);
   const sequence = useRef(0);
   const activeRef = useRef(active);
   activeRef.current = active;

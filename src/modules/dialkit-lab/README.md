@@ -33,3 +33,5 @@ One view has one workspace, which may contain multiple named groups of dials. Ad
 The module contributes actions through experimental `ModuleApp.artifactActions`. FileTree rechecks the selected artifact and permissions before execution and refreshes contributions when opening a menu. A lightweight provider registry keeps public FileTree consumers free of eager application-registry cycles.
 
 Workspace visibility is independent of the preview bridge’s ready state. Source mode hides the workspace, but a same-view source refresh retains it while the bridge pauses commands. Host mirrors are cleared only on child runtime replacement, not on every loading/ready transition. The floating panel animates on its first mount as well as subsequent opens.
+
+Show/Hide DialKit uses ⌘⇧; on Mac and Ctrl+Shift+; elsewhere, displayed in the visibility menu row. The shortcut works in the shell and same-origin preview document, only for an available workspace in the active view. It ignores editable fields, composition, Alt-modified chords, repeat events, and already-handled key events. Source mode leaves it inactive.

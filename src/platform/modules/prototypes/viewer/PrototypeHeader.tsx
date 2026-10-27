@@ -14,6 +14,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@/platform/systems/studio/components/context-menu';
 import {
@@ -21,6 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/platform/systems/studio/components/dropdown-menu';
 import { useRenamePrototype } from '@/platform/modules/prototypes/viewer/useRenamePrototype';
@@ -115,6 +117,12 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
             onClick={() => setTimeout(a.onSelect)}
           >
             <HugeiconsIcon icon={a.icon} /> {a.label}
+            {a.shortcut &&
+              (Item === DropdownMenuItem ? (
+                <DropdownMenuShortcut>{a.shortcut}</DropdownMenuShortcut>
+              ) : (
+                <ContextMenuShortcut>{a.shortcut}</ContextMenuShortcut>
+              ))}
           </Item>
         ))}
       </Fragment>
