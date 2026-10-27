@@ -54,6 +54,8 @@
     "cn": "^0.4.0",
     "codemirror-lang-mermaid": "^0.5.0",
     "pele": "1.8.0",
+    "dialkit": "^2.1.0",
+    "motion": "^14.6.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-error-boundary": "^6.1.6",
