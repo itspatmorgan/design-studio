@@ -63,11 +63,10 @@ export function PrototypeInspector({ frame, scope, active, dark }: {
   }, [scope.session, scope.runtime, scope.identity, active]);
   if (!active || !Object.keys(panels).length) return null;
   const entries = Object.values(panels);
-  const proposal = JSON.stringify({ artifact: scope.identity, scope: 'prototype-local', panels: entries.map(({ name, config, values }) => ({ name, config, values })) }, null, 2);
   return (
     <>
       {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} />)}
-      <FloatingDialKit count={entries.length} frame={frame} context={frame.current?.title.replace(/ preview$/, '') ?? 'Current preview'} proposal={proposal} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
+      <FloatingDialKit count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
         <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' />
       </FloatingDialKit>
     </>

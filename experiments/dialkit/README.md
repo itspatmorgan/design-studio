@@ -134,3 +134,10 @@ Verified in the live booking prototype:
 All 377 regression tests passed again, and the production build, typecheck, and module checks passed. The existing large-chunk warning remains.
 
 The earlier dock-width measurements above are historical findings superseded by this iteration. Integration remains experimental and local to this worktree.
+
+
+### Natural scrolling and header cleanup
+
+Follow-up feedback removed the proposed Copy to agent handoff and raw-value disclosure from the shell. Live tuning remains transient; removing this action does not add source persistence. Reset remains available. The header now contains only the sliders icon and DialKit, with no native grab-handle tooltip or hover fill/shadow. Keyboard movement instructions remain available to assistive technology.
+
+The native section headers and version toolbars now scroll in normal document flow within the panel's single controls scrollport. They no longer pin over sliders. Both groups were expanded, scrolled, and independently collapsed/reopened in the booking prototype. Computed section-header positioning is relative rather than sticky, and scrolling moves both headers by the same offset. The production build, typecheck, and module checks pass, with the existing chunk-size warning.

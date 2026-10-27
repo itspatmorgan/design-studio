@@ -1,13 +1,13 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent, type ReactNode, type RefObject } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { SlidersHorizontalIcon, ArrowDown01Icon, Cancel01Icon, DragDropVerticalIcon, Copy01Icon, Tick02Icon, Refresh01Icon } from '@hugeicons/core-free-icons';
+import { SlidersHorizontalIcon, ArrowDown01Icon, Cancel01Icon, Refresh01Icon } from '@hugeicons/core-free-icons';
 import styles from './inspector.module.css';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 type Point = { x: number; y: number };
-export function FloatingDialKit({ count, context, proposal, reset, frame, children }: {
-  count: number; context: string; proposal: string; reset: () => void;
+export function FloatingDialKit({ count, reset, frame, children }: {
+  count: number; reset: () => void;
   frame: RefObject<HTMLIFrameElement | null>; children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -99,7 +99,7 @@ export function FloatingDialKit({ count, context, proposal, reset, frame, childr
           transition={{ duration: reduced ? 0 : open ? 0.22 : 0.14, ease }}
           style={{ pointerEvents: open ? 'auto' : 'none', transformOrigin: 'top right' } as CSSProperties}>
           <header className={styles.header} onPointerDown={startDrag} onPointerMove={move} onPointerUp={endDrag} onPointerCancel={endDrag} onLostPointerCapture={endDrag}>
-            <button type='button' className={styles.grip} aria-label='Move DialKit panel' title='Drag to move. Arrow keys move, Home resets.'
+            <button type='button' className={styles.grip} aria-label='Move DialKit panel' aria-describedby={`${id}-move-help`}
               onKeyDown={event => {
                 const offsets: Record<string, Point> = { ArrowLeft: { x: -1, y: 0 }, ArrowRight: { x: 1, y: 0 }, ArrowUp: { x: 0, y: -1 }, ArrowDown: { x: 0, y: 1 } };
                 if (event.key === 'Home') { event.preventDefault(); setPosition({ x: 0, y: 0 }); }
@@ -108,25 +108,21 @@ export function FloatingDialKit({ count, context, proposal, reset, frame, childr
                 event.preventDefault();
                 const step = event.shiftKey ? 4 : 16;
                 setPosition(previous => clamp({ x: previous.x + direction.x * step, y: previous.y + direction.y * step }));
-              }}><HugeiconsIcon icon={DragDropVerticalIcon} size={16} aria-hidden='true' /></button>
-            <div className={styles.context}><span className={styles.eyebrow}>LIVE CONTROLS</span><h2 title={context}>{context}</h2></div>
+              }}><HugeiconsIcon icon={SlidersHorizontalIcon} size={16} aria-hidden='true' /></button>
+            <h2 className={styles.title}>DialKit</h2><span id={`${id}-move-help`} className={styles.srOnly}>Drag to move. Arrow keys move, Home resets.</span>
             <button type='button' data-no-drag className={styles.iconButton} aria-label='Collapse DialKit' onClick={close} title='Collapse · Esc'><HugeiconsIcon icon={Cancel01Icon} size={16} aria-hidden='true' /></button>
           </header>
           <div className={styles.scroll}>
             <div className={styles.controls}>{children}</div>
-            <details className={styles.values}><summary>View values</summary><pre>{proposal}</pre></details>
           </div>
           <footer className={styles.footer}>
             <div className={styles.actions}>
               <button type='button' className={styles.reset} onClick={() => { reset(); setResetCount(value => value + 1); setFeedback('Values reset'); }}>
                 <motion.span animate={{ rotate: resetCount * -360 }} transition={{ duration: reduced ? 0 : 0.35, ease }}><HugeiconsIcon icon={Refresh01Icon} size={14} aria-hidden='true' /></motion.span>Reset
               </button>
-              <button type='button' className={styles.copy} onClick={async () => {
-                try { await navigator.clipboard.writeText(proposal); setFeedback('Values copied'); }
-                catch { setFeedback('Copy from View values'); }
-              }}><HugeiconsIcon icon={feedback === 'Values copied' ? Tick02Icon : Copy01Icon} size={14} aria-hidden='true' />{feedback === 'Values copied' ? 'Copied' : 'Copy to agent'}</button>
+              <p>Changes stay in this preview</p>
             </div>
-            <p>Changes stay in this preview</p><span className={styles.srOnly} role='status'>{feedback}</span>
+            <span className={styles.srOnly} role='status'>{feedback}</span>
           </footer>
         </motion.section>
       </div>

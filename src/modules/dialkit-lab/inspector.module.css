@@ -7,34 +7,32 @@
 .chevron { display:flex;color:var(--muted-foreground);margin-left:-3px; }
 .panel { position:absolute;top:44px;right:0;width:100%;max-height:min(620px,calc(100dvh - 80px));display:flex;flex-direction:column;overflow:visible;color:var(--foreground);background:var(--background);border:1px solid var(--dialkit-hairline);border-radius:18px;box-shadow:0 0 0 1px #00000002,0 4px 8px -4px #00000014,0 16px 48px -12px #00000035;will-change:transform,opacity;visibility:visible;transition:visibility 0s; }
 .panel[data-open='false'] { visibility:hidden;transition:visibility 0s 150ms; }
-.header { display:flex;align-items:center;gap:7px;padding:15px 12px 14px;border-bottom:1px solid var(--dialkit-hairline);cursor:grab;touch-action:none;user-select:none; }
+.header { display:flex;align-items:center;gap:7px;padding:10px 12px;border-bottom:1px solid var(--dialkit-hairline);cursor:grab;touch-action:none;user-select:none; }
 .panel[data-dragging='true'] .header { cursor:grabbing; }
-.context { min-width:0;flex:1; }
-.eyebrow { display:block;color:var(--muted-foreground);font:500 9px/1.4 system-ui,sans-serif;letter-spacing:1.3px;margin-bottom:3px; }
-.context h2 { color:var(--foreground);font:550 12px/1.4 system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0; }
 .grip,.iconButton { display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted-foreground);flex-shrink:0;transition:background-color 120ms ease,color 120ms ease,transform 120ms var(--dialkit-ease); }
-.grip { cursor:grab; }
+.grip { cursor:grab;box-shadow:none; }
+.grip:hover { color:var(--foreground);background:transparent;box-shadow:none; }
 .iconButton { cursor:pointer; }
-.grip:hover,.iconButton:hover { background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--foreground); }
-.iconButton:active,.reset:active,.copy:active { transform:scale(.97); }
+.iconButton:hover { background:color-mix(in srgb,var(--foreground) 6%,transparent);color:var(--foreground); }
+.iconButton:active,.reset:active { transform:scale(.97); }
 .scroll { flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 8px;scrollbar-width:thin;scrollbar-color:var(--dialkit-hairline) transparent; }
 .controls :global(.dialkit-panel-inline) { background:transparent; }
 .controls :global(.dialkit-panel[data-multiple='true'] .dialkit-folder-root > .dialkit-folder-header) { display:none; }
 .controls :global(.dialkit-panel[data-multiple='true'] .dialkit-panel-inner) { padding:0 8px; }
-.values { margin:4px 8px 12px;font:11px/1.5 system-ui,sans-serif;color:var(--muted-foreground); }
-.values summary { cursor:pointer;padding:8px 0; }
-.values pre { font:10px/1.6 ui-monospace,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:200px;overflow:auto;padding:12px;border:1px solid var(--dialkit-hairline);border-radius:8px; }
 .footer { flex-shrink:0;border-top:1px solid var(--dialkit-hairline);padding:12px 16px 11px; }
 .actions { display:flex;align-items:center;justify-content:space-between;gap:12px; }
-.reset,.copy { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;padding:0 10px;border-radius:8px;font:500 11px/1 system-ui,sans-serif;cursor:pointer;transition:transform 140ms var(--dialkit-ease),background-color 140ms ease,box-shadow 140ms ease; }
+.reset { display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:32px;padding:0 10px;border-radius:8px;font:500 11px/1 system-ui,sans-serif;cursor:pointer;transition:transform 140ms var(--dialkit-ease),background-color 140ms ease,box-shadow 140ms ease; }
 .reset { color:var(--muted-foreground);background:transparent;border:0;margin-left:-8px; }
 .reset>span { display:flex; }
 .reset:hover { color:var(--foreground);background:color-mix(in srgb,var(--foreground) 5%,transparent); }
-.copy { min-width:120px;background:var(--foreground);color:var(--background);border:1px solid transparent;box-shadow:0 1px 2px #00000012,inset 0 1px 0 #ffffff15; }
-.copy:hover { background:color-mix(in srgb,var(--foreground) 86%,var(--background)); }
-.footer p { margin:10px 0 0;text-align:center;color:var(--muted-foreground);font:10px/1.4 system-ui,sans-serif; }
-.chip:focus-visible,.iconButton:focus-visible,.grip:focus-visible,.reset:focus-visible,.copy:focus-visible,.values summary:focus-visible { outline:2px solid var(--ring);outline-offset:3px; }
+.footer p { margin:0;color:var(--muted-foreground);font:10px/1.4 system-ui,sans-serif; }
+.chip:focus-visible,.iconButton:focus-visible,.grip:focus-visible,.reset:focus-visible { outline:2px solid var(--ring);outline-offset:3px; }
 .panel:focus { outline:none; }
 .srOnly { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
 @media(max-width:480px) { .anchor {top:10px;right:10px;width:min(320px,calc(100% - 20px));}.panel{max-height:calc(100dvh - 76px);} }
-@media(prefers-reduced-motion:reduce) { .chip,.grip,.iconButton,.reset,.copy { transition:none; }.panel[data-open='false']{transition:none;} }
+@media(prefers-reduced-motion:reduce) { .chip,.grip,.iconButton,.reset { transition:none; }.panel[data-open='false']{transition:none;} }
+
+.title { flex:1;margin:0;color:var(--foreground);font:550 13px/1.4 system-ui,sans-serif; }
+/* Embedded controls share one scrollport. Native pinned headers obscure rows here. */
+.controls :global(.dialkit-panel .dialkit-folder.dialkit-folder-section > .dialkit-folder-header) { position:relative;top:auto;z-index:auto; }
+.controls :global(.dialkit-folder-section > .dialkit-folder-header::before) { display:none; }
