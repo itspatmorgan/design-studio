@@ -22,7 +22,13 @@ export type PaletteContext = {
 };
 
 // One entry a module adds to a prototype's "…" menu (on its card and in its navigation).
-export type PrototypeAction = { label: string; icon: IconSvgElement; onSelect: () => void; destructive?: boolean };
+export type PrototypeAction = {
+  label: string;
+  icon: IconSvgElement;
+  onSelect: () => void;
+  destructive?: boolean;
+  group?: 'visibility';
+};
 
 // Experimental slot used only by the isolated DialKit workflow test.
 export type PreviewInspectorProps = {

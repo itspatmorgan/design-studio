@@ -175,3 +175,5 @@ Modules can declare primitive preference schemas and defaults; see [Contributor 
 ### Experimental artifact menu contributions
 
 The isolated DialKit branch adds `ModuleApp.artifactActions(context)` for optional modules to contribute local actions to an existing artifact’s navigation context menu. Use namespaced IDs and explicit `localOnly`/`mutates` declarations. The shell merges these separately from the file type’s declared actions, re-evaluates providers when the menu opens, and resolves the selected identity and availability again before executing. Server-side mutation authorization and version checks still apply. Enabled module apps register lightweight provider callbacks after initialization; public FileTree imports must not eagerly load the application/module registry. This field is provisional experiment code, not a stable API.
+
+Prototype menu contributions may declare `group: 'visibility'` to appear in the navigation header’s first group after Show all files / Hide other files. Other contributions retain their existing change-action placement. Visibility actions do not appear as prototype-card mutation actions.

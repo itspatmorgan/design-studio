@@ -89,7 +89,7 @@ export function usePrototypeActions(proto: PrototypeInfo) {
               onSelect: () => setDuplicating(true),
             },
           editable && { label: 'Archive', icon: Archive02Icon, onSelect: () => setArchived(true) },
-          ...contributed,
+          ...contributed.filter(action => action.group !== 'visibility'),
         ],
         [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
       ];
@@ -108,5 +108,5 @@ export function usePrototypeActions(proto: PrototypeInfo) {
     </>
   ) : null;
 
-  return { local, editable, groups, dialogs };
+  return { local, editable, groups, dialogs, visibility: contributed.filter(action => action.group === 'visibility') };
 }

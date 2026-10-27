@@ -17,5 +17,5 @@ export default { icon: SlidersHorizontalIcon, rail: 'none', order: 50, localOnly
 }, useActions: proto => {
   const context = useControlVisibility();
   return import.meta.env.VITE_DIALKIT_EXPERIMENT === 'true' && context?.available && context.prototypeId === proto.studioId
-    ? [{ label: context.hidden ? 'Show DialKit for this view' : 'Hide DialKit for this view', icon: SlidersHorizontalIcon, onSelect: () => toggleControls(context.identity) }] : [];
+    ? [{ label: context.hidden ? 'Show DialKit' : 'Hide DialKit', icon: SlidersHorizontalIcon, group: 'visibility' as const, onSelect: () => toggleControls(context.identity) }] : [];
 }, previewInspector: PreviewInspector } satisfies ModuleApp;

@@ -97,6 +97,7 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
           icon: showAll ? ViewOffSlashIcon : ViewIcon,
           onSelect: toggleShowAll,
         },
+      ...actions.visibility,
     ],
     reach,
     change,
