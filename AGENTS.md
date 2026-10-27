@@ -24,6 +24,7 @@ The human Manual lives in `src/platform/modules/documentation/pages/`; technical
 When the person asks for a canvas (a page of views, documents, and notes arranged together), read [src/platform/modules/canvas/skills/use-canvas/SKILL.md](src/platform/modules/canvas/skills/use-canvas/SKILL.md).
 When the person asks to assign or review team Admins, system maintainers, or contributor permissions, read [src/platform/modules/contributors/skills/use-contributors/SKILL.md](src/platform/modules/contributors/skills/use-contributors/SKILL.md).
 When the person asks for a standalone diagram inside a prototype, read [src/platform/modules/diagrams/skills/create-diagram/SKILL.md](src/platform/modules/diagrams/skills/create-diagram/SKILL.md).
+When the person tests the experimental DialKit prototype inspector, read [src/modules/dialkit-lab/skills/use-dialkit-lab/SKILL.md](src/modules/dialkit-lab/skills/use-dialkit-lab/SKILL.md).
 When the person asks for a document inside a prototype, read [src/platform/modules/document/skills/write-document/SKILL.md](src/platform/modules/document/skills/write-document/SKILL.md).
 When the person asks to add or change the human Manual, read [src/platform/modules/documentation/skills/write-manual/SKILL.md](src/platform/modules/documentation/skills/write-manual/SKILL.md).
 When the person asks for a first tour of the studio or help getting started after installation, read [src/platform/modules/onboarding/skills/use-onboarding/SKILL.md](src/platform/modules/onboarding/skills/use-onboarding/SKILL.md).

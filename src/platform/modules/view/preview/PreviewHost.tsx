@@ -19,6 +19,8 @@ import {
   type HostMessage,
 } from './protocol';
 
+import { moduleApps } from '@/platform/app/modules';
+
 export default function PreviewHost({
   target,
   href,
@@ -203,20 +205,36 @@ export default function PreviewHost({
       data-preview-input-revision={lifecycle.source?.inputs}
       data-preview-displayed-revision={lifecycle.displayed?.revision.inputs}
     >
-      <iframe
-        ref={frame}
-        src={src}
-        title={title + ' preview'}
-        onLoad={send}
-        tabIndex={surface === 'embed' ? -1 : undefined}
-        aria-hidden={surface === 'embed' || undefined}
-        className='min-h-0 w-full flex-1 border-0 bg-background'
-        style={{
-          ...(width !== undefined && { width }),
-          ...(height !== undefined && { height }),
-          ...(surface === 'embed' && { pointerEvents: 'none' }),
-        }}
-      />
+      <div className='flex min-h-0 min-w-0 flex-1'>
+        <iframe
+          ref={frame}
+          src={src}
+          title={title + ' preview'}
+          onLoad={send}
+          tabIndex={surface === 'embed' ? -1 : undefined}
+          aria-hidden={surface === 'embed' || undefined}
+          className='min-h-0 min-w-0 flex-1 border-0 bg-background'
+          style={{
+            ...(width !== undefined && { width }),
+            ...(height !== undefined && { height }),
+            ...(surface === 'embed' && { pointerEvents: 'none' }),
+          }}
+        />
+        {surface === 'page' &&
+          runtime.current &&
+          moduleApps.map(({ spec, app }) => {
+            const Inspector = app.previewInspector;
+            return Inspector ? (
+              <Inspector
+                key={`${spec.id}:${identity}`}
+                frame={frame}
+                scope={{ session: session.current, runtime: runtime.current!, identity }}
+                active={interactive.current && state === 'ready'}
+                dark={dark}
+              />
+            ) : null;
+          })}
+      </div>
       {surface === 'page' && !unresponsive && (freshness(lifecycle) === 'stale' || lifecycle.detail) && (
         <div role='status' className='absolute inset-x-0 bottom-0 bg-background p-3 text-sm'>
           {freshness(lifecycle) === 'stale' ? 'This preview is out of date. ' : ''}

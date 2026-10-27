@@ -2,7 +2,7 @@
 // ⌘K palette. A module with these has an app.tsx in its folder (<module folder>/app.tsx) that
 // exports a ModuleApp as its default. The shell finds them with a glob, so the app runs with any of
 // them removed, and reads them in `order`: the rail, the palette and the routes all follow the list.
-import type { ComponentType } from 'react';
+import type { ComponentType, RefObject } from 'react';
 import type { IconSvgElement } from '@hugeicons/react';
 import type { AnyRoute, NavigateOptions } from '@tanstack/react-router';
 import { compatible, type ModuleSpec } from '@/platform/core/modules';
@@ -22,7 +22,15 @@ export type PaletteContext = {
 // One entry a module adds to a prototype's "…" menu (on its card and in its navigation).
 export type PrototypeAction = { label: string; icon: IconSvgElement; onSelect: () => void; destructive?: boolean };
 
+// Experimental slot used only by the isolated DialKit workflow test.
+export type PreviewInspectorProps = {
+  frame: RefObject<HTMLIFrameElement | null>;
+  scope: { session: string; runtime: string; identity: string };
+  active: boolean;
+  dark: boolean;
+};
 export type ModuleApp = {
+  previewInspector?: ComponentType<PreviewInspectorProps>;
   // Local creation workflows do not appear on published viewing sites.
   localOnly?: boolean;
   // A short navigation label when the module's full name describes a broader capability.

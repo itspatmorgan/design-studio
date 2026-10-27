@@ -84,6 +84,8 @@ A module reads its own `build.ts` data with `contribution<Data>(manifest, id)` f
 
 `ModuleApp.navLabel` supplies a shorter navigation label while the declaration retains the full capability name.
 
+On the DialKit experiment branch, `ModuleApp.previewInspector` is an experimental application contribution rendered beside page previews. `PreviewInspectorProps` supplies the frame reference, session/runtime/artifact scope, active state, and color mode. Hidden source previews are inactive; embeds have no inspector slot. The contribution owns its transport and cleanup. This provisional slot is under evaluation, not a committed public integration design.
+
 `ModuleApp.localOnly: true` restricts a module’s app contributions (rail, routes, home, and search) to local development. Published viewing sites omit them; the module’s source and configuration remain available.
 
 These source contracts are 0.x. Review release guidance when updating them.

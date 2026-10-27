@@ -51,6 +51,10 @@ After validation, status emits a bubbling `studio:preview-state` event from the 
 
 The host supplies its public history address, including the deployment basepath. The child memory router supplies normal TanStack hooks to prototypes. Page navigation is handed to Studio so its history, artifact selection, source mode, and outer routes remain authoritative. Relative native links resolve against the displayed artifact address, including modified clicks. Hash anchors stay within the child document. External HTTP(S) links open separately. The direct runtime can navigate React artifacts independently and returns to Studio for other surfaces; crossing prototypes starts a fresh document. Direct-preview navigation supports browser Back/Forward. Public prototype navigation APIs remain unchanged.
 
+## Experimental inspector
+
+The DialKit experiment adds the optional application contribution described in [Modules and extensions](../../context/modules.md#public-api). Page hosts render enabled contributions beside their iframe without importing an optional module. Contributions receive the current preview scope and active state. The experimental module owns a separate bounded value/action channel; the existing preview protocol and file-write authority are unchanged. See `src/modules/dialkit-lab/README.md` on the experiment branch for qualified behavior.
+
 ## Isolation limits
 
 The iframe is same-origin and has no sandbox attribute. This is a trusted local repository execution boundary: separate document/CSS, viewport/focus APIs, module instances, and per-preview overlays. It is **not a hostile-code sandbox**. Scripts can access their parent, shared same-origin storage, and local server endpoints. CPU/process isolation and build/dependency isolation are separate concerns. Retain dependency/style checks and existing contributor/server authorization.

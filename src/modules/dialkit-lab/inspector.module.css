@@ -1,0 +1,3 @@
+.panel { width:var(--inspector-width);min-width:var(--inspector-width);overflow:auto;border-left:1px solid var(--border);padding:16px;background:var(--background);color:var(--foreground); }
+.panel[data-open='false'] { width:48px;min-width:48px;padding:8px; }
+@media(max-width:800px) { .panel {position:absolute;top:0;right:0;bottom:0;z-index:20;width:min(var(--inspector-width),calc(100% - 40px));min-width:0;box-shadow:-12px 0 30px #0002;} .panel[data-open='false']{position:relative;width:48px;min-width:48px;} }

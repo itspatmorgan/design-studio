@@ -65,6 +65,14 @@
       "kind": "link",
       "hash": "72b0f4a7dfac54b9ba03d6d094665ff90668d5d5f5d6cb15b7cc43547d06263c"
     },
+    ".agents/skills/studio-module-dialkit-lab-use-dialkit-lab/SKILL.md": {
+      "kind": "file",
+      "hash": "ba02406d0986d3516a444f9cafd4d03ecf4953d94a5e07b9d551ad381dc278e4"
+    },
+    ".claude/skills/studio-module-dialkit-lab-use-dialkit-lab": {
+      "kind": "link",
+      "hash": "1a66d8c4e3f8d165fd3a1e0c8ed1e4fbb373840109aee6d55f1fa10903748359"
+    },
     ".agents/skills/studio-module-document-write-document/SKILL.md": {
       "kind": "file",
       "hash": "c925990008d086e416557359935972646e395ebace3b8e5fff1ad26157c71c09"

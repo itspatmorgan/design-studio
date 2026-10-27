@@ -35,7 +35,7 @@ Proposed, not implemented:
 6. **Use the normal agent/source workflow for acceptance first.** Copy tuned values and their context, then let the agent apply a reviewed change to local component/layout/animation code or an intentionally selected shared token. Avoid generic regex rewriting and automatic shared-token edits. Any future Apply action must reuse permission and source-version conflict checks.
 7. **Define disabled and published behavior.** A hidden editor does not remove runtime dependencies or timeline sampling. Test explicit defaults/frozen accepted values, controls excluded from inert previews, and removal of instrumentation before disabling/removing the module when retained source imports its public entry. Existing boundary checks reject unavailable imports. Do not promise that a module with live consumers can simply be deleted.
 
-The smallest next experiment should exercise a bespoke prototype composition in its real iframe, with multiple independently named control groups and an animation. Compare local floating controls against a shell inspector. Verify navigation, source mode, HMR, responsive resizing, light/dark, state lifetime, stale messages, inert embeds, and publishing before selecting the shared API. No shell extension or bridge has been introduced by this branch.
+The smallest next experiment should exercise a bespoke prototype composition in its real iframe, with multiple independently named control groups and an animation. Compare local floating controls against a shell inspector. Verify navigation, source mode, HMR, responsive resizing, light/dark, state lifetime, stale messages, inert embeds, and publishing before selecting the shared API. The second experiment below introduces a provisional contribution slot and a separate bounded bridge to test this direction.
 
 ## Initial compatibility spike
 
@@ -72,3 +72,46 @@ Run `pnpm test` and `pnpm build` for repository verification. Running without th
 ### Cleanup
 
 Stop this worktree's port-5175 dev-server process. Retain the branch and its commit for review or archive this chat's managed worktree. Nothing needs to be removed from the main checkout or the InFlight environment. No remote deployment, GitHub issue edit, push, or merge was performed.
+
+
+## Right-side inspector experiment
+
+The working demo is [DialKit Booking Lab](http://127.0.0.1:5175/prototypes/6rqq59jnk56hm9x0/artifacts/q8rr3bhdrwxhcntr). It is a fictional, two-screen booking flow with real selection, navigation, and confirmation interactions. Its explicit assignment is `systemId: null`. The main screen defines Weekend layout and Confirmation motion controls; the story screen defines Story typography controls. These configurations live with the prototypes rather than in a component/property registry.
+
+The `dialkit-lab` module exposes an experimental runtime hook and contributes the right-side inspector through a provisional generic `ModuleApp.previewInspector` field. Prototype hooks and host mirrors have separate DialStores connected by validated, ordered messages. The slot and protocol remain experiment code for review, not a production API decision. See [module contract](../../src/modules/dialkit-lab/README.md).
+
+### Reproduce the prototype
+
+Your existing local contributor content remains ignored by Git. A portable fixture is saved under `experiments/dialkit/prototype/`; it contains no allocated prototype identities or contributor profile. To materialize it under the resolved contributor, run:
+
+```sh
+node experiments/dialkit/setup-prototype.mjs
+VITE_DIALKIT_EXPERIMENT=true pnpm dev --host 127.0.0.1 --port 5175 --strictPort
+```
+
+The setup script uses managed creation/identification, preserves fresh identities, and leaves an already-existing prototype untouched. It prints that installation's prototype address. Prefix with `mise exec --` when using the repository toolchain.
+
+### Findings and limits
+
+- Outer controls updated rendered child-document typography, shape, and density. A 64px title, square cards, and 16px card padding were confirmed through DOM styles.
+- Inspector actions triggered the prototype's confirmation animation. Color-picker UI opened in the inspector document and color edits were accepted.
+- Main → About replaced both control groups with Story typography. Returning starts fresh tuning for that artifact. Scope includes session, child runtime, artifact identity, and a per-mount panel ID.
+- Source mode removed the active inspector. Returning restored the current tuned values from the retained preview.
+- Initial HMR reset tuning while preserving booking selection. The adapter now uses a per-mount stable store ID and releases it after true departure. A subsequent prototype-only source edit preserved the 64px title and selected booking, and the new copy appeared without reload.
+- Collapsing the inspector expanded the iframe from 750px to 1022px in the initial desktop viewport and reopening preserved the tuning. Width adjustments crossed the prototype's 700px breakpoint. Panel dimensions currently reset between artifacts; that is a product choice to revisit.
+- The first full regression run exposed an existing test that assumed every module lived under the platform root. Its expected paths now use the actual module-directory catalog, preserving coverage for both supplied and team modules.
+- Tests cover sender/origin/scope validation and malformed, cyclic, oversized, unsupported, and non-finite payloads. A generic source-writing command is rejected.
+
+This experiment qualifies only the documented simple controls. Full DialKit controller parity, nested spring/easing values, presets, timeline integration, iframe-aware thumbnail capture, production dependency removal, and an automatic source-acceptance flow remain outside this test. The current schema transports JSON configurations and values; it is not a commitment to a platform-wide schema.
+
+
+### Final verification
+
+- All 377 regression tests passed, including the two focused transport tests. Production compilation, module checks, and typechecking passed. The existing large-chunk warning remains.
+- A local static preview on port 5176 rendered the prototype, accepted a demo reservation, and had no Design inspector. The runtime value hooks remain bundled, as documented above.
+- A temporary host used the real Views runtime with `surface: embed`. It reached `Preview: ready`, its child root was inert, and its tuning-message registration count stayed at zero. The temporary host was removed after inspection.
+- The inspector and prototype were inspected in light and dark. At a 420px browser width, an overlay preserved the preview viewport. Collapsing reserves a slim strip instead of covering the prototype's right edge. The browser viewport override was reset after testing.
+- Reset synchronized the host and child back to defaults. Copy proposal displayed its success state. Returning from source mode retained a 64px title. Visiting About replaced the main controls; returning to Main reset to its 44px source default.
+- Editing the implementation of the tuning hook itself can require a full reload when its hook signature changes. This is separate from the verified ordinary prototype-only Fast Refresh path.
+
+Recommendation: continue with a contextual inspector that hosts prototype-authored controls. Validate the production handoff and more of DialKit's API before treating the experimental slot/transport as a supported integration. Prefer explicit preview width controls or an overlay option when designers need to hold a target viewport constant while tuning.
