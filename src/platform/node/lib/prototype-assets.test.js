@@ -1,0 +1,22 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { putPrototypeImage } from './prototype-assets.js';
+import { writeProfiles } from './fixtures/contributors.js';
+import { serializeConfig } from '../../core/config-file.ts';
+const image='data:image/svg+xml;base64,'+Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"/>').toString('base64');
+test('prototype images preserve ownership, use bounded content-addressed files and reject symlinks',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'prototype-assets-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
+ writeProfiles(root,{owner:{name:'Owner'},other:{name:'Other'}});const owner=JSON.parse(fs.readFileSync(path.join(root,'contributors/owner.json')));
+ const folder=path.join(root,'src/prototypes/owner/lab');fs.mkdirSync(folder,{recursive:true});fs.writeFileSync(path.join(folder,'meta.json'),JSON.stringify({formatVersion:1,studioId:'g3f4d2agnxapa52p',ownerContributorId:owner.studioId,systemId:null}));
+ fs.mkdirSync(path.join(root,'src/systems/product'),{recursive:true});fs.writeFileSync(path.join(root,'src/systems/product/system.ts'),"export default {studioId:'4f3m7z08hk5a0k53',label:'Product',role:'prototype',status:'active'};");
+ fs.writeFileSync(path.join(root,'studio.config.json'),serializeConfig({formatVersion:1,name:'Fixture',usage:'team',modules:{},systems:[],defaultSystem:'4f3m7z08hk5a0k53',admins:[],systemMaintainers:{}}));
+ const request={actor:'owner',prototypeId:'g3f4d2agnxapa52p',dataUrl:image};
+ assert.throws(()=>putPrototypeImage(root,{...request,actor:'other'}),/cannot add/);
+ const first=putPrototypeImage(root,request);assert.deepEqual(putPrototypeImage(root,request),first);assert.equal(fs.readdirSync(path.join(folder,'assets')).length,1);
+ assert.throws(()=>putPrototypeImage(root,{...request,dataUrl:'data:image/png;base64,'+Buffer.alloc(751*1024).toString('base64')}),/750 KB/);
+ const target=path.join(root,first.url.slice(1));fs.unlinkSync(target);fs.symlinkSync(path.join(folder,'meta.json'),target);assert.throws(()=>putPrototypeImage(root,request),/conflicts/);
+ fs.writeFileSync(path.join(folder,'meta.json'),JSON.stringify({formatVersion:1,studioId:'g3f4d2agnxapa52p',ownerContributorId:'g3f4d2agnxapa52p',systemId:null}));assert.throws(()=>putPrototypeImage(root,request),/cannot add/);
+});

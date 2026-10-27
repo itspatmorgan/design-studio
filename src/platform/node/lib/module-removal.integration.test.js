@@ -18,7 +18,9 @@ for (const mode of ['disabled', 'removed'])
     t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
     fs.cpSync(root, dir, {
       recursive: true,
-      filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)),
+      // Release availability fixtures are independent of contributor-authored experiments.
+      // Retained dependent content is exercised by each module's lifecycle fixtures.
+      filter: file => !['.git', 'node_modules', 'dist'].includes(path.basename(file)) && !file.startsWith(path.join(root,'src/prototypes')+path.sep),
     });
     fs.symlinkSync(path.join(root, 'node_modules'), path.join(dir, 'node_modules'));
     linkSystemDependencies(root, dir);

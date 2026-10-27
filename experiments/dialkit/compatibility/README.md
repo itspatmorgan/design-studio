@@ -1,5 +1,7 @@
 # DialKit 2.1.0 compatibility test
 
+This is the historical control/native-API compatibility pass. The shipped public library no longer includes the test-only probes. Current lifecycle behavior and verification are in [the integration record](../integration.md).
+
 This is a development-only React integration test on `codex/dialkit-test`, served on port 5175 with `VITE_DIALKIT_EXPERIMENT=true`. It compares an explicitly unassigned prototype with a Product-assigned prototype. It does not qualify system component documentation previews or automatic writes to shared tokens.
 
 ## Reproduce

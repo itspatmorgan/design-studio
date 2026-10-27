@@ -37,6 +37,7 @@ Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import
 | `#studio/data` | Reading content in the app: the manifest, `contribution<Data>`, the studio identity (`APP_NAME`, `TAGLINE`, read-only `CONFIG`), a prototype's files, the current contributor and edit permissions, `callModule`, structured `ClientError` failures, lazy build assets, and what a file type's `loader.ts` and `open.tsx` implement. | Application. |
 | `#studio/ui` | Browser app contributions, section navigation, home blocks, collections, documents, source editing, shared Mermaid rendering, artifact hosting, file navigation with owner policies, copyable file errors, and the authorized `useStudioSettings` client. | Application. |
 | `#studio/components` | Studio's interface components, such as `Button`, `Dialog`, `Input`, `Tooltip`, menus, and `toast`. | Application. |
+| `#studio/assets` | Authorized, content-addressed prototype images for module server handlers. | Node only. |
 | `#studio/preferences` | Authorized, versioned reads and writes of declared contributor module namespaces. | Node only. |
 | `#studio/references` | Node source adapters, resolution context types and shared code, Markdown and CSS source grammars. | Node only. |
 | `#studio/lifecycle` | Renderer-neutral source, preparation and displayed revision state, input digests and DOM evidence. | Application and Node. |
@@ -84,7 +85,7 @@ A module reads its own `build.ts` data with `contribution<Data>(manifest, id)` f
 
 `ModuleApp.navLabel` supplies a shorter navigation label while the declaration retains the full capability name.
 
-On the DialKit experiment branch, `ModuleApp.previewInspector` is an experimental application contribution rendered beside page previews. `PreviewInspectorProps` supplies the frame reference, session/runtime/artifact scope, active state, and color mode. Hidden source previews are inactive; embeds have no inspector slot. The contribution owns its transport and cleanup. This provisional slot is under evaluation, not a committed public integration design.
+`ModuleApp.previewInspector` contributes module-owned tools beside interactive page previews. `PreviewInspectorProps` supplies the frame reference, session/runtime/artifact scope, active state, and color mode. Hidden source previews are inactive; embeds have no inspector slot. The contribution owns its transport and cleanup. The slot is generic; feature protocols and source writes belong to the contributing module.
 
 `ModuleApp.localOnly: true` restricts a module’s app contributions (rail, routes, home, and search) to local development. Published viewing sites omit them; the module’s source and configuration remain available.
 
@@ -134,7 +135,7 @@ Remove and create commands preview changes. Applying them requires `--yes`. Use 
 
 Studio commands register and unregister capabilities, manage config module flags and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
 
-Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
+Disabling checks retained public-library consumers before changing configuration, through the shared settings plan used by the CLI and UI. Detach dependent code first. Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
 
 Packages remain installed after removal. Remove them only when no retained code uses them.
 
@@ -172,8 +173,8 @@ Modules can declare primitive preference schemas and defaults; see [Contributor 
 
 `#studio/systems` exposes [application system services](system-services.md). Use these queries and `ThemeScope` for application rendering; the singular `#studio/system` remains declaration types.
 
-### Experimental artifact menu contributions
+### Artifact menu contributions
 
-The isolated DialKit branch adds `ModuleApp.artifactActions(context)` for optional modules to contribute local actions to an existing artifact’s navigation context menu. Use namespaced IDs and explicit `localOnly`/`mutates` declarations. The shell merges these separately from the file type’s declared actions, re-evaluates providers when the menu opens, and resolves the selected identity and availability again before executing. Server-side mutation authorization and version checks still apply. Enabled module apps register lightweight provider callbacks after initialization; public FileTree imports must not eagerly load the application/module registry. This field is provisional experiment code, not a stable API.
+`ModuleApp.artifactActions(context)` allows optional modules to contribute local actions to an existing artifact’s navigation context menu. Use namespaced IDs and explicit `localOnly`/`mutates` declarations. The shell merges these separately from the file type’s declared actions, re-evaluates providers when the menu opens, and resolves the selected identity and availability again before executing. Server-side mutation authorization and version checks still apply. Enabled module apps register lightweight provider callbacks after initialization; public FileTree imports must not eagerly load the application/module registry. The optional context manifest supplies source-backed module contributions even when the selected view is inactive.
 
 Prototype menu contributions may declare `group: 'visibility'` to appear in the navigation header’s first group after Show all files / Hide other files. Other contributions retain their existing change-action placement. Visibility actions do not appear as prototype-card mutation actions.

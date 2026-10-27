@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useBespokeControls, DialKitCompatibilityProbe, CompatibilityMotion, type DialConfig } from '@module/dialkit-lab';
+import { useBespokeControls, type DialConfig } from '@module/dialkit-lab';
 import styles from './_compatibility.module.css';
 // SYSTEM_IMPORT
 const firstImage = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="160" height="90"%3E%3Crect width="160" height="90" fill="%23cbd5be"/%3E%3C/svg%3E';
@@ -35,13 +35,13 @@ export default function Compatibility() {
       {(images.upload || images.artwork) ? <img alt='Controlled artwork' src={images.upload || images.artwork}/> : <p>No image selected</p>}
       <h2 style={{fontSize:basics.size,color:colors.accent}}>{basics.title}</h2>
       <p>{basics.caption}</p>
-      <CompatibilityMotion transition={movement.spring} replay={replays}/><div className={styles.stage}><span key={replays} className={styles.dot} style={{background:colors.explicit,opacity:basics.enabled?1:0.25,transform:`translate(${movement.position.x}px,${-movement.position.y}px)`,transitionDuration:`${movement.easing.type==='easing'?movement.easing.duration:0.4}s`,transitionTimingFunction:movement.easing.type==='easing'?`cubic-bezier(${movement.easing.ease.join(',')})`:'ease'}} /></div>
+      <div className={styles.stage}><span key={replays} className={styles.dot} style={{background:colors.explicit,opacity:basics.enabled?1:0.25,transform:`translate(${movement.position.x}px,${-movement.position.y}px)`,transitionDuration:`${movement.easing.type==='easing'?movement.easing.duration:0.4}s`,transitionTimingFunction:movement.easing.type==='easing'?`cubic-bezier(${movement.easing.ease.join(',')})`:'ease'}} /></div>
       {/* SYSTEM_BUTTON */}
       <button className={styles.button} style={{background:basics.treatment==='solid'?colors.accent:'transparent',color:basics.treatment==='solid'?'white':colors.accent}} disabled={!basics.enabled} onClick={()=>setReplays(n=>n+1)}>Try the prototype</button>
       <p role='status'>Replays: {replays} · Inferred number: {basics.inferredNumber}</p>
       <div style={{background:colors.alpha,height:12}} />
     </section>
-    <DialKitCompatibilityProbe scope="SCOPE_KEY"/><details open><summary>Live values received by the prototype</summary><pre data-testid='live-values'>{JSON.stringify({...values, images:{...images, upload:images.upload ? `Image data (${images.upload.length} characters)` : ''}},null,2)}</pre></details>
+    <details open><summary>Live values received by the prototype</summary><pre data-testid='live-values'>{JSON.stringify({...values, images:{...images, upload:images.upload ? `Image data (${images.upload.length} characters)` : ''}},null,2)}</pre></details>
     <footer>End of the scroll test · CONTEXT_LABEL</footer>
   </main>;
 }

@@ -1,6 +1,6 @@
 ---
 name: studio-module-dialkit-lab-use-dialkit-lab
-description: "Test the experimental prototype inspector with bespoke DialKit controls while DialKit Lab is enabled."
+description: "Add, tune, save or remove bespoke DialKit controls on prototype views while the module is enabled."
 ---
 
 <!-- studio:generated-skill -->

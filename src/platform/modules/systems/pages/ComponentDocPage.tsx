@@ -1,5 +1,5 @@
 import { ArrowDown01Icon, ArrowRight01Icon, LinkSquare02Icon, LibraryIcon } from '@hugeicons/core-free-icons';
-import { useEffect, useLayoutEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useRouter } from '@tanstack/react-router';
 import { useManifest } from '@/platform/app/data/useManifest';
 import { systemPath } from '#studio/systems';
@@ -32,12 +32,6 @@ import ViewError from '@/platform/app/files/FileError';
 
 // The page's Markdown headings match the page's own sections (18px, under the 26px title), not the
 // 21px h2 the small prose size gives.
-// Isolated issue #6 spike. Vite eliminates this import from viewing builds.
-const DialKitLab =
-  import.meta.env.DEV && import.meta.env.VITE_DIALKIT_EXPERIMENT === 'true'
-    ? lazy(() => import('../experiments/DialKitLab'))
-    : null;
-
 const PAGE_PROSE = 'prose-h3:text-base';
 const componentHeadings = {
   h2: ({ className = '', style, ...props }: React.ComponentProps<'h2'>) => (
@@ -247,12 +241,6 @@ export function ComponentDocPage({
             No page yet. Add <code>{stem}.md</code> next to the component to describe it and say when to use it.
           </Note>
         )
-      )}
-
-      {DialKitLab && system === 'product' && component.slug === 'button' && (
-        <Suspense fallback={<p>Opening tuning controls</p>}>
-          <DialKitLab />
-        </Suspense>
       )}
 
       <Section title='Examples'>

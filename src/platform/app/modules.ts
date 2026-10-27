@@ -31,7 +31,7 @@ export type PrototypeAction = {
   shortcut?: string;
 };
 
-// Experimental slot used only by the isolated DialKit workflow test.
+// Optional module-owned tools beside interactive page previews.
 export type PreviewInspectorProps = {
   frame: RefObject<HTMLIFrameElement | null>;
   scope: { session: string; runtime: string; identity: string };

@@ -5,11 +5,13 @@ import { isDialKitShortcut } from './shortcut';
 import { reportControls, useControlVisibility, toggleControls, controlVisibility } from './visibility';
 import { FloatingDialKit } from './floating-panel';
 import { EmptyControls } from './empty-controls';
-import { useManifest, allPrototypes, readSource } from '#studio/data';
+import { useManifest, allPrototypes, readSource, callModule } from '#studio/data';
 import { readWorkspace, type Workspace } from './scaffold';
-import { channel, acceptsPacket, type Packet, type Panel, type Scope } from './lib/wire';
+import { reportTuning } from './tuning';
+import { saveDialKit } from './setup';
+import { channel, acceptsPacket, validPacket, type Packet, type Panel, type Scope } from './lib/wire';
 
-function Mirror({ panel, send }: { panel: Panel; send: (p: Partial<Packet>) => void }) {
+function Mirror({ panel, send, prototypeId, onError, onPending }: { panel: Panel; send: (p: Partial<Packet>) => void; prototypeId:string; onError:(message:string)=>void; onPending:(delta:number)=>void }) {
   const controller = useDialKitController(panel.name, panel.config, {
     id: `inspector-${panel.id}`, persist: false,
     onAction: path => send({ kind: 'action', id: panel.id, path }),
@@ -20,19 +22,39 @@ function Mirror({ panel, send }: { panel: Panel; send: (p: Partial<Packet>) => v
   useEffect(() => {
     // Programmatic updates are suppressed from the outgoing subscription.
     let applying = false;
+    let disposed = false;
+    const uploads = new Map<string,{value:string;token:symbol}>();
+    const onReset=()=>uploads.clear();
+    window.addEventListener('dialkit-reset',onReset);
     const unsubscribe = DialStore.subscribe(`inspector-${panel.id}`, () => {
       if (applying) return;
       const values = DialStore.getValues(`inspector-${panel.id}`);
       for (const [path, value] of Object.entries(values)) {
         const remote = path.split('.').reduce<unknown>((obj, key) => obj && typeof obj === 'object' ? (obj as Record<string, unknown>)[key] : undefined, current.current.values);
-        if (JSON.stringify(value) !== JSON.stringify(remote)) send({ kind: 'update', id: panel.id, path, value });
+        // Choosing the original image also supersedes an outstanding upload.
+        if (JSON.stringify(value) === JSON.stringify(remote)) {
+          if (uploads.get(path)?.value !== value) uploads.delete(path);
+          continue;
+        }
+        if (JSON.stringify(value) !== JSON.stringify(remote)) {
+          const config = path.split('.').reduce<any>((obj,key)=>obj?.[key],current.current.config);
+          if (config?.type === 'image' && typeof value === 'string' && /^data:image\/[^;]+;base64,/.test(value)) {
+            if(uploads.get(path)?.value===value) continue;
+            const token=Symbol();uploads.set(path,{value,token});onPending(1);
+            void callModule<{url:string}>('dialkit-lab','image',{prototypeId,dataUrl:value}).then(result=>{
+              if(!disposed&&uploads.get(path)?.token===token){uploads.delete(path);onError('');controller.setValue(path,result.url);}
+            }).catch(error=>{
+              if(!disposed&&uploads.get(path)?.token===token){uploads.delete(path);applying=true;controller.setValues(current.current.values);applying=false;onError(error instanceof Error?error.message:'Image upload failed.');}
+            }).finally(()=>{if(uploads.get(path)?.token===token)uploads.delete(path);onPending(-1);});
+          } else {if(config?.type==='image')uploads.delete(path);send({ kind: 'update', id: panel.id, path, value });}
+        }
       }
     });
-    const sync = () => { applying = true; controller.setValues(current.current.values); applying = false; };
+    const sync = () => { applying = true; const values=structuredClone(current.current.values) as Record<string,any>; for(const [path,upload] of uploads){const keys=path.split('.');let object=values;for(const key of keys.slice(0,-1))object=object[key]??={};object[keys.at(-1)!]=upload.value;} controller.setValues(values); applying = false; };
     sync();
     const listener = () => sync();
     window.addEventListener(`dialkit-lab-sync-${panel.id}`, listener);
-    return () => { unsubscribe(); window.removeEventListener(`dialkit-lab-sync-${panel.id}`, listener); };
+    return () => { disposed=true; uploads.clear(); window.removeEventListener('dialkit-reset',onReset); unsubscribe(); window.removeEventListener(`dialkit-lab-sync-${panel.id}`, listener); };
   }, [panel.id]);
   useEffect(() => { window.dispatchEvent(new Event(`dialkit-lab-sync-${panel.id}`)); }, [panel.values]);
   return null;
@@ -43,6 +65,35 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
 }) {
   const [panels, setPanels] = useState<Record<string, Panel>>({});
   const manifest = useManifest();
+  const [sourceVersion,setSourceVersion]=useState('');
+  const [failure,setFailure]=useState('');
+  const [saving,setSaving]=useState(false);
+  const [pendingUploads,setPendingUploads]=useState(0);
+  const uploadChanged=(delta:number)=>setPendingUploads(count=>Math.max(0,count+delta));
+  const [prototypeId,artifactId]=JSON.parse(scope.identity) as string[];
+  const proto=allPrototypes(manifest).find(p=>p.studioId===prototypeId);
+  const item=proto?.artifacts?.find(i=>i.studioId===artifactId);
+  useEffect(()=>{
+    let cancelled=false;setSourceVersion('');
+    if(active&&proto&&item)void readSource(proto,item.path).then(source=>{if(!cancelled)setSourceVersion(source.version);}).catch(error=>{if(!cancelled)setFailure(String(error));});
+    return()=>{cancelled=true;};
+  },[scope.identity,scope.runtime,active,manifest]);
+  const captureRef=useRef<null|{id:string;expected:Set<string>;panels:Record<string,Panel>;finish:(error?:Error)=>void}>(null);
+  const capture=()=>new Promise<Panel[]>((resolve,reject)=>{
+    const request={id:crypto.randomUUID(),expected:new Set(Object.keys(panels)),panels:{} as Record<string,Panel>,finish:(error?:Error)=>{clearTimeout(timer);captureRef.current=null;error?reject(error):resolve(Object.values(request.panels));}};
+    const timer=setTimeout(()=>request.finish(Error('The preview did not respond. Reload before saving.')),3000);
+    captureRef.current=request;send({kind:'request',requestId:request.id});
+    if(!request.expected.size)request.finish();
+  });
+  useEffect(()=>reportTuning({identity:scope.identity,sourceVersion,ready:active&&!!sourceVersion&&!saving&&!pendingUploads,panels:Object.values(panels),capture}),[scope.identity,sourceVersion,active,panels,saving,pendingUploads]);
+  const save=async()=>{
+    if(!proto||!item)return false;
+    // Capture the ready snapshot before marking the header busy.
+    const operation=saveDialKit({proto:{...proto,artifacts:proto.artifacts??[]},item});
+    setSaving(true);setFailure('');
+    try{await operation;return true;}catch(error){setFailure(error instanceof Error?error.message:'Could not save controls.');return false;}finally{setSaving(false);}
+  };
+
   const [openRequest, setOpenRequest] = useState(0);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   useEffect(() => {
@@ -88,7 +139,9 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
   activeRef.current = active;
   const send = (payload: Partial<Packet>) => {
     if (!activeRef.current) return;
-    frame.current?.contentWindow?.postMessage({ channel, version: 1, ...scope, sequence: ++sequence.current, ...payload }, location.origin);
+    const packet={channel,version:1,...scope,sequence:++sequence.current,...payload};
+    if(!validPacket(packet)){setFailure('This control update exceeds the supported message size or nesting.');return;}
+    frame.current?.contentWindow?.postMessage(packet,location.origin);
   };
   useEffect(() => {
     if (!active) return;
@@ -99,19 +152,23 @@ export function PrototypeInspector({ frame, scope, active, visible = active, dar
       const id = p.kind === 'snapshot' ? p.panel!.id : p.id;
       if (!id || p.sequence <= (received.get(id) ?? -1)) return;
       received.set(id, p.sequence);
+      if(p.kind==='error'){setFailure(p.message!);captureRef.current?.finish(Error(p.message));return;}
+      const request=captureRef.current;
+      if(p.kind==='snapshot'&&request&&request.id===p.requestId){request.panels[id]=p.panel!;request.expected.delete(id);if(!request.expected.size)request.finish();}
       if (p.kind === 'snapshot') setPanels(previous => ({ ...previous, [id]: p.panel! }));
       if (p.kind === 'remove') setPanels(previous => { const next = { ...previous }; delete next[id]; return next; });
     };
     window.addEventListener('message', onMessage);
     send({ kind: 'request' });
-    return () => window.removeEventListener('message', onMessage);
+    return () => {window.removeEventListener('message', onMessage);captureRef.current?.finish(Error('Preview changed before saving. Try again when it is ready.'));};
   }, [scope.session, scope.runtime, scope.identity, active]);
   if (!available) return null;
   const entries = Object.values(panels);
   return (
     <>
-      {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} />)}
-      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit openRequest={openRequest} initialOpen={!!workspace && !entries.length} count={entries.length} frame={frame} reset={() => entries.forEach(panel => send({ kind: 'reset', id: panel.id }))}>
+      {entries.map(panel => <Mirror key={panel.id} panel={panel} send={send} prototypeId={prototypeId} onError={setFailure} onPending={uploadChanged} />)}
+      {!(visibility?.identity === scope.identity && visibility.hidden) && <FloatingDialKit save={save} canSave={active&&!!sourceVersion&&!saving&&!pendingUploads} saving={saving} openRequest={openRequest} initialOpen={!!workspace && !entries.length} count={entries.length} frame={frame} reset={() => {window.dispatchEvent(new Event('dialkit-reset'));entries.forEach(panel => send({ kind: 'reset', id: panel.id }));}}>
+        {failure && <p role='alert' style={{padding:'12px 16px',fontSize:13}}>{failure}</p>}
         {entries.length ? <DialRoot mode='inline' theme={dark ? 'dark' : 'light'} versions='menu' /> : <EmptyControls />}
       </FloatingDialKit>}
     </>

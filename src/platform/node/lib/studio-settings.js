@@ -8,6 +8,7 @@ import { compatible } from '../../core/modules/index.ts';
 import { renderAgents } from './agents-file.js';
 import { applySetupChanges } from './studio-setup.js';
 import { serializeConfig, withSettings } from '../../core/config-file.ts';
+import { moduleConsumers } from './imports.js';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { persistStudioReferences } from '../../core/resourceReferences.ts';
 import { systemDirOf } from './system-folders.js';
@@ -71,6 +72,13 @@ export function planSettings({
       throw new SettingsError('Restore the system before selecting it as the default.');
   }
   const problems = configProblems(next, modules, systems, platformId, Object.keys(contributors));
+  for (const module of modules) {
+    if (current.config.modules?.[module.id] === true && next.modules?.[module.id] === false) {
+      const consumers=moduleConsumers(root,module.id);
+      if(consumers.length) throw new SettingsError(`Save and detach ${module.label} from its dependent files before disabling it: ${consumers.join(', ')}`,409);
+    }
+  }
+
   for (const module of modules) {
     if (next.modules?.[module.id] === true && current.config.modules?.[module.id] !== true && !compatible(module))
       problems.push(`${module.label} is incompatible with this platform version.`);

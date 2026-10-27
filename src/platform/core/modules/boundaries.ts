@@ -18,6 +18,7 @@ export const API_POLICY = {
   ui: ['application'],
   components: ['application'],
   references: ['node'],
+  assets: ['node'],
   preferences: ['node'],
   lifecycle: ['application', 'node'],
   runtime: ['application', 'runtime'],

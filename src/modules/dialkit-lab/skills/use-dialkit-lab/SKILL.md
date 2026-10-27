@@ -1,14 +1,14 @@
 ---
 name: use-dialkit-lab
-description: Test the experimental prototype inspector with bespoke DialKit controls while DialKit Lab is enabled.
+description: Add, tune, save or remove bespoke DialKit controls on prototype views while the module is enabled.
 ---
 
-Read the module's [README](../../README.md) and the repository prototype skill. Keep this experiment in its own worktree. It is not a production integration procedure.
+Read the module's [contract](../../README.md) and the prototype build skill. Resolve the view's ownership and explicit system assignment before editing it. This capability supports prototype views; system component editing and timeline UI are separate work.
 
-Use `@module/dialkit-lab` for `useBespokeControls` and `DialConfig`. Define controls and bind values in the prototype being refined. Do not infer control schemas from arbitrary DOM or automatically change shared theme tokens.
+Use the existing Add DialKit menu action to scaffold a workspace. Describe controls in the prototype through `@module/dialkit-lab`, with literal unique group names and explicit value bindings. Keep native controls/folders native. Ask for missing design intent in chat; do not add a brief form or modal. Keep shared components and tokens unchanged unless separately requested.
 
-Inspect the real iframe and its outer inspector. Exercise a value edit, a prototype interaction, an action, reset, navigation to another artifact, source mode, Fast Refresh, floating-panel dragging, keyboard dismissal, and color mode. Measure the iframe before and after opening/collapsing; its width must stay constant. Verify constrained windows and reset temporary viewport overrides. Confirm the inspector follows the active artifact and leaves inert embeds alone. Record supported behavior separately from untested DialKit APIs.
+Use Save to retain accepted defaults and the View menu's Remove DialKit to capture current values and detach. Both use `node/source.ts` for source preparation and ordinary authorized, version-checked source writes. An interrupted preview, source conflict, unsupported binding or group mismatch must be resolved rather than bypassed. Empty Add is idempotent. Add after removal starts a fresh workspace around the preserved design.
 
-When asked to retain tuned values, make a normal agent-assisted source change. The live panel no longer includes a Copy to agent handoff. Source saving still uses ordinary ownership and version-conflict protection. Freeze or remove the retained prototype's instrumentation before disabling or removing this module.
+Before disabling or removing the module, detach public-library consumers. Use managed module commands and their dependency checks; do not force removal or substitute no-op hooks. Preserve prototype identity, assignments, assets and rendering. The [maintainer record](../../../../../experiments/dialkit/integration.md) holds the current verification evidence.
 
-The View context menu toggles Add DialKit and Remove DialKit for the current view. Add directly creates one empty workspace with a leading `// @dialkit-lab {"version":1}` declaration and opens it without a dialog. The empty state nudges the person to ask the agent in chat for desired controls. There is no separate brief field. Preserve the workspace declaration while adding actual named dials through the public hook. Empty removal is available from the view menu, not a trash button in the panel. Connected hook removal still needs source acceptance and binding cleanup. Do not represent hiding as removing instrumentation.
+Inspect the iframe and inspector after changes. Exercise tuning, a prototype action, Save/reload, removal, and reattachment. Opening and hiding must preserve preview width. Check theme boundaries, native popovers, scrolling, keyboard dismissal and constrained windows relevant to the change. Distinguish actual browser evidence from source/build checks and unsupported surfaces.

@@ -6,7 +6,8 @@ import styles from './inspector.module.css';
 
 const ease = [0.16, 1, 0.3, 1] as const;
 type Point = { x: number; y: number };
-export function FloatingDialKit({ count, reset, frame, children, initialOpen = false, openRequest = 0 }: {
+export function FloatingDialKit({ save, canSave, saving, count, reset, frame, children, initialOpen = false, openRequest = 0 }: {
+  save?:()=>Promise<boolean>; canSave?:boolean; saving?:boolean;
   openRequest?: number; initialOpen?: boolean; count: number; reset: () => void;
   frame: RefObject<HTMLIFrameElement | null>; children: ReactNode;
 }) {
@@ -108,6 +109,7 @@ export function FloatingDialKit({ count, reset, frame, children, initialOpen = f
                 setPosition(previous => clamp({ x: previous.x + direction.x * step, y: previous.y + direction.y * step }));
               }}><HugeiconsIcon icon={SlidersHorizontalIcon} size={16} aria-hidden='true' /></button>
             <h2 className={styles.title}>DialKit</h2><span id={`${id}-move-help`} className={styles.srOnly}>Drag to move. Arrow keys move, Home resets.</span>
+            {count > 0 && save && <button type='button' data-no-drag className={styles.reset} disabled={!canSave} onClick={async()=>{if(await save())setFeedback('Changes saved');}} aria-label='Save tuning'>{saving?'Saving':feedback==='Changes saved'?'Saved':'Save'}</button>}
             {count > 0 && <button type='button' data-no-drag className={styles.reset} aria-label='Reset tuning' onClick={() => { reset(); setResetCount(value => value + 1); setFeedback('Values reset'); }}>
               <motion.span animate={{ rotate: resetCount * -360 }} transition={{ duration: reduced ? 0 : 0.35, ease }}><HugeiconsIcon icon={Refresh01Icon} size={14} aria-hidden='true' /></motion.span>Reset
             </button>}

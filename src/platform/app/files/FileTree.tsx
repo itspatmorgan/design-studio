@@ -1,3 +1,4 @@
+import { useManifest } from '@/platform/app/data/useManifest';
 import { contributedArtifactActions as contributedActions } from '@/platform/app/data/artifactContributions';
 import { FileActionItems } from '@/platform/app/shell/FileActionItems';
 // The prototype's files, in its navigation: a filterable tree with expand/collapse all, and a
@@ -308,6 +309,7 @@ export default function FileTree({
   navigation,
   policy,
 }: FileTreeProps) {
+  const manifest = useManifest();
   const { files, reload } = useFileTree(proto);
   const treeScope = proto.contributorKey + ':' + proto.id;
   const [expanded, setExpanded] = useState(
@@ -346,6 +348,7 @@ export default function FileTree({
         context: {
           proto,
           item,
+          manifest,
           environment: {
             local: live,
             editable,
@@ -625,7 +628,7 @@ export default function FileTree({
     };
     const spec = menuItem && FILE_TYPES[menuItem.fileType];
     const available = artifactAvailability(spec, environment);
-    const actionContext = menuItem ? { proto, item: menuItem, environment } : undefined;
+    const actionContext = menuItem ? { proto, item: menuItem, environment, manifest } : undefined;
     const actions = actionContext
       ? artifactActions(spec, fileTypeModules[menuItem!.fileType], actionContext, contributedActions(actionContext))
       : [];

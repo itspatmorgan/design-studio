@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import type { CodeIcon } from '@hugeicons/core-free-icons';
 import { capabilityAvailability, type ArtifactAvailabilityContext, type FileTypeSpec } from '../../core/fileTypes.ts';
 export type { EmbedSurface } from '../../core/fileTypes.ts';
-import type { Artifact, Prototype } from '@/platform/app/data/types';
+import type { Manifest, Artifact, Prototype } from '@/platform/app/data/types';
 
 // How the app opens a file type (<module folder>/open.tsx). What the build needs to know
 // about the type is in its type.ts.
@@ -26,7 +26,7 @@ export type FileTypeModule<Props extends object = any> = {
   actions?: readonly ArtifactAction[];
 };
 
-export type ArtifactActionContext = ArtifactContext & { environment: ArtifactAvailabilityContext };
+export type ArtifactActionContext = ArtifactContext & { manifest?: Manifest; environment: ArtifactAvailabilityContext };
 export type ArtifactAction = {
   id: string;
   label: string;

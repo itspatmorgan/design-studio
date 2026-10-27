@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { DialStore, useDialKitController, type DialConfig, type UseDialOptions, type DialValue } from 'dialkit';
-import { channel, acceptsPacket, type Packet, type Scope } from './wire';
+import { channel, acceptsPacket, validPacket, type Packet, type Scope } from './wire';
 export type { DialConfig } from 'dialkit';
 
 // The hook stays beside the prototype's bespoke bindings. No shell imports or file writes.
@@ -19,28 +19,32 @@ export function useBespokeControls<T extends DialConfig>(name: string, config: T
       }
     });
   }, [storeId]);
-  const publish = useRef(() => {});
+  const publish = useRef<(requestId?:string)=>void>(() => {});
   const sequence = useRef(0);
   useEffect(() => {
-    if (!import.meta.env.DEV || import.meta.env.VITE_DIALKIT_EXPERIMENT !== 'true' || parent === window || document.getElementById('root')?.inert) return;
+    if (!import.meta.env.DEV || parent === window || document.getElementById('root')?.inert) return;
     const session = new URLSearchParams(location.search).get('session');
     const runtime = document.documentElement.dataset.previewRuntime;
     const identity = document.querySelector('[data-preview-displayed-identity]')?.getAttribute('data-preview-displayed-identity');
     if (!session || !runtime || !identity) return;
     const scope: Scope = { session, runtime, identity };
     let received = -1;
-    const send = (message: Partial<Packet>) => parent.postMessage({ channel, version: 1, ...scope, sequence: ++sequence.current, ...message }, location.origin);
-    publish.current = () => {
+    const send = (message: Partial<Packet>) => {
+      const packet={ channel, version: 1, ...scope, sequence: ++sequence.current, ...message };
+      if(validPacket(packet))parent.postMessage(packet,location.origin);
+      else parent.postMessage({channel,version:1,...scope,sequence:++sequence.current,kind:'error',id,message:'These controls exceed the supported message size or nesting. Simplify the group before saving.',...(message.requestId?{requestId:message.requestId}:{})},location.origin);
+    };
+    publish.current = (requestId) => {
       if (document.querySelector('[data-preview-pending-identity]')) return;
       const { controls, config, name } = latest.current;
-      send({ kind: 'snapshot', panel: { id, name, config, values: controls.getValues() } });
+      send({ kind: 'snapshot', ...(requestId ? {requestId} : {}), panel: { id, name, config, values: controls.getValues() } });
     };
     const onMessage = (event: MessageEvent) => {
       if (!acceptsPacket(event, parent, location.origin, scope)) return;
       const packet = event.data;
       if (packet.sequence <= received) return;
       received = packet.sequence;
-      if (packet.kind === 'request') { publish.current(); return; }
+      if (packet.kind === 'request') { publish.current(packet.requestId); return; }
       if (packet.id !== id || document.querySelector('[data-preview-pending-identity]')) return;
       if (packet.kind === 'update') latest.current.controls.setValue(packet.path!, packet.value as DialValue);
       if (packet.kind === 'reset') latest.current.controls.resetValues();
@@ -58,5 +62,3 @@ export function useBespokeControls<T extends DialConfig>(name: string, config: T
   useEffect(() => publish.current(), [controls.values, config, name]);
   return controls.values;
 }
-
-export { DialKitCompatibilityProbe, CompatibilityMotion } from './compatibility';

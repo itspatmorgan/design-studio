@@ -1,5 +1,7 @@
 # DialKit investigation
 
+Current prototype-module behavior and lifecycle verification are recorded in [the integration record](integration.md). The investigation below is historical.
+
 Issue: https://github.com/itspatmorgan/design-studio/issues/6
 
 Isolated branch: `codex/dialkit-test`. This branch is an experiment, not a proposed production integration. It shares no dependency installation, server port, or source edits with the InFlight experiment. The existing Studio checkout remains unchanged.
