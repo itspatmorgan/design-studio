@@ -20,7 +20,7 @@ Publish only when explicitly directed. Before announcement, verify installation 
 
 ## Cut a release
 
-1. Review a clean `main` candidate and its `CHANGELOG.md`. Set the version, date the Unreleased notes under `## <version> (YYYY-MM-DD)`, and start a new empty Unreleased section.
+1. Review a clean `main` candidate and its `CHANGELOG.md`. Confirm each community contribution credits its contributor. Set the version, date the Unreleased notes under `## <version> (YYYY-MM-DD)`, and start a new empty Unreleased section.
 2. In the clean clone, run:
 
    ```sh
@@ -39,6 +39,8 @@ Publish only when explicitly directed. Before announcement, verify installation 
 ## After pushing
 
 Verify installation from the exact tag using the [installation guide](installing.md). Verify the public demo anonymously. If a published release is wrong, cut a new release rather than moving its tag.
+
+Close the loop with contributors whose work shipped, as [Community contributions](community-contributions.md#close-the-loop) describes.
 
 ## Project repository publishing
 
@@ -72,5 +74,6 @@ See [Publishing](publishing.md) for portable hosting, direct-link routing, and a
 ## Related contracts
 
 - [Ownership and updates](ownership.md) describes manual upgrades.
+- [Community contributions](community-contributions.md) describes reviewing and crediting outside work.
 - [Checks and fixes](checks.md) describes verification.
 - [Format versions](formats.md) describes retained-file validation.

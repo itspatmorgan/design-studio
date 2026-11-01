@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
+
 ## 0.1.3 (2026-11-01)
 
 - Zoom and pan standalone Mermaid diagrams with pinch, scroll, drag, arrow keys, and canvas-style zoom controls. Canvas previews and document fences stay fitted. Thanks @robcrock.
