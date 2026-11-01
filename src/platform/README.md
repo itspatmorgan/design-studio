@@ -23,6 +23,7 @@ All platform knowledge and requirements live together in `context/`:
 | Editing and saving | [Editing and saving](context/source.md) |
 | Assets and fonts | [Assets and fonts](context/assets.md) |
 | Validation and recovery | [Checks and fixes](context/checks.md) |
+| Reviewing community contributions (maintainers) | [Community contributions](context/community-contributions.md) |
 | Cutting a release (maintainers) | [Releasing](context/releasing.md) |
 | Deployment | [Publishing](context/publishing.md) |
 | Shared diagram rendering | [Diagrams and code formatting](context/diagrams.md) |
