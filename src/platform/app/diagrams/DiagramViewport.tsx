@@ -87,7 +87,14 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
         const raw = Math.exp(-event.deltaY * lines * 0.01);
         const factor = Math.min(1.4, Math.max(1 / 1.4, raw));
         paint(
-          zoomView(camera.current, event.clientX - rect.left, event.clientY - rect.top, factor, rect.width, rect.height),
+          zoomView(
+            camera.current,
+            event.clientX - rect.left,
+            event.clientY - rect.top,
+            factor,
+            rect.width,
+            rect.height,
+          ),
         );
       } else {
         const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
