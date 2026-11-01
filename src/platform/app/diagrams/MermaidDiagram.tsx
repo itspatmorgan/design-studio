@@ -15,10 +15,15 @@ export function MermaidDiagram({
   source,
   compact = false,
   fit = false,
+  zoomable = false,
 }: {
   source: string;
+  /** Card-sized preview, such as a canvas embed. */
   compact?: boolean;
+  /** Fill the host and scale the diagram to fit it. */
   fit?: boolean;
+  /** With `fit`, add zoom and pan controls for a full-page diagram. */
+  zoomable?: boolean;
 }) {
   const id = `mermaid-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const { host, environment } = useDiagramEnvironment();
@@ -115,8 +120,7 @@ export function MermaidDiagram({
     };
   }, [source, id, environment]);
 
-  // The zoomable viewport carries its own fitted margin so a zoomed diagram reaches the edges.
-  const zoomable = fit && !compact;
+  const zooms = zoomable && fit;
   const rendering = !result.svg && !result.error;
   const statusVisible = useDelayedStatus(rendering);
 
@@ -127,17 +131,17 @@ export function MermaidDiagram({
       {...lifecycleAttributes(lifecycle)}
       className={
         fit || compact
-          ? `not-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background'}`
+          ? `not-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background p-6'}`
           : 'not-prose my-6 min-w-0 rounded-lg border border-border bg-card p-4'
       }
     >
       {(lifecycle.detail || (result.svg && freshness(lifecycle) === 'stale')) && (
-        <figcaption role='status' className={`text-xs text-muted-foreground ${zoomable ? 'px-6 pt-6' : ''}`}>
+        <figcaption role='status' className={`text-xs text-muted-foreground ${zooms ? 'relative z-20' : ''}`}>
           {lifecycle.detail || 'Updating diagram…'}
         </figcaption>
       )}
       {result.svg ? (
-        zoomable ? (
+        zooms ? (
           <DiagramViewport svg={result.svg} resetKey={source} />
         ) : (
           <div
@@ -150,15 +154,12 @@ export function MermaidDiagram({
           />
         )
       ) : result.error ? (
-        <div role='alert' className={`min-h-0 overflow-auto ${zoomable ? 'p-6' : ''}`}>
+        <div role='alert' className='min-h-0 overflow-auto'>
           <p className='text-sm font-medium'>Unable to render Mermaid diagram.</p>
           <pre className='mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-muted-foreground'>{result.error}</pre>
         </div>
       ) : (
-        <p
-          role='status'
-          className={statusVisible ? `text-sm text-muted-foreground ${zoomable ? 'p-6' : ''}` : 'sr-only'}
-        >
+        <p role='status' className={statusVisible ? 'text-sm text-muted-foreground' : 'sr-only'}>
           Rendering diagram…
         </p>
       )}

@@ -2,61 +2,40 @@ import { FitToScreenIcon, MinusSignIcon, PlusSignIcon } from '@hugeicons/core-fr
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/platform/systems/studio/components/button';
+import {
+  FITTED,
+  MAX_SCALE,
+  MIN_SCALE,
+  type Point,
+  type View,
+  clampView,
+  panView,
+  pinchView,
+  transformOf,
+  wheelIntent,
+  zoomView,
+} from './diagramCamera';
 
-// Scale 1 is the diagram fitted to the page. Larger scales enlarge that same SVG.
-const MIN_SCALE = 1;
-const MAX_SCALE = 8;
 const BUTTON_STEP = 1.25;
 const PAN_STEP = 48;
 const HINT_MS = 1500;
+// Continuous gestures paint directly; React state (percent, disabled buttons) catches up once they pause.
+const SETTLE_MS = 80;
 const MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 const ZOOM_HINT = `Pinch or hold ${MAC ? '⌘' : 'Ctrl'} and scroll to zoom`;
 
-type View = { scale: number; x: number; y: number };
-
-const fitted: View = { scale: MIN_SCALE, x: 0, y: 0 };
-
-function clampScale(scale: number) {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-}
-
-function clampView(view: View, width: number, height: number): View {
-  const scale = clampScale(view.scale);
-  const minX = width * (1 - scale);
-  const minY = height * (1 - scale);
-  return {
-    scale,
-    x: Math.min(0, Math.max(minX, view.x)),
-    y: Math.min(0, Math.max(minY, view.y)),
-  };
-}
-
-function zoomView(current: View, originX: number, originY: number, factor: number, width: number, height: number) {
-  const scale = clampScale(current.scale * factor);
-  if (scale === current.scale) return current;
-  const ratio = scale / current.scale;
-  return clampView(
-    {
-      scale,
-      x: originX - (originX - current.x) * ratio,
-      y: originY - (originY - current.y) * ratio,
-    },
-    width,
-    height,
-  );
-}
-
-function transformOf(view: View) {
-  return `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
-}
+// Safari reports trackpad pinch as non-standard gesture events instead of Ctrl + wheel.
+type GestureEventLike = Event & { scale: number; clientX: number; clientY: number };
 
 export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: string }) {
   const viewport = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const percentNode = useRef<HTMLSpanElement>(null);
-  const camera = useRef(fitted);
-  const drag = useRef<{ id: number; x: number; y: number } | null>(null);
-  const [view, setView] = useState<View>(fitted);
+  const camera = useRef(FITTED);
+  // Active pointers by id, in client coordinates: one pans, two pinch.
+  const pointers = useRef(new Map<number, Point>());
+  const settleTimer = useRef(0);
+  const [view, setView] = useState<View>(FITTED);
   const [panning, setPanning] = useState(false);
   const [hint, setHint] = useState(false);
 
@@ -66,42 +45,47 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
     if (percentNode.current) percentNode.current.textContent = `${Math.round(next.scale * 100)}%`;
   };
 
+  const commit = (next: View) => {
+    paint(next);
+    setView(next);
+  };
+
+  const settle = () => {
+    window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => setView(camera.current), SETTLE_MS);
+  };
+
+  const measure = () => {
+    const element = viewport.current!;
+    const rect = element.getBoundingClientRect();
+    const size = { width: element.clientWidth, height: element.clientHeight };
+    const local = (clientX: number, clientY: number): Point => ({ x: clientX - rect.left, y: clientY - rect.top });
+    return { size, local };
+  };
+
   useEffect(() => {
-    paint(fitted);
-    setView(fitted);
+    commit(FITTED);
   }, [resetKey]);
 
   useEffect(() => {
     const element = viewport.current;
     if (!element) return;
-    let settle = 0;
     let hintTimer = 0;
     let hinted = false;
-    const reclamp = () => {
-      const next = clampView(camera.current, element.clientWidth, element.clientHeight);
-      paint(next);
-      setView(next);
-    };
-    const observer = new ResizeObserver(reclamp);
+    let gestureScale = 1;
+    let gesturing = false;
+
+    const observer = new ResizeObserver(() => commit(clampView(camera.current, measure().size)));
     observer.observe(element);
-    // Match the canvas: pinch (or Ctrl/Cmd + wheel) zooms; two-finger scroll and the wheel pan.
+
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      const rect = element.getBoundingClientRect();
-      const lines = event.deltaMode === 1 ? 16 : 1;
-      if (event.ctrlKey || event.metaKey) {
-        const raw = Math.exp(-event.deltaY * lines * 0.01);
-        const factor = Math.min(1.4, Math.max(1 / 1.4, raw));
-        paint(
-          zoomView(
-            camera.current,
-            event.clientX - rect.left,
-            event.clientY - rect.top,
-            factor,
-            rect.width,
-            rect.height,
-          ),
-        );
+      const intent = wheelIntent(event);
+      const { size, local } = measure();
+      if (intent.kind === 'zoom') {
+        // Safari can send Ctrl + wheel alongside its gesture events; the gesture is the source of truth.
+        if (gesturing) return;
+        paint(zoomView(camera.current, local(event.clientX, event.clientY), intent.factor, size));
       } else {
         // A plain scroll on the fitted diagram has nothing to pan; once per visit, say how to zoom.
         if (camera.current.scale <= MIN_SCALE && !hinted) {
@@ -109,59 +93,75 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
           setHint(true);
           hintTimer = window.setTimeout(() => setHint(false), HINT_MS);
         }
-        const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
-        const dy = event.shiftKey && !event.deltaX ? 0 : event.deltaY;
-        paint(
-          clampView(
-            { ...camera.current, x: camera.current.x - dx * lines, y: camera.current.y - dy * lines },
-            rect.width,
-            rect.height,
-          ),
-        );
+        paint(panView(camera.current, intent.dx, intent.dy, size));
       }
-      window.clearTimeout(settle);
-      settle = window.setTimeout(() => setView(camera.current), 80);
+      settle();
     };
+
+    const onGestureStart = (event: Event) => {
+      event.preventDefault();
+      // A touch pinch is already handled through pointer events.
+      if (pointers.current.size > 1) return;
+      gesturing = true;
+      gestureScale = (event as GestureEventLike).scale;
+    };
+    const onGestureChange = (event: Event) => {
+      event.preventDefault();
+      if (!gesturing) return;
+      const gesture = event as GestureEventLike;
+      const { size, local } = measure();
+      paint(zoomView(camera.current, local(gesture.clientX, gesture.clientY), gesture.scale / gestureScale, size));
+      gestureScale = gesture.scale;
+      settle();
+    };
+    const onGestureEnd = (event: Event) => {
+      event.preventDefault();
+      gesturing = false;
+    };
+
     element.addEventListener('wheel', onWheel, { passive: false });
+    element.addEventListener('gesturestart', onGestureStart);
+    element.addEventListener('gesturechange', onGestureChange);
+    element.addEventListener('gestureend', onGestureEnd);
     return () => {
       observer.disconnect();
       element.removeEventListener('wheel', onWheel);
-      window.clearTimeout(settle);
+      element.removeEventListener('gesturestart', onGestureStart);
+      element.removeEventListener('gesturechange', onGestureChange);
+      element.removeEventListener('gestureend', onGestureEnd);
+      window.clearTimeout(settleTimer.current);
       window.clearTimeout(hintTimer);
     };
   }, []);
 
   const zoomToward = (factor: number, clientX?: number, clientY?: number) => {
-    const element = viewport.current;
-    if (!element) return;
-    const rect = element.getBoundingClientRect();
-    const next = zoomView(
-      camera.current,
-      clientX === undefined ? rect.width / 2 : clientX - rect.left,
-      clientY === undefined ? rect.height / 2 : clientY - rect.top,
-      factor,
-      rect.width,
-      rect.height,
-    );
-    paint(next);
-    setView(next);
+    if (!viewport.current) return;
+    const { size, local } = measure();
+    const origin =
+      clientX === undefined || clientY === undefined
+        ? { x: size.width / 2, y: size.height / 2 }
+        : local(clientX, clientY);
+    commit(zoomView(camera.current, origin, factor, size));
   };
 
   const panBy = (dx: number, dy: number) => {
-    const element = viewport.current;
-    if (!element) return;
-    const next = clampView(
-      { ...camera.current, x: camera.current.x + dx, y: camera.current.y + dy },
-      element.clientWidth,
-      element.clientHeight,
-    );
-    paint(next);
+    if (!viewport.current) return;
+    paint(panView(camera.current, dx, dy, measure().size));
+    settle();
+  };
+
+  const release = (pointerId: number) => {
+    if (!pointers.current.delete(pointerId)) return;
+    if (pointers.current.size > 0) return;
+    setPanning(false);
+    setView(camera.current);
   };
 
   const percent = Math.round(view.scale * 100);
 
   return (
-    <div className='relative min-h-0 min-w-0 flex-1'>
+    // -m-6 reaches past the figure's p-6, which stays so the renderer measures the fitted width.
+    <div className='relative -m-6 min-h-0 min-w-0 flex-1'>
       <div
         ref={viewport}
         tabIndex={0}
@@ -169,40 +169,43 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
         aria-label={`Diagram, ${percent} percent. Pinch to zoom, scroll or drag to pan, or use the arrow keys.`}
         className={`absolute inset-0 touch-none select-none outline-none focus-visible:[&_.diagram-focus]:ring-ring/50 ${view.scale <= MIN_SCALE ? '' : panning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onPointerDown={event => {
-          if (event.button !== 0) return;
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
           event.currentTarget.setPointerCapture(event.pointerId);
-          drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY };
+          pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
           setPanning(true);
         }}
         onPointerMove={event => {
-          const current = drag.current;
-          if (!current || current.id !== event.pointerId) return;
-          const dx = event.clientX - current.x;
-          const dy = event.clientY - current.y;
-          current.x = event.clientX;
-          current.y = event.clientY;
-          panBy(dx, dy);
+          const active = pointers.current;
+          const previous = active.get(event.pointerId);
+          if (!previous) return;
+          const next = { x: event.clientX, y: event.clientY };
+          if (active.size === 1) {
+            active.set(event.pointerId, next);
+            panBy(next.x - previous.x, next.y - previous.y);
+            return;
+          }
+          // The first two fingers pinch; any other finger leaves their pair, and the view, unchanged.
+          const { size, local } = measure();
+          const pair = (): [Point, Point] => {
+            const [a, b] = [...active.values()];
+            return [local(a.x, a.y), local(b.x, b.y)];
+          };
+          const before = pair();
+          active.set(event.pointerId, next);
+          paint(pinchView(camera.current, before, pair(), size));
+          settle();
         }}
-        onPointerUp={event => {
-          if (drag.current?.id !== event.pointerId) return;
-          drag.current = null;
-          setPanning(false);
-          setView(camera.current);
-        }}
-        onPointerCancel={() => {
-          drag.current = null;
-          setPanning(false);
-          setView(camera.current);
-        }}
+        onPointerUp={event => release(event.pointerId)}
+        onPointerCancel={event => release(event.pointerId)}
+        // A pointer lost without pointerup (app switch, interrupted touch) must not linger as a pinch finger.
+        onLostPointerCapture={event => release(event.pointerId)}
         onDoubleClick={event => zoomToward(BUTTON_STEP, event.clientX, event.clientY)}
         onKeyDown={event => {
           if (event.metaKey || event.ctrlKey || event.altKey) return;
           if (event.key === '+' || event.key === '=') zoomToward(BUTTON_STEP);
           else if (event.key === '-' || event.key === '_') zoomToward(1 / BUTTON_STEP);
-          else if (event.key === '0') {
-            paint(fitted);
-            setView(fitted);
-          } else if (event.key === 'ArrowLeft') panBy(PAN_STEP, 0);
+          else if (event.key === '0') commit(FITTED);
+          else if (event.key === 'ArrowLeft') panBy(PAN_STEP, 0);
           else if (event.key === 'ArrowRight') panBy(-PAN_STEP, 0);
           else if (event.key === 'ArrowUp') panBy(0, PAN_STEP);
           else if (event.key === 'ArrowDown') panBy(0, -PAN_STEP);
@@ -269,10 +272,7 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
           aria-label='Fit diagram'
           title='Fit diagram (0)'
           disabled={view.scale <= MIN_SCALE}
-          onClick={() => {
-            paint(fitted);
-            setView(fitted);
-          }}
+          onClick={() => commit(FITTED)}
         >
           <HugeiconsIcon icon={FitToScreenIcon} size={16} strokeWidth={1.875} />
         </Button>
