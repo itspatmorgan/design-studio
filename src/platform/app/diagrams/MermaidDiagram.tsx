@@ -117,6 +117,8 @@ export function MermaidDiagram({
 
   // The zoomable viewport carries its own fitted margin so a zoomed diagram reaches the edges.
   const zoomable = fit && !compact;
+  const rendering = !result.svg && !result.error;
+  const statusVisible = useDelayedStatus(rendering);
 
   return (
     <figure
@@ -153,10 +155,29 @@ export function MermaidDiagram({
           <pre className='mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-muted-foreground'>{result.error}</pre>
         </div>
       ) : (
-        <p role='status' className={`text-sm text-muted-foreground ${zoomable ? 'p-6' : ''}`}>
+        <p
+          role='status'
+          className={statusVisible ? `text-sm text-muted-foreground ${zoomable ? 'p-6' : ''}` : 'sr-only'}
+        >
           Rendering diagram…
         </p>
       )}
     </figure>
   );
+}
+
+// Like page and canvas opening, show the rendering status only once it lasts long enough to notice.
+const STATUS_DELAY_MS = 200;
+
+function useDelayedStatus(active: boolean) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!active) {
+      setVisible(false);
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setVisible(true), STATUS_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [active]);
+  return active && visible;
 }

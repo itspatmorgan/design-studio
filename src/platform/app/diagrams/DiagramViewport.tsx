@@ -8,6 +8,9 @@ const MIN_SCALE = 1;
 const MAX_SCALE = 8;
 const BUTTON_STEP = 1.25;
 const PAN_STEP = 48;
+const HINT_MS = 1500;
+const MAC = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
+const ZOOM_HINT = `Pinch or hold ${MAC ? '⌘' : 'Ctrl'} and scroll to zoom`;
 
 type View = { scale: number; x: number; y: number };
 
@@ -55,6 +58,7 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
   const drag = useRef<{ id: number; x: number; y: number } | null>(null);
   const [view, setView] = useState<View>(fitted);
   const [panning, setPanning] = useState(false);
+  const [hint, setHint] = useState(false);
 
   const paint = (next: View) => {
     camera.current = next;
@@ -71,6 +75,8 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
     const element = viewport.current;
     if (!element) return;
     let settle = 0;
+    let hintTimer = 0;
+    let hinted = false;
     const reclamp = () => {
       const next = clampView(camera.current, element.clientWidth, element.clientHeight);
       paint(next);
@@ -97,6 +103,12 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
           ),
         );
       } else {
+        // A plain scroll on the fitted diagram has nothing to pan; once per visit, say how to zoom.
+        if (camera.current.scale <= MIN_SCALE && !hinted) {
+          hinted = true;
+          setHint(true);
+          hintTimer = window.setTimeout(() => setHint(false), HINT_MS);
+        }
         const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
         const dy = event.shiftKey && !event.deltaX ? 0 : event.deltaY;
         paint(
@@ -115,6 +127,7 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
       observer.disconnect();
       element.removeEventListener('wheel', onWheel);
       window.clearTimeout(settle);
+      window.clearTimeout(hintTimer);
     };
   }, []);
 
@@ -211,50 +224,57 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
           />
         </div>
       </div>
-      {/* Same placement and island as the canvas zoom group, plus Fit diagram. */}
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-x-0 top-1/2 z-10 flex -translate-y-1/2 justify-center transition-opacity duration-300 ${hint ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <span className='rounded-full bg-foreground/85 px-3.5 py-2 text-sm text-background shadow-sm'>{ZOOM_HINT}</span>
+      </div>
+      {/* Mirrors the canvas zoom group (Excalidraw, restyled in canvas.css): a segmented
+          island with 10px glyphs at a 1.25px stroke, plus Fit diagram. */}
       <div
         role='group'
         aria-label={`Diagram zoom, ${percent} percent`}
-        className='absolute bottom-4 left-4 z-10 flex h-10 items-center gap-0.5 rounded-[10px] border border-border bg-card p-[3px] shadow-[0_1px_2px_rgb(0_0_0/0.05),0_1px_3px_rgb(0_0_0/0.06)]'
+        className='absolute bottom-4 left-4 z-10 flex h-10 items-center rounded-[10px] border border-border bg-card p-[3px] shadow-[0_1px_2px_rgb(0_0_0/0.05),0_1px_3px_rgb(0_0_0/0.06)]'
       >
         <Button
           variant='ghost'
           size='icon'
-          className='w-10'
+          className='w-10 rounded-r-none'
           aria-label='Zoom out'
-          title='Zoom out'
+          title='Zoom out (−)'
           disabled={view.scale <= MIN_SCALE}
           onClick={() => zoomToward(1 / BUTTON_STEP)}
         >
-          <HugeiconsIcon icon={MinusSignIcon} strokeWidth={1.5} />
+          <HugeiconsIcon icon={MinusSignIcon} className='size-[15px]' strokeWidth={2} />
         </Button>
-        <span ref={percentNode} className='px-2.5 text-sm font-medium tabular-nums'>
+        <span ref={percentNode} className='w-[60px] text-center text-sm font-medium tabular-nums'>
           {percent}%
         </span>
         <Button
           variant='ghost'
           size='icon'
-          className='w-10'
+          className='w-10 rounded-none'
           aria-label='Zoom in'
-          title='Zoom in'
+          title='Zoom in (+)'
           disabled={view.scale >= MAX_SCALE}
           onClick={() => zoomToward(BUTTON_STEP)}
         >
-          <HugeiconsIcon icon={PlusSignIcon} strokeWidth={1.5} />
+          <HugeiconsIcon icon={PlusSignIcon} className='size-[15px]' strokeWidth={2} />
         </Button>
         <Button
           variant='ghost'
           size='icon'
-          className='w-10'
+          className='w-10 rounded-l-none'
           aria-label='Fit diagram'
-          title='Fit diagram'
+          title='Fit diagram (0)'
           disabled={view.scale <= MIN_SCALE}
           onClick={() => {
             paint(fitted);
             setView(fitted);
           }}
         >
-          <HugeiconsIcon icon={FitToScreenIcon} strokeWidth={1.5} />
+          <HugeiconsIcon icon={FitToScreenIcon} size={16} strokeWidth={1.875} />
         </Button>
       </div>
     </div>
