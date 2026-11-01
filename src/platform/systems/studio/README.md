@@ -23,7 +23,7 @@ The navigation uses the unboxed mark in [Logo.tsx](../../app/shell/Logo.tsx). Ex
 | Dark sharing placement and dark README | `public/images/design-studio-social-dark.png` | 1200 × 630 |
 | GitHub repository social preview | `public/images/design-studio-github.png` | 1280 × 640 |
 | Product screenshots | `public/images/design-studio-product-light.jpg` and `design-studio-product-dark.jpg` | 1280 × 720 |
-| Compressed sharing alternative | `public/images/design-studio-readme-share.jpg` | 1200 × 630 |
+| README header image | `public/images/design-studio-readme-share.jpg` | 1200 × 630 |
 
 The editable sharing artwork is [social-card.html](assets/brand/social-card.html). Open it from the repository with dependencies installed. It uses the local Geist font and the public logo tiles. Render at 1200 × 630, wait for fonts and images, and export the light and dark PNGs using the respective browser color schemes. Export the light render as a compressed JPEG when a smaller alternative is needed. The README selects the matching social card and product screenshot with `<picture>`, falling back to light. The default external sharing image stays light because link previews do not select artwork by the viewer's theme.
 
