@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+## 0.1.3 (2026-11-01)
+
 - Zoom and pan standalone Mermaid diagrams with pinch, scroll, drag, arrow keys, and canvas-style zoom controls. Canvas previews and document fences stay fitted. Thanks @robcrock.
 - Add an optional `zoomable` setting to `MermaidDiagram` for fitted, full-page diagrams; existing callers are unchanged.
 - Show "Rendering diagram…" only when rendering takes longer than 200 ms, so fast diagrams no longer flash it.
+
+### Updating from 0.1.2
+
+Follow the [manual upgrade guidance](src/platform/context/ownership.md#updating-a-studio) and preserve local content and settings. No dependency, file, or migration changes are required. Standalone diagram pages gain zoom automatically; document fences and canvas previews are unchanged.
 
 ## 0.1.2 (2026-10-21)
 
