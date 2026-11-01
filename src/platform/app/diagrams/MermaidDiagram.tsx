@@ -115,6 +115,9 @@ export function MermaidDiagram({
     };
   }, [source, id, environment]);
 
+  // The zoomable viewport carries its own fitted margin so a zoomed diagram reaches the edges.
+  const zoomable = fit && !compact;
+
   return (
     <figure
       ref={host}
@@ -122,17 +125,17 @@ export function MermaidDiagram({
       {...lifecycleAttributes(lifecycle)}
       className={
         fit || compact
-          ? `not-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background p-6'}`
+          ? `not-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background'}`
           : 'not-prose my-6 min-w-0 rounded-lg border border-border bg-card p-4'
       }
     >
       {(lifecycle.detail || (result.svg && freshness(lifecycle) === 'stale')) && (
-        <figcaption role='status' className='text-xs text-muted-foreground'>
+        <figcaption role='status' className={`text-xs text-muted-foreground ${zoomable ? 'px-6 pt-6' : ''}`}>
           {lifecycle.detail || 'Updating diagram…'}
         </figcaption>
       )}
       {result.svg ? (
-        fit && !compact ? (
+        zoomable ? (
           <DiagramViewport svg={result.svg} resetKey={source} />
         ) : (
           <div
@@ -145,12 +148,12 @@ export function MermaidDiagram({
           />
         )
       ) : result.error ? (
-        <div role='alert' className='min-h-0 overflow-auto'>
+        <div role='alert' className={`min-h-0 overflow-auto ${zoomable ? 'p-6' : ''}`}>
           <p className='text-sm font-medium'>Unable to render Mermaid diagram.</p>
           <pre className='mt-2 overflow-x-auto whitespace-pre-wrap text-xs text-muted-foreground'>{result.error}</pre>
         </div>
       ) : (
-        <p role='status' className='text-sm text-muted-foreground'>
+        <p role='status' className={`text-sm text-muted-foreground ${zoomable ? 'p-6' : ''}`}>
           Rendering diagram…
         </p>
       )}

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Zoom and pan standalone Mermaid diagrams with scroll, drag, arrow keys, and **Zoom in**, **Zoom out**, and **Fit diagram** controls. Canvas previews and document fences stay fitted. Thanks @robcrock.
+- Zoom and pan standalone Mermaid diagrams with pinch, scroll, drag, arrow keys, and canvas-style zoom controls. Canvas previews and document fences stay fitted. Thanks @robcrock.
 
 ## 0.1.2 (2026-10-21)
 

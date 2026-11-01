@@ -1,4 +1,4 @@
-import { FitToScreenIcon, ZoomInIcon, ZoomOutIcon } from '@hugeicons/core-free-icons';
+import { FitToScreenIcon, MinusSignIcon, PlusSignIcon } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/platform/systems/studio/components/button';
@@ -78,14 +78,28 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
     };
     const observer = new ResizeObserver(reclamp);
     observer.observe(element);
+    // Match the canvas: pinch (or Ctrl/Cmd + wheel) zooms; two-finger scroll and the wheel pan.
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
       const rect = element.getBoundingClientRect();
-      const raw = Math.exp(-event.deltaY * (event.deltaMode === 1 ? 0.03 : 0.0015));
-      const factor = Math.min(1.4, Math.max(1 / 1.4, raw));
-      paint(
-        zoomView(camera.current, event.clientX - rect.left, event.clientY - rect.top, factor, rect.width, rect.height),
-      );
+      const lines = event.deltaMode === 1 ? 16 : 1;
+      if (event.ctrlKey || event.metaKey) {
+        const raw = Math.exp(-event.deltaY * lines * 0.01);
+        const factor = Math.min(1.4, Math.max(1 / 1.4, raw));
+        paint(
+          zoomView(camera.current, event.clientX - rect.left, event.clientY - rect.top, factor, rect.width, rect.height),
+        );
+      } else {
+        const dx = event.shiftKey && !event.deltaX ? event.deltaY : event.deltaX;
+        const dy = event.shiftKey && !event.deltaX ? 0 : event.deltaY;
+        paint(
+          clampView(
+            { ...camera.current, x: camera.current.x - dx * lines, y: camera.current.y - dy * lines },
+            rect.width,
+            rect.height,
+          ),
+        );
+      }
       window.clearTimeout(settle);
       settle = window.setTimeout(() => setView(camera.current), 80);
     };
@@ -132,7 +146,7 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
         ref={viewport}
         tabIndex={0}
         role='group'
-        aria-label={`Diagram, ${percent} percent. Scroll to zoom, drag to pan, or use the arrow keys.`}
+        aria-label={`Diagram, ${percent} percent. Pinch to zoom, scroll or drag to pan, or use the arrow keys.`}
         className={`absolute inset-0 touch-none select-none outline-none focus-visible:[&_.diagram-focus]:ring-ring/50 ${view.scale <= MIN_SCALE ? '' : panning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onPointerDown={event => {
           if (event.button !== 0) return;
@@ -177,55 +191,63 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
         }}
       >
         <div className='absolute inset-0 overflow-hidden'>
-          <div
-            ref={stage}
-            className='h-full w-full [&_svg]:absolute [&_svg]:inset-0 [&_svg]:h-full! [&_svg]:w-full! [&_svg]:max-w-none!'
-            style={{ transformOrigin: '0 0' }}
-            dangerouslySetInnerHTML={{ __html: svg }}
-          />
+          {/* The fitted margin lives inside the stage, so a zoomed diagram reaches the page edges. */}
+          <div ref={stage} className='h-full w-full p-6' style={{ transformOrigin: '0 0' }}>
+            <div
+              className='relative h-full w-full [&_svg]:absolute [&_svg]:inset-0 [&_svg]:h-full! [&_svg]:w-full! [&_svg]:max-w-none!'
+              dangerouslySetInnerHTML={{ __html: svg }}
+            />
+          </div>
           <div
             aria-hidden
             className='diagram-focus pointer-events-none absolute inset-0 ring-3 ring-transparent ring-inset'
           />
         </div>
       </div>
+      {/* Same placement and island as the canvas zoom group, plus Fit diagram. */}
       <div
         role='group'
         aria-label={`Diagram zoom, ${percent} percent`}
-        className='absolute right-3 bottom-3 z-10 flex items-center gap-0.5 rounded-lg border border-border bg-card/95 p-1 shadow-sm'
+        className='absolute bottom-4 left-4 z-10 flex h-10 items-center gap-0.5 rounded-[10px] border border-border bg-card p-[3px] shadow-[0_1px_2px_rgb(0_0_0/0.05),0_1px_3px_rgb(0_0_0/0.06)]'
       >
         <Button
           variant='ghost'
-          size='icon-sm'
+          size='icon'
+          className='w-10'
           aria-label='Zoom out'
+          title='Zoom out'
           disabled={view.scale <= MIN_SCALE}
           onClick={() => zoomToward(1 / BUTTON_STEP)}
         >
-          <HugeiconsIcon icon={ZoomOutIcon} />
+          <HugeiconsIcon icon={MinusSignIcon} strokeWidth={1.5} />
         </Button>
-        <span ref={percentNode} className='min-w-12 text-center text-xs tabular-nums text-muted-foreground'>
+        <span ref={percentNode} className='px-2.5 text-sm font-medium tabular-nums'>
           {percent}%
         </span>
         <Button
           variant='ghost'
-          size='icon-sm'
+          size='icon'
+          className='w-10'
           aria-label='Zoom in'
+          title='Zoom in'
           disabled={view.scale >= MAX_SCALE}
           onClick={() => zoomToward(BUTTON_STEP)}
         >
-          <HugeiconsIcon icon={ZoomInIcon} />
+          <HugeiconsIcon icon={PlusSignIcon} strokeWidth={1.5} />
         </Button>
         <Button
           variant='ghost'
-          size='icon-sm'
+          size='icon'
+          className='w-10'
           aria-label='Fit diagram'
+          title='Fit diagram'
           disabled={view.scale <= MIN_SCALE}
           onClick={() => {
             paint(fitted);
             setView(fitted);
           }}
         >
-          <HugeiconsIcon icon={FitToScreenIcon} />
+          <HugeiconsIcon icon={FitToScreenIcon} strokeWidth={1.5} />
         </Button>
       </div>
     </div>
