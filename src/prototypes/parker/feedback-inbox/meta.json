@@ -18,7 +18,6 @@
     "discovery/lofi-inbox.tsx",
     "discovery/breadboard.excalidraw",
     "discovery/feedback-flow.mermaid",
-    "discovery/feedback-operations.mermaid",
     "discovery/project-context.md",
     "states/inbox/open-issues.tsx",
     "states/inbox/empty.tsx",

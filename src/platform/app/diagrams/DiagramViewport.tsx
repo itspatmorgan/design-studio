@@ -133,7 +133,7 @@ export function DiagramViewport({ svg, resetKey }: { svg: string; resetKey: stri
         tabIndex={0}
         role='group'
         aria-label={`Diagram, ${percent} percent. Scroll to zoom, drag to pan, or use the arrow keys.`}
-        className={`absolute inset-0 touch-none outline-none focus-visible:[&_.diagram-focus]:ring-ring/50 ${panning ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`absolute inset-0 touch-none outline-none focus-visible:[&_.diagram-focus]:ring-ring/50 ${view.scale <= MIN_SCALE ? '' : panning ? 'cursor-grabbing' : 'cursor-grab'}`}
         onPointerDown={event => {
           if (event.button !== 0) return;
           event.currentTarget.setPointerCapture(event.pointerId);
