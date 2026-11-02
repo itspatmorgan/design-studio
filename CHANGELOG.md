@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- A `Link` whose path doesn't resolve renders in place, inert and outlined in development, and the console names the path. Before, it failed the whole view, so one link in shared chrome took down every page.
+- `pnpm check` ends with one line per system listing every missing token, with Tailwind's default value beside each.
+- `/systems/<folder-name>` redirects to the system's permanent address.
+- `useColorMode()` from `#studio/runtime` reads the nearest theme boundary's mode, for code that used to watch `.dark` on `<html>`.
+- The missing-docs message for a component names the leading-underscore convention for internal files.
+- Working context lists which changes need a dev server restart, `pnpm studio identify`, or a manifest rebuild.
+- `pnpm canvas … create` warns when new elements repeat existing content, so a retried call doesn't silently duplicate a canvas.
+- Prototype and system code no longer sees Node types, so `window.setTimeout` returns a number again.
 - Views that import local images or fonts now pass preview verification instead of showing a permanent "could not be verified" warning.
 - `rename-system` no longer edits upstream platform files, and platform tests no longer read the starter systems, so renaming or deleting a starter keeps `pnpm test` passing and updates clean.
 - The theme scope check accepts sibling selectors inside the theme, such as `.theme .a + .b`; `.theme + .b` still fails.

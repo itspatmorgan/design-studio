@@ -240,7 +240,12 @@ test('create warns when something lands on something else', () => {
 
 test('create warns when a call repeats existing content, as a retried command would', () => {
   const s = session();
-  const call = { elements: [{ type: 'note', text: 'Same idea' }, { type: 'text', text: 'Heading' }] };
+  const call = {
+    elements: [
+      { type: 'note', text: 'Same idea' },
+      { type: 'text', text: 'Heading' },
+    ],
+  };
   assert.equal(s.call('create', call).warnings, undefined);
   const again = s.call('create', call);
   assert.ok(again.warnings.some((w: string) => /repeat existing ones.*delete the new copies/.test(w)));

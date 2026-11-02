@@ -773,7 +773,11 @@ function create(input: El[], args: any, ctx: Ctx): Run {
   // Agents retry commands: a call that repeats existing content is likely a second run, so say so.
   const label = (el: El) => (el.text || el.link ? `${kindOf(el)}|${el.text ?? ''}|${el.link ?? ''}` : null);
   const known = new Set(input.map(el => el.id));
-  const existing = new Map(live(input).map(el => [label(el), el] as const).filter(([key]) => key));
+  const existing = new Map(
+    live(input)
+      .map(el => [label(el), el] as const)
+      .filter(([key]) => key),
+  );
   const repeats = live(scene).filter(el => !known.has(el.id) && existing.has(label(el)));
   if (repeats.length)
     warnings.push(
