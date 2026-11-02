@@ -37,11 +37,15 @@ if (command === 'identity-audit') {
   if (positional.length !== 1) usage('identify <prototype-folder> [--yes] [--json]');
   const actor = resolveContributor();
   const plan = planPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, positional[0], actor);
-  const result = flags.yes ? applyPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, plan, actor) : plan;
+  // A preview and a later --yes run in separate processes, so new IDs are drawn again on apply.
+  const note = 'New IDs in a preview are examples; --yes assigns its own.';
+  const result = flags.yes
+    ? applyPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, plan, actor)
+    : { ...plan, note };
   emit(
     result,
     flags.yes
       ? `Assigned missing identities in ${plan.folder} (${result.changed} file(s)); existing identities retained.`
-      : `${plan.changes.length} file(s) need identities in ${plan.folder}. Review with --json; apply with --yes.`,
+      : `${plan.changes.length} file(s) need identities in ${plan.folder}. Review with --json; apply with --yes. ${note}`,
   );
 }

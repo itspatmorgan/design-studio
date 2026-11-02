@@ -109,11 +109,17 @@ const title = (p: string) =>
 const current =
   everything.find(x => x.contributorKey === contributor && x.id === prototype) ??
   fail('This canvas prototype is missing from the manifest. Rebuild it first.');
-const base = inSection ? addressOf(contributor, prototype) : prototypeAddress(resourceId(current.studioId));
+// The manifest lags files authored directly: name the refresh instead of failing on a missing identity.
+const STALE = 'Run pnpm studio identify, then node src/platform/node/build/build-manifest.js.';
+const identified = (id: string | undefined, what: string) =>
+  id ? resourceId(id) : fail(`${what} has no identity in the manifest yet. ${STALE}`);
+const base = inSection
+  ? addressOf(contributor, prototype)
+  : prototypeAddress(identified(current.studioId, 'This canvas prototype'));
 const linkOf = (x: PrototypeRef, item: { path: string; studioId?: string }) =>
   inSection
     ? `${addressOf(x.contributorKey, x.id)}/${artifactSlug(item.path)}`
-    : artifactAddress(resourceId(x.studioId), resourceId(item.studioId));
+    : artifactAddress(identified(x.studioId, `Prototype ${x.id}`), identified(item.studioId, item.path));
 const ctx: Ctx = {
   base,
   artifact(appPath) {
