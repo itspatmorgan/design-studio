@@ -80,7 +80,7 @@ Each capitalized export from the examples file is one live example. The platform
 
 Component pages show guidance, then Examples, then Source with the local file path. Props comes last in a disclosure, collapsed initially and labeled with component and documented-prop counts. Props tables come from TypeScript. They summarize inputs rather than replacing upstream API documentation.
 
-`origin: 'shadcn'` adds upstream component links. A Markdown page can provide its own `docs` URL. Declare `origin: null` when replacing the starter kit with another library.
+`origin: 'shadcn'` adds upstream component links. A Markdown page can provide its own `docs` URL. Declare `origin: null` when replacing the starter kit with another library or adapting a starter until its components no longer come from shadcn/ui.
 
 Missing pages, examples, or required page fields normally produce warnings. `docs: 'strict'` makes these errors. `docs: 'off'` suppresses documentation warnings.
 

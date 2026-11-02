@@ -62,7 +62,7 @@ Local creation registers the system and maintainer entry; external source is int
 
 Review representative components and pop-ups in every supported color mode. Verify that a single-mode system keeps its mode when Studio toggles. Follow [working context](../../../../context/working-in-studio.md) for build and save requirements after migration.
 
-After completing the person's requested customization of an example system, set `overview.starter: false` in its `intro.tsx` and revise the summary to describe the customized system. This clears the example banner for everyone. Do not clear it just because the person opened or copied a setup prompt, or while assessment or customization is incomplete. Preserve any curation summary and saved decisions.
+After completing the person's requested customization of an example system, set `overview.starter: false` in its `intro.tsx` and revise the summary to describe the customized system. This clears the example banner for everyone. Also review `origin` in `system.ts`: the starters declare `origin: 'shadcn'`, which credits shadcn/ui on every component page, so set `origin: null` once the system's components come from elsewhere and credit them through each library's `components` list. Do not clear it just because the person opened or copied a setup prompt, or while assessment or customization is incomplete. Preserve any curation summary and saved decisions.
 
 Report source provenance, adaptations, the default system, verified prototype URL, and missing input. Return that prototype to initialization for reuse.
 
