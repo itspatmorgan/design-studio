@@ -39,9 +39,7 @@ if (command === 'identity-audit') {
   const plan = planPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, positional[0], actor);
   // A preview and a later --yes run in separate processes, so new IDs are drawn again on apply.
   const note = 'New IDs in a preview are examples; --yes assigns its own.';
-  const result = flags.yes
-    ? applyPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, plan, actor)
-    : { ...plan, note };
+  const result = flags.yes ? applyPrototypeIdentification(ROOT, INSTALLED_FILE_TYPES, plan, actor) : { ...plan, note };
   emit(
     result,
     flags.yes
