@@ -15,4 +15,6 @@ Use the [minimum sufficient verification policy](checks.md#minimum-sufficient-ve
 
 Run `pnpm build` before committing completed changes. Fix reported type, boundary, and asset errors rather than suppressing checks. Inspect rendered results for interface or prototype changes. When adding or changing static assets, follow the [asset convention and guard](assets.md).
 
+Some changes appear only after a refresh, and until then Studio shows the previous state. Restart the dev server after editing a `system.ts` (including its libraries and credits), after creating, renaming, or deleting a system or module, and after CLI configuration changes. Run `pnpm studio identify <prototype folder>` after creating views, documents, or canvases as files, then rebuild the manifest (`node src/platform/node/build/build-manifest.js`) before CLI tools that read it, such as `pnpm canvas`. Rule out stale state before treating a mismatch as a bug.
+
 Commit finished work with a concise message. Push only when requested. Sharing and [publishing](publishing.md) are separate actions.
