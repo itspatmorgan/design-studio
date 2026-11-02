@@ -19,7 +19,9 @@ export function prototypeArtifactHref(prototype: PrototypeNavigationScope, path:
   if (matches.length > 1) throw new Error(`Prototype path "${file}" is ambiguous.`);
   const artifact = matches[0];
   if (!prototype.studioId || !artifact?.studioId)
-    throw new Error(`No identified artifact exists at prototype path "${file}".`);
+    throw new Error(
+      `No identified artifact exists at prototype path "${file}". A file created outside Studio needs pnpm studio identify <prototype folder>.`,
+    );
   if (![prototype.studioId, artifact.studioId].every(id => /^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(id)))
     throw new Error('Invalid prototype navigation identity.');
   return `/prototypes/${prototype.studioId}/artifacts/${artifact.studioId}${suffix}`;

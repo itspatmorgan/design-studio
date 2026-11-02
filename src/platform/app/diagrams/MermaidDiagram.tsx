@@ -131,8 +131,8 @@ export function MermaidDiagram({
       {...lifecycleAttributes(lifecycle)}
       className={
         fit || compact
-          ? `not-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background p-6'}`
-          : 'not-prose my-6 min-w-0 rounded-lg border border-border bg-card p-4'
+          ? `not-studio-prose flex h-full min-h-0 min-w-0 flex-1 flex-col ${compact ? 'bg-card p-3' : 'bg-background p-6'}`
+          : 'not-studio-prose my-6 min-w-0 rounded-lg border border-border bg-card p-4'
       }
     >
       {(lifecycle.detail || (result.svg && freshness(lifecycle) === 'stale')) && (

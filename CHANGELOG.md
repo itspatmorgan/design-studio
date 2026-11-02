@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Views that import local images or fonts now pass preview verification instead of showing a permanent "could not be verified" warning.
+- `rename-system` no longer edits upstream platform files, and platform tests no longer read the starter systems, so renaming or deleting a starter keeps `pnpm test` passing and updates clean.
+- The theme scope check accepts sibling selectors inside the theme, such as `.theme .a + .b`; `.theme + .b` still fails.
+- Studio's Tailwind Typography classes are now `studio-prose`, so a system's own `prose` class no longer picks up the plugin's styles. Team code that used Studio's `prose` classes should switch to `studio-prose`.
+- `pnpm studio --help` (or `--help` after any command) lists every command and option. `configure` usage shows that omitted settings are kept.
+- Clearer next steps: a `Link` to an unidentified file names `pnpm studio identify`, the canvas tool names the identify and manifest rebuild steps when the manifest lags, and identify previews say their new IDs are examples.
+- `rename-system` and the setup skill remind teams to review a starter's `origin` once its components come from elsewhere.
+
 - Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
 
 ## 0.1.3 (2026-11-01)
