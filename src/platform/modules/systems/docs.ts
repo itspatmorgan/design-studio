@@ -121,7 +121,9 @@ export function componentProblems(
   const problems: string[] = [];
   const stem = files.source ? baseName(files.source).replace(/\.[jt]sx$/, '') : component.name;
   if (!files.doc && !files.examples)
-    return [`has no examples or description yet. Add ${stem}.examples.tsx and ${stem}.md`];
+    return [
+      `has no examples or description yet. Add ${stem}.examples.tsx and ${stem}.md, or rename it _${stem}.tsx if it is an internal part`,
+    ];
   if (!files.doc) problems.push(`has no ${stem}.md yet (a title, a description, and a "When to use" section)`);
   else if (text.doc) {
     const file = baseName(files.doc);

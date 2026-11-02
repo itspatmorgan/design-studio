@@ -70,7 +70,7 @@ button/
   button.examples.tsx
 ```
 
-`index.ts` re-exports the component. Flat component files are also discovered.
+`index.ts` re-exports the component. Flat component files are also discovered. Every other `.tsx` file is its own component page, so name a component's internal parts with a leading `_` (`_row.tsx`) to keep them out of discovery.
 
 The Markdown page has a `title`, `description`, and `## When to use` section. Other sections are optional.
 
