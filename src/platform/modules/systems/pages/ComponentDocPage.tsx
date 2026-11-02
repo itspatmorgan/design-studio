@@ -32,7 +32,7 @@ import ViewError from '@/platform/app/files/FileError';
 
 // The page's Markdown headings match the page's own sections (18px, under the 26px title), not the
 // 21px h2 the small prose size gives.
-const PAGE_PROSE = 'prose-h3:text-base';
+const PAGE_PROSE = 'studio-prose-h3:text-base';
 const componentHeadings = {
   h2: ({ className = '', style, ...props }: React.ComponentProps<'h2'>) => (
     <h2
