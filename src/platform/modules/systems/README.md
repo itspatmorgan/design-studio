@@ -38,7 +38,7 @@ The starter Product and Marketing systems use shadcn/ui on Base UI. Shadcn-based
 
 Studio follows the global mode. Rendered views, their document/canvas embeds, and Systems theme previews and component examples resolve that mode against their system's capabilities. Unsupported global modes use the first supported mode. Documents, diagrams, canvas chrome, and source editors keep Studio's mode.
 
-The shared `ThemeScope` sets `data-color-mode` and CSS `color-scheme` on the system boundary. Pop-ups stay inside it. Dark tokens use `.<theme-class>[data-color-mode="dark"]`; never use an ancestor `.dark` selector for system styles. Tailwind `dark:` utilities respect a local light boundary. Tailwind systems explicitly declare their theme tokens on the system boundary. Theme and component pages use the selected system's mode, including their background, headings, token tables, and component examples. The shared Overview, navigation, system knowledge, and source editors remain in Studio's scope; optional additional overview content retains the selected system's theme. The Overview’s Toolkit section calls out supported modes using ColorModeSupport, which reads the declaration from system.ts.
+The shared `ThemeScope` sets `data-color-mode` and CSS `color-scheme` on the system boundary. Pop-ups stay inside it. Dark tokens use `.<theme-class>[data-color-mode="dark"]`; never use an ancestor `.dark` selector for system styles. Code that needs the mode, such as canvas art or a theme hook, reads it with `useColorMode()` from `#studio/runtime` rather than watching `.dark` on `<html>`. Tailwind `dark:` utilities respect a local light boundary. Tailwind systems explicitly declare their theme tokens on the system boundary. Theme and component pages use the selected system's mode, including their background, headings, token tables, and component examples. The shared Overview, navigation, system knowledge, and source editors remain in Studio's scope; optional additional overview content retains the selected system's theme. The Overview’s Toolkit section calls out supported modes using ColorModeSupport, which reads the declaration from system.ts.
 
 The starter Product system and new system scaffolds declare both modes. New scaffolds contain an empty theme scope; curation supplies the chosen tokens. For a light-only system such as Sublime, declare `colorModes: ['light']`; for a dark-only system, declare `colorModes: ['dark']`. Its rendered content then keeps that mode regardless of Studio's toggle.
 
@@ -70,7 +70,7 @@ button/
   button.examples.tsx
 ```
 
-`index.ts` re-exports the component. Flat component files are also discovered.
+`index.ts` re-exports the component. Flat component files are also discovered. Every other `.tsx` file is its own component page, so name a component's internal parts with a leading `_` (`_row.tsx`) to keep them out of discovery.
 
 The Markdown page has a `title`, `description`, and `## When to use` section. Other sections are optional.
 

@@ -40,7 +40,7 @@ Team modules (`src/modules/<id>/`) and team systems (`src/systems/<id>/`) import
 | `#studio/preferences` | Authorized, versioned reads and writes of declared contributor module namespaces. | Node only. |
 | `#studio/references` | Node source adapters, resolution context types and shared code, Markdown and CSS source grammars. | Node only. |
 | `#studio/lifecycle` | Renderer-neutral source, preparation and displayed revision state, input digests and DOM evidence. | Application and Node. |
-| `#studio/runtime` | `cn`, `PortalContext`, and `usePortalContainer` for shared class names and themed overlays. | Application and runtime. |
+| `#studio/runtime` | `cn`, `PortalContext`, `usePortalContainer`, and `useColorMode` for shared class names, themed overlays, and the current color mode. | Application and runtime. |
 
 Permanent address helpers validate ID-based public addresses; they do not resolve filesystem locations or legacy module-content addresses. `compiledLifecycle` is browser-specific and belongs to `#studio/data`; renderer-neutral revision primitives remain in Node-safe `#studio/lifecycle`.
 
@@ -62,7 +62,7 @@ Every public entry's executable graph is checked in each declared environment. N
 
 The graph follows repository source, not npm package implementations. Packages remain governed by declared dependencies and runtime scope checks. These checks enforce source contracts, not a security sandbox. A Node import regression also loads every Node-capable public entry in a fresh process.
 
-Artifact hosts and Systems examples provide `PortalContext` with their themed container. System overlays read it through `usePortalContainer()` and pass that element to their portal implementation. Both import `#studio/runtime`, so the provider and consumers use one context instance per document. `cn` remains a shared runtime dependency; prototypes do not gain permission to import its package directly. The runtime entry must remain independent of shell, settings, manifest, routing, and discovery code.
+Artifact hosts and Systems examples provide `PortalContext` with their themed container. System overlays read it through `usePortalContainer()` and pass that element to their portal implementation. Both import `#studio/runtime`, so the provider and consumers use one context instance per document. `useColorMode()` reads `data-color-mode` from the theme boundary around that container, so it follows the system's mode rather than Studio's. `cn` remains a shared runtime dependency; prototypes do not gain permission to import its package directly. The runtime entry must remain independent of shell, settings, manifest, routing, and discovery code.
 
 `src/platform/api/*.ts` defines the public exports. The project is pre-release; review changes against current consumers rather than maintaining a compatibility snapshot.
 

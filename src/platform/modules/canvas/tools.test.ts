@@ -238,6 +238,19 @@ test('create warns when something lands on something else', () => {
   assert.match(second.warnings[0], /overlaps/);
 });
 
+test('create warns when a call repeats existing content, as a retried command would', () => {
+  const s = session();
+  const call = {
+    elements: [
+      { type: 'note', text: 'Same idea' },
+      { type: 'text', text: 'Heading' },
+    ],
+  };
+  assert.equal(s.call('create', call).warnings, undefined);
+  const again = s.call('create', call);
+  assert.ok(again.warnings.some((w: string) => /repeat existing ones.*delete the new copies/.test(w)));
+});
+
 test('artifacts lists what can go on the canvas, and a wrong name points at it', () => {
   const s = session();
   const { artifacts } = s.call('artifacts', {});

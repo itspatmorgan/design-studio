@@ -107,7 +107,7 @@ export const TOOLS: ToolDef[] = [
   {
     name: 'create',
     summary:
-      'Make things. Pass { elements: [...] } (or one element). Each has a `type`; see help("create") for the types. Placement: x and y, or `below`, `rightOf` (an id or @ref), or `section`. With none, it goes below everything. `align` sets how it lines up with what it is beside: "start" (left edge under something, top edge beside it) or "center" (centered on it). `rightOf` centers by default, so arrows between things of different heights run straight; `below` aligns left. The result lists `warnings` if something landed on top of something else. `ref` names it, so later elements in the same call can use @name.',
+      'Make things. Pass { elements: [...] } (or one element). Each has a `type`; see help("create") for the types. Placement: x and y, or `below`, `rightOf` (an id or @ref), or `section`. With none, it goes below everything. `align` sets how it lines up with what it is beside: "start" (left edge under something, top edge beside it) or "center" (centered on it). `rightOf` centers by default, so arrows between things of different heights run straight; `below` aligns left. The result lists `warnings` if something landed on top of something else or repeats existing content. `ref` names it, so later elements in the same call can use @name.',
     args: {
       elements: 'a list of elements to make',
       type: 'text, rectangle, ellipse, diamond, arrow, line, artifact, section, or note',
@@ -770,6 +770,19 @@ function create(input: El[], args: any, ctx: Ctx): Run {
     for (const b of [...before, ...newOnes.slice(i + 1)])
       if (a.id !== b.id && meet(boundsOf(a) as El, boundsOf(b) as El)) warnings.push(`${name(a)} overlaps ${name(b)}`);
   });
+  // Agents retry commands: a call that repeats existing content is likely a second run, so say so.
+  const label = (el: El) => (el.text || el.link ? `${kindOf(el)}|${el.text ?? ''}|${el.link ?? ''}` : null);
+  const known = new Set(input.map(el => el.id));
+  const existing = new Map(
+    live(input)
+      .map(el => [label(el), el] as const)
+      .filter(([key]) => key),
+  );
+  const repeats = live(scene).filter(el => !known.has(el.id) && existing.has(label(el)));
+  if (repeats.length)
+    warnings.push(
+      `${repeats.length} new element(s) repeat existing ones, such as ${name(repeats[0])} and ${name(existing.get(label(repeats[0]))!)}. If this call already ran, delete the new copies.`,
+    );
 
   // A section clips what sticks out of it, so one that things were put into grows to hold them (never shrinks).
   for (const id of grow) {

@@ -364,8 +364,9 @@ test('utility diagnostics distinguish omitted tokens from unrelated text', async
       inventory: themeInventory('.example-theme { --shadow-sm: 0 1px black; }', 'example-theme'),
     };
     const problems = await themeUsageProblems([system], () => [file]);
-    assert.equal(problems.length, 1);
+    assert.equal(problems.length, 2);
     assert.match(problems[0], /shadow-lg requires --shadow-lg/);
+    assert.match(problems[1], /missing 1 token\(s\) in all: --shadow-lg \(Tailwind default /);
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
