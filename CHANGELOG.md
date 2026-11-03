@@ -7,7 +7,7 @@
 - `pnpm check` ends with one line per system listing every missing token, with Tailwind's default value beside each.
 - `/systems/<folder-name>` redirects to the system's permanent address.
 - `useColorMode()` from `#studio/runtime` reads the nearest theme boundary's mode, for code that used to watch `.dark` on `<html>`.
-- The missing-docs message for a component names the leading-underscore convention for internal files.
+- A component folder with an `index.ts` is one component: its other files are internal parts, so ported components no longer need renaming to stay off the component list. A file inside it with its own docs or examples still gets a page.
 - `pnpm canvas … create` warns when new elements repeat existing content, so a retried call doesn't silently duplicate a canvas.
 - Prototype and system code no longer sees Node types, so `window.setTimeout` returns a number again.
 - Views that import local images or fonts now pass preview verification instead of showing a permanent "could not be verified" warning.
