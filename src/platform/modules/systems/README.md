@@ -74,13 +74,13 @@ button/
 
 The Markdown page has a `title`, `description`, and `## When to use` section. Other sections are optional.
 
-Optional `source` frontmatter supplies a short provenance sentence, such as the library, CLI version, and preset. The compact Source block links the system’s declared origin and libraries whose `components` include this component to their Libraries entries. It preserves the component-specific upstream `docs` link. Label generation versions as shadcn CLI, not as runtime library versions. Keep technical adaptation details in system context.
+Optional `source` frontmatter supplies a short provenance sentence, such as the library, CLI version, and preset. The compact Source block links the libraries whose `components` include this component to their Libraries entries. Credit comes only from those lists, so a component a library does not list is never credited to it. It preserves the component-specific upstream `docs` link. Label generation versions as shadcn CLI, not as runtime library versions. Keep technical adaptation details in system context.
 
 Each capitalized export from the examples file is one live example. The platform frames examples with the system's theme.
 
 Component pages show guidance, then Examples, then Source with the local file path. Props comes last in a disclosure, collapsed initially and labeled with component and documented-prop counts. Props tables come from TypeScript. They summarize inputs rather than replacing upstream API documentation.
 
-`origin: 'shadcn'` adds upstream component links. A Markdown page can provide its own `docs` URL. Declare `origin: null` when replacing the starter kit with another library or adapting a starter until its components no longer come from shadcn/ui.
+`origin: 'shadcn'` adds upstream shadcn/ui docs links to the components its shadcn library entry lists. A Markdown page can provide its own `docs` URL. Declare `origin: null` when the system's components no longer come from shadcn/ui.
 
 Missing pages, examples, or required page fields normally produce warnings. `docs: 'strict'` makes these errors. `docs: 'off'` suppresses documentation warnings.
 

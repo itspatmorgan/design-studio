@@ -243,10 +243,6 @@ function lifecycle(action) {
     say(
       'Permanently deletes the system source. Associated prototypes retain their code and require a system rebuild before rendering or deployment.',
     );
-  if (action === 'rename' && SYSTEM_SPECS[positional[0]]?.origin)
-    say(
-      `This system credits ${SYSTEM_SPECS[positional[0]].origin} as its origin on every component page. Set origin: null in system.ts once its components come from elsewhere.`,
-    );
   if (action === 'archive')
     say(
       'Retains source; archives associated active prototypes and excludes the system from deployment and new selections.',

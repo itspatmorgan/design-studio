@@ -167,7 +167,7 @@ function webLink(url: string | null) {
 
 // `origin`
 // is where the system's components come from: 'shadcn' links the page to that component's shadcn/ui
-// docs, unless its frontmatter gives a link of its own.
+// docs when the shadcn library entry lists the component, unless its frontmatter gives a link of its own.
 export function ComponentDocPage({
   system,
   sys,
@@ -185,9 +185,12 @@ export function ComponentDocPage({
   const errors = loaded.errors;
   const [retry, setRetry] = useState(0);
   const router = useRouter();
-  const libraries = (useManifest().systems[system]?.libraries ?? []).filter(
-    library => library.id === origin || library.components?.includes(component.slug),
+  // Credit only what this component declares: a library lists the components it supplies, so an adapted
+  // system never credits its origin for components that came from somewhere else.
+  const libraries = (useManifest().systems[system]?.libraries ?? []).filter(library =>
+    library.components?.includes(component.slug),
   );
+  const fromOrigin = libraries.some(library => library.id === origin);
   const version = useDocsVersion();
   const previousVersion = useRef(version);
   useEffect(() => {
@@ -198,7 +201,8 @@ export function ComponentDocPage({
   }, [version, router]);
 
   const stem = (source ?? component.name).replace(/^.*\//, '').replace(/\.[jt]sx$/, '');
-  const docsLink = webLink(component.docsUrl) ?? webLink(origin === 'shadcn' && source ? shadcnDocsUrl(stem) : null);
+  const docsLink =
+    webLink(component.docsUrl) ?? webLink(origin === 'shadcn' && fromOrigin && source ? shadcnDocsUrl(stem) : null);
   const filePath = source ?? doc ?? examples;
   const propCount = loaded.props?.reduce((total, item) => total + item.props.length, 0) ?? 0;
   const Doc = loaded.doc;

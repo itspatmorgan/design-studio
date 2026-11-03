@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Component pages credit only the libraries whose `components` list includes that component. A system's `origin` no longer credits every component, so components ported from elsewhere are no longer attributed to shadcn/ui. The starter systems now list their shadcn components. A team system that credits shadcn should list its shadcn components in that library's `components`.
 - A `Link` whose path doesn't resolve renders in place, inert and outlined in development, and the console names the path. Before, it failed the whole view, so one link in shared chrome took down every page.
 - `pnpm check` ends with one line per system listing every missing token, with Tailwind's default value beside each.
 - `/systems/<folder-name>` redirects to the system's permanent address.
@@ -16,7 +17,6 @@
 - Studio's Tailwind Typography classes are now `studio-prose`, so a system's own `prose` class no longer picks up the plugin's styles. Team code that used Studio's `prose` classes should switch to `studio-prose`.
 - `pnpm studio --help` (or `--help` after any command) lists every command and option. `configure` usage shows that omitted settings are kept.
 - Clearer next steps: a `Link` to an unidentified file names `pnpm studio identify`, the canvas tool names the identify and manifest rebuild steps when the manifest lags, and identify previews say their new IDs are examples.
-- `rename-system` and the setup skill remind teams to review a starter's `origin` once its components come from elsewhere.
 
 - Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
 

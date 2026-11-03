@@ -37,7 +37,25 @@ export default {
       "id": "shadcn",
       "label": "shadcn/ui",
       "description": "Component source and styles",
-      "docs": "https://ui.shadcn.com/docs"
+      "docs": "https://ui.shadcn.com/docs",
+      "components": [
+        "avatar",
+        "badge",
+        "button",
+        "card",
+        "checkbox",
+        "dialog",
+        "dropdown-menu",
+        "input",
+        "label",
+        "select",
+        "separator",
+        "sheet",
+        "table",
+        "tabs",
+        "textarea",
+        "tooltip"
+      ]
     },
     {
       "kind": "package",

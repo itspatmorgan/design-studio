@@ -22,7 +22,12 @@ export default {
       "id": "shadcn",
       "label": "shadcn/ui",
       "description": "Component source and styles",
-      "docs": "https://ui.shadcn.com/docs"
+      "docs": "https://ui.shadcn.com/docs",
+      "components": [
+        "button",
+        "tabs",
+        "tooltip"
+      ]
     },
     {
       "kind": "package",
