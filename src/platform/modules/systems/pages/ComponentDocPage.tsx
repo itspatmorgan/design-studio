@@ -204,6 +204,7 @@ export function ComponentDocPage({
   const docsLink =
     webLink(component.docsUrl) ?? webLink(origin === 'shadcn' && fromOrigin && source ? shadcnDocsUrl(stem) : null);
   const filePath = source ?? doc ?? examples;
+  const credited = libraries.length > 0 || Boolean(component.sourceNote) || Boolean(docsLink);
   const propCount = loaded.props?.reduce((total, item) => total + item.props.length, 0) ?? 0;
   const Doc = loaded.doc;
   return (
@@ -293,39 +294,44 @@ export function ComponentDocPage({
       {filePath && (
         <Section title='Source'>
           <div className='flex items-start gap-3 rounded-lg border border-border p-4'>
-            <HugeiconsIcon
-              icon={LibraryIcon}
-              aria-hidden='true'
-              className='mt-0.5 size-4 shrink-0 text-muted-foreground'
-            />
+            {/* The library icon belongs to a credit; a component from the team's own code shows only its file. */}
+            {credited && (
+              <HugeiconsIcon
+                icon={LibraryIcon}
+                aria-hidden='true'
+                className='mt-0.5 size-4 shrink-0 text-muted-foreground'
+              />
+            )}
             <div className='flex min-w-0 flex-1 flex-wrap items-center gap-x-6 gap-y-3'>
-              <div className='min-w-0 flex-1 basis-56'>
-                {libraries.length > 0 && (
-                  <div className='flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium'>
-                    {libraries.map(library => (
-                      <Link
-                        key={library.id}
-                        to={`${systemPath(system)}/libraries` as never}
-                        hash={library.id}
-                        className='inline-flex items-center gap-1 hover:underline'
-                        aria-label={`${library.label} in Libraries`}
-                      >
-                        {library.label}
-                        <HugeiconsIcon
-                          icon={ArrowRight01Icon}
-                          aria-hidden='true'
-                          className='size-3.5 text-muted-foreground'
-                        />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-                {component.sourceNote && (
-                  <p className={`${libraries.length ? 'mt-1 ' : ''}text-sm leading-6 text-muted-foreground`}>
-                    {component.sourceNote}
-                  </p>
-                )}
-              </div>
+              {credited && (
+                <div className='min-w-0 flex-1 basis-56'>
+                  {libraries.length > 0 && (
+                    <div className='flex flex-wrap gap-x-4 gap-y-2 text-sm font-medium'>
+                      {libraries.map(library => (
+                        <Link
+                          key={library.id}
+                          to={`${systemPath(system)}/libraries` as never}
+                          hash={library.id}
+                          className='inline-flex items-center gap-1 hover:underline'
+                          aria-label={`${library.label} in Libraries`}
+                        >
+                          {library.label}
+                          <HugeiconsIcon
+                            icon={ArrowRight01Icon}
+                            aria-hidden='true'
+                            className='size-3.5 text-muted-foreground'
+                          />
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                  {component.sourceNote && (
+                    <p className={`${libraries.length ? 'mt-1 ' : ''}text-sm leading-6 text-muted-foreground`}>
+                      {component.sourceNote}
+                    </p>
+                  )}
+                </div>
+              )}
               {docsLink && (
                 <a
                   href={docsLink.href}
