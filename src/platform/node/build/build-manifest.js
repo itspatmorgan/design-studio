@@ -354,7 +354,7 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   const identityAudit = auditResourceIdentities(ROOT, INSTALLED_FILE_TYPES);
   for (const missing of identityAudit.missing) {
     out.error(
-      `[identity] ${missing}: permanent identity is missing. Run pnpm studio identify <prototype-folder> --yes for newly authored files, or review a full identity migration.`,
+      `[identity] ${missing}: permanent identity is missing. The dev server assigns it in prototypes you can edit; otherwise run pnpm studio identify <prototype-folder> --yes.`,
     );
     errors++;
   }
@@ -606,8 +606,19 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
   return { manifest, errors, archived: deploy ? archived : [] };
 }
 
-// Run as a script: node src/platform/node/build/build-manifest.js [--strict]
+// Run as a script: node src/platform/node/build/build-manifest.js [--strict] [--deploy] [--identify]
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  // pnpm dev passes --identify: like the dev server, it first gives files written while it was stopped their identity.
+  if (process.argv.includes('--identify')) {
+    const { identifyAuthored, prototypeFolderOf } = await import('../lib/prototype-identification.js');
+    const { resolveContributor } = await import('../cli/resolve-contributor.js');
+    const folders = auditResourceIdentities(ROOT, INSTALLED_FILE_TYPES).missing.map(prototypeFolderOf);
+    for (const result of identifyAuthored(ROOT, INSTALLED_FILE_TYPES, folders, resolveContributor))
+      if (!result.error)
+        console.log(
+          `[identity] Assigned ${result.changed} missing identit${result.changed === 1 ? 'y' : 'ies'} in ${result.folder}.`,
+        );
+  }
   const { errors } = buildManifest({ deploy: process.argv.includes('--deploy') });
   // pnpm build passes --strict, so a broken meta.json or Manual page fails the build. In dev it's only a warning.
   if (errors && process.argv.includes('--strict')) process.exit(1);

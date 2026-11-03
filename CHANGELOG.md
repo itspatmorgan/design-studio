@@ -8,7 +8,6 @@
 - `/systems/<folder-name>` redirects to the system's permanent address.
 - `useColorMode()` from `#studio/runtime` reads the nearest theme boundary's mode, for code that used to watch `.dark` on `<html>`.
 - The missing-docs message for a component names the leading-underscore convention for internal files.
-- Working context lists which changes need a dev server restart, `pnpm studio identify`, or a manifest rebuild.
 - `pnpm canvas … create` warns when new elements repeat existing content, so a retried call doesn't silently duplicate a canvas.
 - Prototype and system code no longer sees Node types, so `window.setTimeout` returns a number again.
 - Views that import local images or fonts now pass preview verification instead of showing a permanent "could not be verified" warning.
@@ -16,7 +15,8 @@
 - The theme scope check accepts sibling selectors inside the theme, such as `.theme .a + .b`; `.theme + .b` still fails.
 - Studio's Tailwind Typography classes are now `studio-prose`, so a system's own `prose` class no longer picks up the plugin's styles. Team code that used Studio's `prose` classes should switch to `studio-prose`.
 - `pnpm studio --help` (or `--help` after any command) lists every command and option. `configure` usage shows that omitted settings are kept.
-- Clearer next steps: a `Link` to an unidentified file names `pnpm studio identify`, the canvas tool names the identify and manifest rebuild steps when the manifest lags, and identify previews say their new IDs are examples.
+- Files written directly (by an agent or an editor) no longer need `pnpm studio identify`: the running dev server gives new views, documents, and canvases their permanent identity as they appear, in prototypes you can edit, and `pnpm canvas` does the same for its prototype and builds a fresh manifest instead of reading a stale one. `pnpm studio identify` remains for work without the dev server, and its preview now lists files instead of example IDs.
+- CLI commands no longer tell you to restart the dev server after configuration, module, or system changes; it already restarts itself.
 
 - Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
 
