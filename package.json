@@ -7,7 +7,7 @@
     "#studio/*": "./src/platform/api/*.ts"
   },
   "scripts": {
-    "dev": "pnpm studio sync && node src/platform/node/build/build-manifest.js && vite",
+    "dev": "pnpm studio sync && node src/platform/node/build/build-manifest.js --identify && vite",
     "build": "node src/platform/node/build/build-manifest.js --strict --deploy && node src/platform/node/check/check-modules.js && pnpm typecheck && vite build",
     "typecheck": "node src/platform/node/check/typecheck.js",
     "preview": "vite preview",

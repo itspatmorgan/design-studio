@@ -79,14 +79,29 @@ if (!Array.isArray(scene!.elements)) fail(`${first} isn't a canvas: it has no li
 if ((scene!.studioVersion ?? 1) > FORMAT_VERSION)
   fail(`${first} was written by a newer copy of the app. Update before changing it.`);
 
-// What the tools need to know about the app: the artifacts in this canvas's prototype, from the manifest.
-const manifestFile = path.join(ROOT, 'public', 'prototypes', 'manifest.json');
-if (!fs.existsSync(manifestFile)) fail('There is no manifest yet. Run: node src/platform/node/build/build-manifest.js');
+// What the tools need to know about the app: the artifacts in this canvas's prototype, from the manifest. Files written
+// directly get their identity first, and the manifest is built fresh, so a view or canvas made a moment ago is included
+// whether or not the dev server is running.
 type PrototypeRef = { contributorKey: string; id: string; studioId?: string };
-const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8')) as {
-  prototypes: PrototypeRef[];
-  sections?: Record<string, PrototypeRef[]>;
-};
+const lib = (file: string) => pathToFileURL(path.join(ROOT, 'src', 'platform', 'node', file)).href;
+const [{ identifyAuthored }, { INSTALLED_FILE_TYPES }, { resolveContributor }, { buildManifest }] = (await Promise.all([
+  import(lib('lib/prototype-identification.js')),
+  import(lib('lib/installed-file-types.js')),
+  import(lib('cli/resolve-contributor.js')),
+  import(lib('build/build-manifest.js')),
+])) as [
+  { identifyAuthored: (...args: unknown[]) => { folder: string; error?: Error }[] },
+  { INSTALLED_FILE_TYPES: unknown },
+  { resolveContributor: () => string | null },
+  {
+    buildManifest: (options: { quiet: boolean }) => {
+      manifest: { prototypes: PrototypeRef[]; sections?: Record<string, PrototypeRef[]> };
+    };
+  },
+];
+if (!inSection)
+  identifyAuthored(ROOT, INSTALLED_FILE_TYPES, [`src/prototypes/${contributor}/${prototype}`], resolveContributor);
+const { manifest } = buildManifest({ quiet: true });
 const everything = [...manifest.prototypes, ...Object.values(manifest.sections ?? {}).flat()];
 // A prototype's artifacts are in a file of their own (src/platform/node/build/build-manifest.js).
 const itemsOf = (x: PrototypeRef): { path: string; fileType: string; studioId?: string }[] => {
@@ -108,11 +123,12 @@ const title = (p: string) =>
     .join(' ');
 const current =
   everything.find(x => x.contributorKey === contributor && x.id === prototype) ??
-  fail('This canvas prototype is missing from the manifest. Rebuild it first.');
-// The manifest lags files authored directly: name the refresh instead of failing on a missing identity.
-const STALE = 'Run pnpm studio identify, then node src/platform/node/build/build-manifest.js.';
+  fail('This canvas prototype is missing from the manifest. Check its meta.json.');
+// Identity was assigned above when this contributor may edit the prototype; otherwise its owner or an Admin has to.
 const identified = (id: string | undefined, what: string) =>
-  id ? resourceId(id) : fail(`${what} has no identity in the manifest yet. ${STALE}`);
+  id
+    ? resourceId(id)
+    : fail(`${what} has no identity yet. Its owner or an Admin can assign it with pnpm studio identify.`);
 const base = inSection
   ? addressOf(contributor, prototype)
   : prototypeAddress(identified(current.studioId, 'This canvas prototype'));

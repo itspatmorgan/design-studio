@@ -20,7 +20,7 @@ export function prototypeArtifactHref(prototype: PrototypeNavigationScope, path:
   const artifact = matches[0];
   if (!prototype.studioId || !artifact?.studioId)
     throw new Error(
-      `No identified artifact exists at prototype path "${file}". A file created outside Studio needs pnpm studio identify <prototype folder>.`,
+      `No identified artifact exists at prototype path "${file}". A new file gets its identity from the running dev server; without it, run pnpm studio identify <prototype folder> --yes.`,
     );
   if (![prototype.studioId, artifact.studioId].every(id => /^[0-9abcdefghjkmnpqrstvwxyz]{16}$/.test(id)))
     throw new Error('Invalid prototype navigation identity.');

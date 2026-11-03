@@ -19,7 +19,7 @@ Enabled file types determine other artifacts. Documents and canvases require the
 
 Artifact IDs are unique across retained resources. Source navigation paths must also be unambiguous: `main.tsx` and `main.md` cannot share the same extensionless path in one folder.
 
-Create artifacts through Studio’s file operations or preserve the declared ID while editing an existing file. For directly authored new files, preview `pnpm studio identify <prototype-folder> --json`, then apply with `--yes`. It assigns only missing IDs within that owner’s prototype; it does not replace existing IDs. Builds reject unidentified artifacts, including retained disabled types.
+Create artifacts through Studio’s file operations or preserve the declared ID while editing an existing file. Directly authored new files get their IDs from the running dev server as they appear. Without it, preview `pnpm studio identify <prototype-folder> --json`, then apply with `--yes`. Either way, only missing IDs are assigned within that owner’s prototype; it does not replace existing IDs. Builds reject unidentified artifacts, including retained disabled types.
 
 ## Metadata
 
