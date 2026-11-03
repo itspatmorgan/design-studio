@@ -181,9 +181,7 @@ function setEnabled(id, on) {
   });
   applySetupChanges(plan.edits);
   syncInFreshProcess();
-  say(
-    `${spec.label} is ${on ? 'on' : 'off'}. ${on ? '' : 'Its files are still there; turn it on again any time. '}Restart the dev server for it to take effect.`,
-  );
+  say(`${spec.label} is ${on ? 'on' : 'off'}.${on ? '' : ' Its files are still there; turn it on again any time.'}`);
 }
 
 // Installation and registration are one operation. Rollback restores both.
@@ -398,7 +396,7 @@ function remove() {
   if (!isModule)
     run('pnpm', ['install', '--lockfile-only', '--ignore-scripts', '--prefer-offline', '--no-frozen-lockfile']);
   syncInFreshProcess();
-  say(`Removed ${id}. Restart the dev server.`);
+  say(`Removed ${id}.`);
 }
 
 function create(kind) {
@@ -482,9 +480,7 @@ function create(kind) {
     fail(`Nothing was made. ${e.message}`);
   }
   syncInFreshProcess();
-  say(
-    `Made the ${kind} "${id}" in ${kind === 'module' ? newModuleDir(id) : newSystemDir(id)}/. Restart the dev server to see it.`,
-  );
+  say(`Made the ${kind} "${id}" in ${kind === 'module' ? newModuleDir(id) : newSystemDir(id)}/.`);
 }
 
 function SECTION_TAKEN(id) {
@@ -541,7 +537,7 @@ function configure() {
   }
   applySetupChanges(plan.edits);
   syncInFreshProcess();
-  say('Updated studio.config.json. Restart the dev server.');
+  say('Updated studio.config.json.');
 }
 
 function status() {

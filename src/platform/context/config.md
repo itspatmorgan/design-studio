@@ -28,7 +28,7 @@ Use `pnpm studio configure --system <id>` to preview a default-system change. Ap
 
 Every prototype must declare `systemId`, including `null` for no system. Missing assignments fail validation. Migrating an existing prototype requires changing its component imports and explicit assignment together.
 
-For manually edited module configuration, run `pnpm studio sync` to refresh agent task routes. Restart the dev server after CLI configuration changes. Coordinate shared configuration changes with your Admin.
+For manually edited module configuration, run `pnpm studio sync` to refresh agent task routes. Coordinate shared configuration changes with your Admin.
 
 ## Local roles and contributors
 
