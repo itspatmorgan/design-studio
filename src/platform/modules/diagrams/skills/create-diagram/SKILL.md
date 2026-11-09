@@ -17,7 +17,6 @@ This skill applies to standalone prototype diagrams when Diagrams is enabled. Re
 - Link to standalone diagrams using relative paths with their file extensions. In a prototype document, use `![Description](./flow.mermaid)` on its own line for a live embed with an Open diagram link. Keep the referenced file in the same prototype.
 - Reuse platform theme defaults. Apply explicit diagram colors only when they carry meaning, and check both light and dark modes.
 - To transfer a diagram to Excalidraw, use its existing Mermaid import. The imported canvas is a separate artifact; later source edits do not synchronize it.
-- Apply the [contributor scope](../../../../context/contributor-scope.md) before editing prototype files.
 
 Write the source directly. The local app discovers new files and reflects edits. Invalid syntax is shown as a render error. Inspect and repair it through the file menu’s Edit source action.
 
