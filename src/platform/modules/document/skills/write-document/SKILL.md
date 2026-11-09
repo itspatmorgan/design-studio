@@ -20,7 +20,7 @@ This skill applies to prototype Markdown when Documents is enabled. Format and r
 
 Write the file directly for the person. The local app discovers it and reflects edits.
 
-For new directly authored artifacts, preview and apply [identity assignment](../../../../context/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
+For new directly authored artifacts, preview and apply [identity assignment](../../../../context/maintainers/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
 
 ## Verify
 

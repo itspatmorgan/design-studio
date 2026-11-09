@@ -4,11 +4,11 @@ description: How maintainers assess, adapt, release, and acknowledge a community
 toc: true
 ---
 
-People propose changes through an issue, as [Contributing](../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
+People propose changes through an issue, as [Contributing](../../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
 
 ## Assess the proposal
 
-Judge the idea before the code. Read [Principles](principles.md) and [Personas](personas.md): does it solve a real problem for the people Design Studio serves, and does it fit the platform's direction?
+Judge the idea before the code. Read [Principles](../principles.md) and [Personas](../personas.md): does it solve a real problem for the people Design Studio serves, and does it fit the platform's direction?
 
 Find the owner (platform, module, or system) and the existing pattern the change should follow. Prefer extending a current capability over adding a parallel surface, implementation, or dependency.
 

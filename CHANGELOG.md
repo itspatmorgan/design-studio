@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `pnpm check:links` checks every relative link, heading anchor, and `/documentation/...` link in Markdown guidance, and CI runs it.
+- Root `AGENTS.md` now carries the standing working rules in its own Working in Studio section; `src/platform/context/working-in-studio.md` is gone, and `pnpm studio context --json` no longer lists it under `guidance`. Skills keep their routes in a Skills section that module routing follows.
+- Maintainer-only platform context (checks, resource identity, editing and saving, community contributions, releasing) moved to `src/platform/context/maintainers/`. Links to the old paths or `/documentation/context/platform.core/context/<name>` addresses need `maintainers/` added.
+- Task skills no longer repeat the contributor scope line that `AGENTS.md` already requires; it stays in the contributor skills.
 - Component pages credit only the libraries whose `components` list includes that component. A system's `origin` no longer credits every component, so components ported from elsewhere are no longer attributed to shadcn/ui. The starter systems now list their shadcn components. A team system that credits shadcn should list its shadcn components in that library's `components`.
 - A `Link` whose path doesn't resolve renders in place, inert and outlined in development, and the console names the path. Before, it failed the whole view, so one link in shared chrome took down every page.
 - `pnpm check` ends with one line per system listing every missing token, with Tailwind's default value beside each.

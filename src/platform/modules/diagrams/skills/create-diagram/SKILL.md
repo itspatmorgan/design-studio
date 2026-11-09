@@ -20,7 +20,7 @@ This skill applies to standalone prototype diagrams when Diagrams is enabled. Re
 
 Write the source directly. The local app discovers new files and reflects edits. Invalid syntax is shown as a render error. Inspect and repair it through the file menu’s Edit source action.
 
-For new directly authored artifacts, preview and apply [identity assignment](../../../../context/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
+For new directly authored artifacts, preview and apply [identity assignment](../../../../context/maintainers/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
 
 ## Verify
 

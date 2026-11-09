@@ -29,7 +29,7 @@ For initial configuration, reuse the setup prototype or create one with `pnpm ne
 
 For a settings update, verify the changed settings and affected navigation or system behavior. Do not create artifacts merely to verify a name, tagline, or permission change.
 
-Run `pnpm studio status --json` to confirm configuration and identity. Follow [working context](../../context/working-in-studio.md) for build and save requirements. Inspect the affected local pages.
+Run `pnpm studio status --json` to confirm configuration and identity. Follow the Working in Studio section of `AGENTS.md` for build and save requirements. Inspect the affected local pages.
 
 Use the UI for review when helpful. Save any context collected there in repository files.
 

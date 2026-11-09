@@ -39,7 +39,7 @@ Each teammate has their own contributor folder for prototypes. Your agent identi
 
 Studio checks ownership when you edit locally. Build checks prevent prototypes from depending on another prototype's code. The supplied GitHub workflow checks the build and flags changes outside a contributor's assigned scope for review.
 
-These boundaries let teammates keep building and merging their own prototype work independently. Shared systems and platform code need broader review because other people's work depends on them. Your repository owner configures GitHub's required checks and reviews; see [Checks and fixes](/documentation/context/platform.core/context/checks) for details.
+These boundaries let teammates keep building and merging their own prototype work independently. Shared systems and platform code need broader review because other people's work depends on them. Your repository owner configures GitHub's required checks and reviews; see [Checks and fixes](/documentation/context/platform.core/context/maintainers/checks) for details.
 
 ## How do we share changes?
 
