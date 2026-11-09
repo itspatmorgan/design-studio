@@ -13,6 +13,7 @@ Checks help keep the shared studio consistent. Give your agent the warning or er
 | `pnpm test` | Focused platform and enabled-module regression tests. |
 | `pnpm test:release` | All regression tests, including disposable setup/production fixtures. |
 | `pnpm build:release` | Full regression suite followed by the production build. |
+| `pnpm check:links` | Every relative link, heading anchor, and Studio documentation link in Markdown guidance resolves. CI runs it. |
 | `pnpm build:inspect` | Validate emitted asset references and report initial JavaScript/CSS size and request count. |
 | `pnpm format` / `pnpm format:check` | Format upstream code, JSON and CSS with Biome, or check that it is formatted. Team and seed paths, generated files and `studio.config.json` are excluded. CI runs the check. |
 | GitHub pull request | Scope review, asset sizes, ordinary regressions, and one production build. Platform proposals are flagged for review. |
