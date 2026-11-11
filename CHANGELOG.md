@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A system's Resources search finds components by their file names and paths, such as `button.tsx` or `button.examples.tsx`. Thanks @robcrock.
 - A pull request or branch opens in GitHub Codespaces with editing working: the studio installs, starts, and opens in a browser tab. Reviewers who haven't joined the studio edit as the sample author.
 - Component pages credit only the libraries whose `components` list includes that component. A system's `origin` no longer credits every component, so components ported from elsewhere are no longer attributed to shadcn/ui. The starter systems now list their shadcn components. A team system that credits shadcn should list its shadcn components in that library's `components`.
 - A `Link` whose path doesn't resolve renders in place, inert and outlined in development, and the console names the path. Before, it failed the whole view, so one link in shared chrome took down every page.
