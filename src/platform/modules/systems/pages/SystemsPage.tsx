@@ -84,7 +84,9 @@ export const prepareSystemSource = () => Promise.all([ComponentEditor?.preload?.
 const intros = import.meta.glob<{ default: SystemIntro }>(['/platform/systems/*/intro.tsx', '/systems/*/intro.tsx'], {
   eager: true,
 });
-const introOf = (id: string): SystemIntro => intros[`/${systemFolder(id)}/intro.tsx`]?.default ?? {};
+// One key for a system's intro, so the page and its source action can't look in different folders.
+const introKey = (id: string) => `/${systemFolder(id)}/intro.tsx`;
+const introOf = (id: string): SystemIntro => intros[introKey(id)]?.default ?? {};
 const PROTOTYPE_SPECS: Record<string, DesignSystem> = Object.fromEntries(
   Object.entries(SYSTEM_SPECS).map(([id, spec]) => [
     id,
@@ -105,7 +107,7 @@ function sourcePath(system: string, page: string | undefined, components: System
   const source = getSystemSource(system)!;
   if (!componentPage && (page === 'assets' || page === 'fonts' || page === 'images')) return null;
   if (!componentPage && (!page || page === 'icons'))
-    return intros[`/${systemFolder(system)}/intro.tsx`] ? source.dir + 'intro.tsx' : source.dir + 'system.ts';
+    return intros[introKey(system)] ? source.dir + 'intro.tsx' : source.dir + 'system.ts';
   const component = componentPage ? components.find(c => c.slug === page) : undefined;
   if (component) {
     const file = component.files.doc ?? component.files.examples ?? component.files.source;
