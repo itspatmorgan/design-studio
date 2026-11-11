@@ -8,7 +8,13 @@ People report bugs and propose changes through an issue, as [Contributing](../..
 
 ## Triage an issue
 
-Triage every new issue, bug or proposal, before anyone builds on it. Judge the idea before the code: read [Principles](principles.md) and [Personas](personas.md), find the owner (platform, module, or system), and check whether the problem still exists on `main`. A bug report counts once it reproduces there.
+Triage every new issue, bug or proposal, before anyone builds on it. Judge the idea before the code: read [Principles](principles.md) and [Personas](personas.md), and find the owner (platform, module, or system).
+
+See the problem first, in the running app rather than in the source:
+
+- **Bug**: on current `main`, install, start `pnpm dev`, and follow the reporter's steps in a browser. A bug counts once it reproduces there; if it doesn't, try the reporter's version before calling it fixed.
+- **Proposal**: show the gap on `main`. If the reporter linked a branch, run it too and try their own checks.
+- Capture what you saw: a screenshot of the failure, or a short recording for an interaction, and attach it to the brief.
 
 Decide one of three outcomes:
 
@@ -18,9 +24,9 @@ Decide one of three outcomes:
 
 Separate the problem from the proposed implementation. A good problem with the wrong mechanism is **Later** or **Now** with the idea accepted and the branch not, never a reason to close.
 
-An agent may draft a brief for the maintainer. Keep each answer to a line or two, and say what was run or reproduced and what was only read:
+An agent may draft a brief for the maintainer. Keep each answer to a line or two, and say what you ran and what you only read:
 
-1. **Problem**: who hits it, and does it reproduce on `main`?
+1. **Problem**: who hits it, and what you saw when you reproduced it, with the capture.
 2. **Proposal**: what the reporter suggests or built, and its size.
 3. **Fit**: which principles it supports or strains, and the owner it belongs to.
 4. **Options**: the alternatives considered, including doing nothing.
