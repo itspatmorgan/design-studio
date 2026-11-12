@@ -22,7 +22,7 @@ Choose checks with the [minimum sufficient verification policy](src/platform/con
 
 A running dev server keeps up with changes on its own: it restarts after configuration, module, and system changes (including a `system.ts` edit), and gives views, documents, and canvases written as files their permanent identity as they appear. `pnpm canvas` does the same for its prototype and reads a fresh manifest. Without the dev server, run `pnpm studio identify <prototype folder> --yes` after creating files directly.
 
-Commit finished work with a concise message. Push only when requested. Sharing and [publishing](src/platform/context/publishing.md) are separate actions.
+Commit finished work with a concise message. Push only when requested. When you open a pull request, answer every section of the [pull request template](.github/pull_request_template.md). For interface changes, include before and after screenshots and a short recording of the changed flow, and link the pull request's Codespace so a reviewer can try editing without a local studio. Sharing and [publishing](src/platform/context/publishing.md) are separate actions.
 
 ## Skills
 

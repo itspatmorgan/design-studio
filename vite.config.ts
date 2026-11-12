@@ -72,6 +72,10 @@ export default defineConfig({
   // Pages supplies a path without a trailing slash; data URLs append relative paths.
   base: `${(process.env.STUDIO_BASE_PATH || '/').replace(/\/+$/, '')}/`,
   publicDir: '../public',
+  // A Codespace serves the dev server from its forwarded host (.devcontainer/devcontainer.json).
+  server: process.env.CODESPACES
+    ? { allowedHosts: [`.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN || 'app.github.dev'}`] }
+    : undefined,
   css: { postcss: { plugins: [scopedUtilities()] } },
   build: {
     outDir: '../dist',

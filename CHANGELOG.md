@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- A pull request or branch opens in GitHub Codespaces with editing working: the studio installs, starts, and opens in a browser tab. Reviewers who haven't joined the studio edit as the sample author.
 - `pnpm check:links` checks every relative link, heading anchor, and `/documentation/...` link in Markdown guidance, and CI runs it.
 - Root `AGENTS.md` now carries the standing working rules in its own Working in Studio section; `src/platform/context/working-in-studio.md` is gone, and `pnpm studio context --json` no longer lists it under `guidance`. Skills keep their routes in a Skills section that module routing follows.
 - Maintainer-only platform context (checks, resource identity, editing and saving, community contributions, releasing) moved to `src/platform/context/maintainers/`. Links to the old paths or `/documentation/context/platform.core/context/<name>` addresses need `maintainers/` added.
