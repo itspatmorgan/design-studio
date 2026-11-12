@@ -19,7 +19,7 @@ Canvas declares `systemUsage: 'independent'`. Its scene remains readable locally
 
 - **One file per canvas:** `<name>.excalidraw`, anywhere in a prototype. An Excalidraw scene as JSON.
   The name in the navigation comes from the file name.
-- **Source identity:** a declared top-level `studioId` survives browser and CLI saves. Creation assigns it explicitly. A canvas written directly gets one from the dev server or the next `pnpm canvas` call, or from `pnpm studio identify <prototype-folder> --yes`. Missing identity fails the build. See [Resource identity](../../context/resource-identity.md).
+- **Source identity:** a declared top-level `studioId` survives browser and CLI saves. Creation assigns it explicitly. A canvas written directly gets one from the dev server or the next `pnpm canvas` call, or from `pnpm studio identify <prototype-folder> --yes`. Missing identity fails the build. See [Resource identity](../../context/maintainers/resource-identity.md).
 - **Items are embeds.** A view, diagram, or document on a canvas is an Excalidraw `embeddable` element whose
   `link` is the artifact's address in the app (`/prototypes/<prototype-id>/artifacts/<artifact-id>`). The link resolves through
   the manifest (`src/platform/app/artifacts/artifactLinks.ts`) to a prototype and an artifact, and the artifact's file type
@@ -74,7 +74,7 @@ Fitted, read-only canvases in Markdown use the same quiet opening surface, bound
 
 ### Preview lifetime
 
-Retained view and diagram embeds use the [shared artifact lifecycle contract](../../context/source.md#artifact-revision-and-preview-lifecycle). Offscreen hiding preserves mounted runtimes and updates within the existing admission/eviction policy; it does not pause them. Eviction, removal, or leaving disposes their listeners and pending work. Canvas scene saving retains its separate version and conflict model.
+Retained view and diagram embeds use the [shared artifact lifecycle contract](../../context/maintainers/source.md#artifact-revision-and-preview-lifecycle). Offscreen hiding preserves mounted runtimes and updates within the existing admission/eviction policy; it does not pause them. Eviction, removal, or leaving disposes their listeners and pending work. Canvas scene saving retains its separate version and conflict model.
 
 ## Shared artifact host
 

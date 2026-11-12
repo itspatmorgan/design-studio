@@ -7,7 +7,7 @@ description: "Configure a running studio for the first time, update requested st
 
 Use this skill when someone is ready to configure a running studio. The first-run install and launch steps are in the [installation guide](../../context/installing.md); do not make configuration a prerequisite for launching the starter. Preserve existing work and confirmed choices.
 
-Read [contributor scope](../../context/contributor-scope.md) and the relevant [configuration contract](../../context/config.md) sections. Use [manage-modules](../manage-modules/SKILL.md) only when changing module availability or system registration or lifecycle. Run `pnpm studio status --json` and inspect current configuration. Settings live in `studio.config.json`, which `pnpm studio configure` and Studio settings edit as JSON; when you edit it by hand, keep it plain JSON (no comments), keep its `$schema` line first, and do not list Studio's own system in `systems`.
+Read the relevant [configuration contract](../../context/config.md) sections. Use [manage-modules](../manage-modules/SKILL.md) only when changing module availability or system registration or lifecycle. Run `pnpm studio status --json` and inspect current configuration. Settings live in `studio.config.json`, which `pnpm studio configure` and Studio settings edit as JSON; when you edit it by hand, keep it plain JSON (no comments), keep its `$schema` line first, and do not list Studio's own system in `systems`.
 
 Distinguish initial configuration from a settings update. Missing dependencies or a stock name do not establish initialization intent. Collect only unresolved choices needed for the requested work. Initial configuration can include identity, personal or team use, toolkit materials, and supplied product context.
 
@@ -29,7 +29,7 @@ For initial configuration, reuse the setup prototype or create one with `pnpm ne
 
 For a settings update, verify the changed settings and affected navigation or system behavior. Do not create artifacts merely to verify a name, tagline, or permission change.
 
-Run `pnpm studio status --json` to confirm configuration and identity. Follow [working context](../../context/working-in-studio.md) for build and save requirements. Inspect the affected local pages.
+Run `pnpm studio status --json` to confirm configuration and identity. Follow the Working in Studio section of `AGENTS.md` for build and save requirements. Inspect the affected local pages.
 
 Use the UI for review when helpful. Save any context collected there in repository files.
 
