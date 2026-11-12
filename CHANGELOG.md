@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Search (⌘K) recognizes the prototype you have open, so choosing it keeps you on the artifact you're viewing instead of jumping to its first one. Thanks @robcrock.
 - A system's Resources search finds components by their file names and paths, such as `button.tsx` or `button.examples.tsx`. Thanks @robcrock.
 - A system's Overview and Icons source action opens its `intro.tsx`, including Studio's own, instead of an unavailable `system.ts`. Thanks @robcrock.
 - Closing the artifact filter clears its query, so a hidden search no longer leaves the tree empty. Thanks @robcrock.
