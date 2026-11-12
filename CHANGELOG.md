@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Canvas runs on current Excalidraw (0.18.0-3c916c5) and diagrams on Pele 1.13. Sticky notes are Excalidraw's native sticky note: press **N** or pick it from the toolbar, choose from five colors, and the text shrinks to fit before the note grows. Agents make the same notes with the `note` kind. **Breaking:** the Library is gone, along with its example sticky note. Notes already placed from it stay on your canvases as ordinary shapes; ask your agent to convert them to sticky notes if you want the new behavior.
 - Search (⌘K) recognizes the prototype you have open, so choosing it keeps you on the artifact you're viewing instead of jumping to its first one. Thanks @robcrock.
 - A system's Resources search finds components by their file names and paths, such as `button.tsx` or `button.examples.tsx`. Thanks @robcrock.
 - A system's Overview and Icons source action opens its `intro.tsx`, including Studio's own, instead of an unavailable `system.ts`. Thanks @robcrock.

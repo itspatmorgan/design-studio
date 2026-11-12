@@ -7,7 +7,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { Excalidraw, FONT_FAMILY, getSceneVersion, restoreElements } from '@excalidraw/excalidraw';
 import '@excalidraw/excalidraw/index.css';
 import type { ExcalidrawElement } from '@excalidraw/excalidraw/element/types';
-import type { AppState, ExcalidrawImperativeAPI, ExcalidrawProps, LibraryItems } from '@excalidraw/excalidraw/types';
+import type { AppState, ExcalidrawImperativeAPI, ExcalidrawProps } from '@excalidraw/excalidraw/types';
 import { ownsPrototype, useMe } from '@/platform/app/data/files';
 import { useManifest } from '@/platform/app/data/useManifest';
 import type { Artifact, Prototype } from '@/platform/app/data/types';
@@ -21,7 +21,6 @@ import { MOUNT_INTERVAL_MS, SWEEP_INTERVAL_MS, createMountGate, pickEvictions } 
 import { useCanvasOpening, CanvasOpeningSurface } from './CanvasOpening';
 import { CanvasMenu, UI_OPTIONS } from './menu';
 import { useCanvasShortcuts } from './shortcuts';
-import { STICKY_IDS, STICKY_LIBRARY } from './stickyNotes';
 import { useCanvasFile } from './useCanvasFile';
 import { useCanvasDark } from './theme';
 import { Button } from '@/platform/systems/studio/components/button';
@@ -100,7 +99,7 @@ function Editor({
   dark: boolean;
   container: React.RefObject<HTMLDivElement | null>;
   api: ExcalidrawImperativeAPI | null;
-  setApi: (api: ExcalidrawImperativeAPI) => void;
+  setApi: (api: ExcalidrawImperativeAPI | null) => void;
   editable: boolean;
   loaded: Loaded;
 }) {
@@ -120,7 +119,7 @@ function Editor({
     initial: { text, version, elements: loaded.elements, sceneVersion: loaded.sceneVersion },
   });
   const onScrollChange = useRememberCamera(cameraKey(file));
-  const { controlsHidden, toggleControls, onPointerUpdate } = useCanvasShortcuts(api, container, { editable });
+  const { controlsHidden, toggleControls } = useCanvasShortcuts(api, container);
   const [itemsOnly, setItemsOnly] = useState(false);
   const [empty, setEmpty] = useState(!loaded.elements.some(el => !el.isDeleted));
   // The hint shows only once the canvas has stayed empty for a moment, so a scene that is still
@@ -160,7 +159,6 @@ function Editor({
   manifestRef.current = manifest;
   useEffect(() => {
     if (!api) return;
-    api.updateLibrary({ libraryItems: STICKY_LIBRARY as unknown as LibraryItems, merge: true });
     if (editable) normalizeEmbeds(api, api.getSceneElementsIncludingDeleted(), manifestRef.current, proto);
   }, [api, editable]);
 
@@ -239,15 +237,6 @@ function Editor({
       }
     },
     [api, editable, saveChanges],
-  );
-
-  // Only the app's sticky notes are in the library: anything else added is dropped.
-  const onLibraryChange = useCallback(
-    (items: LibraryItems) => {
-      if (!api || items.every(entry => STICKY_IDS.has(entry.id))) return;
-      api.updateLibrary({ libraryItems: STICKY_LIBRARY as unknown as LibraryItems, merge: false });
-    },
-    [api],
   );
 
   // Previews mount when they come near the viewport, one at a time, and stay live until the canvas
@@ -332,13 +321,11 @@ function Editor({
         {initialData && (
           <Excalidraw
             initialData={initialData}
-            excalidrawAPI={setApi}
+            onExcalidrawAPI={setApi}
             onChange={onChange}
             validateEmbeddable={validateEmbed}
             renderEmbeddable={renderEmbeddable}
-            onPointerUpdate={onPointerUpdate}
             onScrollChange={onScrollChange}
-            onLibraryChange={onLibraryChange}
             UIOptions={UI_OPTIONS}
             viewModeEnabled={!editable}
             theme={dark ? 'dark' : 'light'}
