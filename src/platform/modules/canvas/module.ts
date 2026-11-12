@@ -14,7 +14,7 @@ export default {
   instructions: [
     { path: 'skills/use-canvas/', when: 'asks for a canvas (a page of views, documents, and notes arranged together)' },
   ],
-  optimizeDependencies: ['@excalidraw/excalidraw'],
+  optimizeDependencies: ['@excalidraw/excalidraw', '@excalidraw/mermaid-to-excalidraw'],
   dependencies: {
     '@excalidraw/excalidraw': '0.18.0-3c916c5',
     '@excalidraw/mermaid-to-excalidraw': '3.6.0',
