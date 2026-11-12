@@ -166,7 +166,7 @@ test('effect replay shares one claim and returning after display cannot reopen i
   assert.equal(calls, 1);
 });
 
-test('an automated browser neither claims nor opens the person\'s Welcome', async t => {
+test("an automated browser neither claims nor opens the person's Welcome", async t => {
   const fetch = t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify({ show: true })));
   const key = progressKey('/automated/', 'newcomer');
   assert.equal(await claimIntroduction(key, true, true), false);
