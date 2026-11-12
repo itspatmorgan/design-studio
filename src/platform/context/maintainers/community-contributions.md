@@ -1,22 +1,39 @@
 ---
 title: Community contributions
-description: How maintainers assess, adapt, release, and acknowledge a community contribution to upstream Design Studio.
+description: How maintainers triage, adapt, release, and acknowledge a community contribution to upstream Design Studio.
 toc: true
 ---
 
-People propose changes through an issue, as [Contributing](../../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
+People report bugs and propose changes through an issue, as [Contributing](../../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
 
-## Assess the proposal
+## Triage an issue
 
-Judge the idea before the code. Read [Principles](../principles.md) and [Personas](../personas.md): does it solve a real problem for the people Design Studio serves, and does it fit the platform's direction?
+Triage every new issue, bug or proposal, before anyone builds on it. Judge the idea before the code: read [Principles](../principles.md) and [Personas](../personas.md), and find the owner (platform, module, or system).
 
-Find the owner (platform, module, or system) and the existing pattern the change should follow. Prefer extending a current capability over adding a parallel surface, implementation, or dependency.
+See the problem first, in the running app rather than in the source:
+
+- **Bug**: on current `main`, install, start `pnpm dev`, and follow the reporter's steps in a browser. A bug counts once it reproduces there; if it doesn't, try the reporter's version before calling it fixed.
+- **Proposal**: show the gap on `main`. If the reporter linked a branch, run it too and try their own checks.
+- Capture what you saw: a screenshot of the failure, or a short recording for an interaction, and attach it to the brief.
 
 Decide one of three outcomes:
 
-- **Accept**: it meets the standard as proposed.
-- **Accept with changes**: the idea is right and the maintainer brings the implementation to standard. Use this rather than a long review round when the remaining work is about platform fit, which a first-time contributor cannot be expected to know.
-- **Decline**: explain why in terms of principles or fit, suggest an alternative such as a team module or a discussion, and close the issue as not planned.
+- **Now**: a reproducible bug, or a change that unblocks current work. It goes into the current queue.
+- **Later**: the problem is worth solving, but not before current work, or the right approach is still open. Keep the issue open and track it with the maintainers' other work.
+- **Close**: already fixed, a duplicate, or outside Design Studio's direction. Say why, point to the fix or an alternative such as a team module, and close it as completed, duplicate, or not planned.
+
+Separate the problem from the proposed implementation. A good problem with the wrong mechanism is **Later** or **Now** with the idea accepted and the branch not, never a reason to close.
+
+An agent may draft a brief for the maintainer. Keep each answer to a line or two, and say what you ran and what you only read:
+
+1. **Problem**: who hits it, and what you saw when you reproduced it, with the capture.
+2. **Proposal**: what the reporter suggests or built, and its size.
+3. **Fit**: which principles it supports or strains, and the owner it belongs to.
+4. **Options**: the alternatives considered, including doing nothing.
+5. **Recommendation**: Now, Later, or Close, with the reason, and whether to take the idea, the branch, or both.
+6. **Decision needed**: what the maintainer must confirm, and a draft reply to the reporter.
+
+After the decision, reply once on the issue with the outcome and the next step. Bring accepted work in as described below, either as proposed or with the maintainer bringing the implementation to standard. Choose the second when the remaining work is about platform fit, which a first-time contributor cannot be expected to know, rather than starting a long review round.
 
 ## Bring the work in
 

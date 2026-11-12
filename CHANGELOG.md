@@ -24,6 +24,7 @@
 - CLI commands no longer tell you to restart the dev server after configuration, module, or system changes; it already restarts itself.
 
 - Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
+- Report bugs through a bug report issue form. Maintainers triage each issue as now, later, or close, and reply with the outcome; the community contributions guide gives the decision rules and the brief an agent drafts for the maintainer.
 
 ## 0.1.3 (2026-11-01)
 
