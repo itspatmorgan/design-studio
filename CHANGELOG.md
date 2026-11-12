@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Search (⌘K) recognizes the prototype you have open, so choosing it keeps you on the artifact you're viewing instead of jumping to its first one. Thanks @robcrock.
+- A system's Overview and Icons source action opens its `intro.tsx`, including Studio's own, instead of an unavailable `system.ts`. Thanks @robcrock.
 - Closing the artifact filter clears its query, so a hidden search no longer leaves the tree empty. Thanks @robcrock.
 - A pull request or branch opens in GitHub Codespaces with editing working: the studio installs, starts, and opens in a browser tab. Reviewers who haven't joined the studio edit as the sample author.
 - `pnpm check:links` checks every relative link, heading anchor, and `/documentation/...` link in Markdown guidance, and CI runs it.
