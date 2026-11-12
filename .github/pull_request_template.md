@@ -18,11 +18,8 @@ Delete a section's prompt once you answer it. Write "None" rather than deleting 
 <!-- Grouped by outcome, not by file. Say why each change is the root fix. -->
 
 ### Principles
-<!-- One line each. Add a bullet for any product principle (src/platform/context/principles.md) the change touches. -->
-- **Lean:** 
-- **Root cause:** 
-- **Not overfit:** 
-- **Trade-offs:** 
+<!-- Check the change against every principle you hold it to, including the product principles (src/platform/context/principles.md). List only the ones it most tests, one line each on how it holds up, and name any trade-off. -->
+- 
 
 ### Verified
 <!-- Checks run and their results. For interface changes: before and after screenshots and a short recording of the changed flow. -->
