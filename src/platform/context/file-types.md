@@ -25,7 +25,7 @@ Other prototype files remain plain files. Underscore helpers are excluded from n
 
 `src/platform/core/fileTypes.ts` defines `FileTypeSpec`, `defineFileType`, and artifact slug handling. A team module imports them from `#studio/files`, and the browser side of a file type (the manifest, file reading, `createLoader`, `FileTypeModule`) from `#studio/data` ([public API](modules.md#public-api)).
 
-The `identity` adapter for prototype file types reads and writes permanent prototype-artifact metadata. Views, Documents, Diagrams, and Canvases provide it. System content keeps its existing path identification. Creation allocates IDs, saves preserve them, and public prototype routes use them. New directly authored files require `pnpm studio identify <prototype-folder> --yes`; builds never allocate them. See [Resource identity](resource-identity.md).
+The `identity` adapter for prototype file types reads and writes permanent prototype-artifact metadata. Views, Documents, Diagrams, and Canvases provide it. System content keeps its existing path identification. Creation allocates IDs, saves preserve them, and public prototype routes use them. New directly authored files require `pnpm studio identify <prototype-folder> --yes`; builds never allocate them. See [Resource identity](maintainers/resource-identity.md).
 
 | File | Contract |
 | --- | --- |
@@ -95,7 +95,7 @@ Replace `preview` in `type.ts` and `embedSurfaces` in `open.tsx` with `capabilit
 
 Add explicit `source`, `create`, `fidelity`, and `actions` declarations. Keep syntax, template, and fidelity functions as implementation details. Do not add capabilities to prototype files or a second artifact registry. Permanent identity and module enablement retain their existing contracts.
 
-Future inspection and exports can extend these boundaries. No inspector, new export format, or agent runtime is implied by the declaration. Renderers use the existing [shared lifecycle contract](source.md#artifact-revision-and-preview-lifecycle).
+Future inspection and exports can extend these boundaries. No inspector, new export format, or agent runtime is implied by the declaration. Renderers use the existing [shared lifecycle contract](maintainers/source.md#artifact-revision-and-preview-lifecycle).
 
 ## Rendering and source
 
@@ -115,7 +115,7 @@ A loader uses `import.meta.glob(['/__studio_globs__/*'])`. Vite replaces the pla
 
 ## Page preparation
 
-Route readers call `prepareFile` to prepare content and the registered `Page` together. Deferred page components expose `preload` through TanStack `lazyRouteComponent`. A raw React lazy component does not provide this preparation contract. The module loader returns page props and handles its file access. Rendered canvases and diagrams may then show their own loading status while initializing their scene or SVG. See [Navigation handoff](source.md#navigation-handoff).
+Route readers call `prepareFile` to prepare content and the registered `Page` together. Deferred page components expose `preload` through TanStack `lazyRouteComponent`. A raw React lazy component does not provide this preparation contract. The module loader returns page props and handles its file access. Rendered canvases and diagrams may then show their own loading status while initializing their scene or SVG. See [Navigation handoff](maintainers/source.md#navigation-handoff).
 
 ## Lifecycle
 

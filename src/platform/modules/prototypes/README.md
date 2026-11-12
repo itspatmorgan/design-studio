@@ -61,7 +61,7 @@ Deleting a prototype moves its folder to the Trash and shows a confirmation toas
 
 ## Links and renaming
 
-`/prototypes/<prototype-id>` redirects to the first available artifact’s permanent address in navigation order, replacing the entry in browser history. An empty prototype remains at its prototype address. `/prototypes/<prototype-id>/artifacts/<artifact-id>` opens a specific artifact within that prototype. Source mode uses `?mode=source`. IDs come from source metadata described in [Resource identity](../../context/resource-identity.md). There are no readable-route compatibility aliases.
+`/prototypes/<prototype-id>` redirects to the first available artifact’s permanent address in navigation order, replacing the entry in browser history. An empty prototype remains at its prototype address. `/prototypes/<prototype-id>/artifacts/<artifact-id>` opens a specific artifact within that prototype. Source mode uses `?mode=source`. IDs come from source metadata described in [Resource identity](../../context/maintainers/resource-identity.md). There are no readable-route compatibility aliases.
 
 Navigation names and hierarchy remain a reflection of the files and folders. They are independent of the public URL.
 
@@ -131,7 +131,7 @@ The Prototypes module: the gallery at `/prototypes`, and the viewer every protot
 
 - `module.ts`, `app.tsx`: who it is, its rail button, the `/prototypes` route, its front-page block, and its palette entries. A prototype opens through the platform's artifact routes (`src/platform/app/router.tsx`).
 - `gallery/`: the gallery, a prototype's card, and the New prototype dialog (browser).
-- `viewer/`: a prototype's layout, navigation and file tree, its menus and dialogs (browser). Source editing uses the [shared platform editor](../../context/source.md).
+- `viewer/`: a prototype's layout, navigation and file tree, its menus and dialogs (browser). Source editing uses the [shared platform editor](../../context/maintainers/source.md).
 - `src/platform/app/source/ArtifactSource.tsx`: adapts prototype and system context access to the shared editor.
 - `node/create.js`: `pnpm new`, and what the New prototype button runs (Node).
 

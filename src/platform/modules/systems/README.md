@@ -52,7 +52,7 @@ Pop-ups render within the themed container. Starter Base UI portals import `useP
 
 ## Permanent identity and routes
 
-Each installed system declares `studioId` in `system.ts`. Creation and installation allocate it; rename, ordinary updates, archive, and restore retain it. Package source and version remain separate provenance. The browser opens `/systems/<system-id>` and named surfaces such as `/colors`, `/fonts`, `/components/button`, `/context/design`, and `/skills/build-flow/SKILL`. System children have no generated IDs. Source keys and dependency paths remain meaningful; changing them still requires import and reference repair. See [Resource identity](../../context/resource-identity.md) for relationship resolution.
+Each installed system declares `studioId` in `system.ts`. Creation and installation allocate it; rename, ordinary updates, archive, and restore retain it. Package source and version remain separate provenance. The browser opens `/systems/<system-id>` and named surfaces such as `/colors`, `/fonts`, `/components/button`, `/context/design`, and `/skills/build-flow/SKILL`. System children have no generated IDs. Source keys and dependency paths remain meaningful; changing them still requires import and reference repair. See [Resource identity](../../context/maintainers/resource-identity.md) for relationship resolution.
 
 ## Page loading
 
@@ -174,7 +174,7 @@ folders in `src/systems/<id>/`, which are your content, plus Studio's own system
 - `pages/`, `data/`: the Systems pages and the loaders behind them (browser).
 - `node/`: finding systems, building their docs and props, and `pnpm component-docs` (Node).
 
-Page loading follows the [shared navigation handoff](../../context/source.md#navigation-handoff). Route loaders prepare the reader and content before replacing the current page.
+Page loading follows the [shared navigation handoff](../../context/maintainers/source.md#navigation-handoff). Route loaders prepare the reader and content before replacing the current page.
 
 ## Local owner routes
 
