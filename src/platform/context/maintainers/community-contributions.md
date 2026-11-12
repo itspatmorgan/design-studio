@@ -39,7 +39,7 @@ After the decision, reply once on the issue with the outcome and the next step. 
 
 A contributor may be unable to open a pull request. Fetch their branch, apply their commits to a maintainer branch with authorship intact, and open the pull request from there. Add maintainer changes as separate commits on top.
 
-Describe the source issue and branch in plain text, without linking the issue or mentioning the contributor. They hear once, with the outcome, rather than through every intermediate review step.
+Name the issue as "Fixes #N" so merging closes it, and describe the contributor's branch in plain text without mentioning them. They hear from you once, at release, rather than through every intermediate review step.
 
 ## Bring it to standard
 
@@ -58,7 +58,7 @@ Merge with a merge commit so the contributor's commits keep their authorship; a 
 
 ## Close the loop
 
-When the release is published, reply on the contributor's issue and close it as completed. Keep the reply short: thanks, links to the release and pull request, and a plain list of what changed from their proposal and why.
+When the release is published, reply on the contributor's issue, which the merge already closed. Keep the reply short: thanks, links to the release and pull request, and a plain list of what changed from their proposal and why.
 
 A reply an agent posts for the maintainer begins with a label line, such as "_Posted by Claude on behalf of Patrick._", so the contributor knows who wrote it.
 
