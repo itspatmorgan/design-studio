@@ -264,10 +264,11 @@
 }
 
 /* No Library: sticky notes are a native tool, and nothing else lives there. Excalidraw has no option to
-   turn it off, so its button, panel and "Add to library" are hidden. */
+   turn it off, so its button, panel and "Add to library" (with the separator after it) are hidden. */
 .canvas .layer-ui__wrapper__top-right button:has(> .default-sidebar-trigger),
 .canvas .default-sidebar,
-.excalidraw .context-menu li:has(> [data-testid="addToLibrary"]) {
+.excalidraw .context-menu li[data-testid="addToLibrary"],
+.excalidraw .context-menu li[data-testid="addToLibrary"] + hr {
   display: none !important;
 }
 
