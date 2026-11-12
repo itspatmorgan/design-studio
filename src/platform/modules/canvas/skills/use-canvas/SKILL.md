@@ -9,7 +9,6 @@ This skill applies when Canvases is enabled. The [module README](../../README.md
 
 - Keep embedded artifacts within the canvas's own prototype. Copy another prototype's artifact before embedding it.
 - Do not store images in a canvas. Embed the working view instead.
-- Apply the [contributor scope](../../../../context/contributor-scope.md) before editing.
 - Prefer native Excalidraw tools for canvas composition: text for annotations, with shapes, lines, arrows, and frames as needed. Use library assets when they serve the requested design; the example sticky note demonstrates extending the library and is optional, not the default for screen annotations.
 - Inspect the current scene before changing it. Inspect the result afterward.
 - Preserve the person's arrangements. Move existing content only when the request requires it.
@@ -34,7 +33,7 @@ Prefer tools over manual JSON edits. They maintain element bindings and versions
 
 Canvas tools edit existing scenes. Create a canvas through the file menu, or use the empty-scene `template` from this module's [file-type declaration](../../type.ts) for direct authoring.
 
-For new directly authored artifacts, preview and apply [identity assignment](../../../../context/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
+For new directly authored artifacts, preview and apply [identity assignment](../../../../context/maintainers/resource-identity.md#direct-authoring-and-verification). Preserve existing identity metadata when editing.
 
 ## Verify
 

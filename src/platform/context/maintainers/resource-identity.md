@@ -84,7 +84,7 @@ flowchart LR
   SystemFolder --> Contracts[Named system surfaces and dependency paths]
 ```
 
-Readable routes have no compatibility aliases. Stored references use permanent URLs. Copied permanent URLs resolve independently of browser history state. Hosting must continue serving the app fallback for direct routes and configured base paths. See [Publishing](publishing.md).
+Readable routes have no compatibility aliases. Stored references use permanent URLs. Copied permanent URLs resolve independently of browser history state. Hosting must continue serving the app fallback for direct routes and configured base paths. See [Publishing](../publishing.md).
 
 ## Ownership and authority
 

@@ -4,11 +4,11 @@ description: How maintainers triage, adapt, release, and acknowledge a community
 toc: true
 ---
 
-People report bugs and propose changes through an issue, as [Contributing](../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
+People report bugs and propose changes through an issue, as [Contributing](../../../../CONTRIBUTING.md) describes. This guide is for upstream maintainers and the agents working for them. The maintainer decides whether to accept a contribution, approves changes to the contributor's design, and approves anything sent to the contributor or posted publicly. An agent may prepare each of these; it does not send or post them on its own.
 
 ## Triage an issue
 
-Triage every new issue, bug or proposal, before anyone builds on it. Judge the idea before the code: read [Principles](principles.md) and [Personas](personas.md), and find the owner (platform, module, or system).
+Triage every new issue, bug or proposal, before anyone builds on it. Judge the idea before the code: read [Principles](../principles.md) and [Personas](../personas.md), and find the owner (platform, module, or system).
 
 See the problem first, in the running app rather than in the source:
 
