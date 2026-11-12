@@ -22,6 +22,7 @@ import {
   make,
   measureText,
   labelRoom,
+  newId,
   noteLayout,
   textElement,
   textHeight,
@@ -175,6 +176,20 @@ export const TOOLS: ToolDef[] = [
     example: { scale: 1 },
   },
   {
+    name: 'mermaid',
+    summary:
+      'Draw Mermaid as editable shapes and arrows: a flowchart, sequence, class, state or ER diagram, a Gantt chart, timeline or quadrant chart. It is placed like one element of `create` (x and y, `below`, `rightOf` or `section`; with none, below everything). `refs` in the result maps each Mermaid id (a node such as A, or an edge such as A_B) to its element id, for update and move. For a diagram that stays Mermaid, make a diagram artifact instead.',
+    args: {
+      source: 'the Mermaid text',
+      x: 'number',
+      y: 'number',
+      below: 'an id',
+      rightOf: 'an id',
+      section: 'a section id',
+    },
+    example: { source: 'flowchart LR\n  cart[Cart] --> pay{Paid?}\n  pay -->|yes| done([Done])', below: 'abc123' },
+  },
+  {
     name: 'help',
     summary: 'This list. help("create") explains the element types.',
     args: { tool: 'a tool name, for its details' },
@@ -294,6 +309,8 @@ export function run(scene: El[], tool: string, args: any, ctx: Ctx): Run {
       return move(scene, input);
     case 'delete':
       return remove(scene, input);
+    case 'mermaid':
+      return mermaid(scene, input, ctx);
     case 'help':
       return { elements: scene, result: help(typeof input === 'string' ? input : input.tool), touched: [] };
     default:
@@ -464,7 +481,40 @@ function listArtifacts(ctx: Ctx) {
 
 // ---- create -----------------------------------------------------------------------------------
 
-function create(input: El[], args: any, ctx: Ctx): Run {
+// Where a new element goes: given, beside or under another element, at the end of a section, or below everything.
+function placeOf(scene: El[], find: ReturnType<typeof finder>, spec: El, width: number, height = 0) {
+  const align = spec.align ?? undefined;
+  if (align !== undefined && align !== 'start' && align !== 'center')
+    throw new ToolError('align must be "start" or "center"');
+  const x = num(spec.x, 'x');
+  const y = num(spec.y, 'y');
+  if (x !== undefined && y !== undefined) return { x, y };
+  if (spec.below !== undefined) {
+    const b = boundsOf(find(spec.below, 'below'));
+    return { x: x ?? (align === 'center' ? b.x + (b.width - width) / 2 : b.x), y: y ?? b.y + b.height + NOTE_GAP };
+  }
+  if (spec.rightOf !== undefined) {
+    const b = boundsOf(find(spec.rightOf, 'rightOf'));
+    return { x: x ?? b.x + b.width + GAP, y: y ?? (align === 'start' ? b.y : b.y + (b.height - height) / 2) };
+  }
+  if (spec.section !== undefined) {
+    const frame = find(spec.section, 'section');
+    const kids = live(scene).filter(el => el.frameId === frame.id && !(el.type === 'text' && el.containerId));
+    if (!kids.length) return { x: frame.x + SECTION_PAD, y: frame.y + SECTION_PAD };
+    const b = unionBounds(kids.map(boundsOf))!;
+    return { x: b.x + b.width + GAP, y: b.y };
+  }
+  const all = unionBounds(
+    live(scene)
+      .filter(el => !(el.type === 'text' && el.containerId))
+      .map(boundsOf),
+  );
+  return all ? { x: x ?? all.x, y: y ?? all.y + all.height + SECTION_GAP } : { x: x ?? 0, y: y ?? 0 };
+}
+
+// `laidOut`: the elements come laid out already (a Mermaid diagram), so they keep their sizes and don't warn about
+// overlapping each other.
+function create(input: El[], args: any, ctx: Ctx, laidOut = false): Run {
   const specs: El[] | null = Array.isArray(args)
     ? args
     : Array.isArray(args.elements)
@@ -492,36 +542,7 @@ function create(input: El[], args: any, ctx: Ctx): Run {
     els.forEach(el => touched.add(el.id));
   };
 
-  // Where a new element goes: given, beside or under another element, at the end of a section, or below everything.
-  const place = (spec: El, width: number, height = 0) => {
-    const align = spec.align ?? undefined;
-    if (align !== undefined && align !== 'start' && align !== 'center')
-      throw new ToolError('align must be "start" or "center"');
-    const x = num(spec.x, 'x');
-    const y = num(spec.y, 'y');
-    if (x !== undefined && y !== undefined) return { x, y };
-    if (spec.below !== undefined) {
-      const b = boundsOf(find(spec.below, 'below'));
-      return { x: x ?? (align === 'center' ? b.x + (b.width - width) / 2 : b.x), y: y ?? b.y + b.height + NOTE_GAP };
-    }
-    if (spec.rightOf !== undefined) {
-      const b = boundsOf(find(spec.rightOf, 'rightOf'));
-      return { x: x ?? b.x + b.width + GAP, y: y ?? (align === 'start' ? b.y : b.y + (b.height - height) / 2) };
-    }
-    if (spec.section !== undefined) {
-      const frame = find(spec.section, 'section');
-      const kids = live(scene).filter(el => el.frameId === frame.id && !(el.type === 'text' && el.containerId));
-      if (!kids.length) return { x: frame.x + SECTION_PAD, y: frame.y + SECTION_PAD };
-      const b = unionBounds(kids.map(boundsOf))!;
-      return { x: b.x + b.width + GAP, y: b.y };
-    }
-    const all = unionBounds(
-      live(scene)
-        .filter(el => !(el.type === 'text' && el.containerId))
-        .map(boundsOf),
-    );
-    return all ? { x: x ?? all.x, y: y ?? all.y + all.height + SECTION_GAP } : { x: x ?? 0, y: y ?? 0 };
-  };
+  const place = (spec: El, width: number, height = 0) => placeOf(scene, find, spec, width, height);
   const grow = new Set<string>(); // sections that things were put into, to be made big enough
   const notices: string[] = []; // things made bigger than asked, so the caller knows
   const frameOf = (spec: El) => {
@@ -586,12 +607,14 @@ function create(input: El[], args: any, ctx: Ctx): Run {
         case 'rectangle':
         case 'ellipse':
         case 'diamond': {
-          const w = size(spec.width, 'width') ?? 200;
-          const asked = size(spec.height, 'height');
+          // A laid out shape keeps its size, however small (a state diagram's start dot is 14 across).
+          const measure = laidOut ? num : size;
+          const w = measure(spec.width, 'width') ?? 200;
+          const asked = measure(spec.height, 'height');
           let h = asked ?? 120;
           // A rectangle grows to hold its label. (An ellipse or diamond has less room inside, and can't just
           // grow taller, so it gets a notice instead.)
-          if (spec.text) {
+          if (spec.text && !laidOut) {
             const fontSize = num(spec.fontSize, 'fontSize') ?? 20;
             const needed = textHeight(str(spec.text, 'text'), labelRoom(spec.type, w), fontSize) + 24;
             if (needed > h) {
@@ -613,6 +636,7 @@ function create(input: El[], args: any, ctx: Ctx): Run {
               str(spec.text, 'text'),
               num(spec.fontSize, 'fontSize') ?? 20,
               spec.stroke !== undefined || spec.color !== undefined ? shape.strokeColor : undefined,
+              !laidOut,
             );
             made = [{ ...shape, boundElements: [{ id: label.id, type: 'text' }] }, label];
           } else made = [shape];
@@ -632,12 +656,18 @@ function create(input: El[], args: any, ctx: Ctx): Run {
               throw new ToolError('an arrow between elements needs both `from` and `to`');
             from = find(spec.from, 'from');
             to = find(spec.to, 'to');
-            const { start, end } = arrowEnds(from, to);
-            at = start;
-            points = [
-              [0, 0],
-              [end.x - start.x, end.y - start.y],
-            ];
+            if (laidOut && Array.isArray(spec.points)) {
+              // The route it was laid out with, such as a curve around another arrow between the same two.
+              at = { x: num(spec.x, 'x')!, y: num(spec.y, 'y')! };
+              points = [[0, 0], ...spec.points];
+            } else {
+              const { start, end } = arrowEnds(from, to);
+              at = start;
+              points = [
+                [0, 0],
+                [end.x - start.x, end.y - start.y],
+              ];
+            }
           } else {
             at = place(spec, 0);
             points = Array.isArray(spec.points)
@@ -771,7 +801,7 @@ function create(input: El[], args: any, ctx: Ctx): Run {
   const meet = (a: El, b: El) =>
     a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
   newOnes.forEach((a, i) => {
-    for (const b of [...before, ...newOnes.slice(i + 1)])
+    for (const b of [...before, ...(laidOut ? [] : newOnes.slice(i + 1))])
       if (a.id !== b.id && meet(boundsOf(a) as El, boundsOf(b) as El)) warnings.push(`${name(a)} overlaps ${name(b)}`);
   });
   // Agents retry commands: a call that repeats existing content is likely a second run, so say so.
@@ -803,6 +833,140 @@ function create(input: El[], args: any, ctx: Ctx): Run {
     result: { ok: true, created, refs, ...(warnings.length ? { warnings } : {}) },
     touched: [...touched],
   };
+}
+
+// ---- mermaid ----------------------------------------------------------------------------------
+
+const DIAGRAM_TYPES = ['rectangle', 'ellipse', 'diamond', 'text', 'arrow', 'line'];
+const BOUND_TEXT_PADDING = 5; // Excalidraw's, between a container and its label
+
+// Mermaid as ordinary canvas elements. The caller (agent.ts or cli.ts) adds `diagram`: the elements
+// Excalidraw's own converter lays out from `source` (mermaid.ts), the same one behind pasting Mermaid onto a
+// canvas. They are made with `create`, then given what `create` doesn't take: groups, label alignment,
+// arrowheads and angles.
+function mermaid(input: El[], args: any, ctx: Ctx): Run {
+  const diagram: El[] | undefined = args.diagram;
+  if (!Array.isArray(diagram)) throw new ToolError('mermaid needs `source`: the Mermaid text');
+  if (!diagram.length) throw new ToolError('this Mermaid has nothing to draw');
+  const other = diagram.find(e => !DIAGRAM_TYPES.includes(e.type));
+  if (other)
+    throw new ToolError(
+      other.type === 'image'
+        ? "this kind of Mermaid diagram can't be made into shapes. Flowcharts, sequence, class, state and ER diagrams, Gantt charts, timelines and quadrant charts can. A diagram artifact shows any kind."
+        : `this Mermaid makes a ${other.type}, which the canvas tools don't make`,
+    );
+  if (diagram.length > MAX_CREATE)
+    throw new ToolError(
+      `this Mermaid makes ${diagram.length} elements, and a call makes at most ${MAX_CREATE}. Split it.`,
+    );
+
+  const box = (e: El) => boundsOf({ ...e, width: e.width ?? 0, height: e.height ?? 0 });
+  const whole = unionBounds(diagram.map(box))!;
+  const at = placeOf(
+    input,
+    finder(() => input),
+    args,
+    whole.width,
+    whole.height,
+  );
+  const dx = at.x - whole.x;
+  const dy = at.y - whole.y;
+  const ids = new Set(diagram.map(e => e.id).filter(Boolean));
+  const style = (e: El, fill: boolean) => ({
+    ...(e.strokeColor ? { stroke: e.strokeColor } : {}),
+    ...(fill && e.backgroundColor && e.backgroundColor !== 'transparent' ? { background: e.backgroundColor } : {}),
+    ...(e.strokeWidth ? { strokeWidth: e.strokeWidth } : {}),
+    ...(e.strokeStyle ? { strokeStyle: e.strokeStyle } : {}),
+  });
+  const common = (e: El) => ({
+    ...(e.id ? { ref: e.id } : {}),
+    ...(args.section !== undefined ? { section: args.section } : {}),
+  });
+  const specOf = (e: El): El => {
+    const text = e.label?.text || undefined;
+    if (e.type === 'text')
+      return {
+        type: 'text',
+        text: e.text,
+        x: e.x + dx,
+        y: e.y + dy,
+        fontSize: e.fontSize,
+        ...style(e, false),
+        ...common(e),
+      };
+    if (e.type === 'arrow' || e.type === 'line') {
+      const points: number[][] = e.points ?? [
+        [0, 0],
+        [e.width ?? 0, e.height ?? 0],
+      ];
+      const [x0, y0] = points[0];
+      const joins =
+        e.type === 'arrow' && ids.has(e.start?.id) && ids.has(e.end?.id)
+          ? { from: `@${e.start.id}`, to: `@${e.end.id}` }
+          : {};
+      return {
+        type: e.type,
+        ...joins,
+        x: e.x + x0 + dx,
+        y: e.y + y0 + dy,
+        points: points.slice(1).map(([x, y]) => [x - x0, y - y0]),
+        text,
+        ...style(e, false),
+        ...common(e),
+      };
+    }
+    return {
+      type: e.type,
+      x: e.x + dx,
+      y: e.y + dy,
+      width: e.width,
+      height: e.height,
+      text,
+      fontSize: e.label?.fontSize,
+      rounded: e.roundness ? true : undefined,
+      ...style(e, true),
+      ...common(e),
+    };
+  };
+  // Shapes first, so arrows can join them, in the converter's order (which puts groups behind what is in them).
+  const order = [
+    ...diagram.filter(e => e.type !== 'arrow' && e.type !== 'line'),
+    ...diagram.filter(e => e.type === 'arrow' || e.type === 'line'),
+  ];
+  const made = create(input, { elements: order.map(specOf) }, ctx, true);
+  const { created } = made.result as { created: string[] };
+
+  let scene = made.elements;
+  const touched = new Set(made.touched);
+  const patch = (id: string, change: El) => {
+    touched.add(id);
+    scene = scene.map(el => (el.id === id ? bump(el, change) : el));
+  };
+  const groups = new Map<string, string>();
+  const groupOf = (id: string) => groups.get(id) ?? (groups.set(id, newId()), groups.get(id)!);
+  order.forEach((e, i) => {
+    const el = scene.find(x => x.id === created[i])!;
+    const label = labelOf(scene, el);
+    const groupIds = (e.groupIds ?? []).map(groupOf);
+    const change: El = {};
+    if (groupIds.length) change.groupIds = groupIds;
+    if (e.angle) change.angle = e.angle;
+    if (e.type === 'text' && e.textAlign) change.textAlign = e.textAlign;
+    if (e.type === 'arrow') {
+      if ('startArrowhead' in e) change.startArrowhead = e.startArrowhead ?? null;
+      if ('endArrowhead' in e) change.endArrowhead = e.endArrowhead ?? null;
+    }
+    if (Object.keys(change).length) patch(el.id, change);
+    if (label && e.type !== 'arrow' && e.type !== 'line') {
+      const align: El = groupIds.length ? { groupIds } : {};
+      if (e.label?.strokeColor) align.strokeColor = color(e.label.strokeColor, 'stroke');
+      if (e.label?.verticalAlign === 'top')
+        Object.assign(align, { verticalAlign: 'top', y: el.y + BOUND_TEXT_PADDING });
+      if (e.label?.textAlign === 'left') Object.assign(align, { textAlign: 'left', x: el.x + BOUND_TEXT_PADDING });
+      if (Object.keys(align).length) patch(label.id, align);
+    } else if (label && groupIds.length) patch(label.id, { groupIds });
+  });
+  return { elements: scene, result: made.result, touched: [...touched] };
 }
 
 // ---- update, move, delete ---------------------------------------------------------------------

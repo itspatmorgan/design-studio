@@ -57,6 +57,7 @@ Canvas declares `systemUsage: 'independent'`. Its scene remains readable locally
 | `elements.ts`, `slim.ts` | Building blocks for the tools (colors, text sizes, arrows), and the small stable stored form. Pure, shared with the command line |
 | `agent.ts` | The tools in the open canvas: `window.__studioCanvas`, dev only |
 | `cli.ts` | The same tools on the file, for agents with no browser: `pnpm canvas` |
+| `mermaid.ts` | Lays out Mermaid with Excalidraw's converter for the `mermaid` tool (with linkedom as the DOM in `cli.ts`) |
 | `menu.tsx`, `shortcuts.ts`, `ControlTooltip.tsx`, `helpDialog.ts` | The trimmed Excalidraw UI: menu and desktop layout, ⌘., fast tooltips, Help dialog |
 
 Excalidraw is patched to hide the link icon on embeds (`patches/README.md`). `UIOptions.getFormFactor` in `menu.tsx` keeps its desktop layout, since the app is often narrow beside other panels. Its fonts load from

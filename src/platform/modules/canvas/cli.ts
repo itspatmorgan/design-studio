@@ -183,6 +183,13 @@ const ctx: Ctx = {
 };
 
 try {
+  if (tool === 'mermaid') {
+    // The Mermaid converter reads SVG with a browser's DOM; linkedom is one in Node.
+    const { DOMParser, parseHTML } = await import('linkedom');
+    Object.assign(globalThis, { DOMParser, document: parseHTML('<html><body></body></html>').document });
+    const { layoutMermaid } = await import('./mermaid.ts');
+    args = { ...(args as object), diagram: await layoutMermaid((args as { source?: unknown }).source) };
+  }
   const result = run(scene!.elements!, tool, args, ctx);
   if (!['describe', 'help', 'artifacts'].includes(tool)) {
     const { resolveContributor } = await import(
