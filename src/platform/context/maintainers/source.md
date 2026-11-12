@@ -72,7 +72,7 @@ Renderers cancel superseded asynchronous work logically. The child bridge additi
 | Canvas eviction, removal, or page departure | Dispose the embed and its lifecycle. Returning creates a fresh preview; its interaction state is not durable. |
 | Explicit adapter pause | Invalidate pending preparation, retain displayed output, and require fresh preparation after resume. Current page and canvas adapters do not use pause. |
 
-[Canvas hosting](../modules/canvas/README.md#shared-artifact-host) owns admission and retention. Lifecycle information does not create another scheduling policy.
+[Canvas hosting](../../modules/canvas/README.md#shared-artifact-host) owns admission and retention. Lifecycle information does not create another scheduling policy.
 
 ### Integration and inspection
 

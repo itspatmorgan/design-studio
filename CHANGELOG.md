@@ -3,7 +3,12 @@
 ## Unreleased
 
 - A system's Overview and Icons source action opens its `intro.tsx`, including Studio's own, instead of an unavailable `system.ts`. Thanks @robcrock.
+- Closing the artifact filter clears its query, so a hidden search no longer leaves the tree empty. Thanks @robcrock.
 - A pull request or branch opens in GitHub Codespaces with editing working: the studio installs, starts, and opens in a browser tab. Reviewers who haven't joined the studio edit as the sample author.
+- `pnpm check:links` checks every relative link, heading anchor, and `/documentation/...` link in Markdown guidance, and CI runs it.
+- Root `AGENTS.md` now carries the standing working rules in its own Working in Studio section; `src/platform/context/working-in-studio.md` is gone, and `pnpm studio context --json` no longer lists it under `guidance`. Skills keep their routes in a Skills section that module routing follows.
+- Maintainer-only platform context (checks, resource identity, editing and saving, community contributions, releasing) moved to `src/platform/context/maintainers/`. Links to the old paths or `/documentation/context/platform.core/context/<name>` addresses need `maintainers/` added.
+- Task skills no longer repeat the contributor scope line that `AGENTS.md` already requires; it stays in the contributor skills.
 - Component pages credit only the libraries whose `components` list includes that component. A system's `origin` no longer credits every component, so components ported from elsewhere are no longer attributed to shadcn/ui. The starter systems now list their shadcn components. A team system that credits shadcn should list its shadcn components in that library's `components`.
 - A `Link` whose path doesn't resolve renders in place, inert and outlined in development, and the console names the path. Before, it failed the whole view, so one link in shared chrome took down every page.
 - `pnpm check` ends with one line per system listing every missing token, with Tailwind's default value beside each.
@@ -21,6 +26,7 @@
 - CLI commands no longer tell you to restart the dev server after configuration, module, or system changes; it already restarts itself.
 
 - Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
+- Report bugs through a bug report issue form. Maintainers triage each issue as now, later, or close, and reply with the outcome; the community contributions guide gives the decision rules and the brief an agent drafts for the maintainer.
 
 ## 0.1.3 (2026-11-01)
 

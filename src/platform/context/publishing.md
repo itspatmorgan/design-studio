@@ -22,7 +22,7 @@ Interactive views still run in the browser. The published site does not provide 
 
 ## Choose a deployment process
 
-The platform provides a portable static build. Configure a publishing workflow for the chosen host. Document repository-specific deployment configuration in its maintainer guidance. This project’s configuration is in [Releasing](releasing.md#project-repository-publishing).
+The platform provides a portable static build. Configure a publishing workflow for the chosen host. Document repository-specific deployment configuration in its maintainer guidance. This project’s configuration is in [Releasing](maintainers/releasing.md#project-repository-publishing).
 
 For a host that serves the app below a URL prefix, pass that prefix through `STUDIO_BASE_PATH`. The build normalizes its trailing slash; local commands use `/` by default. For example:
 
