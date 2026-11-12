@@ -8,10 +8,7 @@ import { artifactShortcut } from '@/platform/app/shell/artifactShortcuts';
 const typing = (target: EventTarget | null) =>
   (target as HTMLElement | null)?.closest?.('input, textarea, [contenteditable="true"]');
 
-export function useCanvasShortcuts(
-  api: ExcalidrawImperativeAPI | null,
-  container: RefObject<HTMLElement | null>,
-) {
+export function useCanvasShortcuts(api: ExcalidrawImperativeAPI | null, container: RefObject<HTMLElement | null>) {
   const [controlsHidden, setControlsHidden] = useState(false);
   const toggleControls = useCallback(() => setControlsHidden(hidden => !hidden), []);
 

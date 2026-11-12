@@ -144,8 +144,7 @@ export function createCanvasAgent({ api, proto, item, manifest, editable, persis
       const made = (result as { created?: string[] }).created;
       if (made?.length) {
         const fresh = api.getSceneElements().filter(el => made.includes(el.id));
-        if (fresh.length && !fresh.some(el => inView(el as unknown as El)))
-          show(fresh, 0.9);
+        if (fresh.length && !fresh.some(el => inView(el as unknown as El))) show(fresh, 0.9);
       }
     }
     return result;
