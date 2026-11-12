@@ -6,7 +6,7 @@ Delete a section's prompt once you answer it. Write "None" rather than deleting 
 **In one line:** <!-- What this PR does for the person using Studio. -->
 
 ### Problem
-<!-- What is wrong or missing, and who it affects. Link the issue or report. -->
+<!-- What is wrong or missing, and who it affects. Name the issue it settles as "Fixes #N" so merging closes it. -->
 
 ### Proposed solution
 <!-- The fix someone asked for or suggested, if any. "None" if this started from the problem alone. -->
