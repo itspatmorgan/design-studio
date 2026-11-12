@@ -207,8 +207,9 @@ export function textElement(props: {
 export const labelRoom = (shape: string, width: number) =>
   Math.max(40, (shape === 'ellipse' ? width * 0.7 : shape === 'diamond' ? width * 0.5 : width) - 24);
 
-export function labelFor(container: El, text: string, fontSize = 20, stroke?: string): El {
-  const inner = labelRoom(container.type, container.width);
+// `wrap` false keeps the lines as given, for a container sized to its label already (a laid out diagram).
+export function labelFor(container: El, text: string, fontSize = 20, stroke?: string, wrap = true): El {
+  const inner = wrap ? labelRoom(container.type, container.width) : undefined;
   const label = textElement({
     text,
     x: 0,

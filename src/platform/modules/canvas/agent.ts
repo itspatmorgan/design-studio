@@ -173,6 +173,11 @@ export function createCanvasAgent({ api, proto, item, manifest, editable, persis
     update: (args: unknown) => call('update', args),
     move: (args: unknown) => call('move', args),
     delete: (args: unknown) => call('delete', args),
+    async mermaid(args: { source?: unknown } = {}) {
+      // Loaded when first used: the converter is large, and most canvases never need it.
+      const { layoutMermaid } = await import('./mermaid');
+      return call('mermaid', { ...args, diagram: await layoutMermaid(args.source) });
+    },
 
     point(args: { ids?: string[] }) {
       const ids = args?.ids;
