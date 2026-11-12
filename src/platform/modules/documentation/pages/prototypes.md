@@ -97,7 +97,7 @@ Imports, relative document links, and assets still depend on file locations. Stu
 
 **Diagrams** open fitted to the page. Pinch to zoom, scroll or drag to pan, or use the zoom controls in the lower left, as on a canvas. **Fit diagram** returns to the fitted view. A canvas preview of that diagram stays fitted, because the canvas has its own zoom.
 
-**Canvases** use Excalidraw. Use the native toolbar tools to draw, connect, and annotate; press **T** for text. The Library offers optional reusable assets, including an example sticky note. Drag an artifact from navigation onto the canvas, or copy its link and paste over the canvas.
+**Canvases** use Excalidraw. Use the native toolbar tools to draw, connect, and annotate; press **T** for text and **N** for a sticky note. Drag an artifact from navigation onto the canvas, or copy its link and paste over the canvas.
 
 View and diagram previews follow their source. Documents and other canvases appear as link cards. Open the original to interact or edit. Canvas annotations do not automatically change screens.
 

@@ -9,7 +9,7 @@ This skill applies when Canvases is enabled. The [module README](../../README.md
 
 - Keep embedded artifacts within the canvas's own prototype. Copy another prototype's artifact before embedding it.
 - Do not store images in a canvas. Embed the working view instead.
-- Prefer native Excalidraw tools for canvas composition: text for annotations, with shapes, lines, arrows, and frames as needed. Use library assets when they serve the requested design; the example sticky note demonstrates extending the library and is optional, not the default for screen annotations.
+- Prefer native Excalidraw tools for canvas composition: text for annotations, with shapes, lines, arrows, and frames as needed. Sticky notes (the `note` kind, Excalidraw's `stickynote`) are optional, not the default for screen annotations.
 - Inspect the current scene before changing it. Inspect the result afterward.
 - Preserve the person's arrangements. Move existing content only when the request requires it.
 - Keep changes small enough to review and undo. Live tool operations support undo. External file edits may not be separate undo steps.

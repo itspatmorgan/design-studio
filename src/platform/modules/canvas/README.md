@@ -5,7 +5,7 @@ Excalidraw text, shapes, and arrows. It's [Excalidraw](https://github.com/excali
 look, and its design comes from Design Studio's canvas. Agent contract: `src/platform/modules/canvas/skills/use-canvas/SKILL.md`.
 Human orientation: [Prototypes & systems](/documentation/manual/prototypes#what-belongs-in-a-prototype).
 
-Native Excalidraw tools are the authoring default, including text for screen annotations. The example sticky note in the Library demonstrates a reusable library asset; use it when wanted rather than as the standard annotation treatment.
+Native Excalidraw tools are the authoring default, including text for screen annotations. Sticky notes are Excalidraw's own `stickynote` element (N, or the toolbar): its text shrinks to fit, then the note grows. There is no Library; Canvas hides Excalidraw's.
 
 Trackpad gestures pan the canvas, including over linked frame headers; modifier-wheel gestures retain Excalidraw's zoom behavior. The canvas contains overscroll so horizontal panning does not fall through to browser history navigation. Frame headers still open their artifacts when clicked.
 
@@ -57,9 +57,9 @@ Canvas declares `systemUsage: 'independent'`. Its scene remains readable locally
 | `elements.ts`, `slim.ts` | Building blocks for the tools (colors, text sizes, arrows), and the small stable stored form. Pure, shared with the command line |
 | `agent.ts` | The tools in the open canvas: `window.__studioCanvas`, dev only |
 | `cli.ts` | The same tools on the file, for agents with no browser: `pnpm canvas` |
-| `menu.tsx`, `shortcuts.ts`, `stickyNotes.ts`, `ControlTooltip.tsx`, `helpDialog.ts` | The trimmed Excalidraw UI: menu, ⌘. and N, sticky notes, fast tooltips, Help dialog |
+| `menu.tsx`, `shortcuts.ts`, `ControlTooltip.tsx`, `helpDialog.ts` | The trimmed Excalidraw UI: menu and desktop layout, ⌘., fast tooltips, Help dialog |
 
-Excalidraw is patched (the link icon on embeds, and always using its desktop layout, since the app is often narrow beside other panels): `patches/README.md`. Its fonts load from
+Excalidraw is patched to hide the link icon on embeds (`patches/README.md`). `UIOptions.getFormFactor` in `menu.tsx` keeps its desktop layout, since the app is often narrow beside other panels. Its fonts load from
 Excalidraw's CDN.
 
 ### Remove it

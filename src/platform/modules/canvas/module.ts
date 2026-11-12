@@ -15,5 +15,5 @@ export default {
     { path: 'skills/use-canvas/', when: 'asks for a canvas (a page of views, documents, and notes arranged together)' },
   ],
   optimizeDependencies: ['@excalidraw/excalidraw'],
-  dependencies: { '@excalidraw/excalidraw': '0.18.1' },
+  dependencies: { '@excalidraw/excalidraw': '0.18.0-3c916c5' },
 } satisfies ModuleSpec;

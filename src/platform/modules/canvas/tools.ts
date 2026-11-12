@@ -12,7 +12,6 @@ import { artifactSlug } from '../../core/fileTypes.ts';
 import {
   NOTE_COLORS,
   NOTE_SIZE,
-  NOTE_TEXT_COLOR,
   ToolError,
   arrowEnds,
   boundsOf,
@@ -23,6 +22,7 @@ import {
   make,
   measureText,
   labelRoom,
+  noteLayout,
   textElement,
   textHeight,
   unionBounds,
@@ -68,7 +68,7 @@ export type ToolDef = { name: string; live?: true; summary: string; args: Record
 
 const STYLE_ARGS = {
   color:
-    'shortcut for stroke and background together: a name (red, pink, grape, violet, blue, cyan, teal, green, yellow, orange, gray) or hex. On a sticky note: yellow, pink, blue, or green',
+    'shortcut for stroke and background together: a name (red, pink, grape, violet, blue, cyan, teal, green, yellow, orange, gray) or hex. On a sticky note: yellow, pink, green, blue, or orange',
   stroke: 'outline and text color: a name, a hex value, or "none"',
   background: 'fill color: a name (its light shade), a hex value, or "none"',
   strokeWidth: 'number, 1 (thin) to 4 (bold)',
@@ -195,12 +195,12 @@ const ELEMENT_TYPES: Record<string, { summary: string; args: Record<string, stri
   },
   note: {
     summary:
-      'An optional sticky note, like the example Library asset. Prefer native text for screen annotations unless a sticky note is wanted.',
+      "Excalidraw's sticky note (N in the toolbar). Prefer native text for screen annotations unless a sticky note is wanted.",
     args: {
-      text: 'what it says. It wraps to the note, and the note gets taller if the text needs it',
-      color: 'yellow (default), pink, blue, or green',
-      width: 'default 200',
-      height: 'default 200 (taller if the text needs it)',
+      text: 'what it says. It wraps to the note; long text gets a smaller font, then a taller note',
+      color: 'yellow (default), pink, green, blue, or orange',
+      width: 'default 250',
+      height: 'default 250 (taller if the text needs it)',
     },
     example: { type: 'note', text: 'Retry keeps the draft', color: 'pink', below: '@main' },
   },
@@ -307,12 +307,30 @@ export function run(scene: El[], tool: string, args: any, ctx: Ctx): Run {
 
 const live = (scene: El[]) => scene.filter(el => !el.isDeleted);
 const labelOf = (scene: El[], el: El) => scene.find(t => t.containerId === el.id && !t.isDeleted && t.type === 'text');
-// A note is a rectangle with a note's fill and its edge color: a shape colored "blue" has the same fill, but not the edge.
+const isNote = (el: El) => el.type === 'stickynote';
 const noteColorName = (el: El) =>
-  el.type === 'rectangle'
-    ? Object.entries(NOTE_COLORS).find(([, c]) => c.fill === el.backgroundColor && c.edge === el.strokeColor)?.[0]
-    : undefined;
-const isNote = (el: El) => noteColorName(el) !== undefined;
+  Object.entries(NOTE_COLORS).find(([, fill]) => fill === el.backgroundColor)?.[0] ?? el.backgroundColor;
+const noteColor = (name: unknown) => {
+  const fill = NOTE_COLORS[name as string];
+  if (!fill) throw new ToolError(`a note's color must be one of ${Object.keys(NOTE_COLORS).join(', ')}`);
+  return fill;
+};
+// A note's label, laid out the way Excalidraw lays it out: centered, its font shrunk to fit.
+function noteLabel(note: El, text: string, layout: ReturnType<typeof noteLayout>, baseFontSize = 20): El {
+  const label = textElement({
+    text,
+    x: 0,
+    y: 0,
+    fontSize: layout.fontSize,
+    containerId: note.id,
+    boxWidth: layout.room,
+    align: 'center',
+  });
+  return centerLabel(
+    { ...note, height: layout.height - 20 },
+    { ...label, baseFontSize, strokeColor: note.strokeColor ?? '#1e1e1e' },
+  );
+}
 const isArtifact = (el: El) => el.type === 'embeddable' && typeof el.link === 'string';
 
 function num(value: unknown, field: string): number | undefined {
@@ -521,41 +539,27 @@ function create(input: El[], args: any, ctx: Ctx): Run {
       let made: El[] = [];
       switch (spec.type) {
         case 'note': {
-          const c = NOTE_COLORS[spec.color ?? 'yellow'];
-          if (!c) throw new ToolError(`a note's color must be one of ${Object.keys(NOTE_COLORS).join(', ')}`);
+          const fill = noteColor(spec.color ?? 'yellow');
           const w = size(spec.width, 'width') ?? NOTE_SIZE;
           const asked = size(spec.height, 'height');
+          const text = str(spec.text ?? '', 'text');
+          const layout = noteLayout(text, w, asked ?? NOTE_SIZE);
           // A note grows to hold its text: text that doesn't fit would spill out over what's below it.
-          const needed = Math.ceil((textHeight(str(spec.text ?? '', 'text'), w - 20, 20) + 20) / 20) * 20;
-          const h = Math.max(asked ?? NOTE_SIZE, needed);
-          if (asked !== undefined && needed > asked)
+          if (asked !== undefined && layout.height > asked)
             notices.push(
-              `a note was made ${h} tall, not ${asked}, to fit its text. Shorten the text or give it more width.`,
+              `a note was made ${Math.round(layout.height)} tall, not ${asked}, to fit its text. Shorten the text or give it more width.`,
             );
-          const at = place(spec, w, h);
-          const rect = make('rectangle', {
+          const at = place(spec, w, layout.height);
+          const note = make('stickynote', {
             ...at,
             width: w,
-            height: h,
-            backgroundColor: c.fill,
-            fillStyle: 'solid',
-            strokeColor: c.edge,
-            strokeWidth: 1,
-            roughness: 0,
-            roundness: null,
+            height: layout.height,
+            baseHeight: asked ?? NOTE_SIZE,
+            backgroundColor: fill,
+            created: Date.now(),
           });
-          const label: El = {
-            ...textElement({
-              text: str(spec.text ?? '', 'text'),
-              x: at.x + 10,
-              y: at.y + 10,
-              containerId: rect.id,
-              boxWidth: w - 20,
-              stroke: NOTE_TEXT_COLOR,
-            }),
-            verticalAlign: 'top',
-          };
-          made = [{ ...rect, boundElements: [{ id: label.id, type: 'text' }] }, label];
+          const label = text ? noteLabel(note, text, layout) : null;
+          made = label ? [{ ...note, boundElements: [{ id: label.id, type: 'text' }] }, label] : [note];
           break;
         }
         case 'text': {
@@ -878,17 +882,16 @@ function update(input: El[], args: any, ctx: Ctx): Run {
     let el = find(id, 'id');
     const patch: El = {};
     // A note's color is one of four; on anything else, `color` styles the outline and fill.
-    if (args.color !== undefined && isNote(el)) {
-      const c = NOTE_COLORS[args.color];
-      if (!c) throw new ToolError(`a note's color must be one of ${Object.keys(NOTE_COLORS).join(', ')}`);
-      Object.assign(patch, { backgroundColor: c.fill, strokeColor: c.edge });
-    } else
+    if (args.color !== undefined && isNote(el)) patch.backgroundColor = noteColor(args.color);
+    else
       Object.assign(
         patch,
         styleOf(args, el.type === 'text' ? 'text' : el.type === 'arrow' || el.type === 'line' ? 'line' : 'shape'),
       );
     for (const key of ['x', 'y', 'width', 'height'] as const)
       if (args[key] !== undefined) patch[key] = num(args[key], key);
+    // A note's asked-for height is its least height; it grows from there to fit its text.
+    if (isNote(el) && patch.height !== undefined) patch.baseHeight = patch.height;
     if (args.locked !== undefined) patch.locked = Boolean(args.locked);
     if (args.name !== undefined) {
       if (el.type !== 'frame') throw new ToolError(`${id}: name is a section's title`);
@@ -946,21 +949,11 @@ function update(input: El[], args: any, ctx: Ctx): Run {
               textElement({ text: words, x: 0, y: 0, fontSize, containerId: el.id, align: 'center' }),
             );
           else if (isNote(el)) {
-            next = {
-              ...textElement({
-                text: words,
-                x: el.x + 10,
-                y: el.y + 10,
-                fontSize,
-                containerId: el.id,
-                boxWidth: el.width - 20,
-                stroke: NOTE_TEXT_COLOR,
-              }),
-              verticalAlign: 'top',
-            };
-            // The note grows to hold its text.
-            const needed = Math.ceil((next.height + 20) / 20) * 20;
-            if (needed > el.height) set(el.id, { height: needed });
+            // The note fits its text again: a smaller font first, then a taller note.
+            const base = num(args.fontSize, 'fontSize') ?? label?.baseFontSize ?? 20;
+            const layout = noteLayout(words, el.width, el.baseHeight ?? el.height, base);
+            set(el.id, { height: layout.height });
+            next = noteLabel(find(el.id, 'id'), words, layout, base);
           } else {
             next = labelFor(el, words, fontSize, label?.strokeColor);
             if (el.type === 'rectangle' && next.height + 24 > el.height) {
@@ -972,7 +965,8 @@ function update(input: El[], args: any, ctx: Ctx): Run {
             set(label.id, {
               text: next.text,
               originalText: next.originalText,
-              fontSize,
+              fontSize: next.fontSize,
+              ...(next.baseFontSize ? { baseFontSize: next.baseFontSize } : {}),
               width: next.width,
               height: next.height,
               x: next.x,
@@ -1150,8 +1144,9 @@ function kindOf(el: El) {
       return 'section';
     case 'embeddable':
       return isArtifact(el) ? 'artifact' : 'embed';
+    case 'stickynote':
+      return 'note';
     case 'rectangle':
-      return isNote(el) ? 'note' : 'shape';
     case 'ellipse':
     case 'diamond':
       return 'shape';
