@@ -1,5 +1,6 @@
-// Source changes for a view's dials: Add, Apply, and Remove (README.md). Each takes a view's source text and
-// returns the new text; nothing here reads or writes files. Edits are surgical, so formatting and comments stay.
+// Source changes for a view's dials: Add, Save to code (the `apply` action), and Remove (README.md). Each takes a
+// view's source text and returns the new text; nothing here reads or writes files. Edits are surgical, so formatting
+// and comments stay.
 import ts from 'typescript';
 
 export const LIBRARY = '@module/dialkit';
@@ -268,7 +269,8 @@ const firstOption = (config: unknown) => {
   return option && typeof option === 'object' ? (option as { value: unknown }).value : (option ?? '');
 };
 
-// Apply: make every matching group's current values its new defaults. Returns the new source and the groups it found.
+// Save to code (the `apply` action): make every matching group's current values its new defaults. Returns the new
+// source and the groups it found.
 export function applyDials(source: string, panels: PanelValues[]) {
   const file = parse(source);
   syntaxCheck(file);
@@ -284,7 +286,9 @@ export function applyDials(source: string, panels: PanelValues[]) {
     applied.push(panel.name);
   }
   if (panels.length && !applied.length)
-    throw new Error('These dials are not in this view’s file. Reload the view, or apply them where they are written.');
+    throw new Error(
+      'These dials are not in this view’s file. Reload the view, or save them to code where they are written.',
+    );
   return { source: apply(source, edits), applied };
 }
 

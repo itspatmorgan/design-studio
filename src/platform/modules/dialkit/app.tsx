@@ -1,5 +1,5 @@
 // DialKit in the Studio app (README.md): Add and Remove in a view's menu, Hide and Show in the open prototype's
-// menu, and the toast for an Apply that failed in a preview. All of it is local: published sites have no DialKit.
+// menu, and the toast for a Save to code that failed in a preview. All of it is local: published sites have no DialKit.
 import { useEffect, useSyncExternalStore } from 'react';
 import { SlidersHorizontalIcon, ViewIcon, ViewOffSlashIcon } from '@hugeicons/core-free-icons';
 import type { ModuleApp } from '#studio/ui';
@@ -29,7 +29,7 @@ import type { DialKitContribution } from './contribution';
 const usesDials = (views: string[] | undefined, proto: Pick<Prototype, 'contributorKey' | 'id'>, path: string) =>
   Boolean(views?.includes(repoPath(proto as Prototype, path)));
 
-// The live values of a view open in a preview, so Remove keeps tuning that wasn't applied yet. None if it isn't open.
+// The live values of a view open in a preview, so Remove keeps tuning that wasn't saved yet. None if it isn't open.
 function liveValues(proto: Prototype, path: string): Promise<Panels> {
   const channel = new BroadcastChannel(CHANNEL);
   const id = crypto.randomUUID();
@@ -58,7 +58,7 @@ async function rewrite(proto: Prototype, path: string, request: object) {
   await writeSource(proto, path, next.content, version);
 }
 
-// While a prototype is open: the shortcut in the app, and a toast for an Apply that failed in its preview.
+// While a prototype is open: the shortcut in the app, and a toast for a Save to code that failed in its preview.
 let listening = false;
 function listen() {
   if (listening) return;
@@ -91,7 +91,7 @@ export default {
           mutates: true,
           async run({ proto, item }) {
             await rewrite(proto, item.path, { action: 'add', group: artifactLabel(item.path) });
-            toast.add({ title: 'DialKit added. Ask your agent for the dials you want.' });
+            toast.add({ title: 'DialKit added' });
           },
         },
       ];
@@ -104,7 +104,7 @@ export default {
         mutates: true,
         async run({ proto, item }) {
           await rewrite(proto, item.path, { action: 'remove', panels: await liveValues(proto, item.path) });
-          toast.add({ title: 'DialKit removed. The view keeps its tuned values.' });
+          toast.add({ title: 'DialKit removed. Values kept.' });
         },
       },
     ];

@@ -87,7 +87,7 @@ Keep the [isolation limits](#isolation-limits) explicit. A failed opaque-origin 
 
 ## Revision evidence
 
-Page previews and inert embeds use the same lifecycle adapter. A renderer commit acknowledges source only when the compiled local inputs match the observed revision. Compilation failure can retain the previous preview, explicitly stale; render failure clears it. A bounded unverified update produces an actionable unknown state. Successful recovery clears the notice without forcing a document remount.
+Page previews and inert embeds use the same lifecycle adapter. A renderer commit acknowledges source only when the compiled local inputs match the observed revision. Compilation failure can retain the previous preview, explicitly stale; render failure clears it. A bounded unverified update produces an actionable unknown state. Modules a view loads after its commit (an `import()` in an effect) are acknowledged when they arrive; the tracker checks again until its deadline. A page preview shows the plain out-of-date notice only once it has lasted a second, so an ordinary save that applies at once never flashes it; errors and unverified updates show immediately. Successful recovery clears the notice without forcing a document remount.
 
 The [shared lifecycle contract](../../context/maintainers/source.md#artifact-revision-and-preview-lifecycle) defines input coverage, static-preview limits, optional activity, message ordering, and state/lifetime policy. The status counter describes load attempts. It never stands in for source freshness. The child controller is also replaced when an identified artifact's source location changes.
 

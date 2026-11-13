@@ -1,6 +1,6 @@
 ---
 name: studio-module-dialkit-use-dialkit
-description: "Add, tune, apply, or remove DialKit dials on a Design Studio prototype view. Use only when DialKit is enabled."
+description: "Add, tune, save, or remove DialKit dials on a Design Studio prototype view. Use only when DialKit is enabled."
 ---
 
 <!-- studio:generated-skill -->
