@@ -26,7 +26,7 @@ import DuplicatePrototypeDialog from '@/platform/modules/prototypes/viewer/Dupli
 import DeletePrototypeDialog from '@/platform/modules/prototypes/viewer/DeletePrototypeDialog';
 type Icon = typeof Link01Icon;
 
-export type Action = { label: string; icon: Icon; onSelect: () => void; destructive?: boolean };
+export type Action = { label: string; icon: Icon; onSelect: () => void; destructive?: boolean; shortcut?: string };
 
 export function usePrototypeActions(proto: PrototypeInfo) {
   const router = useRouter();
@@ -39,6 +39,8 @@ export function usePrototypeActions(proto: PrototypeInfo) {
   const contributed = moduleApps.flatMap(
     ({ app }) => app.useActions?.(proto, { editable: editable && !archived }) ?? [],
   );
+  // How the open prototype shows: only its navigation's menu offers these (PrototypeHeader.tsx).
+  const display = archived ? [] : contributed.filter(action => action.display);
   const [renaming, setRenaming] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -89,7 +91,7 @@ export function usePrototypeActions(proto: PrototypeInfo) {
               onSelect: () => setDuplicating(true),
             },
           editable && { label: 'Archive', icon: Archive02Icon, onSelect: () => setArchived(true) },
-          ...contributed,
+          ...contributed.filter(action => !action.display),
         ],
         [editable && { label: 'Delete', icon: Delete02Icon, onSelect: () => setDeleting(true), destructive: true }],
       ];
@@ -108,5 +110,5 @@ export function usePrototypeActions(proto: PrototypeInfo) {
     </>
   ) : null;
 
-  return { local, editable, groups, dialogs };
+  return { local, editable, groups, display, dialogs };
 }

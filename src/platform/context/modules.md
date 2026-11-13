@@ -68,7 +68,7 @@ Artifact hosts and Systems examples provide `PortalContext` with their themed co
 
 Importing anything under `src/platform/` from team code by another path, including `src/platform/node/` and Studio's system files, is an error in `pnpm check` and in the development and build import guard. Imports between modules use `@module/<id>` as before. Supplied modules may import platform internals, since they ship with the platform; their imports are not examples of the public API.
 
-Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary.
+Use literal import paths in module code and public libraries so checks can resolve dependencies, including type-only imports. Node discovery tooling may load declared files by their discovered paths. Public module libraries remain subject to the stricter prototype runtime boundary. Like prototypes, they style with CSS Modules, except that a library may import a package's own stylesheet (such as `dialkit/styles.css`), which the package scopes.
 
 If a capability needs a platform service the API does not offer, propose an addition to the public API rather than importing a private file.
 

@@ -14,6 +14,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from '@/platform/systems/studio/components/context-menu';
 import {
@@ -21,6 +22,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/platform/systems/studio/components/dropdown-menu';
 import { useRenamePrototype } from '@/platform/modules/prototypes/viewer/useRenamePrototype';
@@ -97,13 +99,18 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
           icon: showAll ? ViewOffSlashIcon : ViewIcon,
           onSelect: toggleShowAll,
         },
+      ...actions.display,
     ],
     reach,
     change,
     remove,
   ]);
   // Actions run after the menu has closed, so a dialog they open isn't closed by the same click.
-  const menuItems = (Item: typeof DropdownMenuItem | typeof ContextMenuItem, Separator: typeof DropdownMenuSeparator) =>
+  const menuItems = (
+    Item: typeof DropdownMenuItem | typeof ContextMenuItem,
+    Separator: typeof DropdownMenuSeparator,
+    Shortcut: typeof DropdownMenuShortcut | typeof ContextMenuShortcut,
+  ) =>
     groups.map((group, g) => (
       <Fragment key={g}>
         {g > 0 && <Separator />}
@@ -114,6 +121,7 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
             onClick={() => setTimeout(a.onSelect)}
           >
             <HugeiconsIcon icon={a.icon} /> {a.label}
+            {a.shortcut && <Shortcut>{a.shortcut}</Shortcut>}
           </Item>
         ))}
       </Fragment>
@@ -126,7 +134,9 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
     ) : (
       <ContextMenu>
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
-        <ContextMenuContent className='min-w-44'>{menuItems(ContextMenuItem, ContextMenuSeparator)}</ContextMenuContent>
+        <ContextMenuContent className='min-w-44'>
+          {menuItems(ContextMenuItem, ContextMenuSeparator, ContextMenuShortcut)}
+        </ContextMenuContent>
       </ContextMenu>
     );
 
@@ -164,7 +174,7 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
                   <TooltipContent side='bottom'>Prototype actions</TooltipContent>
                 </Tooltip>
                 <DropdownMenuContent align='end' className='min-w-44'>
-                  {menuItems(DropdownMenuItem, DropdownMenuSeparator)}
+                  {menuItems(DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut)}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
