@@ -35,7 +35,7 @@
 - CLI commands no longer tell you to restart the dev server after configuration, module, or system changes; it already restarts itself.
 - When the CLI, an agent, or another tab changes the studio's configuration, open tabs show **Applying changes** until the restarted studio has loaded, instead of the old studio and then a blank page. Leaving Studio settings while a save applies no longer keeps that screen over every page in the tab. Starting the studio, or turning a module on or off, no longer reloads the page a second time once a view loads its system's packages.
 
-- Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/community-contributions.md) guide to assess, adapt, release, and credit outside work.
+- Describe how to propose an improvement and what happens next in `CONTRIBUTING.md`, with a feature proposal issue form. Maintainers follow a new [community contributions](src/platform/context/maintainers/community-contributions.md) guide to assess, adapt, release, and credit outside work.
 - Report bugs through a bug report issue form. Maintainers triage each issue as now, later, or close, and reply with the outcome; the community contributions guide gives the decision rules and the brief an agent drafts for the maintainer.
 
 ## 0.1.3 (2026-11-01)
