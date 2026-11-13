@@ -11,6 +11,7 @@ import { serializeConfig, withSettings } from '../../core/config-file.ts';
 import { readPersistedStudioConfig } from './persisted-studio-config.js';
 import { persistStudioReferences } from '../../core/resourceReferences.ts';
 import { systemDirOf } from './system-folders.js';
+import { moduleConsumers } from './imports.js';
 
 export class SettingsError extends Error {
   constructor(message, status = 400) {
@@ -74,6 +75,15 @@ export function planSettings({
   for (const module of modules) {
     if (next.modules?.[module.id] === true && current.config.modules?.[module.id] !== true && !compatible(module))
       problems.push(`${module.label} is incompatible with this platform version.`);
+    // Code that imports a module stops building without it, so turning it off waits until nothing does.
+    const users =
+      next.modules?.[module.id] === false && current.config.modules?.[module.id] === true
+        ? moduleConsumers(root, module.id)
+        : [];
+    if (users.length)
+      problems.push(
+        `${module.label} is still used by ${users.slice(0, 3).join(', ')}${users.length > 3 ? ` and ${users.length - 3} more` : ''}. Take it out of ${users.length === 1 ? 'that file' : 'those files'} before turning it off.`,
+      );
   }
   problems.push(
     ...contributorPreferenceProblems(

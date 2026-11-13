@@ -39,7 +39,7 @@ The public entry files under `src/platform/api/` and their TypeScript declaratio
 
 Choose checks by changed behavior and dependencies. Do not rerun unrelated setup or production integration tests for ordinary authoring. Scope, permanent identity, asset sizes, harness consistency, metadata, dependency boundaries, types, production compilation, and output inspection remain required in CI. The build job runs tests and production compilation with one dependency installation.
 
-Tests are discovered directly under the platform and registered module roots. Ordinary CI runs `pnpm test`; explicit full checks run `pnpm test:release`. Optional module removal removes its tests from discovery. An empty test inventory fails verification. No catalog or change-selection rules need maintenance.
+Tests are discovered directly under the platform and registered module roots. CI runs `pnpm test:release` on every pull request and push to `main`, so main stays releasable. Optional module removal removes its tests from discovery. An empty test inventory fails verification. No catalog or change-selection rules need maintenance.
 
 ## Diagram browser regression
 

@@ -31,7 +31,7 @@ Anything else fails with a message naming the dial, and nothing is written.
 
 ## Checking the panel
 
-There is no automated browser check for the panel. After changing it, or upgrading `dialkit` or `motion`, build a throwaway prototype with one view per state below, check it in light and dark, then delete it. The starter's Feedback Inbox overview and Design Studio Marketing landing v3 show DialKit in ordinary use, but not these edge states.
+There is no automated browser check for the panel. After changing it, or upgrading `dialkit` or `motion`, build a throwaway prototype with one view per state below, check it in light and dark, then delete it.
 
 | View | Check |
 | --- | --- |
@@ -45,4 +45,4 @@ In every state, also check that dragging stops at each window edge, after hiding
 
 `dialkit` and its `motion` peer are root dependencies. The panel loads DialKit's stylesheet, which the import guard allows for a module library because the package scopes it; repository CSS in module libraries and prototypes stays modular.
 
-Disable or remove the module with the standard [module commands](../../context/modules.md#configuration-and-commands). Removing it is refused while a view still imports `@module/dialkit`: remove DialKit from those views first.
+Disable or remove the module with the standard [module commands](../../context/modules.md#configuration-and-commands). Turning it off or removing it is refused while a view still imports `@module/dialkit`: remove DialKit from those views first.

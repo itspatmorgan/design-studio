@@ -7,7 +7,7 @@
 .hero2 { text-align: center; }
 .hero2 .heroCopy { margin: 0 auto; }
 .hero2 > :last-child { margin-top: 3rem; max-width: 24rem; margin-inline: auto; }
-.hero3 { display: grid; grid-template-columns: var(--hero-columns, 1.2fr 1fr); align-items: center; gap: 2rem; }
+.hero3 { display: grid; grid-template-columns: 1.2fr 1fr; align-items: center; gap: 2rem; }
 .hero3 h1 { font-size: clamp(2.5rem, 4vw, 3.5rem); }
 .geometry { display: block; width: 100%; height: auto; color: var(--color-text-primary); }
 .smallMark { width: 1.875rem; height: 1.5rem; }
@@ -58,9 +58,8 @@
 
 .websiteArt { --illustration-accent: oklch(0.72 0.10 75); }
 .siteWidth { max-width: 75rem; width: 100%; margin-inline: auto; padding-inline: clamp(1.5rem, 4vw, 3.5rem); }
-/* Landing v3 tunes these with DialKit (landing-v3.tsx); without its values, they fall back to the designed ones. */
-.hero3 h1 { font-size: calc(clamp(2.5rem, 4vw, 4rem) * var(--hero-title-scale, 1)); line-height: var(--hero-leading, 1.04); letter-spacing: -0.055em; }
-.hero3 { gap: var(--hero-gap, 2.5rem); }
+.hero3 h1 { font-size: clamp(2.5rem, 4vw, 4rem); line-height: 1.04; letter-spacing: -0.055em; }
+.hero3 { gap: 2.5rem; }
 .websiteGallery { gap: 0; display: grid; grid-template-columns: 11rem minmax(0, 1fr); margin-top: 2rem; border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
 .galleryList { justify-content: flex-start; width: auto; height: auto; flex-direction: column; gap: 0.25rem; padding: 1.25rem 0.75rem; border-bottom: 0; border-right: 1px solid var(--border); align-items: stretch; }
 .galleryList > [role="tab"]::after { display: none; }

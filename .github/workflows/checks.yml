@@ -5,17 +5,7 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      full_checks:
-        description: Run exhaustive release fixtures
-        type: boolean
-        default: true
   workflow_call:
-    inputs:
-      full_checks:
-        description: Run exhaustive release fixtures
-        type: boolean
-        default: false
 permissions:
   contents: read
 jobs:
@@ -77,13 +67,8 @@ jobs:
       - run: pnpm studio sync --check
       - run: pnpm check:links
       - run: pnpm format:check
-      - name: Run regressions
-        run: |
-          if [ "${{ inputs.full_checks }}" = true ]; then
-            pnpm test:release
-          else
-            pnpm test
-          fi
+      # The full suite, so a change that breaks setup or production fixtures fails its own pull request.
+      - run: pnpm test:release
       - run: pnpm build
         env:
           STUDIO_BASE_PATH: ${{ github.repository_id == '1401250166' && '/design-studio-demo/' || '/' }}

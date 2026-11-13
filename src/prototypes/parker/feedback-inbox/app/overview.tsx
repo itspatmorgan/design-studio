@@ -3,7 +3,6 @@
 // click it and you're in the feedback table, already filtered to those items. Below are two small
 // breakdowns and the newest feedback. Everything is computed from the same data as the table, so it
 // changes when you add, edit, or delete.
-import { useDialKit } from '@module/dialkit';
 import { Link, useNavigate } from '@module/prototypes';
 import { ArrowRight } from '@/systems/product/libraries/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
@@ -11,35 +10,32 @@ import AppShell from './_components/AppShell';
 import { PriorityBadge, StatusBadge } from './_components/badges';
 import { SOURCES, STATUSES, formatDate, select, showFiltered, useStore, type Filter } from './_components/store';
 
-type MetricStyle = { padding: number; valueSize: number };
-
-function Metric({ label, value, hint, filter, look }: { label: string; value: number; hint: string; filter: Filter; look: MetricStyle }) {
+function Metric({ label, value, hint, filter }: { label: string; value: number; hint: string; filter: Filter }) {
   const navigate = useNavigate();
   return (
     <button
       type="button"
       onClick={() => { showFiltered(filter); navigate('app/feedback-inbox'); }}
-      className="group/metric rounded-square border border-border bg-card text-left transition-colors hover:border-primary/50 hover:bg-accent/40"
-      style={{ padding: look.padding }}
+      className="group/metric rounded-square border border-border bg-card p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent/40"
     >
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         {label}
         <ArrowRight className="size-4 opacity-0 transition-opacity group-hover/metric:text-primary group-hover/metric:opacity-100" />
       </div>
-      <div className="mt-1 font-semibold tabular-nums" style={{ fontSize: look.valueSize, lineHeight: 1.2 }}>{value}</div>
+      <div className="mt-1 text-3xl font-semibold tabular-nums">{value}</div>
       <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
     </button>
   );
 }
 
-function Bars({ rows, height }: { rows: { label: string; count: number }[]; height: number }) {
+function Bars({ rows }: { rows: { label: string; count: number }[] }) {
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
     <ul className="space-y-3">
       {rows.map((r) => (
         <li key={r.label} className="grid grid-cols-[5.5rem_1fr_1.5rem] items-center gap-3 text-sm">
           <span className="text-muted-foreground">{r.label}</span>
-          <span className="rounded-full bg-muted" style={{ height }}><span className="block rounded-full bg-primary" style={{ height, width: `${(r.count / max) * 100}%` }} /></span>
+          <span className="h-2 rounded-full bg-muted"><span className="block h-2 rounded-full bg-primary" style={{ width: `${(r.count / max) * 100}%` }} /></span>
           <span className="text-right tabular-nums">{r.count}</span>
         </li>
       ))}
@@ -52,14 +48,6 @@ export default function Overview() {
   const navigate = useNavigate();
   const open = items.filter((f) => f.status !== 'resolved');
   const newest = [...items].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5);
-  // An example of DialKit: the metric tiles and the breakdown bars are dials. Tune them, then save them to code to keep them.
-  const metrics = useDialKit('Metrics', {
-    gap: [16, 0, 40, 2],
-    padding: [16, 8, 32, 2],
-    valueSize: [30, 20, 48, 1],
-  });
-  const bars = useDialKit('Bars', { height: [8, 2, 20, 1] });
-  const { gap, ...look } = metrics;
 
   return (
     <AppShell>
@@ -69,16 +57,16 @@ export default function Overview() {
           <p className="mt-1 text-sm text-muted-foreground">Where the feedback stands. Click a number to see the feedback behind it.</p>
         </header>
 
-        <div className="mb-6 grid grid-cols-2 lg:grid-cols-4" style={{ gap }}>
-          <Metric label="Open issues" value={open.length} hint="Not resolved yet" filter={{ status: 'open', priority: null }} look={look} />
-          <Metric label="New" value={items.filter((f) => f.status === 'new').length} hint="Waiting to be triaged" filter={{ status: 'new', priority: null }} look={look} />
-          <Metric label="High priority" value={open.filter((f) => f.priority === 'high').length} hint="Open and high priority" filter={{ status: 'open', priority: 'high' }} look={look} />
-          <Metric label="Resolved" value={items.filter((f) => f.status === 'resolved').length} hint="Closed out" filter={{ status: 'resolved', priority: null }} look={look} />
+        <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <Metric label="Open issues" value={open.length} hint="Not resolved yet" filter={{ status: 'open', priority: null }} />
+          <Metric label="New" value={items.filter((f) => f.status === 'new').length} hint="Waiting to be triaged" filter={{ status: 'new', priority: null }} />
+          <Metric label="High priority" value={open.filter((f) => f.priority === 'high').length} hint="Open and high priority" filter={{ status: 'open', priority: 'high' }} />
+          <Metric label="Resolved" value={items.filter((f) => f.status === 'resolved').length} hint="Closed out" filter={{ status: 'resolved', priority: null }} />
         </div>
 
         <div className="mb-6 grid gap-4 lg:grid-cols-2">
-          <Card><CardHeader><CardTitle>By status</CardTitle></CardHeader><CardContent><Bars height={bars.height} rows={STATUSES.map((s) => ({ label: s.label, count: items.filter((f) => f.status === s.value).length }))} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>By source</CardTitle></CardHeader><CardContent><Bars height={bars.height} rows={SOURCES.map((s) => ({ label: s.label, count: items.filter((f) => f.source === s.value).length }))} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>By status</CardTitle></CardHeader><CardContent><Bars rows={STATUSES.map((s) => ({ label: s.label, count: items.filter((f) => f.status === s.value).length }))} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>By source</CardTitle></CardHeader><CardContent><Bars rows={SOURCES.map((s) => ({ label: s.label, count: items.filter((f) => f.source === s.value).length }))} /></CardContent></Card>
         </div>
 
         <Card>
