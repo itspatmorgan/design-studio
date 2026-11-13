@@ -23,11 +23,11 @@ test('a public team file type joins mixed-artifact discovery, validation and pro
       ),
       before,
     );
-    assert.ok(preview.changes.length > 0);
+    assert.ok(preview.files.length > 0);
     cli('identify', base, '--yes');
     const identified = JSON.parse(cli('context', base, '--json'));
     assert.equal(identified.assignment.system, null);
-    assert.equal(JSON.parse(cli('identify', base, '--json')).changes.length, 0);
+    assert.equal(JSON.parse(cli('identify', base, '--json')).files.length, 0);
     assert.equal(JSON.parse(cli('identity-audit', '--json')).missing.length, 0);
     run('src/platform/modules/prototypes/node/create.js', 'Empty runtime fixture', '--no-system');
     run('src/platform/modules/prototypes/node/create.js', 'Assigned empty runtime fixture');
