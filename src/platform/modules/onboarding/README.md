@@ -14,6 +14,8 @@ The explore slide links to the shipped sample prototypes whose contributor profi
 
 It does not create work, install dependencies, or register contributors. Its only profile change records whether that contributor has already seen the introduction.
 
+Automated browsers (`navigator.webdriver`, set by Playwright, Puppeteer, and WebDriver) never claim or open the introduction. An agent checking the preview runs as the same contributor, so its visit would otherwise use up the person's only automatic display.
+
 The browser waits for contributor identity to finish loading before claiming the introduction. An unresolved identity is not an unregistered visitor; it must not consume the contributor’s first display or cache a result under the unregistered key.
 
 Before the first automatic display for a registered contributor, the local server sets `preferences.onboarding.welcomeDismissed: true` on their profile in `contributors/<key>.json`. It preserves other profile fields and contributor files. Every registered contributor must declare the boolean explicitly when Onboarding is enabled. `false` means the introduction has not been shown; `true` keeps it dismissed. New registration writes `preferences.onboarding.welcomeDismissed: false`. Missing or invalid declarations fail module validation and the display claim; browser fallback does not activate Welcome for an invalid declaration. Only the server-resolved contributor can claim their introduction; the request cannot choose a contributor or file.
