@@ -1,6 +1,6 @@
 # DialKit contract
 
-An optional module for tuning a prototype view with [DialKit](https://github.com/joshpuckett/dialkit)'s live dials, then writing the tuned values into the view's code. It works with system and no-system prototypes. Its registered ID is `dialkit`; it appears as **DialKit** under Prototyping in Studio settings.
+An optional module for tuning a prototype view with [DialKit](https://github.com/joshpuckett/dialkit)'s live dials, then writing the tuned values into the view's code. It works with system and no-system prototypes. Its registered ID is `dialkit`; it appears as **DialKit** under Prototype tools in Studio settings.
 
 ## In a view
 

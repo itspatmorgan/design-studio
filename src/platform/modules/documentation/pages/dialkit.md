@@ -22,5 +22,6 @@ If the file changed since the view loaded, Save to code stops rather than overwr
 
 - **Hide DialKit** in the prototype's menu, or ⌘⇧; (Ctrl+Shift+; on Windows and Linux), hides the panel to see the view on its own. Do it again to show it.
 - **Remove DialKit** in the view's menu keeps the design as you tuned it and takes the dials out of the code.
+- To turn DialKit off for the whole studio, switch off **DialKit** under Prototype tools in Settings. Views keep the values in their code, and the panel, menu items, and shortcut go away. Nothing in your views is rewritten, so turning it on again brings the dials back. The studio reloads itself after a few seconds.
 
 DialKit is a building tool: published sites and views embedded in documents or canvases never show it.

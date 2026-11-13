@@ -12,7 +12,9 @@
       return;
     }
     if (!pending) return;
-    if (Date.now() - pending.started > 120000) {
+    // A save's transition is finished only by the page that saved (Settings). A tab that has gone elsewhere would
+    // otherwise keep the surface over every page until it expires. Outside changes carry no path.
+    if (Date.now() - pending.started > 120000 || (pending.path && pending.path !== location.pathname)) {
       sessionStorage.removeItem(key);
       return;
     }
