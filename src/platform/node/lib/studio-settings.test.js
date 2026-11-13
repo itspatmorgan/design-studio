@@ -233,6 +233,23 @@ test('team module cannot be disabled, and personal mode does not erase grants', 
   saveSettings({ ...options, base: current.version, changes: { usage: 'team', modules: { contributors: true } } });
 });
 
+test('a module stays on while code imports it, unless its library has an off entry', t => {
+  const options = fixture(t);
+  const write = (file, code) => {
+    fs.mkdirSync(path.dirname(path.join(options.root, file)), { recursive: true });
+    fs.writeFileSync(path.join(options.root, file), code);
+  };
+  write('src/modules/notes/module.ts', 'export default {};');
+  write('src/modules/notes/lib/index.ts', 'export const note = 1;');
+  write('src/prototypes/sam/flow/view.tsx', "import { note } from '@module/notes';");
+  assert.throws(
+    () => saveSettings({ ...options, changes: { modules: { notes: false } } }),
+    /Notes is still used by src\/prototypes\/sam\/flow\/view\.tsx\. Take it out of that file/,
+  );
+  write('src/modules/notes/lib/off.ts', 'export const note = 1;');
+  saveSettings({ ...options, changes: { modules: { notes: false } } });
+});
+
 test('declaration edits preserve unrelated fields and comments and reject ambiguous or executable input', () => {
   const original = 'export default { name: "Old", modules: { /* module note */ notes: true }, /* custom */ extra: 7 };';
   const next = editDeclaration(original, { name: 'New', modules: { notes: false } });

@@ -4,6 +4,19 @@ title: "Modules and extensions"
 
 A module is a folder with a `module.ts` declaration. The platform discovers declarations without a separate registry.
 
+## Conventions
+
+A module can be added, turned off, and removed without breaking the studio. Each rule names what holds it.
+
+1. **Everything a module adds lives in its folder**, apart from its `studio.config.json` line and declared packages. *Import and boundary checks.*
+2. **Off never breaks the studio.** With any optional module off or removed, the studio builds, runs, and publishes. *The release suite builds with every optional module disabled, then removed.*
+3. **Content survives.** Turning a module off keeps everything made with it; turning it on restores it. Only `remove --content` deletes content. *Release suite lifecycle tests.*
+4. **A library works while its module is off.** Code that imports `@module/<id>` gets `lib/off.ts(x)` while the module is off: the same exports, with no Studio behavior. Without an off entry, turning the module off is refused while code imports it. *Settings and the CLI refuse; checks and the build accept only `index` or `off`.*
+5. **A library can always be taken out.** `detach.ts` rewrites a file's use of the library into plain code; removal runs it on every file that uses the library, all or nothing. Without one, removal is refused while code imports it. *`pnpm studio remove`.*
+6. **Starter examples may use optional modules**, because rules 4 and 5 keep turning them off and removing them safe. *The release suite.*
+7. **Published sites get only what viewers need.** Editing tools stay local (`localOnly`, local-preview-only panels); libraries still return plain values. *Module contracts.*
+8. **Everything is declared.** Modules declare `optional`, `lib`, `requires`, and dependencies; a studio declares every installed module `true` or `false`. A missing declaration is an error. *Configuration and declaration validation.*
+
 Modules are found in two roots, listed once (supplied first) in `src/platform/core/roots.ts`: `src/platform/modules/<id>/` holds the modules the starter ships, and `<module folder>/` holds the team's own. A module's ID is its folder name in either root, so an ID can exist in only one: a team module must not reuse a supplied module's ID, and `pnpm check` and the build reject it. Creating a module (`pnpm studio create-module`) and adding one from a source write only to `src/modules/`. Enable, disable, removal, and the rules between modules work the same in either root. Supplied modules ship in the same release as the platform, so they may import platform internals; team modules use the [public API](#public-api).
 
 Modules are copied into the repository. They are not downloaded or loaded as plugins at runtime.
@@ -100,6 +113,8 @@ These source contracts are 0.x. Review release guidance when updating them.
 | `check.ts` | Module validation while enabled. |
 | `build.ts` | Optional manifest contribution while enabled: `manifest({ root, enabled, out })` returns `{ data, errors }`, stored as `manifest.contributions[<id>]` (its printed problems count as manifest errors); `watch` lists folders whose Markdown changes rebuild the manifest in development; `sourceFiles(data, { root })` lists repo-relative files the Documentation surface may edit. Experimental. |
 | `lib/index.ts(x)` | Public entry exposed when `lib: true`. |
+| `lib/off.ts(x)` | The public entry while the module is off: the same exports with no Studio behavior. |
+| `detach.ts` | Node: default export `(source: string) => string` that rewrites one file's use of the library into plain code, run by removal. |
 | `context/`, `skills/` | Module-owned knowledge and procedures. |
 | `instructions/` in a pack | Optional packaging prefix for declared context and skills, installed into this module. |
 
@@ -132,7 +147,7 @@ Remove and create commands preview changes. Applying them requires `--yes`. Use 
 
 Studio commands register and unregister capabilities, manage config module flags and module-owned routing in the generated `AGENTS.md`. The [manage-modules skill](../skills/manage-modules/SKILL.md) governs agent execution.
 
-Disabling retains files. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
+Disabling retains files. A module whose library is imported must ship `lib/off.ts(x)` to be turned off, and `detach.ts` to be removed (see [Conventions](#conventions)); otherwise both are refused while code imports it. Removal deletes the module, including its context and skills, and refreshes project exposure. External content remains unless removal includes `--content`.
 
 Packages remain installed after removal. Remove them only when no retained code uses them.
 

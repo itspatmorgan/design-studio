@@ -45,4 +45,7 @@ In every state, also check that dragging stops at each window edge, after hiding
 
 `dialkit` and its `motion` peer are root dependencies. The panel loads DialKit's stylesheet, which the import guard allows for a module library because the package scopes it; repository CSS in module libraries and prototypes stays modular.
 
-Disable or remove the module with the standard [module commands](../../context/modules.md#configuration-and-commands). Removing it is refused while a view still imports `@module/dialkit`: remove DialKit from those views first.
+Disable or remove the module with the standard [module commands](../../context/modules.md#configuration-and-commands), even while views use it:
+
+- **Off:** `@module/dialkit` resolves to `lib/off.ts`, DialKit's own hook with no panel, so views render the values in their code, as on a published site. The panel, menu actions, and shortcut are gone; nothing is rewritten, so turning DialKit on again restores the dials.
+- **Removed:** `detach.ts` runs Remove (`removeDials`) on every view that uses DialKit before the module is deleted, so each keeps its dials' default values as plain constants. A view Remove can't handle stops the removal with nothing changed.

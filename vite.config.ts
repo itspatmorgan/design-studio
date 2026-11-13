@@ -31,7 +31,7 @@ import buildAssets from './src/platform/node/build/vite-build-assets-plugin.js';
 import globs from './src/platform/node/build/vite-globs-plugin.js';
 import css, { scopedUtilities } from './src/platform/node/build/vite-css-plugin.js';
 import { optimizedDependencies } from './src/platform/core/modules/index.ts';
-import { ENABLED_MODULES, MODULE_DIRS } from './src/platform/node/lib/modules.js';
+import { ENABLED_MODULES, LIBRARY_MODULES, MODULE_DIRS } from './src/platform/node/lib/modules.js';
 
 // References use the same plain-Markdown pipeline, without hiding any document sections.
 function markdown(reference = false) {
@@ -61,10 +61,11 @@ function markdown(reference = false) {
   };
 }
 
-// A module with `lib: true` gives prototypes one door in: `import ... from '@module/<id>'` is its lib/index.
-const moduleLibs = ENABLED_MODULES.filter((m: { lib?: boolean }) => m.lib).map((m: { id: string }) => ({
+// A module with `lib: true` gives prototypes one door in: `import ... from '@module/<id>'` is its lib/index, or
+// its lib/off while the module is off.
+const moduleLibs = LIBRARY_MODULES.map((m: { id: string; off?: boolean }) => ({
   find: `@module/${m.id}`,
-  replacement: fileURLToPath(new URL(`./${MODULE_DIRS[m.id as string]}lib/index`, import.meta.url)),
+  replacement: fileURLToPath(new URL(`./${MODULE_DIRS[m.id]}lib/${m.off ? 'off' : 'index'}`, import.meta.url)),
 }));
 
 export default defineConfig({

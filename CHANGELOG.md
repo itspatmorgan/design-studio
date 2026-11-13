@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Turning a module off or removing it never breaks your studio. A module whose library your code imports keeps that code working while it is off (DialKit's dials keep their values, with no panel or menus), and removing it rewrites that code into plain values first. A module that can do neither is refused, in Studio settings and the CLI, naming the files that use it.
 - DialKit: tune a prototype view with live dials, then press **Save to code** to write the values into the view as its new defaults. Right-click a view and choose **Add DialKit**, ask your agent for the dials you want, and **Remove DialKit** when you're done; the design stays as tuned. Hide the panel from the prototype's menu or with ⌘⇧;. It works with and without a design system, and never shows on published sites or embedded views. The Feedback Inbox overview and the Design Studio Marketing landing v3 show it in use. It's an optional module, on by default; turn it off in Studio settings.
 - Modules can add actions to the menus of file types they don't own (`ModuleApp.artifactActions`), and a module library may load a package's own stylesheet.
 - Agents can draw Mermaid on a canvas as editable shapes and arrows: the canvas `mermaid` tool, live and with `pnpm canvas`, takes flowchart, sequence, class, state and ER diagrams, Gantt charts, timelines and quadrant charts. It uses Excalidraw's own converter, the one behind pasting Mermaid onto a canvas, and reports each Mermaid node's element id so agents can move or restyle it.
