@@ -46,6 +46,10 @@ export default function PreviewHost({
   const [lifecycle, setLifecycle] = useState<ArtifactLifecycle>(initialLifecycle);
   const lifecycleOrder = useRef(-1);
   const [unresponsive, setUnresponsive] = useState(false);
+  // A saved file is briefly newer than the preview until the dev server swaps the code in. Say "out of date" only
+  // when that lasts; errors and unverified previews show at once.
+  const updating = freshness(lifecycle) === 'stale' && lifecycle.phase !== 'error' && !lifecycle.detail;
+  const updatingNotice = useLasting(updating, NOTICE_DELAY);
   const identity = identityOf(target);
   const latestRender = useRef({ identity, render: -1 });
   if (latestRender.current.identity !== identity) latestRender.current = { identity, render: -1 };
@@ -217,14 +221,16 @@ export default function PreviewHost({
           ...(surface === 'embed' && { pointerEvents: 'none' }),
         }}
       />
-      {surface === 'page' && !unresponsive && (freshness(lifecycle) === 'stale' || lifecycle.detail) && (
-        <div role='status' className='absolute inset-x-0 bottom-0 bg-background p-3 text-sm'>
-          {freshness(lifecycle) === 'stale' ? 'This preview is out of date. ' : ''}
-          {lifecycle.phase === 'error'
-            ? 'The latest changes could not render. Give the error to your agent.'
-            : lifecycle.detail || 'Updating preview'}
-        </div>
-      )}
+      {surface === 'page' &&
+        !unresponsive &&
+        (updating ? updatingNotice : freshness(lifecycle) === 'stale' || lifecycle.detail) && (
+          <div role='status' className='absolute inset-x-0 bottom-0 bg-background p-3 text-sm'>
+            {freshness(lifecycle) === 'stale' ? 'This preview is out of date. ' : ''}
+            {lifecycle.phase === 'error'
+              ? 'The latest changes could not render. Give the error to your agent.'
+              : lifecycle.detail || 'Updating preview'}
+          </div>
+        )}
       {surface === 'page' && unresponsive && (
         <div role='status' className='absolute inset-x-0 bottom-0 bg-background p-3 text-sm'>
           Preview has not responded.
@@ -232,4 +238,20 @@ export default function PreviewHost({
       )}
     </div>
   );
+}
+
+const NOTICE_DELAY = 1000;
+
+// True once `value` has stayed true for `delay` ms; false again as soon as it turns false.
+function useLasting(value: boolean, delay: number) {
+  const [lasting, setLasting] = useState(false);
+  useEffect(() => {
+    if (!value) {
+      setLasting(false);
+      return;
+    }
+    const timer = setTimeout(() => setLasting(true), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return value && lasting;
 }

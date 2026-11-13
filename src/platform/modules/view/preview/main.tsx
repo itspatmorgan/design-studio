@@ -189,6 +189,14 @@ async function targetFromHref(href: string): Promise<Config['target'] | null> {
   return null;
 }
 
+// What the document shows, for code running in it: its theme, and (as data-preview-surface and data-preview-target)
+// whether it is a page or an embed and which view, so a module library can tell where it is (dialkit/README.md).
+function describe(config: Config) {
+  document.documentElement.classList.toggle('dark', config.dark);
+  document.documentElement.dataset.previewSurface = config.surface;
+  document.documentElement.dataset.previewTarget = JSON.stringify(config.target);
+}
+
 function start() {
   const bootstrap = readBootstrap(location.search);
   const hosted = window.parent !== window;
@@ -245,7 +253,7 @@ function start() {
       const apply = (next: Config) => {
         current = next;
         addressBase.href = new URL(next.href, location.origin).href;
-        document.documentElement.classList.toggle('dark', next.dark);
+        describe(next);
         setConfig(next);
         if (history.location.href !== next.href) {
           void router.navigate({ to: routerHref(next.href, import.meta.env.BASE_URL) as never, replace: true });
@@ -430,7 +438,7 @@ function start() {
       </RuntimeContext.Provider>
     );
   }
-  document.documentElement.classList.toggle('dark', current.dark);
+  describe(current);
   const mount = document.getElementById('root')!;
   mount.style.cssText = 'height:100vh;display:flex;flex-direction:column;overflow:hidden';
   if (current.surface === 'embed') mount.inert = true;
