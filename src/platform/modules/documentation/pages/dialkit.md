@@ -10,8 +10,6 @@ toc: true
 
 Right-click a view in the prototype's navigation and choose **Add DialKit**. The DialKit panel appears in the corner of the view and walks you through the next steps. Ask your agent in chat for the dials you want, such as card spacing, corner radius, or type size. They appear in the panel as the agent adds them, in a group for each part of the design, such as Card or Buttons.
 
-To see it in use first, open **Overview** in the Feedback Inbox example or **Landing V3** in the Design Studio Marketing example: both already have dials.
-
 Drag the dials and the view updates as you go. The versions menu at the top of each group keeps a tuning so you can compare it with others. To start a group over, press the reset button beside it: its dials go back to the values in the code. Tuning lasts until you reload the view.
 
 ## Save it to the code
