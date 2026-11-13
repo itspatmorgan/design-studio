@@ -3,7 +3,7 @@ import { isTeamCode, apiEntryOf } from '../../core/modules/boundaries.ts';
 import { moduleIdOfPath } from '../../core/roots.ts';
 import { fileURLToPath } from 'node:url';
 import { PROTOTYPE_SYSTEMS, DEFAULT_SYSTEM } from '../../modules/systems/node/systems.js';
-import { ENABLED_MODULES, PROTOTYPE_DIRS } from '../lib/modules.js';
+import { LIBRARY_MODULES, PROTOTYPE_DIRS } from '../lib/modules.js';
 import { scopePolicy } from '../lib/scope.js';
 import { importsOf } from '../lib/imports.js';
 import { cssProblems } from '../lib/css-scope.js';
@@ -14,7 +14,7 @@ export default function importGuard({
   root = ROOT,
   systems = PROTOTYPE_SYSTEMS,
   defaultSystem = DEFAULT_SYSTEM,
-  modules = ENABLED_MODULES,
+  modules = LIBRARY_MODULES,
   prototypeDirs = PROTOTYPE_DIRS,
 } = {}) {
   const policy = scopePolicy({ root, systems, defaultSystem, modules, prototypeDirs });

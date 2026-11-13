@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-skills.js';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { compatible, PLATFORM_VERSION } from '../../core/modules/index.ts';
 import { readDeclaration } from '../../core/declarations.ts';
 import { MODULES, ENABLED_MODULES, CONFIG } from '../lib/modules.js';
@@ -34,7 +34,7 @@ import {
   TEAM_MODULES_ROOT,
   TEAM_SYSTEMS_ROOT,
 } from '../../core/roots.ts';
-import { moduleDirOf, moduleFolderTaken, newModuleDir } from '../lib/module-folders.js';
+import { detachOf, moduleDirOf, moduleFolderTaken, newModuleDir } from '../lib/module-folders.js';
 import { newSystemDir, systemDirOf, systemFolderTaken } from '../lib/system-folders.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -270,7 +270,7 @@ function lifecycle(action) {
   }
 }
 
-function remove() {
+async function remove() {
   const [id] = positional;
   if (!id) fail('Usage: pnpm studio remove <module|system> [--content] [--yes] [--force]');
   const isModule = Object.hasOwn(MODULES, id) && MODULES[id];
@@ -283,6 +283,7 @@ function remove() {
     );
   const paths = [];
   const notes = [];
+  const detached = [];
   if (isModule) {
     const spec = MODULES[id];
     if (id === 'contributors' && CONFIG.usage === 'team')
@@ -297,8 +298,20 @@ function remove() {
       else if (fs.existsSync(rel(spec.section.folder)))
         notes.push(`Its content in ${spec.section.folder} stays. Add --content to delete that too.`);
     }
+    // Code that uses the module's library is rewritten into plain code by the module's detach.ts, all or nothing.
     const users = moduleConsumers(ROOT, id);
-    if (users.length && !flags.force)
+    const detachFile = users.length ? detachOf(ROOT, id) : null;
+    if (detachFile) {
+      const { default: detach } = await import(pathToFileURL(detachFile).href);
+      for (const file of users) {
+        const before = fs.readFileSync(rel(file), 'utf8');
+        try {
+          detached.push({ file, before, after: detach(before) });
+        } catch (error) {
+          fail(`${file} can't have ${spec.label} taken out automatically: ${error.message}`);
+        }
+      }
+    } else if (users.length && !flags.force)
       fail(
         `${users.length} file(s) depend on ${id}, like ${users[0]}, and would stop working. Change them first, or add --force.`,
       );
@@ -380,6 +393,10 @@ function remove() {
       fail(`${users.length} prototype(s) use ${id}, like ${users[0]}. Change their "system" first, or add --force.`);
   }
   const abs = paths.map(p => removable(p)).filter(a => fs.existsSync(a));
+  if (detached.length) {
+    say(`These files use ${id} and would keep their current values as plain code:`);
+    for (const { file } of detached) say(`  ${file}`);
+  }
   say(`This would delete:`);
   for (const a of abs) say(`  ${path.relative(ROOT, a)}`);
   for (const n of notes) say(n);
@@ -387,6 +404,12 @@ function remove() {
     say();
     say('Nothing was changed. To remove it, run the same command with --yes.');
     return;
+  }
+  for (const { file, after } of detached) fs.writeFileSync(rel(file), after);
+  const remaining = isModule ? moduleConsumers(ROOT, id) : [];
+  if (remaining.length) {
+    for (const { file, before } of detached) fs.writeFileSync(rel(file), before);
+    fail(`${remaining[0]} still uses ${id} after it was taken out. Nothing was changed.`);
   }
   for (const a of abs) {
     fs.rmSync(a, { recursive: true, force: true });

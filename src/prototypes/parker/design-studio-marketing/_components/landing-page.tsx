@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { ArrowUpRight } from '@/systems/marketing/libraries/icons';
 import { buttonVariants } from '@/systems/marketing/components/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/systems/marketing/components/tabs';
@@ -24,11 +24,21 @@ function ResourceLink({ href, children }: { href: string; children: ReactNode })
   const external = href.startsWith('https://');
   return <a href={href} className={buttonVariants({ variant: "link", size: "sm" })} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>{children}<ArrowUpRight /></a>;
 }
-export function LandingPage({ version }: { version: 1 | 2 | 3 }) {
+// Hero values a version's view can tune (landing-v3.tsx does, with DialKit); left out, the stylesheet's own apply.
+export type HeroTuning = { titleScale: number; leading: number; copyColumn: number; gap: number };
+const heroStyle = (hero?: HeroTuning) =>
+  hero &&
+  ({
+    '--hero-title-scale': hero.titleScale,
+    '--hero-leading': hero.leading,
+    '--hero-columns': `${hero.copyColumn}fr 1fr`,
+    '--hero-gap': `${hero.gap}px`,
+  } as CSSProperties);
+export function LandingPage({ version, hero }: { version: 1 | 2 | 3; hero?: HeroTuning }) {
   const headlines = { 1: <>Your next idea.<br />Make it real.</>, 2: <>A studio for<br />what comes next.</>, 3: <>Design with intent.<br />Build with an agent.</> };
   const content = <>
         <main>
-          <section className={`${styles.hero} ${styles['hero' + version]}`}>
+          <section className={`${styles.hero} ${styles['hero' + version]}`} style={heroStyle(hero)}>
             <div className={styles.heroCopy}>
             <h1 className="text-display-md font-medium tracking-tight md:text-display-lg">{headlines[version]}</h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-text-tertiary">{version === 3 ? "An open platform for designers and product managers who build. Turn ideas into working prototypes with an agent that understands your components, context, and design principles." : "An open-source prototype sandbox for designers and builders. Work with your coding agent, your components, and your context."}</p>

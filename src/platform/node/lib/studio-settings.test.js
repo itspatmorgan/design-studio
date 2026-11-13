@@ -233,7 +233,7 @@ test('team module cannot be disabled, and personal mode does not erase grants', 
   saveSettings({ ...options, base: current.version, changes: { usage: 'team', modules: { contributors: true } } });
 });
 
-test('a module stays on while code imports it', t => {
+test('a module stays on while code imports it, unless its library has an off entry', t => {
   const options = fixture(t);
   const write = (file, code) => {
     fs.mkdirSync(path.dirname(path.join(options.root, file)), { recursive: true });
@@ -246,7 +246,7 @@ test('a module stays on while code imports it', t => {
     () => saveSettings({ ...options, changes: { modules: { notes: false } } }),
     /Notes is still used by src\/prototypes\/sam\/flow\/view\.tsx\. Take it out of that file/,
   );
-  fs.rmSync(path.join(options.root, 'src/prototypes'), { recursive: true });
+  write('src/modules/notes/lib/off.ts', 'export const note = 1;');
   saveSettings({ ...options, changes: { modules: { notes: false } } });
 });
 
