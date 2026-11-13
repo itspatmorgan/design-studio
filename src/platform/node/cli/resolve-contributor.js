@@ -26,8 +26,17 @@ export function keyForGithub(login, contributors = loadContributors()) {
   return matches.length === 1 ? matches[0] : null;
 }
 
-/** Current contributor's key: Git email first, with unambiguous alternatives for unavailable email. */
+/**
+ * Current contributor's key: Git email first, with unambiguous alternatives for unavailable email. A Git identity
+ * that matches no one acts as STUDIO_GUEST when it names a contributor: a review Codespace sets it to the sample
+ * author so a reviewer can edit, in Studio and the terminal alike, without joining.
+ */
 export function resolveContributor(contributors = loadContributors()) {
+  const guest = process.env.STUDIO_GUEST;
+  return gitContributor(contributors) ?? (guest && Object.hasOwn(contributors, guest) ? guest : null);
+}
+
+function gitContributor(contributors) {
   const email = run('git', ['config', 'user.email']).toLowerCase();
   const byEmail = Object.keys(contributors).filter(key => email && contributors[key].email?.toLowerCase() === email);
   if (byEmail.length === 1) return byEmail[0];
