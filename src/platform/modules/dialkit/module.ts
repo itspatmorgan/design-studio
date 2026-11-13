@@ -6,7 +6,7 @@ export default {
   id: 'dialkit',
   label: 'DialKit',
   version: '0.1.0',
-  requires: '0.1.3',
+  requires: '0.2.0',
   description: 'Tune a prototype view with live dials, then save the values to its code.',
   optional: true,
   settings: { group: 'prototyping', order: 5 },
