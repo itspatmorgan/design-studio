@@ -108,6 +108,13 @@ test('the shared AST resolver finds aliases, root paths, exports and dynamic imp
     assert.equal(resolve('@custom/value', consumer), custom);
     write(root, 'src/lib/type-consumer.ts', "export type Value = import('@module/extra').Value;");
     assert.deepEqual(moduleConsumers(root, 'extra'), ['src/lib/consumer.ts', 'src/lib/type-consumer.ts']);
+    const linked = `${root}-link`;
+    fs.symlinkSync(root, linked);
+    try {
+      assert.deepEqual(moduleConsumers(linked, 'extra'), ['src/lib/consumer.ts', 'src/lib/type-consumer.ts']);
+    } finally {
+      fs.rmSync(linked);
+    }
     assert.deepEqual(
       importsOf("import type {A} from './types'; export {x} from './x'; import('./lazy'); import(choice)"),
       [

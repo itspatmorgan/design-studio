@@ -1,6 +1,6 @@
 # DialKit contract
 
-An optional module for tuning a prototype view with [DialKit](https://github.com/joshpuckett/dialkit)'s live dials, then writing the tuned values into the view's code. It works with system and no-system prototypes. Its registered ID is `dialkit`; it appears as **DialKit** under Prototyping in Studio settings.
+An optional module for tuning a prototype view with [DialKit](https://github.com/joshpuckett/dialkit)'s live dials, then writing the tuned values into the view's code. It works with system and no-system prototypes. Its registered ID is `dialkit`; it appears as **DialKit** under Prototype tools in Studio settings.
 
 ## In a view
 
@@ -31,7 +31,7 @@ Anything else fails with a message naming the dial, and nothing is written.
 
 ## Checking the panel
 
-There is no automated browser check for the panel. After changing it, or upgrading `dialkit` or `motion`, build a throwaway prototype with one view per state below, check it in light and dark, then delete it. The starter's Feedback Inbox overview and Design Studio Marketing landing v3 show DialKit in ordinary use, but not these edge states.
+There is no automated browser check for the panel. After changing it, or upgrading `dialkit` or `motion`, build a throwaway prototype with one view per state below, check it in light and dark, then delete it. In the Design Studio repository, the sample Feedback Inbox overview and Design Studio Marketing landing v3 show DialKit in ordinary use, but not these edge states; studios that removed the samples rely on the throwaway prototype alone.
 
 | View | Check |
 | --- | --- |

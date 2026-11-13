@@ -4,9 +4,11 @@
   "name": "Design Studio",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
   "postCreateCommand": "npm install -g pnpm@12 && pnpm install --frozen-lockfile",
-  // Registered contributors resolve by Git email as usual. Anyone else edits as the sample author,
-  // so a reviewer can change the starter's sample prototypes without joining.
-  "postAttachCommand": "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=user.name GIT_CONFIG_VALUE_0='Parker Moss' pnpm dev",
+  // Registered contributors resolve by Git email as usual. Anyone else edits as the sample author, in Studio
+  // and in the terminal, so a reviewer can change the starter's sample prototypes without joining.
+  // Commits made in this Codespace carry the sample author's name with your email.
+  "remoteEnv": { "GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "user.name", "GIT_CONFIG_VALUE_0": "Parker Moss" },
+  "postAttachCommand": "pnpm dev",
   "forwardPorts": [5173],
   "portsAttributes": { "5173": { "label": "Design Studio", "onAutoForward": "openBrowser" } }
 }
