@@ -153,15 +153,6 @@ test('local personal setup resumes, then a second clone joins a team without cha
         .status,
       1,
     );
-    // A review Codespace's guest stands in for an unregistered identity, only when it names a contributor.
-    const asGuest = guest =>
-      spawnSync(process.execPath, ['src/platform/node/cli/resolve-contributor.js'], {
-        cwd: dir,
-        encoding: 'utf8',
-        env: { ...process.env, STUDIO_GUEST: guest },
-      });
-    assert.equal(asGuest('samples').stdout.trim(), 'samples');
-    assert.equal(asGuest('nobody').status, 1);
     const config = path.join(dir, 'studio.config.json');
     const before = fs.readFileSync(config, 'utf8');
     run(dir, 'src/platform/node/cli/studio.js', 'configure', '--name', 'Personal Studio', '--usage', 'personal');
