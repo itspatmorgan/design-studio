@@ -646,18 +646,15 @@ if (!command || !Object.hasOwn(commands, command)) {
 if (flags.recovery && command !== 'configure') fail('--recovery is only for explicit configuration setup or recovery.');
 const applies = flags.yes || ['enable', 'disable'].includes(command);
 const sharedChange = ['configure', 'enable', 'disable', 'remove', 'create-module', 'create-system'].includes(command);
-if (applies && sharedChange && !(command === 'configure' && flags.recovery)) {
-  const role = studioRole(CONFIG, resolveContributor(), Object.keys(loadContributors()));
-  // Unrecognized is not the same as not an Admin: say which, so the fix is clear.
-  if (!role)
-    fail(
-      "This studio doesn't recognize your Git identity as a contributor. Run `pnpm join` to add yourself, or set Git's user.email to the email in your contributors/ profile.",
-    );
-  if (role !== 'admin')
-    fail(
-      'Only an Admin can apply shared configuration changes. Use a pull request for a proposal. Initial setup or recovery uses configure --recovery.',
-    );
-}
+if (
+  applies &&
+  sharedChange &&
+  !(command === 'configure' && flags.recovery) &&
+  studioRole(CONFIG, resolveContributor(), Object.keys(loadContributors())) !== 'admin'
+)
+  fail(
+    'Only an Admin can apply shared configuration changes. Use a pull request for a proposal. Initial setup or recovery uses configure --recovery.',
+  );
 if (applies && flags.recovery)
   say('Explicit configuration recovery: repository access is being used to restore local permissions.');
 await commands[command]();
