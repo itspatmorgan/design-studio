@@ -82,5 +82,8 @@ test('an invalid assetGuard stops the check and names the entry', t => {
   git('add', '.');
   const r = run('--staged');
   assert.equal(r.status, 2);
-  assert.match(r.stderr, /assetGuard\.exceptions\[0\]: "\.\/tour\.mp4" should be the file's path from the repository root/);
+  assert.match(
+    r.stderr,
+    /assetGuard\.exceptions\[0\]: "\.\/tour\.mp4" should be the file's path from the repository root/,
+  );
 });

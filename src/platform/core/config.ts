@@ -179,8 +179,15 @@ export function assetGuardProblems(guard: unknown): string[] {
     const { path, reason } = (entry && typeof entry === 'object' ? entry : {}) as Record<string, unknown>;
     if (typeof path !== 'string' || !path || typeof reason !== 'string' || !reason.trim())
       problems.push(`${at} needs a "path" and a "reason".`);
-    else if (path !== path.trim() || path.includes('\\') || path.startsWith('/') || path.split('/').some(part => ['', '.', '..'].includes(part)))
-      problems.push(`${at}: "${path}" should be the file's path from the repository root, like src/prototypes/me/demo/assets/tour.mp4.`);
+    else if (
+      path !== path.trim() ||
+      path.includes('\\') ||
+      path.startsWith('/') ||
+      path.split('/').some(part => ['', '.', '..'].includes(part))
+    )
+      problems.push(
+        `${at}: "${path}" should be the file's path from the repository root, like src/prototypes/me/demo/assets/tour.mp4.`,
+      );
     else if (seen.has(path)) problems.push(`${at}: "${path}" is listed more than once.`);
     else seen.add(path);
   });

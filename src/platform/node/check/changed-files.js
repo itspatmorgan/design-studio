@@ -9,7 +9,10 @@ import { execFileSync } from 'node:child_process';
 const run = args => execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
 export const git = (...args) => run(args).trim();
 // The paths a git command lists. -z keeps them as written: without it git quotes names with accents, symbols or newlines.
-export const gitPaths = (command, ...args) => run([command, '-z', ...args]).split('\0').filter(Boolean);
+export const gitPaths = (command, ...args) =>
+  run([command, '-z', ...args])
+    .split('\0')
+    .filter(Boolean);
 const ZERO = /^0+$/;
 
 export function changedFiles(mode, before, after, { filter } = {}) {
