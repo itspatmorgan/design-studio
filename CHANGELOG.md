@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- A team sets its own Asset Guard limit and approves files over it in `assetGuard` in `studio.config.json`, each with a reason, instead of editing platform code. The guard reads the setting from the commit it checks, rejects an invalid entry by name, and its message says how to approve a file in CI too. `src/platform/context/assets.md#large-files` explains why Git handles large files badly and what to use instead. **Breaking:** the `ALLOWLIST` in `check-asset-size.js` is gone; move any paths you added there into `assetGuard.exceptions`. Thanks @lockwk.
+- A team sets its own Asset Guard limit and approves files over it in `assetGuard` in `studio.config.json`, each with a reason (the limit is also in Studio settings), instead of editing platform code. The guard reads the setting from the commit it checks, rejects an invalid entry by name, and its message says how to approve a file in CI too. `src/platform/context/assets.md#large-files` explains why Git handles large files badly and what to use instead. **Breaking:** the `ALLOWLIST` in `check-asset-size.js` is gone; move any paths you added there into `assetGuard.exceptions`. Thanks @lockwk.
 - The asset-size and scope checks read file names with accents or symbols, such as `café.jpg`, instead of crashing the commit. Thanks @lockwk.
 - One file without its permanent identity no longer breaks every page of its prototype. It stays out of the prototype's navigation until it has one, and the terminal names it. Thanks @rostislavpeska.
 

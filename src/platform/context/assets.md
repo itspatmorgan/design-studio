@@ -57,7 +57,7 @@ The limit is a platform default; whether to keep larger files is the team's deci
 }
 ```
 
-`limitKB` replaces the default limit. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. An invalid entry stops the check and names the entry. Leave `assetGuard` out to keep the default with no exceptions.
+`limitKB` replaces the default limit; Admins can also set it in Studio settings under General. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. An invalid entry stops the check and names the entry. Leave `assetGuard` out to keep the default with no exceptions.
 
 ## Large files
 

@@ -97,7 +97,7 @@ export function useStudioSettings(fields: readonly (keyof StudioConfig)[], succe
       const changes = Object.fromEntries(
         fields
           .filter(key => JSON.stringify(draft[key]) !== JSON.stringify(snapshot.config[key]))
-          .map(key => [key, draft[key]]),
+          .map(key => [key, draft[key] ?? null]),
       );
       const body = await requestJson<{ restarting: boolean; runtimeId: string }>('/__studio/settings', {
         method: 'POST',
