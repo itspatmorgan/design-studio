@@ -27,8 +27,5 @@
   },
   "defaultSystem": "4f3m7z08hk5a0k53",
   "admins": [],
-  "assetGuard": {
-    "limitKB": 750,
-    "exceptions": []
-  }
+  "assetLimitKB": 750
 }

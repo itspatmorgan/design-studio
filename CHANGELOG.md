@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Asset Guard's settings live in `studio.config.json` as `assetGuard`: the size limit and the files approved over it, each with a reason, instead of in platform code. Admins can change the limit in Studio settings. The guard reads the setting from the commit it checks, rejects an invalid entry by name, and its message says how to approve a file in CI too. `src/platform/context/assets.md#large-files` explains why Git handles large files badly and what to use instead. **Breaking:** `assetGuard` is required: add `"assetGuard": { "limitKB": 750, "exceptions": [] }` to `studio.config.json`, and move any paths you added to the removed `ALLOWLIST` in `check-asset-size.js` into `exceptions`. Thanks @lockwk.
+- Asset Guard's limit is a team setting: `assetLimitKB` in `studio.config.json`, also in Studio settings under General, instead of a constant and an `ALLOWLIST` in platform code. The guard reads it from the commit it checks, files tracked by Git LFS pass at any size, and its message names both options in CI too. `src/platform/context/assets.md#large-files` explains why Git handles large files badly and what to use instead. **Breaking:** add `"assetLimitKB": 750` to `studio.config.json`, and track any files you listed in the removed `ALLOWLIST` with Git LFS or raise the limit. Thanks @lockwk.
 - The asset-size and scope checks read file names with accents or symbols, such as `café.jpg`, instead of crashing the commit. Thanks @lockwk.
 - One file without its permanent identity no longer breaks every page of its prototype. It stays out of the prototype's navigation until it has one, and the terminal names it. Thanks @rostislavpeska.
 

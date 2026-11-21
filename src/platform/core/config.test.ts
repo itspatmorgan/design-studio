@@ -28,7 +28,7 @@ const config: StudioConfig = {
   systems: ['product'],
   systemMaintainers: { product: [] },
   defaultSystem: 'product',
-  assetGuard: { limitKB: 750, exceptions: [] },
+  assetLimitKB: 750,
 };
 const problems = (changes: Record<string, unknown>) =>
   configProblems({ ...config, ...changes }, modules, ['product']).join('\n');
@@ -229,36 +229,10 @@ test('a missing or unknown formatVersion is a problem that names the file', () =
   }
 });
 
-test('assetGuard is declared, and each exception names a clean path and a reason', () => {
-  const { assetGuard: _omitted, ...undeclared } = config;
-  assert.match(
-    configProblems(undeclared, modules, ['product']).join('\n'),
-    /assetGuard: declare it as \{ "limitKB": 750, "exceptions": \[\] \}/,
-  );
-  assert.equal(
-    problems({
-      assetGuard: { limitKB: 2000, exceptions: [{ path: 'src/lib/assets/tour.mp4', reason: 'H.265 already' }] },
-    }),
-    '',
-  );
-  assert.match(problems({ assetGuard: { exceptions: [] } }), /limitKB should be a number/);
-  assert.match(problems({ assetGuard: { limitKB: 750 } }), /exceptions should be a list/);
-  assert.match(problems({ assetGuard: [] }), /assetGuard: declare it/);
-  assert.match(problems({ assetGuard: { limit: 1 } }), /"limit" is not a setting/);
-  assert.match(problems({ assetGuard: { limitKB: 0 } }), /limitKB should be a number of KB above 0/);
-  assert.match(problems({ assetGuard: { exceptions: {} } }), /exceptions should be a list/);
-  assert.match(
-    problems({ assetGuard: { exceptions: [{ path: 'a.mp4' }] } }),
-    /exceptions\[0\] needs a "path" and a "reason"/,
-  );
-  for (const path of ['./a.mp4', '/a.mp4', 'a\\b.mp4', 'a/../b.mp4', ' a.mp4', 'a//b.mp4'])
-    assert.match(
-      problems({ assetGuard: { limitKB: 750, exceptions: [{ path, reason: 'why' }] } }),
-      /path from the repository root/,
-      JSON.stringify(path),
-    );
-  assert.match(
-    problems({ assetGuard: { limitKB: 750, exceptions: [1, 2].map(() => ({ path: 'a.mp4', reason: 'why' })) } }),
-    /exceptions\[1\]: "a.mp4" is listed more than once/,
-  );
+test('assetLimitKB is declared as a number of KB above 0', () => {
+  const { assetLimitKB: _omitted, ...undeclared } = config;
+  assert.match(configProblems(undeclared, modules, ['product']).join('\n'), /declare assetLimitKB/);
+  for (const assetLimitKB of [0, -1, '750', Number.NaN])
+    assert.match(problems({ assetLimitKB }), /declare assetLimitKB/);
+  assert.equal(problems({ assetLimitKB: 20000 }), '');
 });

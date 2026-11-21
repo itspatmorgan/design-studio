@@ -34,7 +34,7 @@ const moduleGroups = [
   { id: 'extensions', title: 'Other modules' },
 ];
 
-const fields = ['name', 'tagline', 'usage', 'defaultSystem', 'assetGuard', 'modules', 'admins'] as const;
+const fields = ['name', 'tagline', 'usage', 'defaultSystem', 'assetLimitKB', 'modules', 'admins'] as const;
 function Section({
   id,
   title,
@@ -253,21 +253,19 @@ export default function Settings() {
                     required
                     inputMode='numeric'
                     aria-describedby='asset-limit-description'
-                    value={Number.isFinite(draft.assetGuard.limitKB) ? draft.assetGuard.limitKB : ''}
-                    onChange={event =>
-                      update({ assetGuard: { ...draft.assetGuard, limitKB: event.target.valueAsNumber } })
-                    }
+                    value={Number.isFinite(draft.assetLimitKB) ? draft.assetLimitKB : ''}
+                    onChange={event => update({ assetLimitKB: event.target.valueAsNumber })}
                   />
                   <p id='asset-limit-description' className='text-xs text-muted-foreground'>
                     Commits and CI block larger files, which make every clone slower. New studios start at{' '}
-                    {ASSET_LIMIT_KB} KB. Approve single files in <code>studio.config.json</code>, and read{' '}
+                    {ASSET_LIMIT_KB} KB. For video and other large media, see{' '}
                     <Link
                       to={'/documentation/context/platform.core/context/assets#large-files' as never}
                       className='underline underline-offset-4'
                     >
                       Large files
-                    </Link>{' '}
-                    before raising it.
+                    </Link>
+                    .
                   </p>
                 </div>
               </fieldset>

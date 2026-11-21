@@ -21,7 +21,7 @@ function fixture(t) {
     systems: ['product', 'brand'],
     systemMaintainers: { product: [], brand: [] },
     defaultSystem: 'product',
-    assetGuard: { limitKB: 750, exceptions: [] },
+    assetLimitKB: 750,
   };
   writeProfiles(root, { sam: { name: 'Sam' }, alex: { name: 'Alex' } });
   const { directory } = writeFixtureConfig(root, config);
@@ -269,16 +269,17 @@ test('the Asset Guard limit is changed from settings and stays declared', t => {
   const options = fixture(t);
   const file = path.join(options.root, 'studio.config.json');
   const read = () => JSON.parse(fs.readFileSync(file, 'utf8'));
-  const base = () => readSettings(options.root, options.contributors).version;
-  saveSettings({ ...options, changes: { assetGuard: { limitKB: 2000, exceptions: [] } } });
-  assert.deepEqual(read().assetGuard, { limitKB: 2000, exceptions: [] });
-  for (const assetGuard of [
-    { limitKB: 0, exceptions: [] },
-    { limitKB: null, exceptions: [] },
-  ])
+  saveSettings({ ...options, changes: { assetLimitKB: 2000 } });
+  assert.equal(read().assetLimitKB, 2000);
+  for (const assetLimitKB of [0, null])
     assert.throws(
-      () => saveSettings({ ...options, base: base(), changes: { assetGuard } }),
-      /limitKB should be a number of KB above 0/,
+      () =>
+        saveSettings({
+          ...options,
+          base: readSettings(options.root, options.contributors).version,
+          changes: { assetLimitKB },
+        }),
+      /declare assetLimitKB/,
     );
-  assert.deepEqual(read().assetGuard, { limitKB: 2000, exceptions: [] });
+  assert.equal(read().assetLimitKB, 2000);
 });

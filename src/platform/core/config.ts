@@ -31,12 +31,10 @@ export type StudioConfig = {
   systems: readonly string[];
   // Persisted default system ID; resolved runtime projection contains its source key.
   defaultSystem: string;
-  // Asset Guard (src/platform/node/check/check-asset-size.js): the team's size limit, and files approved over it,
-  // each with its reason. Required, so the limit is visible where the team owns it.
-  assetGuard: AssetGuard;
+  // Asset Guard (src/platform/node/check/check-asset-size.js): the largest file, in KB, a commit may add or change.
+  // Required, so the limit is visible where the team owns it. Big media goes through Git LFS instead.
+  assetLimitKB: number;
 };
-
-export type AssetGuard = { limitKB: number; exceptions: readonly { path: string; reason: string }[] };
 
 // The limit a new studio declares, and the guard's limit in a repository with no studio.config.json.
 export const ASSET_LIMIT_KB = 750;
@@ -53,7 +51,7 @@ export const CONFIG_KEYS = [
   'systemMaintainers',
   'defaultSystem',
   'admins',
-  'assetGuard',
+  'assetLimitKB',
 ] as const satisfies readonly (keyof StudioConfig)[];
 // Compile-time guard: fails to type-check if StudioConfig gains a property CONFIG_KEYS does not list.
 type Unlisted = Exclude<keyof StudioConfig, (typeof CONFIG_KEYS)[number]>;
@@ -152,49 +150,17 @@ export function configProblems(
       problems.push(`${where}: defaultSystem must be registered in systems.`);
   }
   problems.push(...systemMaintainerProblems(c, platformId, contributors));
-  problems.push(...assetGuardProblems(c.assetGuard));
+  problems.push(...assetLimitProblems(c.assetLimitKB));
   return problems;
 }
 
-// What is wrong with assetGuard. Each exception names one file by its clean repository path and says why it can't
-// be smaller, so the approval explains itself in review.
-export function assetGuardProblems(guard: unknown): string[] {
-  const where = `${CONFIG_FILE}: assetGuard`;
-  if (!guard || typeof guard !== 'object' || Array.isArray(guard))
-    return [
-      `${where}: declare it as { "limitKB": ${ASSET_LIMIT_KB}, "exceptions": [] }, changing the limit if your team wants a different one.`,
-    ];
-  const problems: string[] = [];
-  for (const key of Object.keys(guard))
-    if (key !== 'limitKB' && key !== 'exceptions')
-      problems.push(`${where}: "${key}" is not a setting. Settings are limitKB, exceptions.`);
-  const { limitKB, exceptions } = guard as Record<string, unknown>;
-  if (typeof limitKB !== 'number' || !Number.isFinite(limitKB) || limitKB <= 0)
-    problems.push(`${where}.limitKB should be a number of KB above 0, like ${ASSET_LIMIT_KB}.`);
-  if (!Array.isArray(exceptions))
-    return [
-      ...problems,
-      `${where}.exceptions should be a list of { "path": "<file>", "reason": "<why>" }, or [] for none.`,
-    ];
-  const seen = new Set<string>();
-  exceptions.forEach((entry: unknown, index) => {
-    const at = `${where}.exceptions[${index}]`;
-    const { path, reason } = (entry && typeof entry === 'object' ? entry : {}) as Record<string, unknown>;
-    if (typeof path !== 'string' || !path || typeof reason !== 'string' || !reason.trim())
-      problems.push(`${at} needs a "path" and a "reason".`);
-    else if (
-      path !== path.trim() ||
-      path.includes('\\') ||
-      path.startsWith('/') ||
-      path.split('/').some(part => ['', '.', '..'].includes(part))
-    )
-      problems.push(
-        `${at}: "${path}" should be the file's path from the repository root, like src/prototypes/me/demo/assets/tour.mp4.`,
-      );
-    else if (seen.has(path)) problems.push(`${at}: "${path}" is listed more than once.`);
-    else seen.add(path);
-  });
-  return problems;
+// What is wrong with assetLimitKB: it must be declared, as a number of KB above 0.
+export function assetLimitProblems(limit: unknown): string[] {
+  return typeof limit === 'number' && Number.isFinite(limit) && limit > 0
+    ? []
+    : [
+        `${CONFIG_FILE}: declare assetLimitKB, the largest file in KB a commit may add or change, like ${ASSET_LIMIT_KB}.`,
+      ];
 }
 
 // Activation requires an explicit true; omission cannot grant a capability.

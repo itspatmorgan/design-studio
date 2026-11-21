@@ -46,18 +46,9 @@ The guard applies to all files, including assets in `public/`. Existing oversize
 
 Resize or compress a flagged asset, then stage the smaller version and commit again. For images, use WebP or compressed JPEG at the display size.
 
-Whether to keep larger files is the team's decision. The studio declares Asset Guard's settings in `assetGuard` in `studio.config.json`. A new studio starts with `{ "limitKB": 750, "exceptions": [] }`; a team that allows a video might have:
+The limit is `assetLimitKB` in `studio.config.json`, the largest file in KB a commit may add or change. A new studio declares `"assetLimitKB": 750`, and Admins can change it in Studio settings under General. The guard reads it from the same staged copy or commit as the files it checks, so a new limit counts once it is committed. A missing or invalid `assetLimitKB` stops the check and says what to declare.
 
-```json
-"assetGuard": {
-  "limitKB": 2000,
-  "exceptions": [
-    { "path": "src/prototypes/me/onboarding/assets/tour.mp4", "reason": "Already compressed with H.265" }
-  ]
-}
-```
-
-`limitKB` is the largest file, in KB, a commit may add or change; Admins can also change it in Studio settings under General. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. A missing or invalid `assetGuard` stops the check and names the problem.
+Whether to keep larger files is the team's decision. Files tracked by Git LFS pass the guard at any size, because Git stores a small pointer in their place; see [Large files](#large-files).
 
 ## Large files
 
@@ -65,7 +56,7 @@ Git keeps every committed version of every file, so deleting a large file later 
 
 Design Studio has no built-in support for large media today. If your team wants video, large raw images, or other heavy media in prototypes, use a tool built for it:
 
-- [Git LFS](https://git-lfs.com/) keeps large files out of Git history and stores pointers in their place. Files tracked by LFS are small pointers in Git, so Asset Guard passes them without an exception. Check that your Git host and any Codespace or CI setup fetch LFS files.
+- [Git LFS](https://git-lfs.com/) keeps large files out of Git history and stores pointers in their place. Track by pattern, such as `git lfs track "*.mp4"`, which writes the rule to `.gitattributes`. Asset Guard passes LFS files at any size. Check that your Git host and any Codespace or CI setup fetch LFS files.
 - External media hosting, such as a video platform, a CDN, or object storage, keeps the file out of the repository entirely; prototypes reference it by URL.
 
 Nothing in Studio prevents either approach.
