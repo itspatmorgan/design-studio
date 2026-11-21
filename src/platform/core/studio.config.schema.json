@@ -58,6 +58,39 @@
       "uniqueItems": true,
       "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
       "description": "Admins, as the permanent IDs of registered contributors. Required and nonempty in team use, where saving cannot remove the last Admin; optional in personal use, where the local contributor is Admin automatically. Several Admins are supported. Assign them in Studio settings or with `pnpm studio configure --admins`."
+    },
+    "assetGuard": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional. Your team's Asset Guard settings, which block large files from entering Git history at commit and in CI. Left out, files over 750 KB are blocked with no exceptions. Git handles large files badly; see src/platform/context/assets.md#large-files before allowing them.",
+      "properties": {
+        "limitKB": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "The largest file, in KB, that may be added or changed. Left out, 750."
+        },
+        "exceptions": {
+          "type": "array",
+          "description": "Files approved over the limit, one entry each. An exception counts once it is committed.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "reason"],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The file's path from the repository root, such as src/prototypes/me/demo/assets/tour.mp4."
+              },
+              "reason": {
+                "type": "string",
+                "pattern": "\\S",
+                "description": "Why this file can't be smaller."
+              }
+            }
+          }
+        }
+      }
     }
   },
   "if": {

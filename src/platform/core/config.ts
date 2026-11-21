@@ -31,7 +31,15 @@ export type StudioConfig = {
   systems: readonly string[];
   // Persisted default system ID; resolved runtime projection contains its source key.
   defaultSystem: string;
+  // The team's own Asset Guard settings: a different size limit, and files approved over it, each with its reason.
+  // Left out, the platform default applies (ASSET_LIMIT_KB, no exceptions).
+  assetGuard?: AssetGuard;
 };
+
+export type AssetGuard = { limitKB?: number; exceptions?: readonly { path: string; reason: string }[] };
+
+// Asset Guard's limit when a studio doesn't set its own (src/platform/node/check/check-asset-size.js).
+export const ASSET_LIMIT_KB = 750;
 
 // Every property the file accepts, in the order a file lists them. The schema's `properties` must name exactly these.
 export const CONFIG_KEYS = [
@@ -45,6 +53,7 @@ export const CONFIG_KEYS = [
   'systemMaintainers',
   'defaultSystem',
   'admins',
+  'assetGuard',
 ] as const satisfies readonly (keyof StudioConfig)[];
 // Compile-time guard: fails to type-check if StudioConfig gains a property CONFIG_KEYS does not list.
 type Unlisted = Exclude<keyof StudioConfig, (typeof CONFIG_KEYS)[number]>;
@@ -143,6 +152,38 @@ export function configProblems(
       problems.push(`${where}: defaultSystem must be registered in systems.`);
   }
   problems.push(...systemMaintainerProblems(c, platformId, contributors));
+  problems.push(...assetGuardProblems(c.assetGuard));
+  return problems;
+}
+
+// What is wrong with assetGuard. Each exception names one file by its clean repository path and says why it can't
+// be smaller, so the approval explains itself in review.
+export function assetGuardProblems(guard: unknown): string[] {
+  const where = `${CONFIG_FILE}: assetGuard`;
+  if (guard === undefined) return [];
+  if (!guard || typeof guard !== 'object' || Array.isArray(guard))
+    return [`${where} should be an object with limitKB and exceptions.`];
+  const problems: string[] = [];
+  for (const key of Object.keys(guard))
+    if (key !== 'limitKB' && key !== 'exceptions')
+      problems.push(`${where}: "${key}" is not a setting. Settings are limitKB, exceptions.`);
+  const { limitKB, exceptions } = guard as Record<string, unknown>;
+  if (limitKB !== undefined && (typeof limitKB !== 'number' || !Number.isFinite(limitKB) || limitKB <= 0))
+    problems.push(`${where}.limitKB should be a number of KB above 0, like ${ASSET_LIMIT_KB}.`);
+  if (exceptions === undefined) return problems;
+  if (!Array.isArray(exceptions))
+    return [...problems, `${where}.exceptions should be a list of { "path": "<file>", "reason": "<why>" }.`];
+  const seen = new Set<string>();
+  exceptions.forEach((entry: unknown, index) => {
+    const at = `${where}.exceptions[${index}]`;
+    const { path, reason } = (entry && typeof entry === 'object' ? entry : {}) as Record<string, unknown>;
+    if (typeof path !== 'string' || !path || typeof reason !== 'string' || !reason.trim())
+      problems.push(`${at} needs a "path" and a "reason".`);
+    else if (path !== path.trim() || path.includes('\\') || path.startsWith('/') || path.split('/').some(part => ['', '.', '..'].includes(part)))
+      problems.push(`${at}: "${path}" should be the file's path from the repository root, like src/prototypes/me/demo/assets/tour.mp4.`);
+    else if (seen.has(path)) problems.push(`${at}: "${path}" is listed more than once.`);
+    else seen.add(path);
+  });
   return problems;
 }
 

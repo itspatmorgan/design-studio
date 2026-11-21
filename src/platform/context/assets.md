@@ -40,10 +40,32 @@ Assets support artifacts; they do not become navigable artifacts themselves. Fol
 
 ## Asset Guard
 
-Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `src/platform/node/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds 750 KB, unless explicitly allowlisted. CI runs the same guard against committed changes.
+Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `src/platform/node/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds the limit: 750 KB unless the team sets its own. CI runs the same guard against committed changes.
 
 The guard applies to all files, including assets in `public/`. Existing oversized files are checked when modified.
 
-Resize or compress a flagged asset, then stage the smaller version and commit again. For images, use WebP or compressed JPEG at the display size. Reserve allowlist exceptions for files that cannot be reduced.
+Resize or compress a flagged asset, then stage the smaller version and commit again. For images, use WebP or compressed JPEG at the display size.
 
-Git retains committed versions, so deleting a large asset later does not remove its earlier versions from history. Catching it before commit keeps the repository and future clones smaller.
+The limit is a platform default; whether to keep larger files is the team's decision. A team declares its own settings in `assetGuard` in `studio.config.json`:
+
+```json
+"assetGuard": {
+  "limitKB": 2000,
+  "exceptions": [
+    { "path": "src/prototypes/me/onboarding/assets/tour.mp4", "reason": "Already compressed with H.265" }
+  ]
+}
+```
+
+`limitKB` replaces the default limit. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. An invalid entry stops the check and names the entry. Leave `assetGuard` out to keep the default with no exceptions.
+
+## Large files
+
+Git keeps every committed version of every file, so deleting a large file later does not remove it from history. Every clone downloads all of it, and media files barely compress against earlier versions, so each changed version adds close to a full copy. Catching a large file before commit keeps the repository and future clones small.
+
+Design Studio has no built-in support for large media today. If your team wants video, large raw images, or other heavy media in prototypes, use a tool built for it:
+
+- [Git LFS](https://git-lfs.com/) keeps large files out of Git history and stores pointers in their place. Files tracked by LFS are small pointers in Git, so Asset Guard passes them without an exception. Check that your Git host and any Codespace or CI setup fetch LFS files.
+- External media hosting, such as a video platform, a CDN, or object storage, keeps the file out of the repository entirely; prototypes reference it by URL.
+
+Nothing in Studio prevents either approach.
