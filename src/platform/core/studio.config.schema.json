@@ -4,7 +4,16 @@
   "description": "studio.config.json: the small set of choices a studio's team shares. Start personal; switch to team use in Studio settings when you are ready to collaborate. Installed capabilities (modules) and design-system registration are explicit, never inferred from what is on disk. The rules that matter are enforced by `pnpm check` (src/platform/core/config.ts); this schema lets editors validate and complete the file, and a test keeps the two in agreement.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["formatVersion", "name", "usage", "modules", "systems", "systemMaintainers", "defaultSystem"],
+  "required": [
+    "formatVersion",
+    "name",
+    "usage",
+    "modules",
+    "systems",
+    "systemMaintainers",
+    "defaultSystem",
+    "assetGuard"
+  ],
   "properties": {
     "$schema": {
       "type": "string",
@@ -62,16 +71,17 @@
     "assetGuard": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Optional. Your team's Asset Guard settings, which block large files from entering Git history at commit and in CI. Left out, files over 750 KB are blocked with no exceptions. Git handles large files badly; see src/platform/context/assets.md#large-files before allowing them.",
+      "description": "Required. Your team's Asset Guard settings, which block large files from entering Git history at commit and in CI. New studios declare { \"limitKB\": 750, \"exceptions\": [] }. Git handles large files badly; see src/platform/context/assets.md#large-files before raising the limit or approving files.",
+      "required": ["limitKB", "exceptions"],
       "properties": {
         "limitKB": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "The largest file, in KB, that may be added or changed. Left out, 750."
+          "description": "The largest file, in KB, that may be added or changed. New studios start at 750. Admins can change it in Studio settings."
         },
         "exceptions": {
           "type": "array",
-          "description": "Files approved over the limit, one entry each. An exception counts once it is committed.",
+          "description": "Files approved over the limit, one entry each, or [] for none. An exception counts once it is committed.",
           "items": {
             "type": "object",
             "additionalProperties": false,

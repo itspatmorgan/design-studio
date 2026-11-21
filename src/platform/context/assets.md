@@ -40,13 +40,13 @@ Assets support artifacts; they do not become navigable artifacts themselves. Fol
 
 ## Asset Guard
 
-Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `src/platform/node/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds the limit: 750 KB unless the team sets its own. CI runs the same guard against committed changes.
+Asset Guard prevents oversized files from entering Git history. The pre-commit hook in `.husky/pre-commit` runs `src/platform/node/check/check-asset-size.js --staged`. It checks added and modified files using their staged contents and blocks the commit when a file exceeds the limit the studio declares. CI runs the same guard against committed changes.
 
 The guard applies to all files, including assets in `public/`. Existing oversized files are checked when modified.
 
 Resize or compress a flagged asset, then stage the smaller version and commit again. For images, use WebP or compressed JPEG at the display size.
 
-The limit is a platform default; whether to keep larger files is the team's decision. A team declares its own settings in `assetGuard` in `studio.config.json`:
+Whether to keep larger files is the team's decision. The studio declares Asset Guard's settings in `assetGuard` in `studio.config.json`. A new studio starts with `{ "limitKB": 750, "exceptions": [] }`; a team that allows a video might have:
 
 ```json
 "assetGuard": {
@@ -57,7 +57,7 @@ The limit is a platform default; whether to keep larger files is the team's deci
 }
 ```
 
-`limitKB` replaces the default limit; Admins can also set it in Studio settings under General. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. An invalid entry stops the check and names the entry. Leave `assetGuard` out to keep the default with no exceptions.
+`limitKB` is the largest file, in KB, a commit may add or change; Admins can also change it in Studio settings under General. Each exception approves one file, by its path from the repository root, and says why it stays that size. The guard reads `assetGuard` from the same staged copy or commit as the files it checks, so an approval counts once it is committed alongside them. A missing or invalid `assetGuard` stops the check and names the problem.
 
 ## Large files
 

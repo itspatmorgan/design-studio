@@ -31,14 +31,14 @@ export type StudioConfig = {
   systems: readonly string[];
   // Persisted default system ID; resolved runtime projection contains its source key.
   defaultSystem: string;
-  // The team's own Asset Guard settings: a different size limit, and files approved over it, each with its reason.
-  // Left out, the platform default applies (ASSET_LIMIT_KB, no exceptions).
-  assetGuard?: AssetGuard;
+  // Asset Guard (src/platform/node/check/check-asset-size.js): the team's size limit, and files approved over it,
+  // each with its reason. Required, so the limit is visible where the team owns it.
+  assetGuard: AssetGuard;
 };
 
-export type AssetGuard = { limitKB?: number; exceptions?: readonly { path: string; reason: string }[] };
+export type AssetGuard = { limitKB: number; exceptions: readonly { path: string; reason: string }[] };
 
-// Asset Guard's limit when a studio doesn't set its own (src/platform/node/check/check-asset-size.js).
+// The limit a new studio declares, and the guard's limit in a repository with no studio.config.json.
 export const ASSET_LIMIT_KB = 750;
 
 // Every property the file accepts, in the order a file lists them. The schema's `properties` must name exactly these.
@@ -160,19 +160,22 @@ export function configProblems(
 // be smaller, so the approval explains itself in review.
 export function assetGuardProblems(guard: unknown): string[] {
   const where = `${CONFIG_FILE}: assetGuard`;
-  if (guard === undefined) return [];
   if (!guard || typeof guard !== 'object' || Array.isArray(guard))
-    return [`${where} should be an object with limitKB and exceptions.`];
+    return [
+      `${where}: declare it as { "limitKB": ${ASSET_LIMIT_KB}, "exceptions": [] }, changing the limit if your team wants a different one.`,
+    ];
   const problems: string[] = [];
   for (const key of Object.keys(guard))
     if (key !== 'limitKB' && key !== 'exceptions')
       problems.push(`${where}: "${key}" is not a setting. Settings are limitKB, exceptions.`);
   const { limitKB, exceptions } = guard as Record<string, unknown>;
-  if (limitKB !== undefined && (typeof limitKB !== 'number' || !Number.isFinite(limitKB) || limitKB <= 0))
+  if (typeof limitKB !== 'number' || !Number.isFinite(limitKB) || limitKB <= 0)
     problems.push(`${where}.limitKB should be a number of KB above 0, like ${ASSET_LIMIT_KB}.`);
-  if (exceptions === undefined) return problems;
   if (!Array.isArray(exceptions))
-    return [...problems, `${where}.exceptions should be a list of { "path": "<file>", "reason": "<why>" }.`];
+    return [
+      ...problems,
+      `${where}.exceptions should be a list of { "path": "<file>", "reason": "<why>" }, or [] for none.`,
+    ];
   const seen = new Set<string>();
   exceptions.forEach((entry: unknown, index) => {
     const at = `${where}.exceptions[${index}]`;

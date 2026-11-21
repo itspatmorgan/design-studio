@@ -21,6 +21,7 @@ function fixture(t) {
     systems: ['product', 'brand'],
     systemMaintainers: { product: [], brand: [] },
     defaultSystem: 'product',
+    assetGuard: { limitKB: 750, exceptions: [] },
   };
   writeProfiles(root, { sam: { name: 'Sam' }, alex: { name: 'Alex' } });
   const { directory } = writeFixtureConfig(root, config);
@@ -264,25 +265,20 @@ test('declaration edits preserve unrelated fields and comments and reject ambigu
     assert.throws(() => editDeclaration(source, { name: 'New', modules: { notes: false } }));
 });
 
-test('the Asset Guard limit is set from settings and cleared back to the default', t => {
+test('the Asset Guard limit is changed from settings and stays declared', t => {
   const options = fixture(t);
   const file = path.join(options.root, 'studio.config.json');
   const read = () => JSON.parse(fs.readFileSync(file, 'utf8'));
-  saveSettings({ ...options, changes: { assetGuard: { limitKB: 2000 } } });
-  assert.deepEqual(read().assetGuard, { limitKB: 2000 });
-  assert.throws(
-    () =>
-      saveSettings({
-        ...options,
-        base: readSettings(options.root, options.contributors).version,
-        changes: { assetGuard: { limitKB: 0 } },
-      }),
-    /limitKB should be a number of KB above 0/,
-  );
-  saveSettings({
-    ...options,
-    base: readSettings(options.root, options.contributors).version,
-    changes: { assetGuard: null },
-  });
-  assert.equal(Object.hasOwn(read(), 'assetGuard'), false);
+  const base = () => readSettings(options.root, options.contributors).version;
+  saveSettings({ ...options, changes: { assetGuard: { limitKB: 2000, exceptions: [] } } });
+  assert.deepEqual(read().assetGuard, { limitKB: 2000, exceptions: [] });
+  for (const assetGuard of [
+    { limitKB: 0, exceptions: [] },
+    { limitKB: null, exceptions: [] },
+  ])
+    assert.throws(
+      () => saveSettings({ ...options, base: base(), changes: { assetGuard } }),
+      /limitKB should be a number of KB above 0/,
+    );
+  assert.deepEqual(read().assetGuard, { limitKB: 2000, exceptions: [] });
 });

@@ -62,6 +62,7 @@ Upstream maintainers may keep a real profile and prototype folder excluded throu
 | `modules` | Installed module IDs set to `true` or `false`. Every installed module needs an explicit entry; omission is invalid and never enables it. Required modules cannot be disabled. |
 | `systems` | Required list of the source-folder keys of the team's own design systems, such as `["product"]`. Every installed prototype system must be listed; discovery does not register a system. Studio's own system, the platform system, is always available and is never listed: listing it is a validation error. |
 | `defaultSystem` | System selected when creating a prototype without a different requested choice. Required permanent registered prototype-system ID; no alphabetical fallback. |
+| `assetGuard` | Required Asset Guard settings: `limitKB`, the largest file a commit may add or change (750 in a new studio), and `exceptions`, files approved over it as `{ "path", "reason" }`, or `[]`. See [Assets](assets.md#asset-guard). |
 
 Other settings are errors, so a misspelled name is reported instead of ignored.
 

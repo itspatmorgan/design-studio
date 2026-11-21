@@ -28,6 +28,7 @@ const config: StudioConfig = {
   systems: ['product'],
   systemMaintainers: { product: [] },
   defaultSystem: 'product',
+  assetGuard: { limitKB: 750, exceptions: [] },
 };
 const problems = (changes: Record<string, unknown>) =>
   configProblems({ ...config, ...changes }, modules, ['product']).join('\n');
@@ -228,15 +229,21 @@ test('a missing or unknown formatVersion is a problem that names the file', () =
   }
 });
 
-test('assetGuard is optional, and each exception names a clean path and a reason', () => {
-  assert.equal(problems({ assetGuard: undefined }), '');
+test('assetGuard is declared, and each exception names a clean path and a reason', () => {
+  const { assetGuard: _omitted, ...undeclared } = config;
+  assert.match(
+    configProblems(undeclared, modules, ['product']).join('\n'),
+    /assetGuard: declare it as \{ "limitKB": 750, "exceptions": \[\] \}/,
+  );
   assert.equal(
     problems({
       assetGuard: { limitKB: 2000, exceptions: [{ path: 'src/lib/assets/tour.mp4', reason: 'H.265 already' }] },
     }),
     '',
   );
-  assert.match(problems({ assetGuard: [] }), /assetGuard should be an object/);
+  assert.match(problems({ assetGuard: { exceptions: [] } }), /limitKB should be a number/);
+  assert.match(problems({ assetGuard: { limitKB: 750 } }), /exceptions should be a list/);
+  assert.match(problems({ assetGuard: [] }), /assetGuard: declare it/);
   assert.match(problems({ assetGuard: { limit: 1 } }), /"limit" is not a setting/);
   assert.match(problems({ assetGuard: { limitKB: 0 } }), /limitKB should be a number of KB above 0/);
   assert.match(problems({ assetGuard: { exceptions: {} } }), /exceptions should be a list/);
@@ -246,12 +253,12 @@ test('assetGuard is optional, and each exception names a clean path and a reason
   );
   for (const path of ['./a.mp4', '/a.mp4', 'a\\b.mp4', 'a/../b.mp4', ' a.mp4', 'a//b.mp4'])
     assert.match(
-      problems({ assetGuard: { exceptions: [{ path, reason: 'why' }] } }),
+      problems({ assetGuard: { limitKB: 750, exceptions: [{ path, reason: 'why' }] } }),
       /path from the repository root/,
       JSON.stringify(path),
     );
   assert.match(
-    problems({ assetGuard: { exceptions: [1, 2].map(() => ({ path: 'a.mp4', reason: 'why' })) } }),
+    problems({ assetGuard: { limitKB: 750, exceptions: [1, 2].map(() => ({ path: 'a.mp4', reason: 'why' })) } }),
     /exceptions\[1\]: "a.mp4" is listed more than once/,
   );
 });

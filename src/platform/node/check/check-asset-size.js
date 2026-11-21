@@ -26,7 +26,8 @@ if (!changed || mode === '--push') {
   process.exit(2);
 }
 
-// The team's assetGuard from the version of studio.config.json being checked. No file means the defaults.
+// The team's assetGuard from the version of studio.config.json being checked. A repository with no studio.config.json
+// (not a studio) gets the default limit and no exceptions.
 const at = file => (mode === '--staged' ? `:${file}` : `${after}:${file}`);
 let guard;
 try {
@@ -35,16 +36,16 @@ try {
   if ('error' in parsed) throw new Error(parsed.error);
   const problems = assetGuardProblems(parsed.value.assetGuard);
   if (problems.length) throw new Error(problems.join('\n'));
-  guard = parsed.value.assetGuard ?? {};
+  guard = parsed.value.assetGuard;
 } catch (e) {
   if (e.status === undefined) {
     console.error(`Asset size check: ${e.message}`);
     process.exit(2);
   }
-  guard = {}; // git show failed: this tree has no studio.config.json.
+  guard = { limitKB: ASSET_LIMIT_KB, exceptions: [] }; // git show failed: this tree has no studio.config.json.
 }
-const limitKB = guard.limitKB ?? ASSET_LIMIT_KB;
-const approved = new Set((guard.exceptions ?? []).map(entry => entry.path));
+const { limitKB } = guard;
+const approved = new Set(guard.exceptions.map(entry => entry.path));
 
 // The size Git will store: the staged version, or the version in the pushed commit.
 const sizeKB = file => Number(git('cat-file', '-s', at(file))) / 1024;

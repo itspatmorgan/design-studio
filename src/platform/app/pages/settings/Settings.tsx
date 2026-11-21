@@ -250,22 +250,17 @@ export default function Settings() {
                     id='asset-limit'
                     type='number'
                     min={1}
+                    required
                     inputMode='numeric'
                     aria-describedby='asset-limit-description'
-                    placeholder={String(ASSET_LIMIT_KB)}
-                    value={draft.assetGuard?.limitKB ?? ''}
-                    onChange={event => {
-                      const { exceptions } = draft.assetGuard ?? {};
-                      const guard = {
-                        ...(event.target.value !== '' && { limitKB: Number(event.target.value) }),
-                        ...(exceptions && { exceptions }),
-                      };
-                      update({ assetGuard: Object.keys(guard).length ? guard : undefined });
-                    }}
+                    value={Number.isFinite(draft.assetGuard.limitKB) ? draft.assetGuard.limitKB : ''}
+                    onChange={event =>
+                      update({ assetGuard: { ...draft.assetGuard, limitKB: event.target.valueAsNumber } })
+                    }
                   />
                   <p id='asset-limit-description' className='text-xs text-muted-foreground'>
-                    Commits and CI block larger files, which make every clone slower. Leave empty for the{' '}
-                    {ASSET_LIMIT_KB} KB default. Approve single files in <code>studio.config.json</code>, and read{' '}
+                    Commits and CI block larger files, which make every clone slower. New studios start at{' '}
+                    {ASSET_LIMIT_KB} KB. Approve single files in <code>studio.config.json</code>, and read{' '}
                     <Link
                       to={'/documentation/context/platform.core/context/assets#large-files' as never}
                       className='underline underline-offset-4'

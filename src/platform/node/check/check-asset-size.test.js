@@ -46,7 +46,7 @@ test('an oversized "café.mp4" is blocked by name in --staged and --ci', t => {
   assert.match(ci.stdout + ci.stderr, /café\.mp4: 800 KB/);
 });
 
-const configure = assetGuard => JSON.stringify({ formatVersion: 1, assetGuard });
+const configure = guard => JSON.stringify({ formatVersion: 1, assetGuard: { limitKB: 750, exceptions: [], ...guard } });
 
 test("a team approves a file or sets its own limit in studio.config.json's assetGuard", t => {
   const { git, write, text, run } = repo(t);
@@ -75,7 +75,7 @@ test("a team approves a file or sets its own limit in studio.config.json's asset
   assert.match(ci.stderr, /over 1000 KB[\s\S]*big\.png: 1200 KB[\s\S]*in this change/);
 });
 
-test('an invalid assetGuard stops the check and names the entry', t => {
+test('an undeclared or invalid assetGuard stops the check and names the problem', t => {
   const { git, write, text, run } = repo(t);
   write('small.png', 10);
   text('studio.config.json', configure({ exceptions: [{ path: './tour.mp4', reason: 'why' }] }));
@@ -86,4 +86,9 @@ test('an invalid assetGuard stops the check and names the entry', t => {
     r.stderr,
     /assetGuard\.exceptions\[0\]: "\.\/tour\.mp4" should be the file's path from the repository root/,
   );
+  text('studio.config.json', JSON.stringify({ formatVersion: 1 }));
+  git('add', '.');
+  const undeclared = run('--staged');
+  assert.equal(undeclared.status, 2);
+  assert.match(undeclared.stderr, /assetGuard: declare it/);
 });

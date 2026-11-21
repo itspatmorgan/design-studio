@@ -12,6 +12,7 @@ const base: StudioConfig = {
   systems: ['product'],
   systemMaintainers: { aaaaaaaaaaaaaaaa: [] },
   defaultSystem: 'aaaaaaaaaaaaaaaa',
+  assetGuard: { limitKB: 750, exceptions: [] },
 };
 
 test('the file is parsed as plain JSON and bad text says what is wrong', () => {
