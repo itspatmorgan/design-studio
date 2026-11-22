@@ -48,16 +48,17 @@ test('an oversized "café.mp4" is blocked by name in --staged and --ci', t => {
 
 const configure = assetLimitKB => JSON.stringify({ formatVersion: 1, assetLimitKB });
 
-test('the limit comes from the staged or committed assetLimitKB, and the message offers Git LFS', t => {
+test('the limit comes from the staged or committed assetLimitKB, and the message links the large files guide', t => {
   const { git, write, text, run } = repo(t);
   write('tour.mp4', 800);
   text('studio.config.json', configure(750));
   git('add', '.');
   const blocked = run('--staged');
   assert.equal(blocked.status, 1);
-  assert.match(blocked.stderr, /Git LFS/);
-  assert.match(blocked.stderr, /raise assetLimitKB in studio\.config\.json or Studio settings/);
-  assert.match(blocked.stderr, /assets\.md#large-files/);
+  assert.match(
+    blocked.stderr,
+    /If it needs to stay this size, see how to support large files: .*assets\.md#large-files/,
+  );
 
   // A raised limit counts once staged, not while it's only on disk.
   text('studio.config.json', configure(1000));

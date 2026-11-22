@@ -7,6 +7,7 @@
 // files are checked, so a large file already in the repo is flagged only if you change it.
 // The limit is studio.config.json's assetLimitKB, read from the same commit (or staged copy) as the files.
 // Files tracked by Git LFS pass: Git stores a small pointer for them, and that is what this measures.
+// The message points to one guide for the team's options (a higher limit, Git LFS, or media hosting).
 import { changedFiles, git } from './changed-files.js';
 import { ASSET_LIMIT_KB, CONFIG_FILE, assetLimitProblems } from '../../core/config.ts';
 import { parseConfigFile } from '../../core/config-file.ts';
@@ -55,10 +56,6 @@ if (oversized.length) {
   for (const { file, kb } of oversized) console.error(`  ${file}: ${Math.round(kb)} KB`);
   console.error('Make it smaller: export images as WebP (or compressed JPEG) at the size they are shown.');
   console.error('A full-screen image is usually 100-300 KB as WebP.');
-  console.error(
-    'For video or other large media, track it with Git LFS (git lfs track "*.mp4"), which this check allows.',
-  );
-  console.error(`Or, if your team decides on a higher limit, raise assetLimitKB in ${CONFIG_FILE} or Studio settings.`);
-  console.error(`Why Git handles large files badly, and what to use instead: ${GUIDE}`);
+  console.error(`If it needs to stay this size, see how to support large files: ${GUIDE}`);
   process.exit(1);
 }

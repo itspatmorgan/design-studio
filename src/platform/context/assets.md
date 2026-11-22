@@ -46,17 +46,14 @@ The guard applies to all files, including assets in `public/`. Existing oversize
 
 Resize or compress a flagged asset, then stage the smaller version and commit again. For images, use WebP or compressed JPEG at the display size.
 
-The limit is `assetLimitKB` in `studio.config.json`, the largest file in KB a commit may add or change. A new studio declares `"assetLimitKB": 750`, and Admins can change it in Studio settings under General. The guard reads it from the same staged copy or commit as the files it checks, so a new limit counts once it is committed. A missing or invalid `assetLimitKB` stops the check and says what to declare.
-
-Whether to keep larger files is the team's decision. Files tracked by Git LFS pass the guard at any size, because Git stores a small pointer in their place; see [Large files](#large-files).
+The limit is `assetLimitKB` in `studio.config.json`, the largest file in KB a commit may add or change. The guard reads it from the same staged copy or commit as the files it checks, so a new limit counts once it is committed. A missing or invalid `assetLimitKB` stops the check and says what to declare. When a file is blocked, the message links to [Large files](#large-files).
 
 ## Large files
 
-Git keeps every committed version of every file, so deleting a large file later does not remove it from history. Every clone downloads all of it, and media files barely compress against earlier versions, so each changed version adds close to a full copy. Catching a large file before commit keeps the repository and future clones small.
+Git keeps every committed version of every file, so deleting a large file later does not remove it from history. Every clone downloads all of it, and media files barely compress against earlier versions, so each changed version adds close to a full copy. Whether to keep larger files is your team's decision. Design Studio has no built-in support for large media today; work through these options in order:
 
-Design Studio has no built-in support for large media today. If your team wants video, large raw images, or other heavy media in prototypes, use a tool built for it:
-
-- [Git LFS](https://git-lfs.com/) keeps large files out of Git history and stores pointers in their place. Track by pattern, such as `git lfs track "*.mp4"`, which writes the rule to `.gitattributes`. Asset Guard passes LFS files at any size. Check that your Git host and any Codespace or CI setup fetch LFS files.
-- External media hosting, such as a video platform, a CDN, or object storage, keeps the file out of the repository entirely; prototypes reference it by URL.
-
-Nothing in Studio prevents either approach.
+1. **Keep the default.** A new studio blocks files over 750 KB. That fits images exported at the size they are shown, and keeps clones fast.
+2. **Raise the limit.** If your team's files are a little bigger, such as detailed images or short clips, raise `assetLimitKB` in Studio settings under General, or in `studio.config.json`. Every file under the new limit then goes into Git history as usual.
+3. **Use a tool built for large media.** For video, large raw images, or other heavy files, keep them out of Git history:
+   - [Git LFS](https://git-lfs.com/) stores a small pointer in Git and the file itself with your Git host. Track by pattern, such as `git lfs track "*.mp4"`, which writes the rule to `.gitattributes`; Asset Guard passes these files at any size. Everyone who clones, and every CI job and deployment that builds the studio, needs Git LFS installed and fetching files, or they get the pointer text instead of the media. Git hosts include a limited LFS quota for storage and downloads, and moving files back out of LFS later means rewriting history.
+   - External media hosting, such as a video platform, a CDN, or object storage, keeps the file out of the repository entirely. Prototypes reference it by URL.
