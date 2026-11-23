@@ -1,6 +1,7 @@
 // Download: one prototype as a single HTML file that opens from disk, for someone who can't run Studio.
 // It is the production build (pnpm build) with one prototype in it, packed into one page: the same viewer,
 // views, documents, diagrams and canvases as the published site, with no second renderer to keep in step.
+// The idea and its first version came from @robcrock (#81).
 //
 // The build runs in its own process, because the manifest and file globs read which prototype to keep from
 // STUDIO_DOWNLOAD (src/platform/core/archive.ts forDeploy). The page carries the manifest itself
