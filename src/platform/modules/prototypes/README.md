@@ -69,7 +69,7 @@ Changing the title in the app also renames the prototype folder to its slug. Dir
 
 Renaming preserves permanent shared URLs and all resource IDs. Relative document links survive a prototype-folder rename. File moves still affect source dependencies; permanent routes do not replace reference repair.
 
-The app repairs internal references when files or folders are renamed or moved: local literal imports and exports, literal view navigation paths, Markdown link destinations, and canvas element links. Moving a source file also rebases its relative references. Prototype renaming retains permanent browser links. Duplication remaps copied permanent links to fresh prototype and artifact IDs. Both preserve applicable filesystem reference repair.
+The app repairs internal references when files or folders are renamed or moved: local literal imports and exports, literal view navigation paths, Markdown link destinations, and canvas element links. Moving a source file also rebases its relative references. Prototype renaming retains permanent browser links. The menu's Rename, Duplicate, Archive, Restore, and Delete are also `pnpm studio rename|duplicate|archive|restore|delete <prototype folder>`, which run the same code and ownership check (`ownedPrototype` in `src/platform/node/build/files/policy.js`) as the dev server's routes. Duplication remaps copied permanent links to fresh prototype and artifact IDs. Both preserve applicable filesystem reference repair.
 
 These transformations are supplied by installed [source reference adapters](../../context/file-types.md#source-reference-adapters). Supporting CSS URLs and imports participate too. New formats supply an adapter rather than requiring central file-operation branches.
 

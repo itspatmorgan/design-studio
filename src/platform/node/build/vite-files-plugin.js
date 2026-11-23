@@ -77,8 +77,8 @@ import {
   versionOf,
 } from './files/paths.js';
 import { readJson, sameOrigin, send } from './files/http.js';
-import { canChange, canWriteSource, ownerError, owns } from './files/policy.js';
-import { SYSTEM_CONTENT_NOTE, reveal, runOp, trash } from './files/ops.js';
+import { canChange, canWriteSource, ownedPrototype, ownerError, owns } from './files/policy.js';
+import { reveal, runOp, trash } from './files/ops.js';
 
 export default function filesPlugin() {
   let moves;
@@ -344,10 +344,8 @@ export default function filesPlugin() {
           }
           if (req.method === 'POST' && url.pathname === '/prototype-rename') {
             const { contributor, prototype, title } = await readJson(req);
-            const dir = prototypeDir(contributor, prototype);
-            if (!dir) return send(res, 404, { error: 'This prototype no longer exists.' });
-            if (contributor === SYSTEM_CONTENT_KEY) return send(res, 403, { error: SYSTEM_CONTENT_NOTE });
-            if (!owns(contributor, me(), dir)) return send(res, 403, { error: ownerError(contributor, me()) });
+            const owned = ownedPrototype(contributor, prototype, me());
+            if (owned.error) return send(res, owned.status, { error: owned.error });
             try {
               const { id, manifest } = renamePrototype({ key: contributor, id: prototype, title });
               moves.flush();
@@ -360,9 +358,8 @@ export default function filesPlugin() {
           }
           if (req.method === 'POST' && url.pathname === '/prototype-duplicate') {
             const { contributor, prototype, title, system } = await readJson(req);
-            const dir = prototypeDir(contributor, prototype);
-            if (!dir) return send(res, 404, { error: 'This prototype no longer exists.' });
-            if (!owns(contributor, me(), dir)) return send(res, 403, { error: ownerError(contributor, me()) });
+            const owned = ownedPrototype(contributor, prototype, me());
+            if (owned.error) return send(res, owned.status, { error: owned.error });
             try {
               const { id, manifest } = duplicatePrototype({ key: contributor, id: prototype, title, system });
               publishManifest(server, manifest, req.headers['x-studio-tab']);
@@ -383,11 +380,9 @@ export default function filesPlugin() {
           }
           if (req.method === 'POST' && url.pathname === '/prototype-delete') {
             const { contributor, prototype } = await readJson(req);
-            const dir = prototypeDir(contributor, prototype);
-            if (!dir) return send(res, 404, { error: 'This prototype no longer exists.' });
-            if (contributor === SYSTEM_CONTENT_KEY) return send(res, 403, { error: SYSTEM_CONTENT_NOTE });
-            if (!owns(contributor, me(), dir)) return send(res, 403, { error: ownerError(contributor, me()) });
-            const trashedTo = trash(dir);
+            const owned = ownedPrototype(contributor, prototype, me());
+            if (owned.error) return send(res, owned.status, { error: owned.error });
+            const trashedTo = trash(owned.dir);
             const { manifest } = buildManifest();
             publishManifest(server, manifest, req.headers['x-studio-tab']);
             return send(res, 200, { trashedTo, manifest });

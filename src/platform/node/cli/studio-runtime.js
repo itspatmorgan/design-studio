@@ -29,6 +29,10 @@ import { planSettings } from '../lib/studio-settings.js';
 import { renderAgents } from '../lib/agents-file.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { downloadPrototype } from '../../modules/prototypes/node/download.js';
+import { renamePrototype } from '../../modules/prototypes/node/create.js';
+import { duplicatePrototype } from '../../modules/prototypes/node/duplicate.js';
+import { ownedPrototype } from '../build/files/policy.js';
+import { runOp, trash } from '../build/files/ops.js';
 import { loadContributors } from '../lib/contributors.js';
 import {
   SUPPLIED_MODULES_ROOT,
@@ -56,10 +60,23 @@ const positional = [];
 for (let i = 0; i < rest.length; i++) {
   const a = rest[i];
   if (a === '--') continue;
-  if (['--yes', '--content', '--force', '--json', '--check', '--restore-prototypes', '--recovery'].includes(a))
+  if (
+    [
+      '--yes',
+      '--content',
+      '--force',
+      '--json',
+      '--check',
+      '--restore-prototypes',
+      '--recovery',
+      '--no-system',
+    ].includes(a)
+  )
     flags[a.slice(2)] = true;
   else if (
-    ['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers', '--out'].includes(a)
+    ['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers', '--out', '--title'].includes(
+      a,
+    )
   ) {
     flags[a.slice(2)] = rest[++i];
     if (flags[a.slice(2)] === undefined) fail(`${a} needs a value.`);
@@ -621,13 +638,54 @@ function context() {
   }
 }
 
+// The prototype folder a command names, as its contributor key and folder name.
+function prototypeArg(usage) {
+  const match = /^src\/prototypes\/([^/]+)\/([^/]+)\/?$/.exec(positional[0] ?? '');
+  if (positional.length !== 1 || !match)
+    fail(`Usage: pnpm studio ${command} src/prototypes/<contributor>/<prototype>${usage}`);
+  return { key: match[1], id: match[2], folder: `src/prototypes/${match[1]}/${match[2]}` };
+}
+
+// The prototype menu's Rename, Duplicate, Archive, Restore, and Delete, with the same names and checks as the
+// dev server's routes (src/platform/node/build/vite-files-plugin.js): only a prototype you own.
+function organize(action) {
+  const usage = {
+    rename: ' --title "..."',
+    duplicate: ' [--title "..."] [--system <id> | --no-system]',
+    delete: ' [--yes]',
+  };
+  const { key, id, folder } = prototypeArg(usage[action] ?? '');
+  const owned = ownedPrototype(key, id, resolveContributor());
+  if (owned.error) fail(owned.error);
+  const meta = JSON.parse(fs.readFileSync(path.join(owned.dir, 'meta.json'), 'utf8'));
+  try {
+    if (action === 'rename') {
+      if (flags.title === undefined) fail(`Usage: pnpm studio rename ${folder}${usage.rename}`);
+      const { id: next } = renamePrototype({ key, id, title: flags.title });
+      say(
+        next === id
+          ? `Renamed ${folder}.`
+          : `Renamed ${folder} to src/prototypes/${key}/${next}. Its links were updated.`,
+      );
+    } else if (action === 'duplicate') {
+      if (flags['no-system'] && flags.system !== undefined) fail('Use --system or --no-system, not both.');
+      const system = flags['no-system'] ? null : flags.system;
+      const { id: copy } = duplicatePrototype({ key, id, title: flags.title ?? `${meta.title} copy`, system });
+      say(`Duplicated ${folder} to src/prototypes/${key}/${copy}.`);
+    } else if (action === 'archive' || action === 'restore') {
+      runOp(owned.dir, { op: 'meta', status: action === 'archive' ? 'archived' : 'active' });
+      say(action === 'archive' ? `Archived ${folder}. The deployed site leaves it out.` : `Restored ${folder}.`);
+    } else if (!flags.yes) say(`Delete “${meta.title}” (${folder})? Run again with --yes to move it to the Trash.`);
+    else say(`Moved “${meta.title}” to ${trash(owned.dir)}.`);
+  } catch (error) {
+    fail(error.message);
+  }
+}
+
 // The same Download as the prototype's menu: one HTML file that opens without Studio. Saved where a browser
 // would put it, ~/Downloads, unless --out names the file.
 async function download() {
-  const match = /^src\/prototypes\/([^/]+)\/([^/]+)\/?$/.exec(positional[0] ?? '');
-  if (positional.length !== 1 || !match)
-    fail('Usage: pnpm studio download src/prototypes/<contributor>/<prototype> [--out <file>]');
-  const [, key, id] = match;
+  const { key, id } = prototypeArg(' [--out <file>]');
   const out = path.resolve(flags.out ?? path.join(os.homedir(), 'Downloads', `${id}.html`));
   try {
     const html = await downloadPrototype({ key, id });
@@ -644,6 +702,11 @@ const commands = {
   status,
   context,
   download,
+  rename: () => organize('rename'),
+  duplicate: () => organize('duplicate'),
+  archive: () => organize('archive'),
+  restore: () => organize('restore'),
+  delete: () => organize('delete'),
   list,
   check,
   sync: () => {

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Your agent can now do everything in a prototype's **…** menu: `pnpm studio rename`, `duplicate`, `archive`, `restore`, and `delete` sit beside `download`, with the menu's names and the same checks, so an agent no longer edits folders and `meta.json` by hand to do them.
+
 ## 0.4.0 (2026-11-23)
 
 - **Download** in a prototype's **…** menu (or `pnpm studio download <prototype folder>` for your agent) saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
