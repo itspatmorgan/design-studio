@@ -32,10 +32,7 @@ export function installStillness(win: Window & typeof globalThis): Stillness {
   };
   win.setTimeout = ((handler: TimerHandler, delay?: number, ...args: unknown[]) => {
     if (typeof handler !== 'function') return native.setTimeout(handler, delay, ...args);
-    const id = native.setTimeout(
-      () => (held ? timeouts.set(id, () => handler(...args)) : handler(...args)),
-      delay,
-    );
+    const id = native.setTimeout(() => (held ? timeouts.set(id, () => handler(...args)) : handler(...args)), delay);
     return id;
   }) as typeof win.setTimeout;
   win.clearTimeout = id => {
