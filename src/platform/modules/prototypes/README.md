@@ -115,6 +115,10 @@ Individual artifacts and folders have no separate archival status. Organizing th
 
 `src/platform/core/archive.ts` defines exclusion, and the manifest and production globs apply it. The [archiving rule](skills/organize-prototype/SKILL.md) owns the agent's choice and verification workflow.
 
+## Download
+
+Locally, **Download** in a prototype's **…** menu saves it as one HTML file that opens in a browser without Studio, for someone who can't reach a published site. `node/download.js` runs the production build with only that prototype (`STUDIO_DOWNLOAD`, applied by `forDeploy` in `src/platform/core/archive.ts`) and folds the script, styles, and manifest into the page. The app finds the embedded manifest (`src/platform/app/data/downloaded.ts`), so it uses hash URLs, opens on the prototype, and leaves out the rail, Copy link, and the system link. Views, documents, diagrams and canvases render through the same viewer as the published site. Files a prototype fetches at run time, such as from `public/`, are not included.
+
 ## Validation
 
 Module checks enforce runtime dependency boundaries through `src/platform/node/lib/scope.js` and validate prototype styles. Manifest checks validate metadata and artifact structure. These checks do not enforce every agent operating instruction.
@@ -134,6 +138,7 @@ The Prototypes module: the gallery at `/prototypes`, and the viewer every protot
 - `viewer/`: a prototype's layout, navigation and file tree, its menus and dialogs (browser). Source editing uses the [shared platform editor](../../context/maintainers/source.md).
 - `src/platform/app/source/ArtifactSource.tsx`: adapts prototype and system context access to the shared editor.
 - `node/create.js`: `pnpm new`, and what the New prototype button runs (Node).
+- `node/download.js`: a prototype as one HTML file, for **Download** (Node).
 
 Agent contract: `src/platform/modules/prototypes/skills/build-prototype/SKILL.md`.
 

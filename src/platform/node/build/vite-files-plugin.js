@@ -28,6 +28,7 @@ import { documentationSources, sourceFile } from './files/source.js';
 //   POST /__studio/prototype-duplicate { contributor, prototype, title, system }   copy an owned personal prototype
 //   POST /__studio/prototype-rename { contributor, prototype, title }   retitle a prototype you own; a new title renames its folder too
 //   POST /__studio/prototype-delete { contributor, prototype }   move a prototype you own to the Trash
+//   POST /__studio/prototype-download { contributor, prototype }   any prototype as one HTML file (prototypes/node/download.js)
 //     It replies with the new path and the updated manifest, so the app can follow a renamed view.
 //
 // POST /__studio/editor opens an installed editor or explains its Finder fallback.
@@ -45,6 +46,7 @@ import { ROOT } from './files/paths.js';
 import { pathToFileURL } from 'node:url';
 import { buildManifest } from './build-manifest.js';
 import { createPrototype, renamePrototype } from '../../modules/prototypes/node/create.js';
+import { downloadPrototype } from '../../modules/prototypes/node/download.js';
 import { duplicatePrototype } from '../../modules/prototypes/node/duplicate.js';
 import { publishManifest } from './vite-manifest-watch-plugin.js';
 import { resolveContributor } from '../cli/resolve-contributor.js';
@@ -365,6 +367,16 @@ export default function filesPlugin() {
               const { id, manifest } = duplicatePrototype({ key: contributor, id: prototype, title, system });
               publishManifest(server, manifest, req.headers['x-studio-tab']);
               return send(res, 200, { prototype: id, manifest });
+            } catch (e) {
+              return send(res, 400, { error: e.message });
+            }
+          }
+          if (req.method === 'POST' && url.pathname === '/prototype-download') {
+            const { contributor, prototype } = await readJson(req);
+            try {
+              const html = await downloadPrototype({ key: contributor, id: prototype });
+              res.setHeader('Content-Type', 'text/html; charset=utf-8');
+              return res.end(html);
             } catch (e) {
               return send(res, 400, { error: e.message });
             }

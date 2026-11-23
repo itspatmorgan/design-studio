@@ -36,6 +36,7 @@ import {
 import type { Manifest } from '@/platform/app/data/types';
 import { addressOf } from '@/platform/core/roots';
 import { previewShortcut } from '@/platform/app/shell/artifactShortcuts';
+import { appPage, messageOrigin, postTarget } from '@/platform/app/data/downloaded';
 
 let lifecycleSequence = 0; // Monotonic for this child document, including renderer remounts.
 type Status = Extract<PreviewMessage, { kind: 'status' }>;
@@ -89,7 +90,7 @@ function RuntimeView() {
             sequence: ++lifecycleSequence,
             lifecycle,
           },
-          location.origin,
+          postTarget(),
         );
     });
     lifecycle.current = controller;
@@ -166,7 +167,7 @@ function RuntimeView() {
 }
 
 async function targetFromHref(href: string): Promise<Config['target'] | null> {
-  const url = new URL(href, location.origin);
+  const url = new URL(href, location.href);
   if (url.searchParams.get('mode') === 'source') return null;
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const pathname = url.pathname.slice(base.length);
@@ -204,7 +205,7 @@ function start() {
   document.documentElement.dataset.previewRuntime = runtime;
   // Native links (including modified clicks) and relative assets see the artifact address.
   const addressBase = document.createElement('base');
-  addressBase.href = new URL(bootstrap.config.href, location.origin).href;
+  addressBase.href = new URL(bootstrap.config.href, location.href).href;
   document.head.prepend(addressBase);
   let current = bootstrap.config;
   let request = 0;
@@ -232,7 +233,7 @@ function start() {
       | { kind: 'navigate'; href: string; replace: boolean }
       | { kind: 'shortcut'; action: 'source' | 'grid' | 'palette' | 'navigation' },
   ) => {
-    if (hosted) window.parent.postMessage({ ...envelope(), ...event }, location.origin);
+    if (hosted) window.parent.postMessage({ ...envelope(), ...event }, postTarget());
   };
   function Runtime() {
     const [config, setConfig] = useState(current);
@@ -244,7 +245,7 @@ function start() {
         if (hosted)
           window.parent.postMessage(
             { ...envelope(), identity, kind: 'status', state, render: lastRender, detail: detail.slice(0, 4096) },
-            location.origin,
+            postTarget(),
           );
       },
       [identity],
@@ -252,7 +253,7 @@ function start() {
     useEffect(() => {
       const apply = (next: Config) => {
         current = next;
-        addressBase.href = new URL(next.href, location.origin).href;
+        addressBase.href = new URL(next.href, location.href).href;
         describe(next);
         setConfig(next);
         if (history.location.href !== next.href) {
@@ -264,7 +265,7 @@ function start() {
           !acceptsHost(
             event,
             window.parent,
-            location.origin,
+            messageOrigin(),
             bootstrap.session,
             runtime,
             bootstrap.config.surface,
@@ -289,13 +290,11 @@ function start() {
           return;
         }
         if (prototypeScopeOf(target) !== prototypeScopeOf(current.target)) {
-          window.location.assign(
-            previewUrl({ ...current, target, href }, crypto.randomUUID(), import.meta.env.BASE_URL),
-          );
+          window.location.assign(previewUrl({ ...current, target, href }, crypto.randomUUID(), appPage()));
           return;
         }
         apply({ ...current, target, href });
-        const url = previewUrl(current, bootstrap.session, import.meta.env.BASE_URL);
+        const url = previewUrl(current, bootstrap.session, appPage());
         if (replace) window.history.replaceState(null, '', url);
         else window.history.pushState(null, '', url);
       };
@@ -332,7 +331,7 @@ function start() {
               import.meta.env.BASE_URL,
             ) as never,
           });
-        } else if (url.origin === location.origin && url.pathname.startsWith(import.meta.env.BASE_URL)) {
+        } else if (url.origin === messageOrigin() && url.pathname.startsWith(import.meta.env.BASE_URL)) {
           // Native anchors and TanStack links both stay inside the Studio navigation policy.
           event.preventDefault();
           void router.navigate({

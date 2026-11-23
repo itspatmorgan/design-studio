@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Download** in a prototype's **…** menu saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
+
 ## 0.3.0 (2026-11-23)
 
 - Asset Guard's limit is a team setting: `assetLimitKB` in `studio.config.json`, also in Studio settings under General, instead of a constant and an `ALLOWLIST` in platform code. The guard reads it from the commit it checks, files tracked by Git LFS pass at any size, and its message, in CI too, links `src/platform/context/assets.md#large-files`: why Git handles large files badly, and the options in order (keep the default, raise the limit, Git LFS or media hosting). **Breaking:** add `"assetLimitKB": 750` to `studio.config.json`, and track any files you listed in the removed `ALLOWLIST` with Git LFS or raise the limit. Thanks @lockwk.

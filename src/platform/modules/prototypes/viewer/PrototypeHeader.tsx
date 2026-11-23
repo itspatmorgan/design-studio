@@ -27,6 +27,7 @@ import {
 } from '@/platform/systems/studio/components/dropdown-menu';
 import { useRenamePrototype } from '@/platform/modules/prototypes/viewer/useRenamePrototype';
 import { usePrototypeActions, type Action } from '@/platform/modules/prototypes/viewer/usePrototypeActions';
+import { downloaded } from '@/platform/app/data/downloaded';
 import { NavHeader } from '@/platform/app/shell/nav';
 import { menuGroups } from '@/platform/app/shell/menuGroups';
 import { Link } from '@tanstack/react-router';
@@ -181,7 +182,9 @@ export default function PrototypeHeader({ proto }: { proto: Prototype }) {
           </div>
           <div className='mt-1 mb-2 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground'>
             <span>System ·</span>
-            {system ? (
+            {system && downloaded ? (
+              <span>{system.label}</span>
+            ) : system ? (
               <Link
                 to={systemPath(proto.system!) as never}
                 className='min-w-0 truncate rounded-sm hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-ring'
