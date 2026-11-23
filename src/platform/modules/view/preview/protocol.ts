@@ -116,9 +116,10 @@ export function acceptsPreview(
     (event.data.kind === 'hello' || (event.data.runtime === runtime && event.data.identity === identity))
   );
 }
-export function previewUrl(config: Config, session: string, base: string) {
+// `page` is the document that runs the app (src/platform/app/data/downloaded.ts appPage).
+export function previewUrl(config: Config, session: string, page: string) {
   const params = new URLSearchParams({ 'studio-preview': '1', session, config: JSON.stringify(config) });
-  return base + 'index.html?' + params;
+  return page + '?' + params;
 }
 export function readBootstrap(search: string): { config: Config; session: string } {
   if (search.length > 8192) throw new Error('Preview address is too long.');

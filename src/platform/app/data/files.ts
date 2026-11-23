@@ -85,6 +85,21 @@ export function openInEditor(p: PrototypeInfo, file: string) {
   return openRepositoryFile(repoPath(p, file));
 }
 
+// Builds the prototype into one HTML file someone can open without Studio, and saves it (prototypes/node/download.js).
+export async function downloadPrototype(p: PrototypeInfo) {
+  const res = await fetch('/__studio/prototype-download', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contributor: p.contributorKey, prototype: p.id }),
+  });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Couldn't download this prototype.");
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(await res.blob());
+  link.download = `${p.id}.html`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
+}
+
 // Shows a file in Finder (or your system's file browser).
 export async function revealInFinder(p: PrototypeInfo, file: string) {
   try {
