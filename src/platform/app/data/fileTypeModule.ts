@@ -10,7 +10,15 @@ export type ArtifactContext = { proto: Prototype; item: Artifact };
 
 // What a type shows where another item includes it (in documents or on canvases): a live preview, in a box of
 // this size. A type without one is shown as a card.
-export type EmbedProps = { proto: Prototype; item: Artifact; width: number; height: number; loadingStartedAt?: number };
+// `still`: the surface wants a still picture, so an Embed with motion may hold it once rendered.
+export type EmbedProps = {
+  proto: Prototype;
+  item: Artifact;
+  width: number;
+  height: number;
+  still: boolean;
+  loadingStartedAt?: number;
+};
 
 export type FileTypeModule<Props extends object = any> = {
   // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -9,7 +9,8 @@
     "_components",
     "landing-v1.tsx",
     "landing-v2.tsx",
-    "landing-v3.tsx"
+    "landing-v3.tsx",
+    "hero-motion.tsx"
   ],
   "studioId": "2h7mkxzppqfjv1xv",
   "ownerContributorId": "62bhewkp605tb9y6",

@@ -14,7 +14,15 @@ import type { Artifact, Prototype } from '@/platform/app/data/types';
 import './canvas.css';
 import { cameraKey, initialCamera, useRememberCamera } from './camera';
 import { ControlTooltip } from './ControlTooltip';
-import { CanvasItem, normalizeEmbeds, onlyItemsSelected, openingEmbedIds, renderFlags, validateEmbed } from './embeds';
+import {
+  CanvasItem,
+  normalizeEmbeds,
+  onlyItemsSelected,
+  openingEmbedIds,
+  playingId,
+  renderFlags,
+  validateEmbed,
+} from './embeds';
 import { parseCanvas } from './format';
 import { useHelpDialogPruning } from './helpDialog';
 import { MOUNT_INTERVAL_MS, SWEEP_INTERVAL_MS, createMountGate, pickEvictions } from './liveViews';
@@ -268,6 +276,7 @@ function Editor({
           offscreen={offscreen}
           overview={overview}
           mounted={lastSeen.current.has(element.id)}
+          playing={playingId(appState) === element.id}
         />
       );
     },

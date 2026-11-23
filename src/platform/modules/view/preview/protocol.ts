@@ -10,7 +10,8 @@ export type Target = {
   artifactId: string | null;
 };
 export type Surface = 'page' | 'embed';
-export type Config = { target: Target; href: string; dark: boolean; surface: Surface };
+// `still`: an embed holds its motion once rendered (README.md#still-embeds). A page is never still.
+export type Config = { target: Target; href: string; dark: boolean; surface: Surface; still: boolean };
 export type Envelope = {
   channel: typeof CHANNEL;
   version: typeof VERSION;
@@ -55,7 +56,9 @@ export function validConfig(value: unknown): value is Config {
     validTarget(value.target) &&
     validHref(value.href) &&
     typeof value.dark === 'boolean' &&
-    (value.surface === 'page' || value.surface === 'embed')
+    (value.surface === 'page' || value.surface === 'embed') &&
+    typeof value.still === 'boolean' &&
+    !(value.surface === 'page' && value.still)
   );
 }
 function envelope(value: unknown): value is Record<string, unknown> & Envelope {

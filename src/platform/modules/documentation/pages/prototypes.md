@@ -27,7 +27,7 @@ While an agent changes files, the last working preview may remain visible. **Out
 
 Ordinary edits preserve interaction state when possible. Opening another artifact or reloading can reset it. Live previews retained offscreen on a canvas continue updating; previews released to save memory start fresh when you return.
 
-Canvas and document previews are pictures of the working view. Open the original to interact with it.
+Canvas and document previews are pictures of the working view. Open the original to interact with it. On a canvas, views hold still once loaded so large canvases stay smooth; select one view to watch its motion.
 
 Preview separation contains styles and overlays. It does not make untrusted prototype code safe to run.
 

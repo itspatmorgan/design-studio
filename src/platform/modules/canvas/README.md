@@ -75,7 +75,7 @@ Fitted, read-only canvases in Markdown use the same quiet opening surface, bound
 
 ### Preview lifetime
 
-Retained view and diagram embeds use the [shared artifact lifecycle contract](../../context/maintainers/source.md#artifact-revision-and-preview-lifecycle). Offscreen hiding preserves mounted runtimes and updates within the existing admission/eviction policy; it does not pause them. Eviction, removal, or leaving disposes their listeners and pending work. Canvas scene saving retains its separate version and conflict model.
+Retained view and diagram embeds use the [shared artifact lifecycle contract](../../context/maintainers/source.md#artifact-revision-and-preview-lifecycle). Offscreen hiding preserves mounted runtimes and updates within the existing admission/eviction policy; it does not pause them. Mounted views are [still embeds](../view/README.md#still-embeds): each holds its motion once rendered, except the one selected item, which plays until it is deselected. Eviction, removal, or leaving disposes their listeners and pending work. Canvas scene saving retains its separate version and conflict model.
 
 ## Shared artifact host
 

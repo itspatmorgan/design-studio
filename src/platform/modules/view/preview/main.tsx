@@ -25,6 +25,7 @@ import {
   type PreviewMessage,
 } from './protocol';
 import PreviewSurface, { type LoadedView } from './PreviewSurface';
+import { installStillness } from './still';
 import {
   loadManifest,
   setManifest,
@@ -39,6 +40,8 @@ import { previewShortcut } from '@/platform/app/shell/artifactShortcuts';
 import { appPage, messageOrigin, postTarget } from '@/platform/app/data/downloaded';
 
 let lifecycleSequence = 0; // Monotonic for this child document, including renderer remounts.
+// A still embed holds its motion this long after it renders, so entrance animations finish first.
+const SETTLE_MS = 1000;
 type Status = Extract<PreviewMessage, { kind: 'status' }>;
 const RuntimeContext = createContext<{
   config: Config;
@@ -210,6 +213,19 @@ function start() {
   let current = bootstrap.config;
   let request = 0;
   let lastRender = 0;
+  // Still embeds (README.md#still-embeds). Native timers, taken before stillness wraps them, keep the
+  // runtime's own scheduling running while the view's motion is held.
+  const later = window.setTimeout.bind(window) as (handler: () => void, ms: number) => number;
+  const cancel = window.clearTimeout.bind(window);
+  const stillness = current.surface === 'embed' ? installStillness(window) : null;
+  let rendered = false;
+  let settling: number | undefined | undefined;
+  const updateMotion = () => {
+    cancel(settling);
+    if (!stillness) return;
+    if (!current.still || !rendered) stillness.release();
+    else settling = later(stillness.hold, SETTLE_MS);
+  };
   const history = createMemoryHistory({ initialEntries: [current.href] });
   const rootRoute = createRootRoute({ component: Outlet });
   const viewRoute = createRoute({ getParentRoute: () => rootRoute, path: '$', component: RuntimeView });
@@ -242,6 +258,8 @@ function start() {
     const status = useCallback(
       (state: Status['state'], render: number, detail = '') => {
         lastRender = Math.max(lastRender, render);
+        rendered = state === 'ready';
+        updateMotion();
         if (hosted)
           window.parent.postMessage(
             { ...envelope(), identity, kind: 'status', state, render: lastRender, detail: detail.slice(0, 4096) },
@@ -255,6 +273,7 @@ function start() {
         current = next;
         addressBase.href = new URL(next.href, location.href).href;
         describe(next);
+        updateMotion();
         setConfig(next);
         if (history.location.href !== next.href) {
           void router.navigate({ to: routerHref(next.href, import.meta.env.BASE_URL) as never, replace: true });
@@ -385,15 +404,22 @@ function start() {
         }
       };
       window.addEventListener('popstate', onPopState);
-      const reload = () => setRefresh(value => value + 1);
+      // A change releases held motion first, so the update renders and settles before holding again.
+      const reload = () => {
+        rendered = false;
+        updateMotion();
+        setRefresh(value => value + 1);
+      };
       const manifest = ({ manifest }: { manifest: Manifest }) => {
         setManifest(manifest);
         reload();
       };
-      let hmrTimer: ReturnType<typeof setTimeout> | undefined;
+      let hmrTimer: number | undefined | undefined;
       const hmrComplete = () => {
-        clearTimeout(hmrTimer);
-        hmrTimer = setTimeout(reload, 40);
+        cancel(hmrTimer);
+        rendered = false;
+        updateMotion();
+        hmrTimer = later(reload, 40);
       };
       const reportError = (detail: string) => {
         send({ kind: 'status', state: 'error', render: lastRender, detail: detail.slice(0, 4096) });
@@ -416,7 +442,8 @@ function start() {
       apply(current);
       send({ kind: 'hello' });
       return () => {
-        clearTimeout(hmrTimer);
+        cancel(hmrTimer);
+        cancel(settling);
         unsubscribe();
         window.removeEventListener('popstate', onPopState);
         window.removeEventListener('message', onMessage);

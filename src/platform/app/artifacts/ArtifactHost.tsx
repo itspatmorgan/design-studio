@@ -16,6 +16,7 @@ export type ArtifactHostProps = {
   interaction?: 'inert' | 'interactive';
   mounted?: boolean;
   hidden?: boolean;
+  still?: boolean;
   loadingStartedAt?: number;
   className?: string;
   children?: ReactNode;
@@ -30,6 +31,7 @@ export function ArtifactHost({
   interaction = 'inert',
   mounted = true,
   hidden = false,
+  still = false,
   loadingStartedAt,
   className,
   children,
@@ -136,7 +138,14 @@ export function ArtifactHost({
             }
           >
             <Suspense fallback={pending}>
-              <Embed proto={target.proto} item={target.item} width={width} height={height} loadingStartedAt={started} />
+              <Embed
+                proto={target.proto}
+                item={target.item}
+                width={width}
+                height={height}
+                still={still}
+                loadingStartedAt={started}
+              />
             </Suspense>
           </ErrorBoundary>
         ) : (

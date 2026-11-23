@@ -3,6 +3,8 @@
 ## Unreleased
 
 - **Download** in a prototype's **…** menu (or `pnpm studio download <prototype folder>` for your agent) saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
+- Canvases full of live views stay smooth. Each view holds still about a second after it loads, so a canvas sitting untouched no longer keeps the browser busy; select a view to watch its motion, and deselect it to hold it again. On a test canvas of nine animated pages, idle load fell from 98% to 0% and panning and zooming went from about 42 to 54 frames per second. Pages, and views embedded in documents, play as before. On read-only canvases nothing can be selected, so open a view there to see it move. The Design Studio Marketing sample's new Hero Motion view, on its Review Board as V4, shows it.
+- Module authors: Embeds receive `still` in `EmbedProps`, true when the surface wants a still picture, and `ArtifactHost` takes `still` (default `false`).
 
 ## 0.3.0 (2026-11-23)
 

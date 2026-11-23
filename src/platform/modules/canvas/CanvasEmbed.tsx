@@ -134,6 +134,7 @@ function FittedCanvas({ proto, item, width, height, loadingStartedAt }: EmbedPro
                 offscreen={false}
                 overview={false}
                 mounted
+                playing={false}
               />
             )}
           />
