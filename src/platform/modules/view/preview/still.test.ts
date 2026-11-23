@@ -44,7 +44,7 @@ test('held motion waits, then runs on release', async () => {
     assert.equal(ran.length, 0);
     still.release();
     assert.equal(animation.playState, 'running');
-    assert.deepEqual(ran.slice(0, 2), ['timeout', 'frame']);
+    assert.deepEqual(ran, ['timeout']); // frames wait for the next real frame
     await tick();
     assert.ok(ran.includes('interval'));
     assert.ok(!ran.includes('cleared'));

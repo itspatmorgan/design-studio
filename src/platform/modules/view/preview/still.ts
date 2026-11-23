@@ -7,7 +7,7 @@ export type Stillness = { hold(): void; release(): void };
 export function installStillness(win: Window & typeof globalThis): Stillness {
   let held = false;
   // Callbacks that came due while held. Frame ids and timer ids are separate number spaces.
-  const frames = new Map<number, () => void>();
+  const frames = new Map<number, FrameRequestCallback>();
   const timeouts = new Map<unknown, () => void>();
   let paused: { animations: Animation[]; media: HTMLMediaElement[] } = {
     animations: [],
@@ -21,9 +21,7 @@ export function installStillness(win: Window & typeof globalThis): Stillness {
     setInterval: win.setInterval.bind(win),
   };
   win.requestAnimationFrame = callback => {
-    const id: number = native.requestAnimationFrame(time =>
-      held ? frames.set(id, () => callback(win.performance.now())) : callback(time),
-    );
+    const id: number = native.requestAnimationFrame(time => (held ? frames.set(id, callback) : callback(time)));
     return id;
   };
   win.cancelAnimationFrame = id => {
@@ -61,10 +59,13 @@ export function installStillness(win: Window & typeof globalThis): Stillness {
       paused.animations.forEach(animation => animation.playState === 'paused' && animation.play());
       paused.media.forEach(media => void media.play().catch(() => {}));
       paused = { animations: [], media: [] };
-      const due = [...timeouts.values(), ...frames.values()];
+      const due = [...timeouts.values()];
+      const drawn = [...frames.values()];
       timeouts.clear();
       frames.clear();
       due.forEach(callback => callback());
+      // Frame callbacks run in the next real frame, as they would have.
+      if (drawn.length) native.requestAnimationFrame(time => drawn.forEach(callback => callback(time)));
     },
   };
 }
