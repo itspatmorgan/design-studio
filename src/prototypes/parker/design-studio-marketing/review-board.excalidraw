@@ -493,6 +493,62 @@
       "width": 480,
       "x": -680,
       "y": 150
+    },
+    {
+      "boundElements": [],
+      "customData": {
+        "frame": true,
+        "hideLinkIcon": true
+      },
+      "frameId": "muv4motfr4m3k1",
+      "height": 475,
+      "id": "muv4motem6bd2q",
+      "index": "aP",
+      "link": "/prototypes/2h7mkxzppqfjv1xv/artifacts/d87cbzqxprc8ct2k",
+      "seed": 891956897,
+      "strokeColor": "transparent",
+      "type": "embeddable",
+      "version": 1,
+      "versionNonce": 961882001,
+      "width": 700,
+      "x": 3682.38,
+      "y": 60
+    },
+    {
+      "boundElements": [],
+      "height": 595,
+      "id": "muv4motfr4m3k1",
+      "index": "aQ",
+      "name": "V4",
+      "seed": 1837559598,
+      "type": "frame",
+      "version": 1,
+      "versionNonce": 502082129,
+      "width": 820,
+      "x": 3622.32,
+      "y": 0
+    },
+    {
+      "autoResize": false,
+      "boundElements": [],
+      "containerId": null,
+      "fontFamily": 6,
+      "fontSize": 24,
+      "height": 120,
+      "id": "muv4mottx7h9pa",
+      "index": "aR",
+      "lineHeight": 1.25,
+      "originalText": "V4 / Motion\n\nThe copy rises in and an agent run loops.\nHolds still on the canvas; select it to play.",
+      "seed": 516919209,
+      "text": "V4 / Motion\n\nThe copy rises in and an agent run loops.\nHolds still on the canvas; select it to play.",
+      "textAlign": "left",
+      "type": "text",
+      "version": 1,
+      "versionNonce": 1012549034,
+      "verticalAlign": "top",
+      "width": 700,
+      "x": 3622.32,
+      "y": -240.19
     }
   ],
   "appState": {
