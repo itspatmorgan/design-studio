@@ -32,7 +32,6 @@ import { downloadPrototype } from '../../modules/prototypes/node/download.js';
 import { renamePrototype } from '../../modules/prototypes/node/create.js';
 import { duplicatePrototype } from '../../modules/prototypes/node/duplicate.js';
 import { ownedPrototype } from '../build/files/policy.js';
-import { runOp, trash } from '../build/files/ops.js';
 import { loadContributors } from '../lib/contributors.js';
 import {
   SUPPLIED_MODULES_ROOT,
@@ -646,37 +645,30 @@ function prototypeArg(usage) {
   return { key: match[1], id: match[2], folder: `src/prototypes/${match[1]}/${match[2]}` };
 }
 
-// The prototype menu's Rename, Duplicate, Archive, Restore, and Delete, with the same names and checks as the
-// dev server's routes (src/platform/node/build/vite-files-plugin.js): only a prototype you own.
+// The prototype menu's Rename and Duplicate, with the same checks as the dev server's routes
+// (src/platform/node/build/vite-files-plugin.js): only a prototype you own. They get commands because they
+// repair links and assign identities, which hand edits get wrong; simpler actions are in the organize-prototype skill.
 function organize(action) {
-  const usage = {
-    rename: ' --title "..."',
-    duplicate: ' [--title "..."] [--system <id> | --no-system]',
-    delete: ' [--yes]',
-  };
-  const { key, id, folder } = prototypeArg(usage[action] ?? '');
+  const usage = action === 'rename' ? ' --title "..."' : ' [--title "..."] [--system <id> | --no-system]';
+  const { key, id, folder } = prototypeArg(usage);
   const owned = ownedPrototype(key, id, resolveContributor());
   if (owned.error) fail(owned.error);
-  const meta = JSON.parse(fs.readFileSync(path.join(owned.dir, 'meta.json'), 'utf8'));
   try {
     if (action === 'rename') {
-      if (flags.title === undefined) fail(`Usage: pnpm studio rename ${folder}${usage.rename}`);
+      if (flags.title === undefined) fail(`Usage: pnpm studio rename ${folder}${usage}`);
       const { id: next } = renamePrototype({ key, id, title: flags.title });
       say(
         next === id
           ? `Renamed ${folder}.`
           : `Renamed ${folder} to src/prototypes/${key}/${next}. Its links were updated.`,
       );
-    } else if (action === 'duplicate') {
+    } else {
       if (flags['no-system'] && flags.system !== undefined) fail('Use --system or --no-system, not both.');
+      const { title } = JSON.parse(fs.readFileSync(path.join(owned.dir, 'meta.json'), 'utf8'));
       const system = flags['no-system'] ? null : flags.system;
-      const { id: copy } = duplicatePrototype({ key, id, title: flags.title ?? `${meta.title} copy`, system });
+      const { id: copy } = duplicatePrototype({ key, id, title: flags.title ?? `${title} copy`, system });
       say(`Duplicated ${folder} to src/prototypes/${key}/${copy}.`);
-    } else if (action === 'archive' || action === 'restore') {
-      runOp(owned.dir, { op: 'meta', status: action === 'archive' ? 'archived' : 'active' });
-      say(action === 'archive' ? `Archived ${folder}. The deployed site leaves it out.` : `Restored ${folder}.`);
-    } else if (!flags.yes) say(`Delete “${meta.title}” (${folder})? Run again with --yes to move it to the Trash.`);
-    else say(`Moved “${meta.title}” to ${trash(owned.dir)}.`);
+    }
   } catch (error) {
     fail(error.message);
   }
@@ -704,9 +696,6 @@ const commands = {
   download,
   rename: () => organize('rename'),
   duplicate: () => organize('duplicate'),
-  archive: () => organize('archive'),
-  restore: () => organize('restore'),
-  delete: () => organize('delete'),
   list,
   check,
   sync: () => {
