@@ -121,7 +121,7 @@ test('configuration identity and surface are explicit and validated', () => {
 });
 
 test('direct preview URLs round-trip under a static base path without another HTML entry', () => {
-  const url = new URL(previewUrl(config, envelope.session, '/studio/'), origin);
+  const url = new URL(previewUrl(config, envelope.session, '/studio/index.html'), origin);
   assert.equal(url.pathname, '/studio/index.html');
   assert.equal(url.searchParams.get('studio-preview'), '1');
   assert.deepEqual(readBootstrap(url.search), { config, session: envelope.session });

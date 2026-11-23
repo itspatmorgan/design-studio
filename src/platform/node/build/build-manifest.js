@@ -566,8 +566,12 @@ export function buildManifest({ deploy = false, write = true, quiet = false, tou
     errors += result.errors;
   }
 
-  // What the deployed site leaves out (src/platform/core/archive.ts).
-  const { kept, archived } = forDeploy([...prototypes, ...Object.values(sections).flat()]);
+  // What the deployed site leaves out (src/platform/core/archive.ts). A download build
+  // (src/platform/modules/prototypes/node/download.js) keeps only its prototype.
+  const { kept, archived } = forDeploy(
+    [...prototypes, ...Object.values(sections).flat()],
+    process.env.STUDIO_DOWNLOAD || undefined,
+  );
   const keptPrototypes = kept.filter(p => !(p.contributorKey in sections));
   const keptSections = Object.fromEntries(
     Object.keys(sections).map(key => [key, kept.filter(p => p.contributorKey === key)]),

@@ -7,6 +7,7 @@ import { moduleConsumers } from '../lib/imports.js';
 // The commands behind pnpm studio; their summary is the help text in studio.js.
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import { knowledgeOwners, skillCatalog, syncSkillAdapters } from '../lib/agent-skills.js';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -27,6 +28,7 @@ import { applySetupChanges, editDeclaration } from '../lib/studio-setup.js';
 import { planSettings } from '../lib/studio-settings.js';
 import { renderAgents } from '../lib/agents-file.js';
 import { resolveContributor } from './resolve-contributor.js';
+import { downloadPrototype } from '../../modules/prototypes/node/download.js';
 import { loadContributors } from '../lib/contributors.js';
 import {
   SUPPLIED_MODULES_ROOT,
@@ -56,7 +58,9 @@ for (let i = 0; i < rest.length; i++) {
   if (a === '--') continue;
   if (['--yes', '--content', '--force', '--json', '--check', '--restore-prototypes', '--recovery'].includes(a))
     flags[a.slice(2)] = true;
-  else if (['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers'].includes(a)) {
+  else if (
+    ['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers', '--out'].includes(a)
+  ) {
     flags[a.slice(2)] = rest[++i];
     if (flags[a.slice(2)] === undefined) fail(`${a} needs a value.`);
   } else if (a.startsWith('--')) fail(`Unknown option ${a}.`);
@@ -617,10 +621,29 @@ function context() {
   }
 }
 
+// The same Download as the prototype's menu: one HTML file that opens without Studio. Saved where a browser
+// would put it, ~/Downloads, unless --out names the file.
+async function download() {
+  const match = /^src\/prototypes\/([^/]+)\/([^/]+)\/?$/.exec(positional[0] ?? '');
+  if (positional.length !== 1 || !match)
+    fail('Usage: pnpm studio download src/prototypes/<contributor>/<prototype> [--out <file>]');
+  const [, key, id] = match;
+  const out = path.resolve(flags.out ?? path.join(os.homedir(), 'Downloads', `${id}.html`));
+  try {
+    const html = await downloadPrototype({ key, id });
+    fs.mkdirSync(path.dirname(out), { recursive: true });
+    fs.writeFileSync(out, html);
+    say(`Downloaded ${positional[0]} to ${out} (${(Buffer.byteLength(html) / 1e6).toFixed(1)} MB).`);
+  } catch (error) {
+    fail(error.message);
+  }
+}
+
 const commands = {
   configure,
   status,
   context,
+  download,
   list,
   check,
   sync: () => {

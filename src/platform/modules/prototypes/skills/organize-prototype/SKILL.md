@@ -1,6 +1,6 @@
 ---
 name: organize-prototype
-description: "Rename, move, duplicate, archive, restore, or remove a Design Studio prototype and preserve its links and original work."
+description: "Rename, move, duplicate, archive, restore, download, or remove a Design Studio prototype and preserve its links and original work."
 ---
 
 # Organize a prototype
@@ -20,6 +20,10 @@ Read the prototype contract's [archiving and deployment definition](../../README
 - Check active links before archiving and resolve warnings about excluded targets.
 
 The [Prototypes chapter](../../../documentation/pages/prototypes.md#how-do-i-organize-artifacts) explains the local controls when the Manual is enabled.
+
+## Download
+
+To share a prototype with someone who can't open the studio, run `pnpm studio download src/prototypes/<key>/<id>`, the same **Download** as the prototype's menu. It saves one HTML file to `~/Downloads/<id>.html` (or `--out <file>`) and takes about as long as `pnpm build`. Tell the person where the file is. Files a view fetches at run time, such as from `public/`, aren't included; see [Download](../../README.md#download).
 
 ## Verify
 

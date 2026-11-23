@@ -11,12 +11,23 @@ import {
   ArchiveRestoreIcon,
   Copy01Icon,
   Delete02Icon,
+  Download01Icon,
   FileEditIcon,
   Folder01Icon,
   Link01Icon,
   PencilEdit02Icon,
 } from '@hugeicons/core-free-icons';
-import { fileOp, openInEditor, ownsPrototype, repoPath, revealInFinder, useMe } from '@/platform/app/data/files';
+import {
+  downloadPrototype,
+  fileOp,
+  openInEditor,
+  ownsPrototype,
+  repoPath,
+  revealInFinder,
+  useMe,
+} from '@/platform/app/data/files';
+import { downloaded } from '@/platform/app/data/downloaded';
+import { isSectionKey } from '@/platform/core/roots';
 import { prototypeLink } from '@/platform/app/data/manifest';
 import type { PrototypeInfo } from '@/platform/app/data/types';
 import { moduleApps } from '@/platform/app/modules';
@@ -55,6 +66,19 @@ export function usePrototypeActions(proto: PrototypeInfo) {
     }
   }
 
+  // A prototype as one HTML file for someone without Studio. The build takes a few seconds.
+  const download = () =>
+    void toast
+      .promise(downloadPrototype(proto), {
+        loading: { title: 'Downloading', type: 'loading' },
+        success: { title: 'Download ready' },
+        error: (e: unknown) => ({
+          title: e instanceof Error ? e.message : "Couldn't download this prototype.",
+          type: 'error',
+        }),
+      })
+      .catch(() => {});
+
   const copyLink = () => {
     const href = router.buildLocation(prototypeLink(proto)).href;
     navigator.clipboard.writeText(new URL(href, location.origin).href);
@@ -72,7 +96,8 @@ export function usePrototypeActions(proto: PrototypeInfo) {
         [
           local && { label: 'Open in editor', icon: FileEditIcon, onSelect: () => openInEditor(proto, '') },
           local && { label: 'Reveal in Finder', icon: Folder01Icon, onSelect: () => revealInFinder(proto, '') },
-          { label: 'Copy link', icon: Link01Icon, onSelect: copyLink },
+          // A downloaded prototype has no address to share.
+          !downloaded && { label: 'Copy link', icon: Link01Icon, onSelect: copyLink },
           local && {
             label: 'Copy path',
             icon: Copy01Icon,
@@ -81,6 +106,9 @@ export function usePrototypeActions(proto: PrototypeInfo) {
               toast.add({ title: 'Path copied' });
             },
           },
+          // Anyone running Studio can download any prototype; it needs the dev server, not ownership.
+          import.meta.env.DEV &&
+            !isSectionKey(proto.contributorKey) && { label: 'Download', icon: Download01Icon, onSelect: download },
         ],
         [
           editable && { label: 'Rename', icon: PencilEdit02Icon, onSelect: () => setRenaming(true) },

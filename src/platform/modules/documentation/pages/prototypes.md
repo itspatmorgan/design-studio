@@ -109,6 +109,12 @@ Right-click a view and choose **Make lo-fi** for grayscale and handwritten type.
 
 To try another system, choose **Duplicate** and select the target system. This creates a rebuild copy and preserves the original. Use **Copy rebuild instructions** in the copy's sidebar and give them to your agent. The copy keeps its current system until the agent migrates and verifies it; duplication does not convert code automatically.
 
+## How do I share a prototype without publishing?
+
+Choose **Download** in the prototype's **…** menu. Studio saves the whole prototype as one HTML file: its views, documents, diagrams and canvases, with its navigation, and without the rest of the studio. Anyone can open it in a browser, without Studio or a server. Send it to a teammate or client to click through and review.
+
+It takes a few seconds and is usually around 10 MB. Files a view loads while it runs, such as data from `public/`, aren't included, so check the file before you send it.
+
 ## What do archive and delete do?
 
 Use the prototype or system's **…** menu. Permissions determine available actions.

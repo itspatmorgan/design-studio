@@ -11,6 +11,9 @@ const HELP = `Usage: pnpm studio <command> [options]
   check                               validate the local studio
   sync [--check]                      synchronize routing and project skills; --check never writes
   context <prototype-folder> [--json] inspect assignment, rebuild target, scope, and guidance paths
+  download <prototype-folder> [--out <file>]
+                                      save the prototype as one HTML file that opens without Studio
+                                      (the menu's Download; ~/Downloads/<id>.html unless --out)
   identity-audit [--json]             inspect existing and missing IDs; never writes
   identify <prototype-folder> [--yes] [--json]
                                       assign missing IDs to files created outside Studio
