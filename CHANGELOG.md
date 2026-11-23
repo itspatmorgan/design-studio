@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- **Download** in a prototype's **…** menu saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
+- **Download** in a prototype's **…** menu (or `pnpm studio download <prototype folder>` for your agent) saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
 
 ## 0.3.0 (2026-11-23)
 

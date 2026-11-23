@@ -117,7 +117,7 @@ Individual artifacts and folders have no separate archival status. Organizing th
 
 ## Download
 
-Locally, **Download** in a prototype's **…** menu saves it as one HTML file that opens in a browser without Studio, for someone who can't reach a published site. `node/download.js` runs the production build with only that prototype (`STUDIO_DOWNLOAD`, applied by `forDeploy` in `src/platform/core/archive.ts`) and folds the script, styles, and manifest into the page. The app finds the embedded manifest (`src/platform/app/data/downloaded.ts`), so it uses hash URLs, opens on the prototype, and leaves out the rail, Copy link, and the system link. Views, documents, diagrams and canvases render through the same viewer as the published site. Files a prototype fetches at run time, such as from `public/`, are not included.
+Locally, **Download** in a prototype's **…** menu, or `pnpm studio download <prototype folder>` for agents, saves it as one HTML file that opens in a browser without Studio, for someone who can't reach a published site. `node/download.js` runs the production build with only that prototype (`STUDIO_DOWNLOAD`, applied by `forDeploy` in `src/platform/core/archive.ts`) and folds the script, styles, and manifest into the page. The app finds the embedded manifest (`src/platform/app/data/downloaded.ts`), so it uses hash URLs, opens on the prototype, and leaves out the rail, Copy link, and the system link. Views, documents, diagrams and canvases render through the same viewer as the published site. Files a prototype fetches at run time, such as from `public/`, are not included.
 
 ## Validation
 
