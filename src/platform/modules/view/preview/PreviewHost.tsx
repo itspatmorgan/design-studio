@@ -24,6 +24,7 @@ export default function PreviewHost({
   href,
   title,
   surface,
+  still,
   width,
   height,
 }: {
@@ -31,6 +32,8 @@ export default function PreviewHost({
   href: string;
   title: string;
   surface: Surface;
+  // An embed that holds its motion once rendered. A page is never still.
+  still: boolean;
   width?: number;
   height?: number;
 }) {
@@ -62,7 +65,7 @@ export default function PreviewHost({
     surface === 'page'
       ? pageUrl.pathname + pageUrl.search + pageUrl.hash
       : import.meta.env.BASE_URL.replace(/\/$/, '') + href;
-  const config: Config = { target, href: currentHref, dark, surface };
+  const config: Config = { target, href: currentHref, dark, surface, still: surface === 'embed' && still };
   const current = useRef(config);
   current.current = config;
   // Stable URL: artifact, theme and search changes travel through configure, never a remount.
@@ -94,7 +97,7 @@ export default function PreviewHost({
     lifecycleOrder.current = -1;
     armWatchdog.current();
   }, [identity]);
-  useEffect(send, [identity, currentHref, dark]);
+  useEffect(send, [identity, currentHref, dark, config.still]);
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const arm = () => {

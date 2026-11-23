@@ -5,7 +5,7 @@ import { prototypeScopeOf } from './preview/protocol';
 import { loadPreview } from './preview/target';
 export const EMBED_VIEWPORT_WIDTH = 1440;
 
-export default function ViewEmbed({ proto, item, width, height }: EmbedProps) {
+export default function ViewEmbed({ proto, item, width, height, still }: EmbedProps) {
   if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
   const scale = width / EMBED_VIEWPORT_WIDTH;
   const preview = loadPreview({ proto, item });
@@ -19,6 +19,7 @@ export default function ViewEmbed({ proto, item, width, height }: EmbedProps) {
           key={prototypeScopeOf(preview.target)}
           {...preview}
           surface='embed'
+          still={still}
           width={EMBED_VIEWPORT_WIDTH}
           height={height / scale}
         />

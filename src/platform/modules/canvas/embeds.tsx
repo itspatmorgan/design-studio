@@ -141,9 +141,11 @@ type ItemProps = {
   overview: boolean;
   // Has been near the viewport, so its preview is live. Before that it's a sized placeholder.
   mounted: boolean;
+  // The one selected item plays its motion; every other preview holds still once rendered.
+  playing: boolean;
 };
 
-function CanvasItemInner({ element, manifest, current, item, offscreen, overview, mounted }: ItemProps) {
+function CanvasItemInner({ element, manifest, current, item, offscreen, overview, mounted, playing }: ItemProps) {
   const link = element.type === 'embeddable' ? element.link : null;
   const resolution = inspect(manifest, link, current);
   return (
@@ -157,6 +159,7 @@ function CanvasItemInner({ element, manifest, current, item, offscreen, overview
         interaction='inert'
         mounted={mounted}
         hidden={offscreen || overview}
+        still={!playing}
       >
         {overview && !offscreen && (
           <div className='canvas-overview'>
@@ -181,5 +184,12 @@ export const CanvasItem = memo(
     a.element.version === b.element.version &&
     a.offscreen === b.offscreen &&
     a.overview === b.overview &&
-    a.mounted === b.mounted,
+    a.mounted === b.mounted &&
+    a.playing === b.playing,
 );
+
+// The item that plays its motion: the only selected element.
+export function playingId(appState: AppState) {
+  const ids = Object.keys(appState.selectedElementIds);
+  return ids.length === 1 ? ids[0] : null;
+}

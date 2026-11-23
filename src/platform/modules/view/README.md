@@ -30,13 +30,17 @@ A page runtime persists between views of the same prototype. It retains the outg
 
 Embeds have their own child documents. They use a 1440px layout viewport, scale and crop to their supplied dimensions, exclude focus and pointer interaction, and set the child root inert. They cannot request host navigation or shortcuts. Invalid or zero dimensions do not mount a runtime.
 
+### Still embeds
+
+An embed configured `still` holds its motion one second after it renders, so it stays on screen as a still picture and costs nothing while untouched. Views share Studio's main thread, and a few looping views otherwise keep a canvas busy every frame. `preview/still.ts` wraps the child window's animation frames and timers: while held, frame and timeout callbacks wait, interval ticks are skipped, and running animations and media pause. Configuring the embed as not still, a file or manifest change, or a hot update releases everything that waited, and a still embed holds again after it settles. The runtime schedules its own work with the native timers. Pages are never still. Canvas makes every view still except the one selected item; documents keep embeds moving.
+
 ## Communication and authority
 
 `preview/protocol.ts` defines version 2 of the `studio-preview` channel:
 
 | Direction | Message | Purpose |
 | --- | --- | --- |
-| Host → child | configure | Explicit artifact target, public href, color mode, and immutable page/embed surface |
+| Host → child | configure | Explicit artifact target, public href, color mode, immutable page/embed surface, and whether an embed is still |
 | Child → host | hello | Same-session bootstrap/reload handshake; host supplies its current target |
 | Child → host | lifecycle | Source, preparation and displayed revisions; monotonic sequence and bounded lifecycle payload |
 | Child → host | status | Loading, successful render commit, or error; bounded detail and render-attempt counter |
