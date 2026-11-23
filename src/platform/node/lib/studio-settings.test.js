@@ -21,6 +21,7 @@ function fixture(t) {
     systems: ['product', 'brand'],
     systemMaintainers: { product: [], brand: [] },
     defaultSystem: 'product',
+    assetLimitKB: 750,
   };
   writeProfiles(root, { sam: { name: 'Sam' }, alex: { name: 'Alex' } });
   const { directory } = writeFixtureConfig(root, config);
@@ -262,4 +263,23 @@ test('declaration edits preserve unrelated fields and comments and reject ambigu
     'export default { modules: { notes: true, "notes": false } };',
   ])
     assert.throws(() => editDeclaration(source, { name: 'New', modules: { notes: false } }));
+});
+
+test('the Asset Guard limit is changed from settings and stays declared', t => {
+  const options = fixture(t);
+  const file = path.join(options.root, 'studio.config.json');
+  const read = () => JSON.parse(fs.readFileSync(file, 'utf8'));
+  saveSettings({ ...options, changes: { assetLimitKB: 2000 } });
+  assert.equal(read().assetLimitKB, 2000);
+  for (const assetLimitKB of [0, null])
+    assert.throws(
+      () =>
+        saveSettings({
+          ...options,
+          base: readSettings(options.root, options.contributors).version,
+          changes: { assetLimitKB },
+        }),
+      /declare assetLimitKB/,
+    );
+  assert.equal(read().assetLimitKB, 2000);
 });

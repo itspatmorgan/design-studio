@@ -185,6 +185,11 @@ test('disabled adapters retain source and missing systems preserve repair access
       assert.ok(proto.artifacts.some(item=>item.fileType==='document'));
       assert.ok(fs.existsSync(dir+'/flow.mermaid'));
       assert.equal(buildManifest({write:false,quiet:true}).manifest.platformReferences.find(group=>group.id==='diagrams').references.length,0);
+      fs.writeFileSync(dir+'/zz-no-id.tsx','export default function View() { return null; }\\n');
+      const pending=buildManifest({write:false,quiet:true}).manifest.prototypes.find(p=>p.studioId==='${result.id}');
+      assert.ok(!pending.artifacts.some(item=>item.path==='zz-no-id.tsx'));
+      assert.ok(pending.artifacts.some(item=>item.path==='main.tsx'&&item.studioId));
+      fs.rmSync(dir+'/zz-no-id.tsx');
     `,
     );
     run('src/platform/node/cli/studio.js', 'enable', 'fixture');

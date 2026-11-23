@@ -232,7 +232,9 @@ export async function writeSource(p: PrototypeInfo, path: string, content: strin
       body: JSON.stringify({ contributor: p.contributorKey, prototype: p.id, path, content, base }),
     });
   } catch (error) {
-    if (error instanceof ClientError && error.status === 409) throw new SourceChanged(error.message);
+    // Only a newer version on disk is a conflict; any other refusal (like removing the studio ID) is said as an error.
+    if (error instanceof ClientError && error.status === 409 && error.code === 'changed')
+      throw new SourceChanged(error.message);
     throw error;
   }
 }

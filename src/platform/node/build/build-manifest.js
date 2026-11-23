@@ -204,6 +204,11 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
   } catch (error) {
     return skip(`has invalid resource identity (${error.message})`);
   }
+  // An artifact's URL is its identity, so a file still waiting for one (the identity audit names it) stays out of the
+  // prototype until it has one, instead of breaking every page that links to its siblings.
+  if (studioId)
+    for (let i = artifacts.length - 1; i >= 0; i--)
+      if (FILE_TYPES[artifacts[i].fileType].identity && !artifacts[i].studioId) artifacts.splice(i, 1);
   // Two artifacts can't share a URL (main.tsx next to main.jsx or main.md), and each file type checks its own files.
   errors += checkArtifacts(dir, artifacts, out, { contributor: contributorKey, id, ...(studioId && { studioId }) });
   // systemId is an explicit permanent assignment; source keys are derived for runtime imports.

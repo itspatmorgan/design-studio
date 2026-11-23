@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+## 0.3.0 (2026-11-23)
+
+- Asset Guard's limit is a team setting: `assetLimitKB` in `studio.config.json`, also in Studio settings under General, instead of a constant and an `ALLOWLIST` in platform code. The guard reads it from the commit it checks, files tracked by Git LFS pass at any size, and its message, in CI too, links `src/platform/context/assets.md#large-files`: why Git handles large files badly, and the options in order (keep the default, raise the limit, Git LFS or media hosting). **Breaking:** add `"assetLimitKB": 750` to `studio.config.json`, and track any files you listed in the removed `ALLOWLIST` with Git LFS or raise the limit. Thanks @lockwk.
+- The asset-size and scope checks read file names with accents or symbols, such as `café.jpg`, instead of crashing the commit. Thanks @lockwk.
+- One file without its permanent identity no longer breaks every page of its prototype. It stays out of the prototype's navigation until it has one, and the terminal names it. Thanks @rostislavpeska.
+
+### Updating from 0.2.0
+
+Follow the [manual upgrade guidance](src/platform/context/ownership.md#updating-a-studio) and preserve local content and settings. Then:
+
+- Add `"assetLimitKB": 750` to `studio.config.json`, or the limit your team wants. Until it's declared, `pnpm check` and the commit hook stop and name the missing line.
+- If you added paths to `ALLOWLIST` in `check-asset-size.js`, track those files with Git LFS or raise the limit; see [Large files](src/platform/context/assets.md#large-files).
+
 ## 0.2.0 (2026-11-13)
 
 - Turning a module off or removing it never breaks your studio. A module whose library your code imports keeps that code working while it is off (DialKit's dials keep their values, with no panel or menus), and removing it rewrites that code into plain values first. A module that can do neither is refused, in Studio settings and the CLI, naming the files that use it.
