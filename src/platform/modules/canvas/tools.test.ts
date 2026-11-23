@@ -7,8 +7,20 @@ import { resourceId } from '../../core/fileTypes.ts';
 import { lineWidth, wrapText } from './elements.ts';
 import { run, ToolError, type Ctx, type El } from './tools.ts';
 
-const artifacts: Record<string, { title: string; type: string; typeLabel: string; preview: boolean }> = {
-  '/pat/demo/main': { title: 'Main', type: 'view', typeLabel: 'View', preview: true },
+const artifacts: Record<
+  string,
+  { title: string; type: string; typeLabel: string; preview: boolean; screens?: { name: string; width: number }[] }
+> = {
+  '/pat/demo/main': {
+    title: 'Main',
+    type: 'view',
+    typeLabel: 'View',
+    preview: true,
+    screens: [
+      { name: 'Desktop', width: 1440 },
+      { name: 'Phone', width: 390 },
+    ],
+  },
   '/pat/demo/notes': { title: 'Notes', type: 'document', typeLabel: 'Document', preview: false },
 };
 const ctx: Ctx = {
@@ -457,4 +469,74 @@ test('relative canvas authoring paths resolve to permanent links and remain scop
     () => run([], 'create', { type: 'artifact', artifact: '../other/main.tsx' }, identified),
     /no artifact at/,
   );
+});
+
+test('a view is shown at one of its screens: the first by default, another by name or width', () => {
+  const s = session();
+  const created = s.call('create', {
+    elements: [
+      { type: 'artifact', artifact: 'main', x: 0, y: 0, ref: 'desktop' },
+      { type: 'artifact', artifact: 'main', screen: 'phone', rightOf: '@desktop', ref: 'phone' },
+      { type: 'artifact', artifact: 'main', screen: 1024, rightOf: '@phone', ref: 'laptop' },
+    ],
+  });
+  const { refs } = created;
+  assert.ok(!created.warnings?.some((w: string) => /repeat/.test(w)), 'one view at several screens is not a repeat');
+  const at = (ref: string) => s.live().find(e => e.id === refs[ref])!;
+  assert.equal(
+    s
+      .call('create', { type: 'artifact', artifact: 'main', screen: 'Phone' })
+      .warnings?.some((w: string) => /repeat/.test(w)),
+    true,
+    'the same view at the same screen is a repeat',
+  );
+  assert.equal(at('desktop').customData.viewport, 1440, 'the default screen is written, never assumed');
+  assert.deepEqual([at('desktop').width, at('desktop').height], [480, 338]);
+  assert.equal(at('phone').customData.viewport, 390);
+  assert.deepEqual([at('phone').width, at('phone').height], [130, 338], 'one scale for every screen');
+  assert.equal(at('laptop').customData.viewport, 1024);
+  s.call('update', { id: refs.desktop, screen: 'Phone', height: 319 });
+  assert.equal(at('desktop').customData.viewport, 390);
+  assert.equal(at('desktop').customData.frame, true, 'its other custom data stays');
+  assert.deepEqual([at('desktop').width, at('desktop').height], [130, 319]);
+  const described = s.call('describe', {}).elements.filter((e: { screen?: unknown }) => 'screen' in e);
+  assert.deepEqual(
+    described.map((e: { screen: unknown }) => e.screen),
+    ['Phone', 'Phone', 1024, 'Phone'],
+  );
+  assert.throws(() => s.call('create', { type: 'artifact', artifact: 'main', screen: 'Watch' }), /screen should be/);
+  assert.throws(() => s.call('create', { type: 'artifact', artifact: 'notes', screen: 'Phone' }), /applies to views/);
+  assert.throws(() => s.call('update', { id: refs.desktop, screen: 50 }), /screen should be/);
+});
+
+test('the canvas check asks every view to say which screen it is shown at', async () => {
+  const { default: canvasType } = await import('./type.ts');
+  const prototype = {
+    contributor: 'pat',
+    id: 'demo',
+    studioId: '3456789abcdefghj',
+    artifacts: [
+      { studioId: 'abcdefghjkmnpqrs', systemUsage: 'assigned' as const },
+      { studioId: 'bcdefghjkmnpqrst', systemUsage: 'independent' as const },
+    ],
+  };
+  const source = (viewport?: number) =>
+    JSON.stringify({
+      type: 'excalidraw',
+      elements: [
+        {
+          type: 'embeddable',
+          link: '/prototypes/3456789abcdefghj/artifacts/abcdefghjkmnpqrs',
+          customData: { viewport },
+        },
+        { type: 'embeddable', link: '/prototypes/3456789abcdefghj/artifacts/bcdefghjkmnpqrst' },
+      ],
+      files: {},
+    });
+  assert.match(canvasType.check!({ source: source(), frontmatter: null, prototype }).join(' '), /1 view doesn't say/);
+  assert.match(
+    canvasType.check!({ source: source(100), frontmatter: null, prototype }).join(' '),
+    /1 view doesn't say/,
+  );
+  assert.deepEqual(canvasType.check!({ source: source(390), frontmatter: null, prototype }), []);
 });

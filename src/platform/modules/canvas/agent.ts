@@ -67,6 +67,7 @@ export function createCanvasAgent({ api, proto, item, manifest, editable, persis
         type,
         typeLabel: resolution.typeLabel,
         preview: resolution.preview.available,
+        ...(resolution.screens && { screens: resolution.screens }),
       };
     },
     artifacts() {

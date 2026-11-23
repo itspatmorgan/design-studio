@@ -11,6 +11,7 @@ This skill applies when Canvases is enabled. The [module README](../../README.md
 - Do not store images in a canvas. Embed the working view instead.
 - Prefer native Excalidraw tools for canvas composition: text for annotations, with shapes, lines, arrows, and frames as needed. Sticky notes (the `note` kind, Excalidraw's `stickynote`) are optional, not the default for screen annotations.
 - To draw a flowchart, sequence, class, state or ER diagram as shapes the person can rearrange, use the `mermaid` tool. For a diagram that stays Mermaid, make a diagram artifact and embed it instead.
+- A view is shown at one of its system's screens (`artifacts` lists them; the first is the default). Show a view at another screen, or the same view at several screens side by side, only when the person asks: `screen` on `create` or `update`. Keep the default size, a third of the screen, so views compare at one scale.
 - Inspect the current scene before changing it. Inspect the result afterward.
 - Preserve the person's arrangements. Move existing content only when the request requires it.
 - Keep changes small enough to review and undo. Live tool operations support undo. External file edits may not be separate undo steps.

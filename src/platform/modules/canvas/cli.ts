@@ -82,7 +82,12 @@ if ((scene!.studioVersion ?? 1) > FORMAT_VERSION)
 // What the tools need to know about the app: the artifacts in this canvas's prototype, from the manifest. Files written
 // directly get their identity first, and the manifest is built fresh, so a view or canvas made a moment ago is included
 // whether or not the dev server is running.
-type PrototypeRef = { contributorKey: string; id: string; studioId?: string };
+type PrototypeRef = {
+  contributorKey: string;
+  id: string;
+  studioId?: string;
+  screens?: { name: string; width: number }[];
+};
 const lib = (file: string) => pathToFileURL(path.join(ROOT, 'src', 'platform', 'node', file)).href;
 const [{ identifyAuthored }, { INSTALLED_FILE_TYPES }, { resolveContributor }, { buildManifest }] = (await Promise.all([
   import(lib('lib/prototype-identification.js')),
@@ -157,13 +162,16 @@ const ctx: Ctx = {
       );
     if (!artifact) return null;
     const type = FILE_TYPES[artifact.fileType];
+    const preview = Boolean(type?.capabilities.embeds.includes('canvas'));
     return {
       path: appPath,
       sourcePath: artifact.path,
       title: title(artifact.path),
       type: artifact.fileType,
       typeLabel: type?.label ?? 'File',
-      preview: Boolean(type?.capabilities.embeds.includes('canvas')),
+      preview,
+      // The same rule as the app's resolveArtifact.ts: a live preview of a type that uses a system shows its screens.
+      ...(preview && type?.systemUsage === 'assigned' && { screens: proto.screens }),
     };
   },
   artifacts: () =>

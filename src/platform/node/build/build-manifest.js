@@ -210,7 +210,12 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
     for (let i = artifacts.length - 1; i >= 0; i--)
       if (FILE_TYPES[artifacts[i].fileType].identity && !artifacts[i].studioId) artifacts.splice(i, 1);
   // Two artifacts can't share a URL (main.tsx next to main.jsx or main.md), and each file type checks its own files.
-  errors += checkArtifacts(dir, artifacts, out, { contributor: contributorKey, id, ...(studioId && { studioId }) });
+  errors += checkArtifacts(dir, artifacts, out, {
+    contributor: contributorKey,
+    id,
+    ...(studioId && { studioId }),
+    artifacts: artifacts.map(item => ({ studioId: item.studioId, systemUsage: FILE_TYPES[item.fileType].systemUsage })),
+  });
   // systemId is an explicit permanent assignment; source keys are derived for runtime imports.
   const { system, systemId, rebuild, problems: assignmentProblems } = prototypeAssignment(meta, PROTOTYPE_SYSTEMS);
   if (assignmentProblems.length) return skip(assignmentProblems[0]);
@@ -250,6 +255,8 @@ function readPrototype(dir, contributorKey, id, out, contributors, policy = 'own
       created: meta.created ?? null,
       system,
       systemId,
+      // The screens its views are laid out at: its system's, or the app's own without one (spec.ts).
+      screens: (SYSTEM_SPECS[system] ?? SYSTEM_SPECS[PLATFORM_ID]).screens,
       artifacts,
       ...(meta.systemMissing && { systemMissing: meta.systemMissing }),
       ...(rebuild !== undefined && { rebuild }),

@@ -10,6 +10,7 @@ export default {
   themeClass: 'product-theme',
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
+  screens: [{ name: 'Desktop', width: 1440 }],
   docs: 'warn',
   libraries: [
     {

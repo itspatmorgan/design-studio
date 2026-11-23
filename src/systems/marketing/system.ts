@@ -8,6 +8,11 @@ export default {
   themeClass: 'marketing-theme',
   styling: 'tailwind',
   colorModes: ['light', 'dark'],
+  screens: [
+    { name: 'Desktop', width: 1440 },
+    { name: 'Tablet', width: 768 },
+    { name: 'Phone', width: 390 },
+  ],
   docs: 'warn',
   libraries: [
     {

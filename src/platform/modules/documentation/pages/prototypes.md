@@ -99,7 +99,7 @@ Imports, relative document links, and assets still depend on file locations. Stu
 
 **Canvases** use Excalidraw. Use the native toolbar tools to draw, connect, and annotate; press **T** for text and **N** for a sticky note. Drag an artifact from navigation onto the canvas, or copy its link and paste over the canvas.
 
-View and diagram previews follow their source. Documents and other canvases appear as link cards. Open the original to interact or edit. Canvas annotations do not automatically change screens.
+View and diagram previews follow their source. A view shows its design system's main screen width, such as desktop; ask your agent to show it at another screen, like Phone, or the same view at several screens side by side. Resizing a view on the canvas changes how much of it shows. Documents and other canvases appear as link cards. Open the original to interact or edit. Canvas annotations do not automatically change screens.
 
 Canvases embed artifacts from their own prototype and cannot store images. Changes save automatically locally. Other contributors' and published canvases are read-only. Importing **Mermaid to Excalidraw** creates independent shapes, not a synchronized diagram.
 

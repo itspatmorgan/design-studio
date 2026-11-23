@@ -11,6 +11,7 @@ export type ArtifactHostProps = {
   request: ArtifactRequest;
   width: number;
   height: number;
+  viewport?: number; // the screen width a view is laid out at (EmbedProps)
   label?: string;
   presentation?: 'preview' | 'card';
   interaction?: 'inert' | 'interactive';
@@ -26,6 +27,7 @@ export function ArtifactHost({
   request,
   width,
   height,
+  viewport,
   label,
   presentation = 'preview',
   interaction = 'inert',
@@ -143,6 +145,7 @@ export function ArtifactHost({
                 item={target.item}
                 width={width}
                 height={height}
+                viewport={viewport}
                 still={still}
                 loadingStartedAt={started}
               />

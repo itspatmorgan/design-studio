@@ -2,6 +2,7 @@
   "type": "excalidraw",
   "version": 2,
   "studioVersion": 1,
+  "studioId": "sr7kwryqs2ft7rbt",
   "elements": [
     {
       "autoResize": true,
@@ -29,7 +30,8 @@
       "boundElements": [],
       "customData": {
         "frame": true,
-        "hideLinkIcon": true
+        "hideLinkIcon": true,
+        "viewport": 1440
       },
       "frameId": "mutgn9q6uy7uxr",
       "height": 1550,
@@ -39,12 +41,11 @@
       "seed": 1063405180,
       "strokeColor": "transparent",
       "type": "embeddable",
-      "version": 13,
-      "versionNonce": 1222771490,
+      "version": 14,
+      "versionNonce": 408099243,
       "width": 700,
       "x": 840,
-      "y": 60,
-      "updated": 1791474936278
+      "y": 60
     },
     {
       "boundElements": [],
@@ -320,7 +321,8 @@
       "boundElements": [],
       "customData": {
         "frame": true,
-        "hideLinkIcon": true
+        "hideLinkIcon": true,
+        "viewport": 1440
       },
       "frameId": "muu239okuz2k0f",
       "height": 1550,
@@ -330,12 +332,11 @@
       "seed": 1595982155,
       "strokeColor": "transparent",
       "type": "embeddable",
-      "version": 14,
-      "versionNonce": 431004970,
+      "version": 15,
+      "versionNonce": 178527582,
       "width": 700,
       "x": 1787.66,
-      "y": 60,
-      "updated": 1791474936278
+      "y": 60
     },
     {
       "boundElements": [],
@@ -377,7 +378,8 @@
       "boundElements": [],
       "customData": {
         "frame": true,
-        "hideLinkIcon": true
+        "hideLinkIcon": true,
+        "viewport": 1440
       },
       "frameId": "muu239ol5dwcun",
       "height": 1550,
@@ -387,12 +389,11 @@
       "seed": 597680452,
       "strokeColor": "transparent",
       "type": "embeddable",
-      "version": 22,
-      "versionNonce": 1780638070,
+      "version": 23,
+      "versionNonce": 99079777,
       "width": 700,
       "x": 2735.38,
-      "y": 60,
-      "updated": 1791474936278
+      "y": 60
     },
     {
       "boundElements": [],
@@ -447,8 +448,7 @@
       "versionNonce": 583462050,
       "width": 480,
       "x": -680,
-      "y": 0,
-      "updated": 1791474936278
+      "y": 0
     },
     {
       "autoResize": true,
@@ -498,7 +498,8 @@
       "boundElements": [],
       "customData": {
         "frame": true,
-        "hideLinkIcon": true
+        "hideLinkIcon": true,
+        "viewport": 1440
       },
       "frameId": "muv4motfr4m3k1",
       "height": 475,
@@ -508,8 +509,8 @@
       "seed": 891956897,
       "strokeColor": "transparent",
       "type": "embeddable",
-      "version": 1,
-      "versionNonce": 961882001,
+      "version": 2,
+      "versionNonce": 1714414880,
       "width": 700,
       "x": 3682.38,
       "y": 60
@@ -555,6 +556,5 @@
     "viewBackgroundColor": "#ffffff",
     "gridSize": 20
   },
-  "files": {},
-  "studioId": "sr7kwryqs2ft7rbt"
+  "files": {}
 }

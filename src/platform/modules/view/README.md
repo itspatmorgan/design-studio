@@ -28,7 +28,7 @@ Before stylesheets and modules load, a synchronous head bootstrap applies Studio
 
 A page runtime persists between views of the same prototype. It retains the outgoing screen, inert, while the next view loads. The next prepared view replaces it without a loading-label flash; slow handoffs show status after 200 ms. Retained output cannot acknowledge the incoming artifact. Child attributes distinguish displayed and pending identities. Changing prototype identity tears down the document and creates a new session. Color-mode updates preserve the runtime and component state. Source editing retains an already-open page runtime in a hidden, inert host container; HMR continues there. Directly opening source mode does not require a working preview.
 
-Embeds have their own child documents. They use a 1440px layout viewport, scale and crop to their supplied dimensions, exclude focus and pointer interaction, and set the child root inert. They cannot request host navigation or shortcuts. Invalid or zero dimensions do not mount a runtime.
+Embeds have their own child documents. They lay out at a screen width (`EmbedProps.viewport` from a canvas, otherwise the prototype's default screen, the first of its system's `screens`), scale and crop to their supplied dimensions, exclude focus and pointer interaction, and set the child root inert. They cannot request host navigation or shortcuts. Invalid or zero dimensions do not mount a runtime.
 
 ### Still embeds
 

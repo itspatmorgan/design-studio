@@ -41,7 +41,10 @@ export type ArtifactInfo = {
   type: string;
   typeLabel: string;
   preview: boolean;
+  // The screens a view can be shown at (its system's; the first is the default). Absent for other artifacts.
+  screens?: readonly Screen[];
 };
+export type Screen = { name: string; width: number };
 export type Ctx = {
   // The canvas’s own permanent prototype address.
   base: string;
@@ -53,9 +56,16 @@ export type Ctx = {
   linkPath?(link: string): string | null;
 };
 
-// How big things start out. A view is a screen (1440 x 900 at a third of the size); a card is one row.
+// How big things start out. A view is its screen width and 900 px of its height at a third of the size (1440 is
+// 480 x 300, under its title bar), so views at different screen widths compare at one scale; a card is one row.
+// Its height is only how much shows: set it to frame a device.
 const ARTIFACT_WIDTH = 480;
 const PREVIEW_HEIGHT = 338;
+const PREVIEW_CHROME = 38; // the title bar and border
+export const screenBox = (screen: Screen) => ({
+  width: Math.round(screen.width / 3),
+  height: PREVIEW_CHROME + 300,
+});
 const CARD_HEIGHT = 88;
 const GAP = 80;
 const NOTE_GAP = 24;
@@ -138,6 +148,8 @@ export const TOOLS: ToolDef[] = [
       height: 'number',
       name: "a section's title",
       artifact: 'point an artifact at another view or document',
+      screen:
+        'the screen a view is laid out at: a name from its system ("Phone") or a width. Its width follows; its height stays',
       from: "an arrow's start (an id)",
       to: "an arrow's end (an id)",
       locked: 'true to lock it in place',
@@ -251,10 +263,13 @@ const ELEMENT_TYPES: Record<string, { summary: string; args: Record<string, stri
       'An artifact from this prototype, on the canvas. Views and diagrams have live previews; other artifacts are cards with an Open link. It must be from this prototype: a canvas shows only its own. Its title bar opens it.',
     args: {
       artifact: 'its path in this prototype without the extension ("lofi/main")',
-      width: 'default 480',
-      height: 'default 338 for a preview, 88 for a card',
+      screen:
+        "a view only: the screen it is laid out at, one of its system's screens by name (\"Phone\") or a width in pixels (390). Default: the system's first screen. `artifacts` lists each view's screens. Show a view at several screens only when the person asks",
+      width: "default: a view's screen width at a third of the size, 480 for another preview",
+      height:
+        'default 338 for a preview (900 px of a view at a third), 88 for a card. A view is cropped to it: set it to frame a device, such as 319 for a 390 x 844 phone',
     },
-    example: { type: 'artifact', artifact: 'lofi/main', ref: 'main' },
+    example: { type: 'artifact', artifact: 'lofi/main', screen: 'Phone', ref: 'main' },
   },
   section: {
     summary:
@@ -393,6 +408,25 @@ function finder(scene: () => El[], refs: Record<string, string> = Object.create(
   };
 }
 
+// The screen a `screen` argument means for this artifact: one of its screens by name or width, or another width.
+// With none, its default screen. Null for an artifact without screens.
+function screenOf(info: ArtifactInfo, value: unknown): Screen | null {
+  if (!info.screens?.length) {
+    if (value !== undefined) throw new ToolError(`screen applies to views; ${info.title} is a ${info.typeLabel}`);
+    return null;
+  }
+  if (value === undefined) return info.screens[0];
+  const named = info.screens.find(
+    s => s.width === value || (typeof value === 'string' && s.name.toLowerCase() === value.trim().toLowerCase()),
+  );
+  if (named) return named;
+  if (typeof value === 'number' && Number.isInteger(value) && value >= 200 && value <= 4096)
+    return { name: String(value), width: value };
+  throw new ToolError(
+    `screen should be one of ${info.screens.map(s => `${s.name} (${s.width})`).join(', ')}, or a width from 200 to 4096`,
+  );
+}
+
 // The app path an `artifact` argument means.
 function artifactPath(value: unknown, ctx: Ctx): string {
   const given = str(value, 'artifact').trim();
@@ -475,6 +509,7 @@ function listArtifacts(ctx: Ctx) {
     title: i.title,
     type: i.typeLabel,
     ...(i.preview ? { shownAs: 'live preview' } : { shownAs: 'card' }),
+    ...(i.screens && { screens: i.screens.map(s => `${s.name} ${s.width}`) }),
   }));
   return { artifacts };
 }
@@ -729,8 +764,10 @@ function create(input: El[], args: any, ctx: Ctx, laidOut = false): Run {
               `no artifact at ${path}${here?.length ? `. In this prototype: ${here.join(', ')} (the \`artifacts\` tool lists them)` : ''}`,
             );
           }
-          const w = num(spec.width, 'width') ?? ARTIFACT_WIDTH;
-          const h = num(spec.height, 'height') ?? (info.preview ? PREVIEW_HEIGHT : CARD_HEIGHT);
+          const screen = screenOf(info, spec.screen);
+          const box = screen ? screenBox(screen) : null;
+          const w = num(spec.width, 'width') ?? box?.width ?? ARTIFACT_WIDTH;
+          const h = num(spec.height, 'height') ?? box?.height ?? (info.preview ? PREVIEW_HEIGHT : CARD_HEIGHT);
           made = [
             make('embeddable', {
               ...place(spec, w, h),
@@ -739,7 +776,7 @@ function create(input: El[], args: any, ctx: Ctx, laidOut = false): Run {
               link: path,
               strokeColor: 'transparent',
               roundness: null,
-              customData: { frame: true, hideLinkIcon: true },
+              customData: { frame: true, hideLinkIcon: true, ...(screen && { viewport: screen.width }) },
             }),
           ];
           break;
@@ -805,7 +842,9 @@ function create(input: El[], args: any, ctx: Ctx, laidOut = false): Run {
       if (a.id !== b.id && meet(boundsOf(a) as El, boundsOf(b) as El)) warnings.push(`${name(a)} overlaps ${name(b)}`);
   });
   // Agents retry commands: a call that repeats existing content is likely a second run, so say so.
-  const label = (el: El) => (el.text || el.link ? `${kindOf(el)}|${el.text ?? ''}|${el.link ?? ''}` : null);
+  // The same view at another screen is new content, not a repeat.
+  const label = (el: El) =>
+    el.text || el.link ? `${kindOf(el)}|${el.text ?? ''}|${el.link ?? ''}|${el.customData?.viewport ?? ''}` : null;
   const known = new Set(input.map(el => el.id));
   const existing = new Map(
     live(input)
@@ -1015,6 +1054,7 @@ const UPDATABLE = [
   'height',
   'name',
   'artifact',
+  'screen',
   'from',
   'to',
   'locked',
@@ -1066,6 +1106,15 @@ function update(input: El[], args: any, ctx: Ctx): Run {
       const path = artifactPath(args.artifact, ctx);
       if (!ctx.artifact(path)) throw new ToolError(`no artifact at ${path}`);
       patch.link = path;
+    }
+    if (args.screen !== undefined) {
+      const path = isArtifact(el) ? (ctx.linkPath?.(patch.link ?? el.link) ?? patch.link ?? el.link) : null;
+      const info = path ? ctx.artifact(path) : null;
+      if (!info?.screens) throw new ToolError(`${id}: screen applies to views on the canvas`);
+      const screen = screenOf(info, args.screen)!;
+      const box = screenBox(screen);
+      patch.customData = { ...el.customData, viewport: screen.width };
+      if (args.width === undefined) patch.width = box.width; // its height, how much shows, stays
     }
     if ((args.from !== undefined || args.to !== undefined) && el.type !== 'arrow')
       throw new ToolError(`${id}: from and to apply to arrows`);
@@ -1288,6 +1337,10 @@ function describe(scene: El[], args: any, ctx: Ctx) {
       const info = path ? ctx.artifact(path) : null;
       out.link = path;
       out.artifact = info ? { title: info.title, type: info.typeLabel } : null;
+      if (info?.screens) {
+        const viewport = el.customData?.viewport;
+        out.screen = info.screens.find(s => s.width === viewport)?.name ?? viewport ?? null;
+      }
     } else if (el.type === 'embeddable') out.link = el.link;
     if (el.frameId && byId.get(el.frameId)) out.section = el.frameId;
     if (el.locked) out.locked = true;
