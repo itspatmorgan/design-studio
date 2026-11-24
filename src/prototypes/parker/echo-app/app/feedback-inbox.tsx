@@ -7,6 +7,7 @@
 // empty, with the panel open, and so on. The default export is the screen as people reach it.
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@module/prototypes';
+import { cn } from '#studio/runtime';
 import { MoreHorizontal, Plus, Search, X } from '@/systems/product/libraries/icons';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
@@ -17,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/systems/product/components/tabs';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
-import { PriorityBadge, StatusBadge } from './_components/badges';
+import { PriorityIcon, StatusLabel } from './_components/badges';
 import { NO_FILTER, STATUSES, addFeedback, formatDate, formatMrr, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
 import CompanyLogo from './_components/CompanyLogo';
 
@@ -84,40 +85,36 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
 
         <div className="rounded-md border border-border bg-card">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-4">Feedback</TableHead>
-                <TableHead className="w-28">Priority</TableHead>
-                <TableHead className="w-28">Status</TableHead>
-                <TableHead className="w-[24%]">Customer</TableHead>
-                <TableHead className="hidden w-24 xl:table-cell">Received</TableHead>
-                <TableHead className="w-24 text-right">MRR</TableHead>
-                <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
+            <TableHeader className="bg-muted/40">
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="h-9 w-10 pl-4"><span className="sr-only">Priority</span></TableHead>
+                <TableHead className="h-9 text-xs font-normal text-muted-foreground">Feedback</TableHead>
+                <TableHead className="h-9 w-32 text-xs font-normal text-muted-foreground">Status</TableHead>
+                <TableHead className="h-9 w-48 text-xs font-normal text-muted-foreground">Customer</TableHead>
+                <TableHead className="h-9 w-20 text-right text-xs font-normal text-muted-foreground">MRR</TableHead>
+                <TableHead className="hidden h-9 w-20 text-right text-xs font-normal text-muted-foreground xl:table-cell">Received</TableHead>
+                <TableHead className="h-9 w-12"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {shown.map((f) => (
-                <TableRow key={f.id} className="cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell className="max-w-0 pl-4">
-                    <div className="truncate font-medium">{f.title}</div>
-                    <div className="mt-0.5 truncate text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
+                <TableRow key={f.id} className="group h-11 cursor-pointer" onClick={() => open(f.id)}>
+                  <TableCell className="pl-4"><PriorityIcon priority={f.priority} /></TableCell>
+                  <TableCell className="max-w-0">
+                    <div className="truncate"><span className="font-medium">{f.title}</span><span className="ml-2 text-xs text-muted-foreground">via {f.source}</span></div>
                   </TableCell>
-                  <TableCell><PriorityBadge priority={f.priority} /></TableCell>
-                  <TableCell><StatusBadge status={f.status} /></TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <CompanyLogo company={f.company} />
-                      <div className="min-w-0 leading-tight">
-                        <div className="truncate">{f.company || 'No account'}</div>
-                        <div className="truncate text-xs text-muted-foreground">{f.customer}</div>
-                      </div>
+                  <TableCell><StatusLabel status={f.status} /></TableCell>
+                  <TableCell className="max-w-0">
+                    <div className="flex items-center gap-2">
+                      <CompanyLogo company={f.company} className="size-5 rounded-[5px] [&_svg]:size-3.5" />
+                      <span className={f.company ? 'truncate' : 'truncate text-muted-foreground'}>{f.company || 'No account'}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="hidden text-xs text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
                   <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
+                  <TableCell className="hidden text-right text-xs text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
-                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} />}><MoreHorizontal /></DropdownMenuTrigger>
+                      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} className={cn('opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100', f.id === menuFor && 'opacity-100')} />}><MoreHorizontal /></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => open(f.id)}>Open</DropdownMenuItem>
                         <DropdownMenuItem disabled={f.status === 'resolved'} onClick={() => updateFeedback(f.id, { status: 'resolved' })}>Mark resolved</DropdownMenuItem>
