@@ -6,6 +6,8 @@
   --line: var(--color-border-secondary);
   --surface: var(--color-bg-primary);
   --tint: var(--color-bg-secondary);
+  /* Cobalt bands keep the light-mode cobalt in dark mode too: the lighter dark-mode brand fails contrast under white text. */
+  --band: #2f5bff;
   --hero-title: 76px;
   --shot-overlap: 160px;
   /* The dials set the desktop values; small screens scale them down. */
@@ -41,7 +43,7 @@
   /* Cobalt stops short of the bottom, so the product shot hangs out of the hero onto the page. */
   background:
     radial-gradient(80% 60% at 50% 0%, rgb(255 255 255 / 0.16), transparent 70%) top / 100% calc(100% - var(--overlap)) no-repeat,
-    linear-gradient(var(--brand), var(--brand)) top / 100% calc(100% - var(--overlap)) no-repeat,
+    linear-gradient(var(--band), var(--band)) top / 100% calc(100% - var(--overlap)) no-repeat,
     var(--surface);
   color: #fff;
 }
@@ -59,7 +61,7 @@
 .accent { color: var(--brand); }
 .heroLede { max-width: 600px; margin: 24px auto 0; font-size: 18px; line-height: 1.55; opacity: 0.85; text-wrap: pretty; }
 .heroActions { display: flex; justify-content: center; gap: 12px; margin-top: 36px; }
-.buttonOnBrand { background: #fff !important; color: var(--color-bg-brand-solid) !important; }
+.buttonOnBrand { background: #fff !important; color: var(--band) !important; }
 .buttonOnBrand:hover { background: rgb(255 255 255 / 0.9) !important; }
 .outlineOnBrand { background: transparent !important; color: #fff !important; border-color: rgb(255 255 255 / 0.4) !important; }
 .outlineOnBrand:hover { background: rgb(255 255 255 / 0.1) !important; }
@@ -195,7 +197,7 @@
 .steps p { margin-top: 6px; color: var(--muted); font-size: 15px; line-height: 1.55; }
 .stepNumber { padding-top: 4px; color: var(--brand); font-family: var(--font-mono); font-size: 13px; }
 
-.closing { padding: 120px 32px; background: var(--brand); color: #fff; text-align: center; }
+.closing { padding: 120px 32px; background: var(--band); color: #fff; text-align: center; }
 .closing h2 { max-width: 720px; margin: 0 auto; font-size: 52px; font-weight: 600; line-height: 1.05; letter-spacing: -0.04em; text-wrap: balance; }
 .closing p { margin: 16px 0 36px; font-size: 18px; opacity: 0.85; }
 
