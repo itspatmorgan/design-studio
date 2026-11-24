@@ -14,6 +14,9 @@ const HELP = `Usage: pnpm studio <command> [options]
   download <prototype-folder> [--out <file>]
                                       save the prototype as one HTML file that opens without Studio
                                       (the menu's Download; ~/Downloads/<id>.html unless --out)
+  rename <prototype-folder> --title "..."
+  duplicate <prototype-folder> [--title "..."] [--system <id> | --no-system]
+                                      the prototype menu's Rename and Duplicate, for a prototype you own
   identity-audit [--json]             inspect existing and missing IDs; never writes
   identify <prototype-folder> [--yes] [--json]
                                       assign missing IDs to files created outside Studio
