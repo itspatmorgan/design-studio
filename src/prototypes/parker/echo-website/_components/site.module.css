@@ -82,15 +82,15 @@
 }
 .shotChrome { display: flex; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .shotChrome span { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
-.shotBody { display: grid; grid-template-columns: 200px 1fr; min-height: 420px; }
-.shotSidebar { padding: 14px 10px; border-right: 1px solid var(--line); background: var(--tint); }
-.shotWorkspace { display: flex; align-items: center; gap: 8px; padding: 4px 8px 14px; font-weight: 600; }
+.shotBar { display: flex; align-items: center; gap: 4px; height: 52px; padding: 0 24px; border-bottom: 1px solid var(--line); }
+.shotWorkspace { display: flex; align-items: center; gap: 8px; margin-right: 16px; font-weight: 600; }
+.shotAvatar { display: grid; place-items: center; width: 24px; height: 24px; margin-left: auto; border-radius: 50%; background: var(--tint); color: var(--muted); font-size: 10px; font-style: normal; font-weight: 500; }
+.shotBody { min-height: 420px; }
 .shotLogo { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--brand); color: #fff; }
 .shotLogo svg { width: 15px; height: 15px; }
-.shotNav { display: flex; justify-content: space-between; padding: 6px 8px; border-radius: 6px; color: var(--muted); }
-.shotNav span { font-family: var(--font-mono); font-size: 11px; }
-.shotNavOn { background: var(--surface); color: var(--ink); font-weight: 500; box-shadow: 0 0 0 1px var(--line); }
-.shotLabel { padding: 16px 8px 4px; color: var(--muted); font-size: 11px; font-weight: 500; }
+.shotNav { display: flex; gap: 8px; padding: 6px 10px; border-radius: 6px; color: var(--muted); font-weight: 500; }
+.shotNav span { font-family: var(--font-mono); font-size: 11px; font-weight: 400; }
+.shotNavOn { background: var(--tint); color: var(--ink); }
 .shotMain { padding: 20px 24px; }
 .shotHead { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
 .shotTitle { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
@@ -209,8 +209,6 @@
   .cardLarge { grid-row: auto; }
   .how { grid-template-columns: 1fr; gap: 32px; }
   .howIntro { position: static; }
-  .shotBody { grid-template-columns: 1fr; }
-  .shotSidebar { display: none; }
 }
 
 /* Phone */
@@ -223,8 +221,10 @@
   .heroActions { flex-direction: column; align-items: stretch; margin-top: 28px; }
   .shotWrap { padding: 0 16px; }
   .heroLight .shotWrap { padding-bottom: 64px; }
-  .shotBody { grid-template-columns: 1fr; min-height: 0; }
-  .shotSidebar, .shotSub { display: none; }
+  .shotBody { min-height: 0; }
+  .shotBar { height: 44px; padding: 0 14px; }
+  .shotBar .shotNav:not(.shotNavOn) { display: none; }
+  .shotSub { display: none; }
   .shotMain { padding: 14px; }
   .shotHead { align-items: center; margin-bottom: 12px; }
   .shotTitle { font-size: 15px; }

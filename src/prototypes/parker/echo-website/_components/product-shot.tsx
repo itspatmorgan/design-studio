@@ -1,4 +1,4 @@
-// The Echo app, recreated for the website: the feedback inbox with its sidebar. It's a picture made of
+// The Echo app, recreated for the website: the feedback inbox under its top bar. It's a picture made of
 // markup, so it stays sharp at any size and follows the theme, and it never links into the app prototype.
 import styles from './site.module.css';
 
@@ -27,16 +27,13 @@ export function ProductShot() {
   return (
     <div className={styles.shot} role="img" aria-label="The Echo feedback inbox, with each request tied to an account and its monthly revenue">
       <div className={styles.shotChrome}><span /><span /><span /></div>
+      <div className={styles.shotBar}>
+        <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Echo</div>
+        <div className={styles.shotNav}>Overview</div>
+        <div className={`${styles.shotNav} ${styles.shotNavOn}`}>Feedback inbox<span>12</span></div>
+        <i className={styles.shotAvatar}>SR</i>
+      </div>
       <div className={styles.shotBody}>
-        <aside className={styles.shotSidebar}>
-          <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Echo</div>
-          <div className={styles.shotNav}>Overview</div>
-          <div className={`${styles.shotNav} ${styles.shotNavOn}`}>Feedback inbox<span>12</span></div>
-          <div className={styles.shotLabel}>Views</div>
-          <div className={styles.shotNav}>High priority<span>5</span></div>
-          <div className={styles.shotNav}>Needs triage<span>4</span></div>
-          <div className={styles.shotNav}>On the roadmap<span>3</span></div>
-        </aside>
         <div className={styles.shotMain}>
           <div className={styles.shotHead}>
             <div>
