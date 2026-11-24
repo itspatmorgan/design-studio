@@ -31,6 +31,8 @@ export type Feedback = {
   title: string;
   body: string;
   customer: string;
+  company: string;  // the customer's account; empty when unknown
+  mrr: number;      // the account's monthly revenue in dollars, 0 when unknown or free
   plan: string;
   source: Source;
   priority: Priority;
@@ -41,14 +43,18 @@ export type Feedback = {
 };
 
 const seed = (): Feedback[] => [
-  { id: 'f1', title: 'Export to CSV is missing columns', body: 'When I export the table, the owner and last-updated columns are not included. I rebuild them by hand every week for my report.', customer: 'Maya Chen', plan: 'Team', source: 'Email', priority: 'high', status: 'new', tags: ['export', 'tables'], createdAt: '2026-09-28T09:12:00Z', notes: [] },
-  { id: 'f2', title: 'Dark mode makes the status badges hard to read', body: 'The yellow and green badges blur together at night. I can tell them apart only by their labels.', customer: 'Luis Ortega', plan: 'Business', source: 'Chat', priority: 'medium', status: 'triaged', tags: ['dark mode', 'accessibility'], createdAt: '2026-09-27T16:40:00Z', notes: [{ id: 'n1', text: 'Checked contrast: both badges fail AA in dark mode.', at: '2026-09-28T10:05:00Z' }] },
-  { id: 'f3', title: 'Let me bulk-assign items to a teammate', body: 'After a research sprint I have thirty items to hand off. Assigning them one at a time takes a while.', customer: 'Priya Nair', plan: 'Business', source: 'Interview', priority: 'high', status: 'planned', tags: ['bulk actions'], createdAt: '2026-09-25T11:03:00Z', notes: [] },
-  { id: 'f4', title: 'Search should look inside the description', body: 'I remember a phrase from a customer quote but search only matches titles.', customer: 'Tom Becker', plan: 'Team', source: 'Survey', priority: 'medium', status: 'new', tags: ['search'], createdAt: '2026-09-26T08:30:00Z', notes: [] },
-  { id: 'f5', title: 'Notification emails link to the wrong page', body: 'The link in the weekly digest opens the dashboard, not the item it mentions.', customer: 'Aiko Tanaka', plan: 'Free', source: 'Email', priority: 'low', status: 'resolved', tags: ['email'], createdAt: '2026-09-20T13:20:00Z', notes: [{ id: 'n2', text: 'Fixed in the 2.4 release. Replied to the customer.', at: '2026-09-24T15:00:00Z' }] },
-  { id: 'f6', title: 'I cannot tell which items are mine', body: 'The list shows everyone’s items. A "mine" filter would save me a lot of scrolling.', customer: 'Dana Whitfield', plan: 'Business', source: 'Chat', priority: 'medium', status: 'triaged', tags: ['filters'], createdAt: '2026-09-24T09:45:00Z', notes: [] },
-  { id: 'f7', title: 'Keyboard shortcut for creating a new item', body: 'I live in the keyboard. A shortcut like N to create would be great.', customer: 'Omar Haddad', plan: 'Team', source: 'Survey', priority: 'low', status: 'new', tags: ['keyboard'], createdAt: '2026-09-23T17:10:00Z', notes: [] },
-  { id: 'f8', title: 'Import from a spreadsheet drops line breaks', body: 'Multi-line descriptions come in as one long line after an import.', customer: 'Sofia Rossi', plan: 'Business', source: 'Email', priority: 'high', status: 'planned', tags: ['import'], createdAt: '2026-09-22T10:00:00Z', notes: [] },
+  { id: 'f1', title: 'Export to CSV is missing columns', body: 'When I export the table, the owner and last-updated columns are not included. I rebuild them by hand every week for my report.', customer: 'Maya Chen', company: 'Northwind Labs', mrr: 4200, plan: 'Team', source: 'Email', priority: 'high', status: 'new', tags: ['export', 'tables'], createdAt: '2026-09-28T09:12:00Z', notes: [] },
+  { id: 'f2', title: 'Dark mode makes the status badges hard to read', body: 'The yellow and green badges blur together at night. I can tell them apart only by their labels.', customer: 'Luis Ortega', company: 'Brightline', mrr: 1850, plan: 'Business', source: 'Chat', priority: 'medium', status: 'triaged', tags: ['dark mode', 'accessibility'], createdAt: '2026-09-27T16:40:00Z', notes: [{ id: 'n1', text: 'Checked contrast: both badges fail AA in dark mode.', at: '2026-09-28T10:05:00Z' }] },
+  { id: 'f3', title: 'Let me bulk-assign items to a teammate', body: 'After a research sprint I have thirty items to hand off. Assigning them one at a time takes a while.', customer: 'Priya Nair', company: 'Kestrel Health', mrr: 12400, plan: 'Business', source: 'Interview', priority: 'high', status: 'planned', tags: ['bulk actions'], createdAt: '2026-09-25T11:03:00Z', notes: [] },
+  { id: 'f4', title: 'Search should look inside the description', body: 'I remember a phrase from a customer quote but search only matches titles.', customer: 'Tom Becker', company: 'Fieldnote', mrr: 860, plan: 'Team', source: 'Survey', priority: 'medium', status: 'new', tags: ['search'], createdAt: '2026-09-26T08:30:00Z', notes: [] },
+  { id: 'f5', title: 'Notification emails link to the wrong page', body: 'The link in the weekly digest opens the dashboard, not the item it mentions.', customer: 'Aiko Tanaka', company: 'Parcel & Co', mrr: 0, plan: 'Free', source: 'Email', priority: 'low', status: 'resolved', tags: ['email'], createdAt: '2026-09-20T13:20:00Z', notes: [{ id: 'n2', text: 'Fixed in the 2.4 release. Replied to the customer.', at: '2026-09-24T15:00:00Z' }] },
+  { id: 'f6', title: 'I cannot tell which items are mine', body: 'The list shows everyone’s items. A "mine" filter would save me a lot of scrolling.', customer: 'Dana Whitfield', company: 'Orbit Freight', mrr: 6300, plan: 'Business', source: 'Chat', priority: 'medium', status: 'triaged', tags: ['filters'], createdAt: '2026-09-24T09:45:00Z', notes: [] },
+  { id: 'f7', title: 'Keyboard shortcut for creating a new item', body: 'I live in the keyboard. A shortcut like N to create would be great.', customer: 'Omar Haddad', company: 'Tandem', mrr: 1200, plan: 'Team', source: 'Survey', priority: 'low', status: 'new', tags: ['keyboard'], createdAt: '2026-09-23T17:10:00Z', notes: [] },
+  { id: 'f8', title: 'Import from a spreadsheet drops line breaks', body: 'Multi-line descriptions come in as one long line after an import.', customer: 'Sofia Rossi', company: 'Arcadia Bank', mrr: 18900, plan: 'Business', source: 'Email', priority: 'high', status: 'planned', tags: ['import'], createdAt: '2026-09-22T10:00:00Z', notes: [] },
+  { id: 'f9', title: 'Weekly digest should group by account', body: 'The digest lists items one by one. I want to see which accounts asked for what, so I can brief their CSMs.', customer: 'Hannah Weiss', company: 'Kestrel Health', mrr: 12400, plan: 'Enterprise', source: 'Email', priority: 'medium', status: 'triaged', tags: ['email', 'accounts'], createdAt: '2026-09-21T14:10:00Z', notes: [] },
+  { id: 'f10', title: 'Slack alerts for high-value accounts', body: 'When a big account reports something, we want to know in Slack right away, not in tomorrow’s digest.', customer: 'Marcus Bell', company: 'Arcadia Bank', mrr: 18900, plan: 'Enterprise', source: 'Chat', priority: 'high', status: 'new', tags: ['integrations'], createdAt: '2026-09-29T08:20:00Z', notes: [] },
+  { id: 'f11', title: 'Let customers vote on planned items', body: 'Our customers keep asking whether their request is on the roadmap. A public vote would answer that for them.', customer: 'Elena Park', company: 'Brightline', mrr: 1850, plan: 'Business', source: 'Interview', priority: 'medium', status: 'planned', tags: ['portal'], createdAt: '2026-09-19T12:45:00Z', notes: [] },
+  { id: 'f12', title: 'SSO with Okta for the whole workspace', body: 'Security review requires SSO before we can roll Echo out to the rest of the company.', customer: 'Jonas Berg', company: 'Northwind Labs', mrr: 4200, plan: 'Business', source: 'Email', priority: 'high', status: 'triaged', tags: ['security'], createdAt: '2026-09-18T09:30:00Z', notes: [] },
 ];
 
 // What the feedback table is showing: a status ("open" is everything not resolved) and, optionally, a priority.
@@ -82,7 +88,7 @@ const nextId = () => `f${++counter}`;
 export type FeedbackInput = Pick<Feedback, 'title' | 'body' | 'customer' | 'source' | 'priority'>;
 
 export function addFeedback(input: FeedbackInput): Feedback {
-  const item: Feedback = { ...input, id: nextId(), plan: 'Team', status: 'new', tags: [], createdAt: new Date().toISOString(), notes: [] };
+  const item: Feedback = { ...input, id: nextId(), company: '', mrr: 0, plan: 'Team', status: 'new', tags: [], createdAt: new Date().toISOString(), notes: [] };
   set({ ...state, items: [item, ...state.items] });
   return item;
 }
@@ -102,3 +108,4 @@ export const resetData = () => set({ items: seed(), selectedId: null, filter: NO
 export const showFiltered = (filter: Filter) => set({ ...state, filter });
 
 export const formatDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+export const formatMrr = (mrr: number) => (mrr >= 1000 ? `$${(mrr / 1000).toFixed(1).replace(/\.0$/, '')}k` : `$${mrr}`);

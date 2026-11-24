@@ -64,6 +64,17 @@ export default {
       "assets": [
         "fonts"
       ]
+    },
+    {
+      "kind": "package",
+      "id": "font-mono",
+      "label": "Geist Mono",
+      "package": "@fontsource-variable/geist-mono",
+      "description": "Monospace typeface for numbers, IDs, and code",
+      "docs": "https://fontsource.org/fonts/geist-mono",
+      "assets": [
+        "fonts"
+      ]
     }
   ],
   origin: 'shadcn',

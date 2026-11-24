@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@module/prototypes';
 import { MoreHorizontal, Plus, Search, X } from '@/systems/product/libraries/icons';
+import { Avatar, AvatarFallback } from '@/systems/product/components/avatar';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/systems/product/components/dropdown-menu';
@@ -18,7 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/systems/product/components/tabs';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { NO_FILTER, STATUSES, addFeedback, formatDate, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
+import { NO_FILTER, STATUSES, addFeedback, formatDate, formatMrr, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
 
 export type FeedbackInboxStart = {
   filter?: Filter;
@@ -27,6 +28,8 @@ export type FeedbackInboxStart = {
   tried?: boolean;       // ...and Add was pressed with nothing filled in
   menuFor?: string;      // the row menu of this item is open
 };
+
+const initials = (name: string) => name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 
 export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '', adding: startAdding = false, tried = false, menuFor }: FeedbackInboxStart) {
   const { items, filter: asked } = useStore();
@@ -39,7 +42,9 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
   const open = (id: string) => { select(id); navigate('app/feedback-detail'); };
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((f) => matchesFilter(f, filter) && (!q || `${f.title} ${f.customer} ${f.tags.join(' ')}`.toLowerCase().includes(q)));
+    return items
+      .filter((f) => matchesFilter(f, filter) && (!q || `${f.title} ${f.customer} ${f.company} ${f.tags.join(' ')}`.toLowerCase().includes(q)))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [items, filter, query]);
   // Tabs name one status; "open issues" and "high priority" aren't tabs, so none is selected and the bar below says what's showing.
   const tab = filter.status === 'open' || filter.priority ? '' : filter.status;
@@ -47,7 +52,7 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl px-8 py-8">
+      <div className="mx-auto max-w-6xl px-8 py-8">
         <header className="mb-6 flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-semibold tracking-tight">Feedback inbox</h1>
@@ -78,12 +83,13 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
           </div>
         )}
 
-        <div className="rounded-square border border-border bg-card">
+        <div className="rounded-md border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Feedback</TableHead>
-                <TableHead>From</TableHead>
+                <TableHead className="w-[38%]">Feedback</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead className="text-right">MRR</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Received</TableHead>
@@ -93,8 +99,20 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
             <TableBody>
               {shown.map((f) => (
                 <TableRow key={f.id} className="cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell className="font-medium">{f.title}</TableCell>
-                  <TableCell className="text-muted-foreground">{f.customer}<span className="text-xs"> · {f.source}</span></TableCell>
+                  <TableCell>
+                    <div className="font-medium">{f.title}</div>
+                    <div className="mt-0.5 text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <Avatar size="sm"><AvatarFallback className="text-[10px]">{initials(f.customer)}</AvatarFallback></Avatar>
+                      <div className="leading-tight">
+                        <div>{f.customer}</div>
+                        <div className="text-xs text-muted-foreground">{f.company || 'No account'}</div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell><PriorityBadge priority={f.priority} /></TableCell>
                   <TableCell><StatusBadge status={f.status} /></TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(f.createdAt)}</TableCell>

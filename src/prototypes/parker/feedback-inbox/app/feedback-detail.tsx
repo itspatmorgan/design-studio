@@ -17,7 +17,7 @@ import { Textarea } from '@/systems/product/components/textarea';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { PRIORITIES, STATUSES, addNote, formatDate, removeFeedback, updateFeedback, useFeedback, useStore, type Priority, type Status } from './_components/store';
+import { PRIORITIES, STATUSES, addNote, formatDate, formatMrr, removeFeedback, updateFeedback, useFeedback, useStore, type Priority, type Status } from './_components/store';
 
 export function DetailScreen({ editing: startEditing = false, deleting: startDeleting = false }: { editing?: boolean; deleting?: boolean }) {
   const { selectedId, items } = useStore();
@@ -36,7 +36,7 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
       <AppShell>
         <div className="mx-auto max-w-3xl px-8 py-8">
           {back}
-          <div className="rounded-square border border-dashed border-border px-6 py-14 text-center">
+          <div className="rounded-md border border-dashed border-border px-6 py-14 text-center">
             <p className="text-sm font-medium">No feedback to show</p>
             <p className="mt-1 text-sm text-muted-foreground">Add some in the feedback inbox, or reset the sample data.</p>
           </div>
@@ -47,13 +47,13 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl px-8 py-8">
+      <div className="mx-auto max-w-6xl px-8 py-8">
         {back}
         <header className="mb-6 flex items-start justify-between gap-4">
           <div>
             <div className="mb-2 flex items-center gap-2"><StatusBadge status={item.status} /><PriorityBadge priority={item.priority} /></div>
             <h1 className="text-xl font-semibold tracking-tight">{item.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{item.customer} · {item.plan} plan · via {item.source} · {formatDate(item.createdAt)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{item.customer}{item.company && <> at {item.company}</>} · {item.plan} plan{item.mrr > 0 && <> · <span className="font-mono text-xs">{formatMrr(item.mrr)}/mo</span></>} · via {item.source} · {formatDate(item.createdAt)}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setEditing(true)}><Pencil /> Edit</Button>
@@ -73,7 +73,7 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
               <h2 className="mb-3 text-sm font-semibold">Notes</h2>
               <ul className="mb-4 space-y-3">
                 {item.notes.map((n) => (
-                  <li key={n.id} className="rounded-square border border-border bg-card px-3 py-2">
+                  <li key={n.id} className="rounded-md border border-border bg-card px-3 py-2">
                     <p className="text-sm">{n.text}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{formatDate(n.at)}</p>
                   </li>

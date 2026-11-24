@@ -9,7 +9,7 @@ import { ArrowRight } from '@/systems/product/libraries/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
 import AppShell from './_components/AppShell';
 import { PriorityBadge, StatusBadge } from './_components/badges';
-import { SOURCES, STATUSES, formatDate, select, showFiltered, useStore, type Filter } from './_components/store';
+import { STATUSES, formatDate, formatMrr, select, showFiltered, useStore, type Feedback, type Filter } from './_components/store';
 
 type MetricStyle = { padding: number; valueSize: number };
 
@@ -19,7 +19,7 @@ function Metric({ label, value, hint, filter, look }: { label: string; value: nu
     <button
       type="button"
       onClick={() => { showFiltered(filter); navigate('app/feedback-inbox'); }}
-      className="group/metric rounded-square border border-border bg-card text-left transition-colors hover:border-primary/50 hover:bg-accent/40"
+      className="group/metric rounded-xl border border-border bg-card text-left transition-colors hover:border-primary/50 hover:bg-accent/40"
       style={{ padding: look.padding }}
     >
       <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -29,6 +29,29 @@ function Metric({ label, value, hint, filter, look }: { label: string; value: nu
       <div className="mt-1 font-semibold tabular-nums" style={{ fontSize: look.valueSize, lineHeight: 1.2 }}>{value}</div>
       <div className="mt-1 text-xs text-muted-foreground">{hint}</div>
     </button>
+  );
+}
+
+// Accounts with open feedback, largest first: who is asking, and what they are worth.
+function Accounts({ items }: { items: Feedback[] }) {
+  const byCompany = new Map<string, { mrr: number; count: number }>();
+  for (const f of items) {
+    if (!f.company || f.status === 'resolved') continue;
+    const a = byCompany.get(f.company) ?? { mrr: f.mrr, count: 0 };
+    byCompany.set(f.company, { ...a, count: a.count + 1 });
+  }
+  const rows = [...byCompany].sort((a, b) => b[1].mrr - a[1].mrr).slice(0, 4);
+  return (
+    <ul className="space-y-3">
+      {rows.map(([company, a]) => (
+        <li key={company} className="flex items-center gap-3 text-sm">
+          <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-accent-foreground">{company[0]}</span>
+          <span className="flex-1 truncate">{company}</span>
+          <span className="text-xs text-muted-foreground">{a.count} open</span>
+          <span className="w-14 text-right font-mono text-xs tabular-nums">{formatMrr(a.mrr)}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -63,7 +86,7 @@ export default function Overview() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-5xl px-8 py-8">
+      <div className="mx-auto max-w-6xl px-8 py-8">
         <header className="mb-6">
           <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
           <p className="mt-1 text-sm text-muted-foreground">Where the feedback stands. Click a number to see the feedback behind it.</p>
@@ -78,7 +101,7 @@ export default function Overview() {
 
         <div className="mb-6 grid gap-4 lg:grid-cols-2">
           <Card><CardHeader><CardTitle>By status</CardTitle></CardHeader><CardContent><Bars height={bars.height} rows={STATUSES.map((s) => ({ label: s.label, count: items.filter((f) => f.status === s.value).length }))} /></CardContent></Card>
-          <Card><CardHeader><CardTitle>By source</CardTitle></CardHeader><CardContent><Bars height={bars.height} rows={SOURCES.map((s) => ({ label: s.label, count: items.filter((f) => f.source === s.value).length }))} /></CardContent></Card>
+          <Card><CardHeader><CardTitle>Accounts asking</CardTitle></CardHeader><CardContent><Accounts items={items} /></CardContent></Card>
         </div>
 
         <Card>
@@ -89,6 +112,7 @@ export default function Overview() {
                 <li key={f.id}>
                   <button type="button" className="flex w-full items-center gap-3 py-2.5 text-left text-sm hover:text-primary" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
                     <span className="flex-1 truncate font-medium">{f.title}</span>
+                    <span className="hidden w-32 truncate text-xs text-muted-foreground lg:block">{f.company}</span>
                     <PriorityBadge priority={f.priority} />
                     <StatusBadge status={f.status} />
                     <span className="w-14 text-right text-xs text-muted-foreground">{formatDate(f.createdAt)}</span>
