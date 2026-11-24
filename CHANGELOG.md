@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.5.0 (2026-11-24)
+
 - Views on canvases and in documents are laid out at the screen your design system is made for, instead of always at 1440 px desktop width. Each system declares its screen widths in `system.ts` (`screens`, the main one first), and each view on a canvas records the width it shows. Ask your agent to show a view at another screen, or the same view at Phone, Tablet and Desktop side by side, to review responsive layouts; it only adds them when you ask. **Breaking:** add `screens` to each system and a screen width to each view on your canvases (below).
 - The examples are now one made-up product, Echo: **Echo app** (was Feedback Inbox) and **Echo website** (was Design Studio Marketing, with its landing versions replaced by one finished homepage and a light-hero alternative). The Product and Marketing systems share Echo's brand, cobalt with Geist and Geist Mono, the way a team's product and website would. If you kept the old examples, updating renames their folders; delete them if you don't use them. Product's `--radius-square` token is replaced by `--radius-sm` to `--radius-xl`; prototypes of your own on Product that use `rounded-square` switch to `rounded-md`.
 - Your agent can rename and duplicate a prototype the way its **…** menu does: `pnpm studio rename` and `pnpm studio duplicate` repair links and give the copy fresh identities, with the menu's names and checks, instead of the agent moving folders by hand.
@@ -12,6 +14,7 @@ Follow the [manual upgrade guidance](src/platform/context/ownership.md#updating-
 
 - Add `screens` to every `system.ts` beside `colorModes`, the screen your designs are made for first: `screens: [{ name: 'Desktop', width: 1440 }]` keeps today's layout, and a system for a phone app declares its phone width first. Until it's declared, `pnpm check` names the system.
 - Give every view on your canvases its screen: `pnpm build` names each canvas with views that don't say. Run the canvas `update` tool with `screen` and the view's current `width` and `height` for each, so the layout stays put; your agent can do this for all of them.
+- If prototypes of your own on the Product system use `rounded-square` or `--radius-square`, switch them to `rounded-md` (`--radius-md`).
 
 ## 0.4.0 (2026-11-23)
 
