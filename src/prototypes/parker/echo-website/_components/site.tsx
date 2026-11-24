@@ -4,6 +4,8 @@ import type { CSSProperties } from 'react';
 import { ArrowRight } from '@/systems/marketing/libraries/icons';
 import { buttonVariants } from '@/systems/marketing/components/button';
 import { cn } from '#studio/runtime';
+import CompanyLogo from './CompanyLogo';
+import { StatusLabel, type Status } from './marks';
 import { EchoMark, ProductShot } from './product-shot';
 import styles from './site.module.css';
 
@@ -25,7 +27,7 @@ const accountStats = [
   { label: 'Seats', value: '240' },
   { label: 'Requests', value: '4' },
 ];
-const accountAsks = [
+const accountAsks: { title: string; via: string; status: Status }[] = [
   { title: 'Slack alerts for high-value accounts', via: 'Chat', status: 'New' },
   { title: 'Import from a spreadsheet drops line breaks', via: 'Email', status: 'Planned' },
   { title: 'SSO for contractor accounts', via: 'Interview', status: 'Triaged' },
@@ -82,7 +84,7 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
             </div>
             <div className={styles.accountPanel}>
               <div className={styles.account}>
-                <span className={styles.accountLogo}>A</span>
+                <CompanyLogo company="Arcadia Bank" className={styles.accountLogo} />
                 <div><b>Arcadia Bank</b><small>Enterprise plan · Renews in March</small></div>
                 <span className={styles.tagBrand}>Key account</span>
               </div>
@@ -93,7 +95,7 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
               </dl>
               <ul className={styles.accountAsks}>
                 {accountAsks.map((a) => (
-                  <li key={a.title}><span>{a.title}<small>via {a.via}</small></span><em className={a.status === 'Planned' || a.status === 'New' ? styles.tagBrand : styles.neutral}>{a.status}</em></li>
+                  <li key={a.title}><span>{a.title}<small>via {a.via}</small></span><StatusLabel status={a.status} /></li>
                 ))}
               </ul>
             </div>
@@ -105,7 +107,7 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
             </div>
             <div className={styles.sources}>
               {sources.map((s) => (
-                <div key={s.name} className={styles.sourceRow}><span>{s.name}</span><span className={styles.sourceBar}><i style={{ width: `${(s.count / 128) * 100}%` }} /></span><span className={styles.mono}>{s.count}</span></div>
+                <div key={s.name} className={styles.sourceRow}><span>{s.name}</span><span className={styles.sourceBar}><i style={{ width: `${(s.count / 128) * 100}%` }} /></span><span className={styles.count}>{s.count}</span></div>
               ))}
             </div>
           </article>
@@ -116,7 +118,7 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
             </div>
             <div className={styles.roadmap}>
               {roadmap.map((r) => (
-                <div key={r.title} className={styles.roadmapRow}><span className={styles.roadmapDot} /><span className={styles.roadmapTitle}>{r.title}</span><span className={styles.mono}>{r.mrr}</span></div>
+                <div key={r.title} className={styles.roadmapRow}><span className={styles.roadmapDot} /><span className={styles.roadmapTitle}>{r.title}</span><span className={styles.count}>{r.mrr}</span></div>
               ))}
             </div>
           </article>

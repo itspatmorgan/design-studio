@@ -1,9 +1,10 @@
 // The Echo app, recreated for the website: the feedback inbox under its top bar. It's a picture made of
 // markup, so it stays sharp at any size and follows the theme, and it never links into the app prototype.
 import CompanyLogo from './CompanyLogo';
+import { PriorityIcon, StatusLabel, type Priority, type Status } from './marks';
 import styles from './site.module.css';
 
-const rows = [
+const rows: { title: string; via: string; person: string; company: string; mrr: string; priority: Priority; status: Status }[] = [
   { title: 'Slack alerts for high-value accounts', via: 'Chat', person: 'Marcus Bell', company: 'Arcadia Bank', mrr: '$18.9k', priority: 'High', status: 'New' },
   { title: 'Export to CSV is missing columns', via: 'Email', person: 'Maya Chen', company: 'Northwind Labs', mrr: '$4.2k', priority: 'High', status: 'New' },
   { title: 'Dark mode makes the status badges hard to read', via: 'Chat', person: 'Luis Ortega', company: 'Brightline', mrr: '$1.9k', priority: 'Medium', status: 'Triaged' },
@@ -24,7 +25,7 @@ export function EchoMark({ className }: { className?: string }) {
 
 export function ProductShot() {
   return (
-    <div className={styles.shot} role="img" aria-label="The Echo feedback inbox, with each request tied to an account and its monthly revenue">
+    <div className={styles.shot} role="img" aria-label="The Echo feedback inbox, with each request's priority, status, and account and its monthly revenue">
       <div className={styles.shotChrome}><span /><span /><span /></div>
       <div className={styles.shotBar}>
         <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Echo</div>
@@ -42,14 +43,14 @@ export function ProductShot() {
             <span className={styles.shotButton}>+ New feedback</span>
           </div>
           <div className={styles.shotTable}>
-            <div className={`${styles.shotRow} ${styles.shotRowHead}`}><span>Feedback</span><span>Priority</span><span>Status</span><span>Customer</span><span className={styles.num}>MRR</span></div>
+            <div className={`${styles.shotRow} ${styles.shotRowHead}`}><span /><span>Feedback</span><span>Status</span><span>Customer</span><span>MRR</span></div>
             {rows.map((r) => (
               <div key={r.title} className={styles.shotRow}>
-                <span><b>{r.title}</b><small>via {r.via}</small></span>
-                <span><em className={r.priority === 'High' ? styles.high : styles.neutral}>{r.priority}</em></span>
-                <span><em className={r.status === 'Triaged' ? styles.neutral : styles.tagBrand}>{r.status}</em></span>
-                <span className={styles.shotPerson}><CompanyLogo company={r.company} className={styles.shotLogoMark} /><span>{r.company}<small>{r.person}</small></span></span>
-                <span className={`${styles.num} ${styles.mono}`}>{r.mrr}</span>
+                <PriorityIcon priority={r.priority} />
+                <span className={styles.shotFeedback}><b>{r.title}</b><small>via {r.via}</small></span>
+                <StatusLabel status={r.status} />
+                <span className={styles.shotPerson}><CompanyLogo company={r.company} className={styles.shotLogoMark} /><span>{r.company}</span></span>
+                <span className={styles.count}>{r.mrr}</span>
               </div>
             ))}
           </div>
