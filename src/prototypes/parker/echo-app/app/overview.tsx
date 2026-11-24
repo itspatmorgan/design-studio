@@ -47,7 +47,7 @@ function Accounts({ items }: { items: Feedback[] }) {
         <li key={company} className="flex items-center gap-3 text-sm">
           <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-accent-foreground">{company[0]}</span>
           <span className="flex-1 truncate">{company}</span>
-          <span className="text-xs text-muted-foreground">{a.count} open</span>
+          <span className="w-16 text-right text-xs text-muted-foreground">{a.count} open</span>
           <span className="w-14 text-right font-mono text-xs tabular-nums">{formatMrr(a.mrr)}</span>
         </li>
       ))}
@@ -110,12 +110,12 @@ export default function Overview() {
             <ul className="divide-y divide-border">
               {newest.map((f) => (
                 <li key={f.id}>
-                  <button type="button" className="flex w-full items-center gap-3 py-2.5 text-left text-sm hover:text-primary" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
-                    <span className="flex-1 truncate font-medium">{f.title}</span>
-                    <span className="hidden w-32 truncate text-xs text-muted-foreground lg:block">{f.company}</span>
-                    <PriorityBadge priority={f.priority} />
-                    <StatusBadge status={f.status} />
-                    <span className="w-14 text-right text-xs text-muted-foreground">{formatDate(f.createdAt)}</span>
+                  <button type="button" className="grid w-full grid-cols-[minmax(0,1fr)_5rem_5rem_3.5rem] items-center gap-4 py-2.5 text-left text-sm hover:text-primary lg:grid-cols-[minmax(0,1fr)_10rem_5rem_5rem_3.5rem]" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
+                    <span className="truncate font-medium">{f.title}</span>
+                    <span className="hidden truncate text-xs text-muted-foreground lg:block">{f.company}</span>
+                    <span><PriorityBadge priority={f.priority} /></span>
+                    <span><StatusBadge status={f.status} /></span>
+                    <span className="text-right text-xs text-muted-foreground tabular-nums">{formatDate(f.createdAt)}</span>
                   </button>
                 </li>
               ))}

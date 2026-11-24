@@ -87,35 +87,35 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[38%]">Feedback</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead className="text-right">MRR</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden xl:table-cell">Received</TableHead>
-                <TableHead className="w-10"><span className="sr-only">Actions</span></TableHead>
+                <TableHead className="pl-4">Feedback</TableHead>
+                <TableHead className="w-56">Customer</TableHead>
+                <TableHead className="w-20 pr-6 text-right">MRR</TableHead>
+                <TableHead className="w-24">Priority</TableHead>
+                <TableHead className="w-24">Status</TableHead>
+                <TableHead className="hidden w-20 xl:table-cell">Received</TableHead>
+                <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {shown.map((f) => (
                 <TableRow key={f.id} className="cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell className="max-w-0">
+                  <TableCell className="max-w-0 pl-4">
                     <div className="truncate font-medium">{f.title}</div>
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
                       <Avatar size="sm"><AvatarFallback className="text-[10px]">{initials(f.customer)}</AvatarFallback></Avatar>
-                      <div className="leading-tight">
-                        <div>{f.customer}</div>
+                      <div className="min-w-0 leading-tight">
+                        <div className="truncate">{f.customer}</div>
                         <div className="text-xs text-muted-foreground">{f.company || 'No account'}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
+                  <TableCell className="pr-6 text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell><PriorityBadge priority={f.priority} /></TableCell>
                   <TableCell><StatusBadge status={f.status} /></TableCell>
-                  <TableCell className="hidden text-muted-foreground xl:table-cell">{formatDate(f.createdAt)}</TableCell>
+                  <TableCell className="hidden text-xs text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} />}><MoreHorizontal /></DropdownMenuTrigger>
