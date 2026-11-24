@@ -19,7 +19,7 @@
    until they're activated; keep the frame's Open link live regardless. */
 /* Everything else in a view is a static preview: pointer input (and the view's own
    link/button cursors) falls through to the canvas, so the whole view reads as
-   movable. Only the linked title bar takes pointer input. */
+   movable. Only the linked title bar (or a card's Open link) takes pointer input. */
 .canvas [data-canvas-frame],
 .canvas [data-canvas-frame] * {
   pointer-events: none;

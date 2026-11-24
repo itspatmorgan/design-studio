@@ -29,6 +29,6 @@ The editable sharing artwork is [social-card.html](assets/brand/social-card.html
 
 For GitHub, fit the light social card into 1280 × 640 without cropping or stretching, using its background color for the remaining horizontal margin. Upload it through the repository's **Settings → General → Social preview**; changing the README does not update that setting.
 
-Product screenshots show the supplied Feedback Inbox sample with Studio navigation visible. Recapture the working inbox in both themes after relevant interface changes. Remove hover tooltips and open menus, wait for fonts and preview content, and keep the real interface intact. These screenshots are documentation and marketing assets, not per-prototype link previews.
+Product screenshots show the supplied Echo app sample with Studio navigation visible. Recapture the working inbox in both themes after relevant interface changes. Remove hover tooltips and open menus, wait for fonts and preview content, and keep the real interface intact. These screenshots are documentation and marketing assets, not per-prototype link previews.
 
 When changing the mark, update the navigation paths and public tile SVGs together, then regenerate the raster icons and sharing images. See [Publishing](../../context/publishing.md#social-link-previews) for the metadata and public URL setup.

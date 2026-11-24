@@ -81,10 +81,21 @@ export default {
     {
       "kind": "package",
       "id": "font",
-      "label": "Space Grotesk",
-      "package": "@fontsource-variable/space-grotesk",
+      "label": "Geist",
+      "package": "@fontsource-variable/geist",
       "description": "System typeface",
-      "docs": "https://fontsource.org/fonts/space-grotesk",
+      "docs": "https://fontsource.org/fonts/geist",
+      "assets": [
+        "fonts"
+      ]
+    },
+    {
+      "kind": "package",
+      "id": "font-mono",
+      "label": "Geist Mono",
+      "package": "@fontsource-variable/geist-mono",
+      "description": "Monospace typeface for numbers, IDs, and code",
+      "docs": "https://fontsource.org/fonts/geist-mono",
       "assets": [
         "fonts"
       ]
