@@ -29,6 +29,9 @@ import { planSettings } from '../lib/studio-settings.js';
 import { renderAgents } from '../lib/agents-file.js';
 import { resolveContributor } from './resolve-contributor.js';
 import { downloadPrototype } from '../../modules/prototypes/node/download.js';
+import { renamePrototype } from '../../modules/prototypes/node/create.js';
+import { duplicatePrototype } from '../../modules/prototypes/node/duplicate.js';
+import { ownedPrototype } from '../build/files/policy.js';
 import { loadContributors } from '../lib/contributors.js';
 import {
   SUPPLIED_MODULES_ROOT,
@@ -56,10 +59,23 @@ const positional = [];
 for (let i = 0; i < rest.length; i++) {
   const a = rest[i];
   if (a === '--') continue;
-  if (['--yes', '--content', '--force', '--json', '--check', '--restore-prototypes', '--recovery'].includes(a))
+  if (
+    [
+      '--yes',
+      '--content',
+      '--force',
+      '--json',
+      '--check',
+      '--restore-prototypes',
+      '--recovery',
+      '--no-system',
+    ].includes(a)
+  )
     flags[a.slice(2)] = true;
   else if (
-    ['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers', '--out'].includes(a)
+    ['--label', '--name', '--tagline', '--usage', '--system', '--admins', '--maintainers', '--out', '--title'].includes(
+      a,
+    )
   ) {
     flags[a.slice(2)] = rest[++i];
     if (flags[a.slice(2)] === undefined) fail(`${a} needs a value.`);
@@ -621,13 +637,47 @@ function context() {
   }
 }
 
+// The prototype folder a command names, as its contributor key and folder name.
+function prototypeArg(usage) {
+  const match = /^src\/prototypes\/([^/]+)\/([^/]+)\/?$/.exec(positional[0] ?? '');
+  if (positional.length !== 1 || !match)
+    fail(`Usage: pnpm studio ${command} src/prototypes/<contributor>/<prototype>${usage}`);
+  return { key: match[1], id: match[2], folder: `src/prototypes/${match[1]}/${match[2]}` };
+}
+
+// The prototype menu's Rename and Duplicate, with the same checks as the dev server's routes
+// (src/platform/node/build/vite-files-plugin.js): only a prototype you own. They get commands because they
+// repair links and assign identities, which hand edits get wrong; simpler actions are in the organize-prototype skill.
+function organize(action) {
+  const usage = action === 'rename' ? ' --title "..."' : ' [--title "..."] [--system <id> | --no-system]';
+  const { key, id, folder } = prototypeArg(usage);
+  const owned = ownedPrototype(key, id, resolveContributor());
+  if (owned.error) fail(owned.error);
+  try {
+    if (action === 'rename') {
+      if (flags.title === undefined) fail(`Usage: pnpm studio rename ${folder}${usage}`);
+      const { id: next } = renamePrototype({ key, id, title: flags.title });
+      say(
+        next === id
+          ? `Renamed ${folder}.`
+          : `Renamed ${folder} to src/prototypes/${key}/${next}. Its links were updated.`,
+      );
+    } else {
+      if (flags['no-system'] && flags.system !== undefined) fail('Use --system or --no-system, not both.');
+      const { title } = JSON.parse(fs.readFileSync(path.join(owned.dir, 'meta.json'), 'utf8'));
+      const system = flags['no-system'] ? null : flags.system;
+      const { id: copy } = duplicatePrototype({ key, id, title: flags.title ?? `${title} copy`, system });
+      say(`Duplicated ${folder} to src/prototypes/${key}/${copy}.`);
+    }
+  } catch (error) {
+    fail(error.message);
+  }
+}
+
 // The same Download as the prototype's menu: one HTML file that opens without Studio. Saved where a browser
 // would put it, ~/Downloads, unless --out names the file.
 async function download() {
-  const match = /^src\/prototypes\/([^/]+)\/([^/]+)\/?$/.exec(positional[0] ?? '');
-  if (positional.length !== 1 || !match)
-    fail('Usage: pnpm studio download src/prototypes/<contributor>/<prototype> [--out <file>]');
-  const [, key, id] = match;
+  const { key, id } = prototypeArg(' [--out <file>]');
   const out = path.resolve(flags.out ?? path.join(os.homedir(), 'Downloads', `${id}.html`));
   try {
     const html = await downloadPrototype({ key, id });
@@ -644,6 +694,8 @@ const commands = {
   status,
   context,
   download,
+  rename: () => organize('rename'),
+  duplicate: () => organize('duplicate'),
   list,
   check,
   sync: () => {

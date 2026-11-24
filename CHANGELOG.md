@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Your agent can rename and duplicate a prototype the way its **…** menu does: `pnpm studio rename` and `pnpm studio duplicate` repair links and give the copy fresh identities, with the menu's names and checks, instead of the agent moving folders by hand.
+
 ## 0.4.0 (2026-11-23)
 
 - **Download** in a prototype's **…** menu (or `pnpm studio download <prototype folder>` for your agent) saves it as one HTML file anyone can open in a browser without Studio: its views, documents, diagrams and canvases, with its navigation. Send it to a teammate or client to review when you can't publish a site. Thanks @robcrock for the idea and the first version.
