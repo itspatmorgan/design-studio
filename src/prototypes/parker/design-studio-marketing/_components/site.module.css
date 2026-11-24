@@ -8,6 +8,8 @@
   --tint: var(--color-bg-secondary);
   --hero-title: 76px;
   --shot-overlap: 160px;
+  /* The dials set the desktop values; small screens scale them down. */
+  --overlap: min(var(--shot-overlap), 16vw);
   min-height: 100%;
   background: var(--surface);
   color: var(--ink);
@@ -38,8 +40,8 @@
 .heroCobalt {
   /* Cobalt stops short of the bottom, so the product shot hangs out of the hero onto the page. */
   background:
-    radial-gradient(80% 60% at 50% 0%, rgb(255 255 255 / 0.16), transparent 70%) top / 100% calc(100% - var(--shot-overlap)) no-repeat,
-    linear-gradient(var(--brand), var(--brand)) top / 100% calc(100% - var(--shot-overlap)) no-repeat,
+    radial-gradient(80% 60% at 50% 0%, rgb(255 255 255 / 0.16), transparent 70%) top / 100% calc(100% - var(--overlap)) no-repeat,
+    linear-gradient(var(--brand), var(--brand)) top / 100% calc(100% - var(--overlap)) no-repeat,
     var(--surface);
   color: #fff;
 }
@@ -48,7 +50,7 @@
 }
 .heroCopy { max-width: 880px; margin: 0 auto; padding: 88px 32px 56px; text-align: center; }
 .heroTitle {
-  font-size: var(--hero-title);
+  font-size: clamp(40px, 10.5vw, var(--hero-title));
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.045em;
@@ -108,7 +110,7 @@
 .shotPerson i { display: grid; flex: none; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font-size: 9px; font-style: normal; }
 .shotPerson > span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
-.shot em, .accountAsk em {
+.shot em, .card em, .account > .tagBrand {
   display: inline-block;
   padding: 1px 7px;
   border-radius: 6px;
@@ -124,39 +126,65 @@
 .section { max-width: 1200px; margin: 0 auto; padding: 112px 32px; }
 .sectionTinted { max-width: none; padding-inline: max(32px, calc((100% - 1136px) / 2)); background: var(--tint); }
 .sectionTitle { max-width: 640px; font-size: 44px; font-weight: 600; line-height: 1.08; letter-spacing: -0.035em; text-wrap: balance; }
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; }
-.feature h3, .steps h3 { margin-top: 24px; font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
-.feature p, .steps p { margin-top: 8px; color: var(--muted); font-size: 15px; line-height: 1.55; }
-.vignette {
+/* Product: a bento, one large account card and two smaller ones beside it. */
+.bento { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto; gap: 20px; margin-top: 56px; }
+.card {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  height: 200px;
-  padding: 24px;
+  gap: 24px;
+  padding: 28px;
+  overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: 16px;
   background: linear-gradient(180deg, var(--surface), var(--tint));
   font-size: 13px;
 }
-.sourceRow { display: grid; grid-template-columns: 64px 1fr 32px; align-items: center; gap: 12px; }
-.sourceBar { height: 8px; border-radius: 999px; background: var(--tint); }
-.sourceBar i { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
-.account { display: flex; align-items: center; gap: 10px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.account b { display: block; font-weight: 600; }
+.cardLarge { grid-column: span 2; grid-row: span 2; }
+.cardText h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+.cardText p { max-width: 420px; margin-top: 6px; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.cardLarge .cardText h3 { font-size: 24px; letter-spacing: -0.02em; }
+
+.accountPanel {
+  margin-top: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgb(9 9 11 / 0.04), 0 16px 40px -16px rgb(9 9 11 / 0.18);
+}
+.account { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.account b { display: block; font-size: 15px; font-weight: 600; }
 .account small { color: var(--muted); font-size: 12px; }
-.account > div { flex: 1; }
-.accountLogo { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: var(--ink); color: var(--surface); font-weight: 600; }
-.accountAsk { display: flex; align-items: center; gap: 8px; }
-.roadmapRow { display: grid; grid-template-columns: 8px 1fr auto 44px; align-items: center; gap: 10px; }
+.account > div { flex: 1; min-width: 0; }
+.accountLogo { display: grid; flex: none; place-items: center; width: 36px; height: 36px; border-radius: 9px; background: var(--ink); color: var(--surface); font-weight: 600; }
+.accountStats { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
+.accountStats > div { padding: 14px 20px; }
+.accountStats > div + div { border-left: 1px solid var(--line); }
+.accountStats dt { color: var(--muted); font-size: 12px; }
+.accountStats dd { margin-top: 2px; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.accountAsks { list-style: none; }
+.accountAsks li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 20px; }
+.accountAsks li + li { border-top: 1px solid var(--line); }
+.accountAsks li > span { min-width: 0; font-weight: 500; }
+.accountAsks small { display: block; color: var(--muted); font-size: 11px; font-weight: 400; }
+
+.sources, .roadmap { display: flex; flex-direction: column; gap: 12px; margin-top: auto; }
+.sourceRow { display: grid; grid-template-columns: 56px 1fr 28px; align-items: center; gap: 12px; }
+.sourceBar { height: 8px; border-radius: 999px; background: color-mix(in oklab, var(--ink) 7%, transparent); }
+.sourceBar i { display: block; height: 100%; border-radius: 999px; background: var(--brand); }
+.roadmapRow { display: grid; grid-template-columns: 8px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
 .roadmapDot { width: 8px; height: 8px; border-radius: 50%; background: var(--brand); }
 .roadmapTitle { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.roadmapRow .muted { font-size: 12px; }
-.roadmapRow .mono { text-align: right; }
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 56px; list-style: none; }
-.steps li { padding-top: 24px; border-top: 1px solid var(--color-border-primary); }
-.stepNumber { color: var(--brand); font-family: var(--font-mono); font-size: 13px; }
-.steps h3 { margin-top: 12px; }
+
+/* How it works: the heading on the left, the steps as rows on the right. */
+.how { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 64px; align-items: start; }
+.howIntro { position: sticky; top: 32px; }
+.howIntro p { max-width: 400px; margin-top: 20px; color: var(--muted); font-size: 17px; line-height: 1.55; }
+.steps { list-style: none; }
+.steps li { display: grid; grid-template-columns: 56px 1fr; gap: 16px; padding: 28px 0; border-top: 1px solid var(--color-border-primary); }
+.steps li:last-child { border-bottom: 1px solid var(--color-border-primary); }
+.steps h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; }
+.steps p { margin-top: 6px; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.stepNumber { padding-top: 4px; color: var(--brand); font-family: var(--font-mono); font-size: 13px; }
 
 .closing { padding: 120px 32px; background: var(--brand); color: #fff; text-align: center; }
 .closing h2 { max-width: 720px; margin: 0 auto; font-size: 52px; font-weight: 600; line-height: 1.05; letter-spacing: -0.04em; text-wrap: balance; }
@@ -164,24 +192,51 @@
 
 .footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1200px; margin: 0 auto; padding: 32px; font-size: 13px; }
 
+/* Tablet */
+@media (max-width: 1024px) {
+  .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cardLarge { grid-row: auto; }
+  .how { grid-template-columns: 1fr; gap: 32px; }
+  .howIntro { position: static; }
+  .shotBody { grid-template-columns: 1fr; }
+  .shotSidebar { display: none; }
+}
+
 /* Phone */
 @media (max-width: 768px) {
-  .page { --hero-title: 44px; --shot-overlap: 64px; }
   .header { gap: 16px; padding: 16px 20px; }
   .nav, .signIn { display: none; }
-  .heroCopy { padding: 48px 20px 40px; }
-  .heroLede { font-size: 16px; }
-  .heroActions { flex-direction: column; align-items: stretch; }
+  .heroCopy { padding: 40px 20px 40px; text-align: left; }
+  .heroTitle { letter-spacing: -0.04em; line-height: 1.02; }
+  .heroLede { margin: 20px 0 0; font-size: 16px; }
+  .heroActions { flex-direction: column; align-items: stretch; margin-top: 28px; }
   .shotWrap { padding: 0 16px; }
+  .heroLight .shotWrap { padding-bottom: 64px; }
   .shotBody { grid-template-columns: 1fr; min-height: 0; }
-  .shotSidebar { display: none; }
+  .shotSidebar, .shotSub { display: none; }
   .shotMain { padding: 14px; }
+  .shotHead { align-items: center; margin-bottom: 12px; }
+  .shotTitle { font-size: 15px; }
+  .shotButton { padding: 4px 8px; font-size: 12px; }
   .shotRow { grid-template-columns: minmax(0, 1fr) 72px; }
   .shotRow > :nth-child(2), .shotRow > :nth-child(3), .shotRow > :nth-child(4) { display: none; }
-  .section { padding: 72px 20px; }
-  .sectionTitle { font-size: 32px; }
-  .features, .steps { grid-template-columns: 1fr; gap: 40px; }
-  .closing { padding: 80px 20px; }
-  .closing h2 { font-size: 36px; }
+  .section { padding: 64px 20px; }
+  .sectionTitle { font-size: 30px; line-height: 1.12; letter-spacing: -0.03em; }
+  .bento { grid-template-columns: 1fr; gap: 16px; margin-top: 32px; }
+  .cardLarge { grid-column: auto; }
+  .card { padding: 20px; gap: 20px; }
+  .cardLarge .cardText h3 { font-size: 20px; }
+  .cardText p { font-size: 15px; }
+  .account { padding: 14px 16px; }
+  .account > .tagBrand { display: none; }
+  .accountStats > div { padding: 12px 16px; }
+  .accountStats dd { font-size: 18px; }
+  .accountAsks li { padding: 10px 16px; }
+  .howIntro p { font-size: 16px; }
+  .steps li { grid-template-columns: 40px 1fr; gap: 8px; padding: 22px 0; }
+  .steps h3 { font-size: 18px; }
+  .closing { padding: 72px 20px; text-align: left; }
+  .closing h2 { font-size: 34px; line-height: 1.08; letter-spacing: -0.035em; }
+  .closing p { font-size: 16px; margin: 14px 0 28px; }
   .footer { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
 }

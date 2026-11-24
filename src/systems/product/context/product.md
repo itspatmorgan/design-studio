@@ -5,7 +5,7 @@ description: Who uses Echo, its core objects, and the words the app uses for the
 
 ## Who it's for
 
-Product teams at B2B software companies. The sample workspace is **Lumen**, a team using Echo, and its people are:
+Product teams at B2B software companies. The sample data follows one such team:
 
 - **Sam Rivera, product lead:** triages new feedback and decides what goes on the roadmap.
 - **Support leads and account managers:** capture what customers say, quickly, from wherever they hear it.

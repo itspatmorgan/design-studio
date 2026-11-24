@@ -16,9 +16,21 @@ const sources = [
   { name: 'Surveys', count: 67 },
 ];
 const roadmap = [
-  { title: 'Bulk-assign to a teammate', accounts: 6, mrr: '$38k' },
-  { title: 'Import keeps line breaks', accounts: 4, mrr: '$27k' },
-  { title: 'Vote on planned items', accounts: 9, mrr: '$21k' },
+  { title: 'Bulk-assign to a teammate', mrr: '$38k' },
+  { title: 'Import keeps line breaks', mrr: '$27k' },
+  { title: 'Vote on planned items', mrr: '$21k' },
+];
+const accountStats = [
+  { label: 'MRR', value: '$18.9k' },
+  { label: 'Seats', value: '240' },
+  { label: 'Requests', value: '5' },
+];
+const accountAsks = [
+  { title: 'Slack alerts for high-value accounts', via: 'Chat', status: 'High' },
+  { title: 'Import keeps line breaks', via: 'Email', status: 'Planned' },
+  { title: 'SSO for contractor accounts', via: 'Call', status: 'Triaged' },
+  { title: 'Audit log export', via: 'Call', status: 'New' },
+  { title: 'Weekly digest should group by account', via: 'Email', status: 'Triaged' },
 ];
 const steps = [
   { n: '01', title: 'Connect your channels', text: 'Forward an inbox, add the Slack app, or paste notes from a call. Echo keeps the customer’s own words.' },
@@ -63,48 +75,67 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
 
       <section id="product" className={styles.section}>
         <h2 className={styles.sectionTitle}>Every channel, every account, one place to decide.</h2>
-        <div className={styles.features}>
-          <article className={styles.feature}>
-            <div className={styles.vignette}>
+        <div className={styles.bento}>
+          <article className={cn(styles.card, styles.cardLarge)}>
+            <div className={styles.cardText}>
+              <h3>Know who is asking</h3>
+              <p>Each request carries its account, plan, and revenue, so the loudest voice isn’t the only one heard.</p>
+            </div>
+            <div className={styles.accountPanel}>
+              <div className={styles.account}>
+                <span className={styles.accountLogo}>A</span>
+                <div><b>Arcadia Bank</b><small>Enterprise plan · Renews in March</small></div>
+                <span className={styles.tagBrand}>Key account</span>
+              </div>
+              <dl className={styles.accountStats}>
+                {accountStats.map((s) => (
+                  <div key={s.label}><dt>{s.label}</dt><dd>{s.value}</dd></div>
+                ))}
+              </dl>
+              <ul className={styles.accountAsks}>
+                {accountAsks.map((a) => (
+                  <li key={a.title}><span>{a.title}<small>via {a.via}</small></span><em className={a.status === 'Planned' || a.status === 'New' ? styles.tagBrand : a.status === 'High' ? styles.high : styles.neutral}>{a.status}</em></li>
+                ))}
+              </ul>
+            </div>
+          </article>
+          <article className={styles.card}>
+            <div className={styles.cardText}>
+              <h3>Capture it where it’s said</h3>
+              <p>Support threads, sales calls, and surveys land in one inbox, in the customer’s own words.</p>
+            </div>
+            <div className={styles.sources}>
               {sources.map((s) => (
                 <div key={s.name} className={styles.sourceRow}><span>{s.name}</span><span className={styles.sourceBar}><i style={{ width: `${(s.count / 128) * 100}%` }} /></span><span className={styles.mono}>{s.count}</span></div>
               ))}
             </div>
-            <h3>Capture it where it’s said</h3>
-            <p>Support threads, sales calls, and surveys land in one inbox, in the customer’s own words.</p>
           </article>
-          <article className={styles.feature}>
-            <div className={styles.vignette}>
-              <div className={styles.account}>
-                <span className={styles.accountLogo}>A</span>
-                <div><b>Arcadia Bank</b><small>Enterprise · 240 seats</small></div>
-                <span className={styles.mono}>$18.9k/mo</span>
-              </div>
-              <div className={styles.accountAsk}><em className={styles.high}>High</em>Slack alerts for high-value accounts</div>
-              <div className={styles.accountAsk}><em className={styles.tagBrand}>Planned</em>Import keeps line breaks</div>
+          <article className={styles.card}>
+            <div className={styles.cardText}>
+              <h3>Plan with the full picture</h3>
+              <p>Rank what to build by reach and revenue, then tell every customer when it ships.</p>
             </div>
-            <h3>Know who is asking</h3>
-            <p>Each request carries its account, plan, and revenue, so the loudest voice isn’t the only one heard.</p>
-          </article>
-          <article className={styles.feature}>
-            <div className={styles.vignette}>
+            <div className={styles.roadmap}>
               {roadmap.map((r) => (
-                <div key={r.title} className={styles.roadmapRow}><span className={styles.roadmapDot} /><span className={styles.roadmapTitle}>{r.title}</span><span className={styles.muted}>{r.accounts} accounts</span><span className={styles.mono}>{r.mrr}</span></div>
+                <div key={r.title} className={styles.roadmapRow}><span className={styles.roadmapDot} /><span className={styles.roadmapTitle}>{r.title}</span><span className={styles.mono}>{r.mrr}</span></div>
               ))}
             </div>
-            <h3>Plan with the full picture</h3>
-            <p>Rank what to build by reach and revenue, then tell every customer when it ships.</p>
           </article>
         </div>
       </section>
 
       <section id="how" className={cn(styles.section, styles.sectionTinted)}>
-        <h2 className={styles.sectionTitle}>Up and running in an afternoon.</h2>
-        <ol className={styles.steps}>
-          {steps.map((s) => (
-            <li key={s.n}><span className={styles.stepNumber}>{s.n}</span><h3>{s.title}</h3><p>{s.text}</p></li>
-          ))}
-        </ol>
+        <div className={styles.how}>
+          <div className={styles.howIntro}>
+            <h2 className={styles.sectionTitle}>Up and running in an afternoon.</h2>
+            <p>No migration project. Point Echo at the places customers already talk to you, and the inbox fills itself.</p>
+          </div>
+          <ol className={styles.steps}>
+            {steps.map((s) => (
+              <li key={s.n}><span className={styles.stepNumber}>{s.n}</span><div><h3>{s.title}</h3><p>{s.text}</p></div></li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <section id="start" className={styles.closing}>

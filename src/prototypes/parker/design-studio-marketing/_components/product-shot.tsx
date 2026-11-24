@@ -29,7 +29,7 @@ export function ProductShot() {
       <div className={styles.shotChrome}><span /><span /><span /></div>
       <div className={styles.shotBody}>
         <aside className={styles.shotSidebar}>
-          <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Lumen</div>
+          <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Echo</div>
           <div className={styles.shotNav}>Overview</div>
           <div className={`${styles.shotNav} ${styles.shotNavOn}`}>Feedback inbox<span>11</span></div>
           <div className={styles.shotLabel}>Views</div>

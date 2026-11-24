@@ -1,7 +1,7 @@
 // The frame every screen shares: a sidebar and a page. Screens are separate files so each has its
 // own address, and this keeps them looking like one product.
 import type { ReactNode } from 'react';
-import { ChevronsUpDown, Flame, Inbox, LayoutDashboard, Map, Sparkles, type LucideIcon } from '@/systems/product/libraries/icons';
+import { Flame, Inbox, LayoutDashboard, Map, Sparkles, type LucideIcon } from '@/systems/product/libraries/icons';
 import { Avatar, AvatarFallback } from '@/systems/product/components/avatar';
 import { Button } from '@/systems/product/components/button';
 import { cn } from '#studio/runtime';
@@ -42,8 +42,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground">
         <div className="flex h-9 items-center gap-2 px-2">
           <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground"><EchoMark className="size-4" /></span>
-          <span className="flex-1 text-sm font-semibold">Lumen</span>
-          <ChevronsUpDown className="size-3.5 text-muted-foreground" />
+          <span className="flex-1 text-sm font-semibold">Echo</span>
         </div>
 
         <nav className="mt-4 space-y-0.5">
