@@ -18,7 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/systems/product/components/tabs';
 import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
-import { PriorityIcon, StatusLabel } from './_components/badges';
+import { PriorityTip, StatusLabel } from './_components/badges';
 import { NO_FILTER, STATUSES, addFeedback, formatDate, formatMrr, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
 import CompanyLogo from './_components/CompanyLogo';
 
@@ -91,15 +91,15 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
                 <TableHead className="h-9 text-xs font-normal text-muted-foreground">Feedback</TableHead>
                 <TableHead className="h-9 w-32 text-xs font-normal text-muted-foreground">Status</TableHead>
                 <TableHead className="h-9 w-48 text-xs font-normal text-muted-foreground">Customer</TableHead>
-                <TableHead className="h-9 w-20 text-right text-xs font-normal text-muted-foreground">MRR</TableHead>
-                <TableHead className="hidden h-9 w-20 text-right text-xs font-normal text-muted-foreground xl:table-cell">Received</TableHead>
+                <TableHead className="h-9 w-24 text-xs font-normal text-muted-foreground">MRR</TableHead>
+                <TableHead className="hidden h-9 w-24 text-xs font-normal text-muted-foreground xl:table-cell">Received</TableHead>
                 <TableHead className="h-9 w-12"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {shown.map((f) => (
                 <TableRow key={f.id} className="group h-11 cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell className="pl-4"><PriorityIcon priority={f.priority} /></TableCell>
+                  <TableCell className="pl-4"><PriorityTip priority={f.priority} /></TableCell>
                   <TableCell className="max-w-0">
                     <div className="truncate"><span className="font-medium">{f.title}</span><span className="ml-2 text-xs text-muted-foreground">via {f.source}</span></div>
                   </TableCell>
@@ -110,8 +110,8 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
                       <span className={f.company ? 'truncate' : 'truncate text-muted-foreground'}>{f.company || 'No account'}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
-                  <TableCell className="hidden text-right text-xs text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
+                  <TableCell className="tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
+                  <TableCell className="hidden text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} className={cn('opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-popup-open:opacity-100', f.id === menuFor && 'opacity-100')} />}><MoreHorizontal /></DropdownMenuTrigger>

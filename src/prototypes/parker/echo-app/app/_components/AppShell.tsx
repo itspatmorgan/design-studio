@@ -4,6 +4,7 @@
 import type { ReactNode } from 'react';
 import { Avatar, AvatarFallback } from '@/systems/product/components/avatar';
 import { Button } from '@/systems/product/components/button';
+import { TooltipProvider } from '@/systems/product/components/tooltip';
 import { cn } from '#studio/runtime';
 import { Link } from '@module/prototypes';
 import EchoMark from './EchoMark';
@@ -19,7 +20,7 @@ function NavItem({ to, count, children, onClick }: { to: string; count?: number;
       className={cn('flex h-8 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground', on && 'bg-muted text-foreground')}
     >
       {children}
-      {count !== undefined && <span className="font-mono text-xs text-muted-foreground tabular-nums">{count}</span>}
+      {count !== undefined && <span className="text-xs text-muted-foreground tabular-nums">{count}</span>}
     </Link>
   );
 }
@@ -45,7 +46,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="min-w-0 flex-1">{children}</main>
+      <main className="min-w-0 flex-1"><TooltipProvider delay={300}>{children}</TooltipProvider></main>
     </div>
   );
 }

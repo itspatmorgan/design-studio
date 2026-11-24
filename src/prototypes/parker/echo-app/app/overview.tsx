@@ -8,7 +8,7 @@ import { Link, useNavigate } from '@module/prototypes';
 import { ArrowRight } from '@/systems/product/libraries/icons';
 import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
 import AppShell from './_components/AppShell';
-import { PriorityIcon, StatusLabel } from './_components/badges';
+import { PriorityTip, StatusLabel } from './_components/badges';
 import { STATUSES, formatDate, formatMrr, select, showFiltered, useStore, type Feedback, type Filter } from './_components/store';
 import CompanyLogo from './_components/CompanyLogo';
 
@@ -48,8 +48,8 @@ function Accounts({ items }: { items: Feedback[] }) {
         <li key={company} className="flex items-center gap-3 text-sm">
           <CompanyLogo company={company} className="size-6 [&_svg]:size-4" />
           <span className="flex-1 truncate">{company}</span>
-          <span className="w-16 text-right text-xs text-muted-foreground">{a.count} open</span>
-          <span className="w-14 text-right font-mono text-xs tabular-nums">{formatMrr(a.mrr)}</span>
+          <span className="w-16 text-muted-foreground tabular-nums">{a.count} open</span>
+          <span className="w-16 tabular-nums">{formatMrr(a.mrr)}</span>
         </li>
       ))}
     </ul>
@@ -110,12 +110,12 @@ export default function Overview() {
             <ul className="divide-y divide-border">
               {newest.map((f) => (
                 <li key={f.id}>
-                  <button type="button" className="grid h-11 w-full grid-cols-[1rem_minmax(0,1fr)_6.5rem_3.5rem] items-center gap-3 text-left text-sm hover:text-primary lg:grid-cols-[1rem_minmax(0,1fr)_6.5rem_10rem_3.5rem]" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
-                    <PriorityIcon priority={f.priority} />
+                  <button type="button" className="grid h-11 w-full grid-cols-[1rem_minmax(0,1fr)_6.5rem_4rem] items-center gap-3 text-left text-sm hover:text-primary lg:grid-cols-[1rem_minmax(0,1fr)_6.5rem_10rem_4rem]" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
+                    <PriorityTip priority={f.priority} />
                     <span className="truncate font-medium">{f.title}</span>
                     <StatusLabel status={f.status} />
                     <span className="hidden min-w-0 items-center gap-2 text-muted-foreground lg:flex"><CompanyLogo company={f.company} className="size-5 rounded-[5px] [&_svg]:size-3.5" /><span className="truncate">{f.company}</span></span>
-                    <span className="text-right text-xs text-muted-foreground tabular-nums">{formatDate(f.createdAt)}</span>
+                    <span className="text-muted-foreground tabular-nums">{formatDate(f.createdAt)}</span>
                   </button>
                 </li>
               ))}

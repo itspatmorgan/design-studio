@@ -1,23 +1,6 @@
-import { Badge } from '@/systems/product/components/badge';
 import { cn } from '#studio/runtime';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/systems/product/components/tooltip';
 import { PRIORITIES, STATUSES, type Priority, type Status } from './store';
-
-// Status colors come from the theme, so they follow light and dark mode.
-const STATUS_STYLE: Record<Status, string> = {
-  new: 'bg-primary/10 text-primary dark:bg-primary/20',
-  triaged: 'bg-secondary text-secondary-foreground',
-  planned: 'bg-accent text-accent-foreground',
-  resolved: 'bg-muted text-muted-foreground',
-};
-
-export function StatusBadge({ status }: { status: Status }) {
-  return <Badge variant="outline" className={cn('border-transparent', STATUS_STYLE[status])}>{STATUSES.find((s) => s.value === status)?.label}</Badge>;
-}
-
-export function PriorityBadge({ priority }: { priority: Priority }) {
-  const label = PRIORITIES.find((p) => p.value === priority)?.label;
-  return <Badge variant={priority === 'high' ? 'destructive' : 'outline'}>{label}</Badge>;
-}
 
 // Compact marks for dense lists, in the Linear manner: signal bars for priority, a circle that fills as
 // feedback moves along for status. The words stay available to screen readers.
@@ -50,6 +33,25 @@ export function StatusLabel({ status }: { status: Status }) {
     <span className="flex items-center gap-2 text-sm leading-5">
       <StatusIcon status={status} />
       {STATUSES.find((s) => s.value === status)?.label}
+    </span>
+  );
+}
+
+// The priority bars with their word on hover, for lists where the bars stand alone.
+export function PriorityTip({ priority }: { priority: Priority }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger render={<span className="flex w-fit" />}><PriorityIcon priority={priority} /></TooltipTrigger>
+      <TooltipContent>{PRIORITIES.find((p) => p.value === priority)?.label} priority</TooltipContent>
+    </Tooltip>
+  );
+}
+
+export function PriorityLabel({ priority }: { priority: Priority }) {
+  return (
+    <span className="flex items-center gap-2 text-sm leading-5">
+      <PriorityIcon priority={priority} />
+      {PRIORITIES.find((p) => p.value === priority)?.label}
     </span>
   );
 }

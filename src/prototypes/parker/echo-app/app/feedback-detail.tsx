@@ -3,21 +3,34 @@
 // The feedback inbox opens this screen with the item it was on. Opened directly (or shown on a canvas), it
 // shows the newest item instead of an empty page. DetailScreen takes optional starting state, so the
 // files in states/ can show it with the edit dialog or the delete confirmation open.
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Link, useNavigate } from '@module/prototypes';
 import { ArrowLeft, Pencil, Trash2 } from '@/systems/product/libraries/icons';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/components/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/systems/product/components/dialog';
 import { Label } from '@/systems/product/components/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/systems/product/components/select';
 import { Separator } from '@/systems/product/components/separator';
 import { Textarea } from '@/systems/product/components/textarea';
 import AppShell from './_components/AppShell';
+import CompanyLogo from './_components/CompanyLogo';
 import FeedbackForm from './_components/FeedbackForm';
-import { PriorityBadge, StatusBadge } from './_components/badges';
+import { PriorityLabel, StatusLabel } from './_components/badges';
 import { PRIORITIES, STATUSES, addNote, formatDate, formatMrr, removeFeedback, updateFeedback, useFeedback, useStore, type Priority, type Status } from './_components/store';
+
+// One row of the properties panel: a quiet label on the left, the value on the right, as in the table's columns.
+function Property({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="grid min-h-8 grid-cols-[5.5rem_minmax(0,1fr)] items-center gap-2 text-sm">
+      <span className="text-muted-foreground">{label}</span>
+      <div className="min-w-0">{children}</div>
+    </div>
+  );
+}
+
+// Status and priority change in place, shown with the same marks as the table.
+const quietTrigger = '-ml-2 h-8 w-[calc(100%+0.5rem)] border-transparent bg-transparent px-2 shadow-none hover:bg-muted dark:bg-transparent dark:hover:bg-muted';
 
 export function DetailScreen({ editing: startEditing = false, deleting: startDeleting = false }: { editing?: boolean; deleting?: boolean }) {
   const { selectedId, items } = useStore();
@@ -49,64 +62,77 @@ export function DetailScreen({ editing: startEditing = false, deleting: startDel
     <AppShell>
       <div className="mx-auto max-w-6xl px-8 py-8">
         {back}
-        <header className="mb-6 flex items-start justify-between gap-4">
-          <div>
-            <div className="mb-2 flex items-center gap-2"><StatusBadge status={item.status} /><PriorityBadge priority={item.priority} /></div>
-            <h1 className="text-xl font-semibold tracking-tight">{item.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{item.customer}{item.company && <> at {item.company}</>} · {item.plan} plan{item.mrr > 0 && <> · <span className="font-mono text-xs">{formatMrr(item.mrr)}/mo</span></>} · via {item.source} · {formatDate(item.createdAt)}</p>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setEditing(true)}><Pencil /> Edit</Button>
-            <Button variant="outline" onClick={() => setDeleting(true)}><Trash2 /> Delete</Button>
-          </div>
-        </header>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="min-w-0">
+            <header className="mb-6 flex items-start justify-between gap-4">
+              <h1 className="text-xl font-semibold tracking-tight">{item.title}</h1>
+              <div className="flex shrink-0 gap-1">
+                <Button variant="ghost" size="icon-sm" aria-label="Edit" onClick={() => setEditing(true)}><Pencil /></Button>
+                <Button variant="ghost" size="icon-sm" aria-label="Delete" onClick={() => setDeleting(true)}><Trash2 /></Button>
+              </div>
+            </header>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_16rem]">
-          <div className="space-y-6">
-            <section>
-              <h2 className="mb-2 text-sm font-semibold">What they said</h2>
-              <p className="text-sm leading-relaxed text-foreground/90">{item.body || 'No details were added.'}</p>
-              {item.tags.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{item.tags.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}</div>}
+            <section className="rounded-md border border-border bg-card">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-border px-4 py-2.5 text-sm whitespace-nowrap">
+                <CompanyLogo company={item.company} className="size-5 rounded-[5px] [&_svg]:size-3.5" />
+                <span className="font-medium">{item.customer}</span>
+                {item.company && <span className="text-muted-foreground">at {item.company}</span>}
+                <span className="ml-auto text-muted-foreground">via {item.source} · {formatDate(item.createdAt)}</span>
+              </div>
+              <div className="px-4 py-4">
+                <p className="text-sm leading-relaxed">{item.body || 'No details were added.'}</p>
+                {item.tags.length > 0 && <div className="mt-4 flex flex-wrap gap-1.5">{item.tags.map((t) => <Badge key={t} variant="secondary">{t}</Badge>)}</div>}
+              </div>
             </section>
-            <Separator />
-            <section>
+
+            <section className="mt-8">
               <h2 className="mb-3 text-sm font-semibold">Notes</h2>
-              <ul className="mb-4 space-y-3">
-                {item.notes.map((n) => (
-                  <li key={n.id} className="rounded-md border border-border bg-card px-3 py-2">
-                    <p className="text-sm">{n.text}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{formatDate(n.at)}</p>
-                  </li>
-                ))}
-                {item.notes.length === 0 && <li className="text-sm text-muted-foreground">No notes yet.</li>}
-              </ul>
+              {item.notes.length > 0 ? (
+                <ul className="mb-4 space-y-4 border-l border-border pl-4">
+                  {item.notes.map((n) => (
+                    <li key={n.id}>
+                      <p className="text-sm">{n.text}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{formatDate(n.at)}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="mb-4 text-sm text-muted-foreground">No notes yet.</p>}
               <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); if (note.trim()) { addNote(item.id, note.trim()); setNote(''); } }}>
-                <Label htmlFor="note">Add a note</Label>
-                <Textarea id="note" rows={3} value={note} placeholder="What did you find out, or decide?" onChange={(e) => setNote(e.target.value)} />
+                <Label htmlFor="note" className="sr-only">Add a note</Label>
+                <Textarea id="note" rows={3} value={note} placeholder="Add a note: what did you find out, or decide?" onChange={(e) => setNote(e.target.value)} />
                 <div className="flex justify-end"><Button type="submit" size="sm" disabled={!note.trim()}>Add note</Button></div>
               </form>
             </section>
           </div>
 
-          <Card size="sm" className="self-start">
-            <CardHeader><CardTitle>Triage</CardTitle></CardHeader>
-            <CardContent className="grid gap-4">
-              <div className="grid gap-1.5">
-                <Label>Status</Label>
+          <aside className="self-start">
+            <h2 className="mb-2 text-xs text-muted-foreground">Properties</h2>
+            <div className="grid gap-1">
+              <Property label="Status">
                 <Select items={STATUSES} value={item.status} onValueChange={(v) => v && updateFeedback(item.id, { status: v as Status })}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>{STATUSES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  <SelectTrigger aria-label="Status" className={quietTrigger}><SelectValue>{(v: Status) => <StatusLabel status={v} />}</SelectValue></SelectTrigger>
+                  <SelectContent>{STATUSES.map((s) => <SelectItem key={s.value} value={s.value}><StatusLabel status={s.value} /></SelectItem>)}</SelectContent>
                 </Select>
-              </div>
-              <div className="grid gap-1.5">
-                <Label>Priority</Label>
+              </Property>
+              <Property label="Priority">
                 <Select items={PRIORITIES} value={item.priority} onValueChange={(v) => v && updateFeedback(item.id, { priority: v as Priority })}>
-                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
-                  <SelectContent>{PRIORITIES.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}</SelectContent>
+                  <SelectTrigger aria-label="Priority" className={quietTrigger}><SelectValue>{(v: Priority) => <PriorityLabel priority={v} />}</SelectValue></SelectTrigger>
+                  <SelectContent>{PRIORITIES.map((p) => <SelectItem key={p.value} value={p.value}><PriorityLabel priority={p.value} /></SelectItem>)}</SelectContent>
                 </Select>
-              </div>
-            </CardContent>
-          </Card>
+              </Property>
+            </div>
+            <Separator className="my-4" />
+            <div className="grid gap-1">
+              <Property label="Customer">
+                <span className="flex items-center gap-2"><CompanyLogo company={item.company} className="size-5 rounded-[5px] [&_svg]:size-3.5" /><span className={item.company ? 'truncate' : 'truncate text-muted-foreground'}>{item.company || 'No account'}</span></span>
+              </Property>
+              <Property label="Contact"><span className="block truncate">{item.customer}</span></Property>
+              <Property label="Plan">{item.plan}</Property>
+              <Property label="MRR"><span className="tabular-nums">{item.mrr > 0 ? `${formatMrr(item.mrr)} a month` : <span className="text-muted-foreground">-</span>}</span></Property>
+              <Property label="Source">{item.source}</Property>
+              <Property label="Received"><span className="tabular-nums">{formatDate(item.createdAt)}</span></Property>
+            </div>
+          </aside>
         </div>
       </div>
 
