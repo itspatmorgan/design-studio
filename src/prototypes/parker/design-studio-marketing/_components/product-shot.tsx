@@ -31,7 +31,7 @@ export function ProductShot() {
         <aside className={styles.shotSidebar}>
           <div className={styles.shotWorkspace}><span className={styles.shotLogo}><EchoMark /></span>Echo</div>
           <div className={styles.shotNav}>Overview</div>
-          <div className={`${styles.shotNav} ${styles.shotNavOn}`}>Feedback inbox<span>11</span></div>
+          <div className={`${styles.shotNav} ${styles.shotNavOn}`}>Feedback inbox<span>12</span></div>
           <div className={styles.shotLabel}>Views</div>
           <div className={styles.shotNav}>High priority<span>5</span></div>
           <div className={styles.shotNav}>Needs triage<span>4</span></div>

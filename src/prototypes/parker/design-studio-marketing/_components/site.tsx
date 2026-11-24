@@ -23,14 +23,13 @@ const roadmap = [
 const accountStats = [
   { label: 'MRR', value: '$18.9k' },
   { label: 'Seats', value: '240' },
-  { label: 'Requests', value: '5' },
+  { label: 'Requests', value: '4' },
 ];
 const accountAsks = [
-  { title: 'Slack alerts for high-value accounts', via: 'Chat', status: 'High' },
-  { title: 'Import keeps line breaks', via: 'Email', status: 'Planned' },
-  { title: 'SSO for contractor accounts', via: 'Call', status: 'Triaged' },
-  { title: 'Audit log export', via: 'Call', status: 'New' },
-  { title: 'Weekly digest should group by account', via: 'Email', status: 'Triaged' },
+  { title: 'Slack alerts for high-value accounts', via: 'Chat', status: 'New' },
+  { title: 'Import from a spreadsheet drops line breaks', via: 'Email', status: 'Planned' },
+  { title: 'SSO for contractor accounts', via: 'Interview', status: 'Triaged' },
+  { title: 'Export an audit log of changes', via: 'Email', status: 'Resolved' },
 ];
 const steps = [
   { n: '01', title: 'Connect your channels', text: 'Forward an inbox, add the Slack app, or paste notes from a call. Echo keeps the customer’s own words.' },
@@ -44,8 +43,8 @@ function Header({ onBrand }: { onBrand: boolean }) {
       <a href="#top" className={styles.brand}><EchoMark className={styles.brandMark} />Echo</a>
       <nav className={styles.nav}>
         <a href="#product">Product</a>
+        <a href="#customers">Customers</a>
         <a href="#how">How it works</a>
-        <a href="#start">Pricing</a>
       </nav>
       <div className={styles.headerActions}>
         <a href="#start" className={cn(styles.signIn)}>Sign in</a>
@@ -94,7 +93,7 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
               </dl>
               <ul className={styles.accountAsks}>
                 {accountAsks.map((a) => (
-                  <li key={a.title}><span>{a.title}<small>via {a.via}</small></span><em className={a.status === 'Planned' || a.status === 'New' ? styles.tagBrand : a.status === 'High' ? styles.high : styles.neutral}>{a.status}</em></li>
+                  <li key={a.title}><span>{a.title}<small>via {a.via}</small></span><em className={a.status === 'Planned' || a.status === 'New' ? styles.tagBrand : styles.neutral}>{a.status}</em></li>
                 ))}
               </ul>
             </div>
@@ -122,6 +121,13 @@ export function EchoHome({ tone, hero }: { tone: 'cobalt' | 'light'; hero?: Hero
             </div>
           </article>
         </div>
+      </section>
+
+      <section id="customers" className={styles.quote}>
+        <figure>
+          <blockquote>“We used to plan around whoever shouted last. Now every roadmap review starts with who is asking and what they’re worth to us.”</blockquote>
+          <figcaption><span className={styles.quoteAvatar}>DO</span><span><b>Dana Okafor</b>Head of product, Fernway</span></figcaption>
+        </figure>
       </section>
 
       <section id="how" className={cn(styles.section, styles.sectionTinted)}>
