@@ -1,11 +1,11 @@
 ---
 studioId: 5b9z6sp9580ks01r
 title: About this prototype
-description: A short tour of the Feedback Inbox, from engineering handoff to early explorations.
+description: A short tour of the Echo app, from engineering handoff to early explorations.
 toc: true
 ---
 
-Welcome! This prototype is an example of how you can bring a product idea to life in Design Studio.
+Welcome! This prototype is an example of how you can bring a product idea to life in Design Studio. It shows Echo, a made-up tool that gathers customer feedback in one inbox and ties each request to the account behind it.
 
 The working screens sit alongside the thinking behind them. These files are called **artifacts**. Together, they help you explore an experience, explain your decisions, and give your team a clearer picture of what you want to build.
 
@@ -45,7 +45,7 @@ The [Feedback flow](discovery/feedback-flow.mermaid) maps the experience, while 
 
 ## Make it your own
 
-This prototype uses the **Product** system for its components and visual style.
+This prototype uses the **Product** system for its components and visual style. Its sibling, [Echo website](/prototypes/2h7mkxzppqfjv1xv/artifacts/1hz1pr0jff6c71bh), is the same product's marketing site, built with the **Marketing** system. The two share Echo's brand, the way an in-house team's product and website would.
 
 Work with your agent to try a change, such as adding a due date or exploring a different inbox layout. Share what you want to improve and point your agent to Project context so it understands the idea behind the request. You can review the result here and guide the next change.
 

@@ -92,16 +92,16 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
                 <TableHead className="text-right">MRR</TableHead>
                 <TableHead>Priority</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Received</TableHead>
+                <TableHead className="hidden xl:table-cell">Received</TableHead>
                 <TableHead className="w-10"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {shown.map((f) => (
                 <TableRow key={f.id} className="cursor-pointer" onClick={() => open(f.id)}>
-                  <TableCell>
-                    <div className="font-medium">{f.title}</div>
-                    <div className="mt-0.5 text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
+                  <TableCell className="max-w-0">
+                    <div className="truncate font-medium">{f.title}</div>
+                    <div className="mt-0.5 truncate text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
@@ -115,7 +115,7 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
                   <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell><PriorityBadge priority={f.priority} /></TableCell>
                   <TableCell><StatusBadge status={f.status} /></TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(f.createdAt)}</TableCell>
+                  <TableCell className="hidden text-muted-foreground xl:table-cell">{formatDate(f.createdAt)}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} />}><MoreHorizontal /></DropdownMenuTrigger>

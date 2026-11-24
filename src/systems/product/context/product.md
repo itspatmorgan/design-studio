@@ -19,4 +19,4 @@ Product teams at B2B software companies. The sample data follows one such team:
 - **Status:** New, Triaged, Planned, or Resolved, in that order.
 - **Views:** saved filters in the sidebar, such as High priority or Needs triage.
 
-Use these words in the interface. Say "feedback", not "tickets" or "issues"; say "account", not "client".
+Use these words in the interface. Say "feedback", not "tickets"; say "account", not "client".

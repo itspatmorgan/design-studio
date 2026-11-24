@@ -23,10 +23,10 @@ Use one artifact on its own or connect several to explain an idea. The included 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="public/images/design-studio-product-dark.jpg">
   <source media="(prefers-color-scheme: light)" srcset="public/images/design-studio-product-light.jpg">
-  <img src="public/images/design-studio-product-light.jpg" alt="Design Studio displaying the Feedback Inbox sample, with a working feedback table beside navigation for screens, states, diagrams, and project context.">
+  <img src="public/images/design-studio-product-light.jpg" alt="Design Studio displaying the Echo app sample, with a working feedback table beside navigation for screens, states, diagrams, and project context.">
 </picture>
 
-The Feedback Inbox sample keeps working screens, alternate states, and project context together.
+The Echo app sample keeps working screens, alternate states, and project context together.
 
 ## Use the agent harness you already use
 

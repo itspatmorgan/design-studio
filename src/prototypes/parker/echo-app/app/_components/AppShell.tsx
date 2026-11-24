@@ -39,7 +39,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const open = items.filter((f) => f.status !== 'resolved');
   return (
     <div className="flex min-h-full bg-background text-foreground">
-      <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground">
+      <aside className="sticky top-0 flex h-screen w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground">
         <div className="flex h-9 items-center gap-2 px-2">
           <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground"><EchoMark className="size-4" /></span>
           <span className="flex-1 text-sm font-semibold">Echo</span>
