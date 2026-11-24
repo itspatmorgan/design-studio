@@ -58,7 +58,7 @@ Do not remove another person's work merely because a contributor joined. Explain
 
 ## Completion
 
-Local creation registers the system and maintainer entry; external source is integrated into that scaffold. Set the intended [system declarations](../../README.md#structure) and [theme inventory](../../README.md#theme); validators check their structure. Adjust components and examples to those choices.
+Local creation registers the system and maintainer entry; external source is integrated into that scaffold. Set the intended [system declarations](../../README.md#structure), including the screen widths the product is designed for, its main one first, and [theme inventory](../../README.md#theme); validators check their structure. Adjust components and examples to those choices.
 
 Review representative components and pop-ups in every supported color mode. Verify that a single-mode system keeps its mode when Studio toggles. Follow the Working in Studio section of `AGENTS.md` for build and save requirements after migration.
 

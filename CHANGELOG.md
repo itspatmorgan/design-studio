@@ -2,7 +2,15 @@
 
 ## Unreleased
 
+- Views on canvases and in documents are laid out at the screen your design system is made for, instead of always at 1440 px desktop width. Each system declares its screen widths in `system.ts` (`screens`, the main one first), and each view on a canvas records the width it shows. Ask your agent to show a view at another screen, or the same view at Phone, Tablet and Desktop side by side, to review responsive layouts; it only adds them when you ask. **Breaking:** add `screens` to each system and a screen width to each view on your canvases (below).
 - Your agent can rename and duplicate a prototype the way its **…** menu does: `pnpm studio rename` and `pnpm studio duplicate` repair links and give the copy fresh identities, with the menu's names and checks, instead of the agent moving folders by hand.
+
+### Updating from 0.4.0
+
+Follow the [manual upgrade guidance](src/platform/context/ownership.md#updating-a-studio) and preserve local content and settings. Then:
+
+- Add `screens` to every `system.ts` beside `colorModes`, the screen your designs are made for first: `screens: [{ name: 'Desktop', width: 1440 }]` keeps today's layout, and a system for a phone app declares its phone width first. Until it's declared, `pnpm check` names the system.
+- Give every view on your canvases its screen: `pnpm build` names each canvas with views that don't say. Run the canvas `update` tool with `screen` and the view's current `width` and `height` for each, so the layout stays put; your agent can do this for all of them.
 
 ## 0.4.0 (2026-11-23)
 

@@ -25,8 +25,12 @@ Canvas declares `systemUsage: 'independent'`. Its scene remains readable locally
   the manifest (`src/platform/app/artifacts/artifactLinks.ts`) to a prototype and an artifact, and the artifact's file type
   decides how it looks: a type that declares the canvas surface in `capabilities.embeds` and provides an `Embed` (views and diagrams on canvases) shows live, any other
   type shows a card (`src/platform/app/artifacts/ArtifactCard.tsx`), and a link to nothing shows "Not found".
-- **Views are pictures.** A view is laid out at 1440 px wide and scaled down to the element's width,
-  cropped at the bottom. Resizing the element changes the crop. Nothing in it takes clicks.
+- **Views are pictures.** A view is laid out at a screen width and scaled down to the element's width,
+  cropped at the bottom. Each view element states its screen width in `customData.viewport`; the check
+  fails a view without one. The canvas writes its system's first screen (`screens` in system.ts) when a view is
+  placed, and the agent tools' `screen` sets another of its screens or any width, only when asked. New views are
+  a third of their screen width and 900 px of height, so views at different screens compare at one scale.
+  Resizing the element changes the crop, not the screen. Nothing in it takes clicks.
 - **Agents** use the tools in tools.ts, live in the open canvas or on the file (src/platform/modules/canvas/skills/use-canvas/SKILL.md). Tools select artifacts by source filename and store permanent links. CLI mutations require the owner or an Admin and an active prototype; read-only tools preserve the file.
 - **Dev:** edits save to the file through the same file layer as the Source view, and changes made to the
   file from outside (an agent) are taken in live. **Deployed:** the committed file, read-only.

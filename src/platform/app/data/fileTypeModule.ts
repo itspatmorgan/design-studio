@@ -16,6 +16,9 @@ export type EmbedProps = {
   item: Artifact;
   width: number;
   height: number;
+  // The screen width a view is laid out at, when the surface asks for one (a view on a canvas). Otherwise
+  // the prototype's default screen, the first of its system's (Prototype.screens).
+  viewport?: number;
   still: boolean;
   loadingStartedAt?: number;
 };
