@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/systems/product/comp
 import AppShell from './_components/AppShell';
 import { PriorityBadge, StatusBadge } from './_components/badges';
 import { STATUSES, formatDate, formatMrr, select, showFiltered, useStore, type Feedback, type Filter } from './_components/store';
+import CompanyLogo from './_components/CompanyLogo';
 
 type MetricStyle = { padding: number; valueSize: number };
 
@@ -45,7 +46,7 @@ function Accounts({ items }: { items: Feedback[] }) {
     <ul className="space-y-3">
       {rows.map(([company, a]) => (
         <li key={company} className="flex items-center gap-3 text-sm">
-          <span className="flex size-6 items-center justify-center rounded-md bg-accent text-xs font-semibold text-accent-foreground">{company[0]}</span>
+          <CompanyLogo company={company} className="size-6 [&_svg]:size-4" />
           <span className="flex-1 truncate">{company}</span>
           <span className="w-16 text-right text-xs text-muted-foreground">{a.count} open</span>
           <span className="w-14 text-right font-mono text-xs tabular-nums">{formatMrr(a.mrr)}</span>
@@ -89,7 +90,6 @@ export default function Overview() {
       <div className="mx-auto max-w-6xl px-8 py-8">
         <header className="mb-6">
           <h1 className="text-xl font-semibold tracking-tight">Overview</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Where the feedback stands. Click a number to see the feedback behind it.</p>
         </header>
 
         <div className="mb-6 grid grid-cols-2 lg:grid-cols-4" style={{ gap }}>
@@ -110,11 +110,11 @@ export default function Overview() {
             <ul className="divide-y divide-border">
               {newest.map((f) => (
                 <li key={f.id}>
-                  <button type="button" className="grid w-full grid-cols-[minmax(0,1fr)_5rem_5rem_3.5rem] items-center gap-4 py-2.5 text-left text-sm hover:text-primary lg:grid-cols-[minmax(0,1fr)_10rem_5rem_5rem_3.5rem]" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
+                  <button type="button" className="grid w-full grid-cols-[minmax(0,1fr)_5rem_5rem_3.5rem] items-center gap-4 py-2.5 text-left text-sm hover:text-primary lg:grid-cols-[minmax(0,1fr)_5rem_5rem_10rem_3.5rem]" onClick={() => { select(f.id); navigate('app/feedback-detail'); }}>
                     <span className="truncate font-medium">{f.title}</span>
-                    <span className="hidden truncate text-xs text-muted-foreground lg:block">{f.company}</span>
                     <span><PriorityBadge priority={f.priority} /></span>
                     <span><StatusBadge status={f.status} /></span>
+                    <span className="hidden min-w-0 items-center gap-2 text-xs text-muted-foreground lg:flex"><CompanyLogo company={f.company} className="size-5 rounded-[5px] [&_svg]:size-3.5" /><span className="truncate">{f.company}</span></span>
                     <span className="text-right text-xs text-muted-foreground tabular-nums">{formatDate(f.createdAt)}</span>
                   </button>
                 </li>

@@ -99,7 +99,7 @@
 .shotTable { border: 1px solid var(--line); border-radius: 10px; }
 .shotRow {
   display: grid;
-  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.4fr) 64px 80px 80px;
+  grid-template-columns: minmax(0, 2.2fr) 72px 76px minmax(0, 1.3fr) 60px;
   align-items: center;
   gap: 12px;
   padding: 9px 14px;
@@ -109,7 +109,8 @@
 .shotRow small { display: block; color: var(--muted); font-size: 11px; }
 .shotRowHead { border-top: 0; color: var(--muted); font-size: 12px; font-weight: 500; }
 .shotPerson { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.shotPerson i { display: grid; flex: none; place-items: center; width: 24px; height: 24px; border: 1px solid var(--line); border-radius: 50%; color: var(--muted); font-size: 9px; font-style: normal; }
+.shotLogoMark { width: 24px; height: 24px; border-radius: 6px; }
+.shotLogoMark svg { width: 16px; height: 16px; }
 .shotPerson > span { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 .shot em, .card em, .account > .tagBrand {
@@ -230,7 +231,7 @@
   .shotTitle { font-size: 15px; }
   .shotButton { padding: 4px 8px; font-size: 12px; }
   .shotRow { grid-template-columns: minmax(0, 1fr) 72px; }
-  .shotRow > :nth-child(2), .shotRow > :nth-child(3), .shotRow > :nth-child(4) { display: none; }
+  .shotRow > :nth-child(2), .shotRow > :nth-child(4), .shotRow > :nth-child(5) { display: none; }
   .section { padding: 64px 20px; }
   .sectionTitle { font-size: 30px; line-height: 1.12; letter-spacing: -0.03em; }
   .bento { grid-template-columns: 1fr; gap: 16px; margin-top: 32px; }

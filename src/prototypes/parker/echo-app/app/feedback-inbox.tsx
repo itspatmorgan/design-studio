@@ -8,7 +8,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from '@module/prototypes';
 import { MoreHorizontal, Plus, Search, X } from '@/systems/product/libraries/icons';
-import { Avatar, AvatarFallback } from '@/systems/product/components/avatar';
 import { Badge } from '@/systems/product/components/badge';
 import { Button } from '@/systems/product/components/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/systems/product/components/dropdown-menu';
@@ -20,6 +19,7 @@ import AppShell from './_components/AppShell';
 import FeedbackForm from './_components/FeedbackForm';
 import { PriorityBadge, StatusBadge } from './_components/badges';
 import { NO_FILTER, STATUSES, addFeedback, formatDate, formatMrr, matchesFilter, removeFeedback, select, updateFeedback, useStore, type Filter, type Status } from './_components/store';
+import CompanyLogo from './_components/CompanyLogo';
 
 export type FeedbackInboxStart = {
   filter?: Filter;
@@ -29,7 +29,6 @@ export type FeedbackInboxStart = {
   menuFor?: string;      // the row menu of this item is open
 };
 
-const initials = (name: string) => name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
 
 export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '', adding: startAdding = false, tried = false, menuFor }: FeedbackInboxStart) {
   const { items, filter: asked } = useStore();
@@ -88,11 +87,11 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
             <TableHeader>
               <TableRow>
                 <TableHead className="pl-4">Feedback</TableHead>
-                <TableHead className="w-56">Customer</TableHead>
-                <TableHead className="w-20 pr-6 text-right">MRR</TableHead>
-                <TableHead className="w-24">Priority</TableHead>
-                <TableHead className="w-24">Status</TableHead>
-                <TableHead className="hidden w-20 xl:table-cell">Received</TableHead>
+                <TableHead className="w-28">Priority</TableHead>
+                <TableHead className="w-28">Status</TableHead>
+                <TableHead className="w-[24%]">Customer</TableHead>
+                <TableHead className="hidden w-24 xl:table-cell">Received</TableHead>
+                <TableHead className="w-24 text-right">MRR</TableHead>
                 <TableHead className="w-12"><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
@@ -103,19 +102,19 @@ export function FeedbackInboxScreen({ filter: startFilter, query: startQuery = '
                     <div className="truncate font-medium">{f.title}</div>
                     <div className="mt-0.5 truncate text-xs text-muted-foreground">via {f.source}{f.tags.length > 0 && <> · {f.tags.join(', ')}</>}</div>
                   </TableCell>
+                  <TableCell><PriorityBadge priority={f.priority} /></TableCell>
+                  <TableCell><StatusBadge status={f.status} /></TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <Avatar size="sm"><AvatarFallback className="text-[10px]">{initials(f.customer)}</AvatarFallback></Avatar>
+                      <CompanyLogo company={f.company} />
                       <div className="min-w-0 leading-tight">
-                        <div className="truncate">{f.customer}</div>
-                        <div className="text-xs text-muted-foreground">{f.company || 'No account'}</div>
+                        <div className="truncate">{f.company || 'No account'}</div>
+                        <div className="truncate text-xs text-muted-foreground">{f.customer}</div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="pr-6 text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
-                  <TableCell><PriorityBadge priority={f.priority} /></TableCell>
-                  <TableCell><StatusBadge status={f.status} /></TableCell>
                   <TableCell className="hidden text-xs text-muted-foreground tabular-nums xl:table-cell">{formatDate(f.createdAt)}</TableCell>
+                  <TableCell className="text-right font-mono text-xs tabular-nums">{f.mrr > 0 ? formatMrr(f.mrr) : <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu defaultOpen={f.id === menuFor}>
                       <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${f.title}`} />}><MoreHorizontal /></DropdownMenuTrigger>
